@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 
 /// Splash screen states
 enum SplashStatus {
@@ -21,6 +22,7 @@ class SplashState {
   const SplashState({
     this.status = SplashStatus.initial,
     this.error,
+    this.onboardingSeen = false,
   });
 
   /// Current status
@@ -29,14 +31,19 @@ class SplashState {
   /// Error message if any
   final String? error;
 
+  /// Whether onboarding has been seen
+  final bool onboardingSeen;
+
   /// Copy with method
   SplashState copyWith({
     SplashStatus? status,
     String? error,
+    bool? onboardingSeen,
   }) {
     return SplashState(
       status: status ?? this.status,
       error: error ?? this.error,
+      onboardingSeen: onboardingSeen ?? this.onboardingSeen,
     );
   }
 }
@@ -58,9 +65,15 @@ class SplashController extends StateNotifier<SplashState> {
     try {
       // Simulate loading for 2-3 seconds
       await Future.delayed(const Duration(seconds: 3));
-      
-      // Set state to completed
-      state = state.copyWith(status: SplashStatus.completed);
+
+      // Check if onboarding has been seen
+      final onboardingSeen = ref.read(onboardingSeenProvider);
+
+      // Set state to completed with onboarding seen status
+      state = state.copyWith(
+        status: SplashStatus.completed,
+        onboardingSeen: onboardingSeen,
+      );
     } catch (e) {
       state = state.copyWith(
         status: SplashStatus.error,

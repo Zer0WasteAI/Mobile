@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -116,9 +118,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     ref.listen<SplashState>(
       splashControllerProvider,
       (previous, current) {
-        // Navigate to home when splash is completed
+        // Navigate based on onboarding status when splash is completed
         if (current.status == SplashStatus.completed) {
-          context.go('/home');
+          if (current.onboardingSeen) {
+            // If onboarding has been seen, go to login
+            context.go('/login');
+          } else {
+            // If onboarding has not been seen, go to onboarding
+            context.go('/onboarding');
+          }
         }
       },
     );

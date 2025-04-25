@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 
 /// Home screen
 class HomeScreen extends ConsumerWidget {

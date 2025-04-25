@@ -1,41 +1,183 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/register_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:zer0_waste_ai/features/home/presentation/screens/home_screen.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart';
+import 'package:zer0_waste_ai/features/navigation/presentation/screens/main_screen.dart';
+import 'package:zer0_waste_ai/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_screen.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipes_screen.dart';
+import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
+
+// Global key for the ShellRoute navigator
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
+// Global key for the root navigator
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  return AppRouter.router;
+  final router = AppRouter.createRouter(ref);
+
+  // Listen to route changes and update the navigation provider
+  router.routerDelegate.addListener(() {
+    // Use the root navigator key context to get the current location safely
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context != null) {
+      // Use GoRouter.of(context).location to get the current displayed route
+      final routeMatchList = router.routerDelegate.currentConfiguration.matches;
+      if (routeMatchList.isNotEmpty) {
+        final currentLocation = routeMatchList.last.matchedLocation;
+
+        // Only update if the location is one of the main tab routes
+        if ([
+          '/home',
+          '/inventory',
+          '/recipes',
+          '/profile',
+        ].contains(currentLocation)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Check if the provider's state needs updating
+            if (ref.read(currentNavigationProvider) != currentLocation) {
+              ref.read(currentNavigationProvider.notifier).state =
+                  currentLocation;
+            }
+          });
+        }
+      }
+    }
+  });
+
+  return router;
 });
 
 /// App router configuration
 class AppRouter {
-  /// GoRouter instance
-  static final router = GoRouter(
-    initialLocation: '/splash',
-    debugLogDiagnostics: true,
-    routes: [
-      GoRoute(
-        path: '/splash',
-        name: 'splash',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-    ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text(
-          'Error: ${state.error}',
-          style: Theme.of(context).textTheme.bodyLarge,
+  /// GoRouter instance factory
+  static GoRouter createRouter(Ref ref) {
+    return GoRouter(
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: '/splash',
+      debugLogDiagnostics: true,
+      routes: [
+        GoRoute(
+          path: '/splash',
+          name: 'splash',
+          builder: (context, state) => const SplashScreen(),
         ),
-      ),
-    ),
-  );
+        GoRoute(
+          path: '/onboarding',
+          name: 'onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(
+          path: '/login',
+          name: 'login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: '/register',
+          name: 'register',
+          builder: (context, state) => const RegisterScreen(),
+        ),
+        GoRoute(
+          path: '/forgot-password',
+          name: 'forgot-password',
+          builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        // Routes accessible via the Bottom Navigation Bar (using ShellRoute)
+        ShellRoute(
+          navigatorKey: _shellNavigatorKey,
+          builder: (context, state, child) {
+            // Update provider when ShellRoute builds (handles initial load/deep link)
+            // Use state.matchedLocation for ShellRoute context
+            final currentLocation = state.matchedLocation;
+
+            if ([
+              '/home',
+              '/inventory',
+              '/recipes',
+              '/profile',
+            ].contains(currentLocation)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (ref.read(currentNavigationProvider) != currentLocation) {
+                  ref.read(currentNavigationProvider.notifier).state =
+                      currentLocation;
+                }
+              });
+            }
+            return MainScreen(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: '/home',
+              name: 'home',
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) => const HomeScreen(),
+            ),
+            GoRoute(
+              path: '/inventory',
+              name: 'inventory',
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) => const InventoryScreen(),
+            ),
+            GoRoute(
+              path: '/recipes',
+              name: 'recipes',
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) => const RecipesScreen(),
+            ),
+            GoRoute(
+              path: '/profile',
+              name: 'profile',
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+            // Add new routes for scanning under the ShellRoute
+            GoRoute(
+              path: '/scan/add/:itemType', // Use path parameter for item type
+              name: 'addScanItem',
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) {
+                // Extract itemType from path parameters
+                final itemTypeString = state.pathParameters['itemType'];
+                ScanItemType itemType;
+                if (itemTypeString == 'ingredient') {
+                  itemType = ScanItemType.ingredient;
+                } else if (itemTypeString == 'food') {
+                  itemType = ScanItemType.food;
+                } else {
+                  // Handle invalid or missing parameter, maybe default or error
+                  // For now, default to ingredient or throw an error
+                  // Or redirect to a safe place, e.g., home
+                  print(
+                    'Invalid itemType in route: $itemTypeString, defaulting to ingredient',
+                  );
+                  itemType =
+                      ScanItemType.ingredient; // Or handle error appropriately
+                }
+                return AddScanItemScreen(itemType: itemType);
+              },
+            ),
+          ],
+        ),
+      ],
+      errorBuilder:
+          (context, state) => Scaffold(
+            body: Center(
+              child: Text(
+                'Page not found: ${state.error}',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+          ),
+    );
+  }
 }
 
 /// Extension to easily access the router from BuildContext
