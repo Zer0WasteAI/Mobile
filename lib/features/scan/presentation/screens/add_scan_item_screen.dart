@@ -63,13 +63,16 @@ class AddScanItemScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
 
-              // Display selected image OR the default image
-              scanState.selectedImage != null
-                  ? _buildSelectedImagePreview(
-                    scanState.selectedImage!,
+              // Display image previews or default image
+              scanState.selectedImages.isEmpty
+                  // Show default image if no images are selected
+                  ? _buildDefaultImage(centralImagePath, imageHeight)
+                  // Show previews if images are selected
+                  : _buildImagePreviews(
+                    scanState.selectedImages,
+                    scanController,
                     screenHeight,
-                  )
-                  : _buildDefaultImage(centralImagePath, imageHeight),
+                  ),
 
               // Show loading indicator during picking
               if (scanState.isLoading)
@@ -115,8 +118,8 @@ class AddScanItemScreen extends ConsumerWidget {
                     context: context,
                     icon: Icons.camera_alt_outlined,
                     onPressed: () {
-                      // Call controller method
-                      scanController.pickImage(ImageSource.camera);
+                      // Call updated controller method
+                      scanController.pickImages(ImageSource.camera);
                     },
                     // Disable button while loading
                     enabled: !scanState.isLoading,
@@ -125,21 +128,23 @@ class AddScanItemScreen extends ConsumerWidget {
                     context: context,
                     icon: Icons.photo_library_outlined,
                     onPressed: () {
-                      // Call controller method
-                      scanController.pickImage(ImageSource.gallery);
+                      // Call updated controller method
+                      scanController.pickImages(ImageSource.gallery);
                     },
                     // Disable button while loading
                     enabled: !scanState.isLoading,
                   ),
                 ],
               ),
-              // Optionally add a clear button if an image is selected
-              if (scanState.selectedImage != null && !scanState.isLoading)
+              // Show clear button only if images are selected
+              if (scanState.selectedImages.isNotEmpty && !scanState.isLoading)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: TextButton.icon(
-                    icon: const Icon(Icons.clear), // Or Icons.delete
-                    label: const Text('Clear Selection'),
+                    icon: const Icon(
+                      Icons.delete_sweep_outlined,
+                    ), // Changed icon
+                    label: const Text('Clear All'), // Changed label
                     onPressed: () => scanController.clearSelection(),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.error,
@@ -167,28 +172,84 @@ class AddScanItemScreen extends ConsumerWidget {
     );
   }
 
-  // Widget to display the selected image preview
-  Widget _buildSelectedImagePreview(File imageFile, double screenHeight) {
-    // Calculate a reasonable max height for the preview
-    final double previewMaxHeight = screenHeight * 0.4;
+  // Widget to display multiple selected image previews in a Wrap
+  Widget _buildImagePreviews(
+    List<File> images,
+    AddScanItemController controller,
+    double screenHeight,
+  ) {
+    // Calculate max height for the preview area
+    final double previewMaxHeight = screenHeight * 0.4; // Adjust as needed
+
     return Container(
       constraints: BoxConstraints(maxHeight: previewMaxHeight),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade400, width: 1),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: ClipRRect(
+        // Clip the scroll view
         borderRadius: BorderRadius.circular(8),
-        child: Image.file(
-          imageFile,
-          fit: BoxFit.contain,
-          // Add error builder for File image too
-          errorBuilder: (context, error, stackTrace) {
-            print("Error loading file image: $error");
-            return const Center(
-              child: Icon(Icons.error_outline, size: 50, color: Colors.red),
-            );
-          },
+        child: SingleChildScrollView(
+          // Make it scrollable
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Wrap(
+              spacing: 8.0, // Horizontal space between images
+              runSpacing: 8.0, // Vertical space between rows
+              children:
+                  images.map((imageFile) {
+                    return Stack(
+                      children: [
+                        // Image preview
+                        Container(
+                          width: 80, // Adjust size as needed
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.grey.shade400),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.file(
+                              imageFile,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        // Remove button (top right corner)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => controller.removeImage(imageFile),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+            ),
+          ),
         ),
       ),
     );
