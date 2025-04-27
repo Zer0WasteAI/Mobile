@@ -118,8 +118,12 @@ class AddScanItemScreen extends ConsumerWidget {
                     context: context,
                     icon: Icons.camera_alt_outlined,
                     onPressed: () {
-                      // Call updated controller method
-                      scanController.pickImages(ImageSource.camera);
+                      // Pass context and this screen's itemType
+                      scanController.pickImages(
+                        ImageSource.camera,
+                        context,
+                        itemType,
+                      );
                     },
                     // Disable button while loading
                     enabled: !scanState.isLoading,
@@ -128,8 +132,12 @@ class AddScanItemScreen extends ConsumerWidget {
                     context: context,
                     icon: Icons.photo_library_outlined,
                     onPressed: () {
-                      // Call updated controller method
-                      scanController.pickImages(ImageSource.gallery);
+                      // Pass context and this screen's itemType
+                      scanController.pickImages(
+                        ImageSource.gallery,
+                        context,
+                        itemType,
+                      );
                     },
                     // Disable button while loading
                     enabled: !scanState.isLoading,
@@ -234,7 +242,7 @@ class AddScanItemScreen extends ConsumerWidget {
                             child: Container(
                               padding: const EdgeInsets.all(2),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
+                                color: Colors.black.withValues(alpha: 0.6),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(

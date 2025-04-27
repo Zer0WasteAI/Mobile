@@ -12,7 +12,9 @@ import 'package:zer0_waste_ai/features/onboarding/presentation/screens/onboardin
 import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_screen.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipes_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart';
+import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
+import 'dart:io'; // Import dart:io for File type checking
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -89,6 +91,39 @@ class AppRouter {
           path: '/forgot-password',
           name: 'forgot-password',
           builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        // Add the ScanConfirmScreen route here (top-level)
+        GoRoute(
+          path: '/scan/confirm',
+          name: 'scanConfirm',
+          builder: (context, state) {
+            // Expect a Map in the extra field
+            final extraData = state.extra as Map<String, dynamic>?;
+            final List<File>? images = extraData?['images'] as List<File>?;
+            final ScanItemType? originType =
+                extraData?['originType'] as ScanItemType?;
+
+            // Validate the extracted data
+            if (images == null || images.isEmpty || originType == null) {
+              print(
+                "Error: ScanConfirmScreen missing images or originType. Redirecting.",
+              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Fallback to ingredient scan add screen
+                RouterExtension(
+                  context,
+                ).goNamed('addScanItem', params: {'itemType': 'ingredient'});
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            // Pass both required parameters
+            return ScanConfirmScreen(
+              initialImages: images,
+              originType: originType, // Pass originType
+            );
+          },
         ),
         // Routes accessible via the Bottom Navigation Bar (using ShellRoute)
         ShellRoute(
