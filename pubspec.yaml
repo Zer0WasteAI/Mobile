@@ -60,6 +60,9 @@ flutter:
     - assets/images/user_preferences/
     - assets/images/user_preferences/cooking_levels/
     - assets/images/splash/
+
     - assets/icons/
     - assets/icons/navbar/
+    - assets/icons/home/
+
     - lib/core/constants/
