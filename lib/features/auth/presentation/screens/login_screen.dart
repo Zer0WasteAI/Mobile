@@ -5,30 +5,35 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/login_form.dart';
+import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
 
 /// Login screen
 class LoginScreen extends ConsumerWidget {
   /// Constructor
   const LoginScreen({super.key});
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch login state
     final loginAsync = ref.watch(loginNotifierProvider);
-    
+
     // Get theme data
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Handle login success
     ref.listen<AsyncValue>(loginNotifierProvider, (_, state) {
       state.whenData((user) {
         if (user != null) {
-          // Navigate to home screen
-          context.go('/home');
+          // TODO: Check if this is the user's first time registering/logging in
+          // (based on profile data or a flag). If first time, navigate to
+          // AllergySelectorScreen, otherwise to /home.
+          // For now, assume first login and navigate to allergy selector.
+          context.go(AllergySelectorScreen.routePath);
+          // context.go('/home'); // Original navigation
         }
       });
-      
+
       // Handle error
       if (state.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -37,14 +42,16 @@ class LoginScreen extends ConsumerWidget {
               'Login failed: ${state.error}',
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: isDark ? AppColors.darkError : AppColors.lightError,
+            backgroundColor:
+                isDark ? AppColors.darkError : AppColors.lightError,
           ),
         );
       }
     });
-    
+
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -53,11 +60,9 @@ class LoginScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Logo
-                const Center(
-                  child: AnimatedLogo(size: 120),
-                ),
+                const Center(child: AnimatedLogo(size: 120)),
                 const SizedBox(height: 40),
-                
+
                 // Welcome text
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -69,7 +74,10 @@ class LoginScreen extends ConsumerWidget {
                         style: theme.textTheme.displayLarge?.copyWith(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.darkMainText : AppColors.lightMainText,
+                          color:
+                              isDark
+                                  ? AppColors.darkMainText
+                                  : AppColors.lightMainText,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -77,14 +85,17 @@ class LoginScreen extends ConsumerWidget {
                         'Sign in to continue reducing food waste',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
-                          color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                          color:
+                              isDark
+                                  ? AppColors.darkSecondaryText
+                                  : AppColors.lightSecondaryText,
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // Login form
                 LoginForm(
                   onForgotPassword: () {

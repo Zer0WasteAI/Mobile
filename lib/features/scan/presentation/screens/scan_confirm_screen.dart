@@ -519,9 +519,9 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                 foregroundColor: colorScheme.onSecondary,
                                 backgroundColor: colorScheme.secondary,
                                 disabledBackgroundColor: colorScheme.secondary
-                                    .withOpacity(0.5),
+                                    .withValues(alpha: 0.5),
                                 disabledForegroundColor: colorScheme.onSecondary
-                                    .withOpacity(0.7),
+                                    .withValues(alpha: 0.7),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -557,7 +557,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                 foregroundColor:
                                     colorScheme.primary, // Text/icon color
                                 side: BorderSide(
-                                  color: colorScheme.primary.withOpacity(0.5),
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
                                 ), // Border color
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -581,7 +581,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                           'Analizaremos tus imágenes para ayudarte a organizar, conservar y aprovechar mejor tus alimentos.',
                           textAlign: TextAlign.center,
                           style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onBackground.withOpacity(0.8),
+                            color: colorScheme.onSurface.withValues(alpha: 0.8),
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -671,7 +671,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                         child: Material(
                           type: MaterialType.transparency,
                           elevation: 4.0,
-                          shadowColor: theme.shadowColor.withOpacity(0.3),
+                          shadowColor: theme.shadowColor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             decoration: BoxDecoration(
@@ -689,9 +689,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                     child: Icon(
                                       Icons.broken_image_outlined,
                                       size: 50,
-                                      color: colorScheme.onSurface.withOpacity(
-                                        0.4,
-                                      ),
+                                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                                     ),
                                   );
                                 },
@@ -710,10 +708,10 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
@@ -742,7 +740,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_rounded,
-                    color: colorScheme.onSurface.withOpacity(0.6),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 20, // Slightly smaller arrows might look better here
                   ),
                   onPressed:
@@ -761,7 +759,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                 IconButton(
                   icon: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    color: colorScheme.onSurface.withOpacity(0.6),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 20, // Slightly smaller arrows might look better here
                   ),
                   onPressed:
@@ -790,8 +788,8 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             controller: _pageController,
             count: images.length,
             effect: ExpandingDotsEffect(
-              dotColor: colorScheme.outline.withOpacity(
-                0.5,
+              dotColor: colorScheme.outline.withValues(
+                alpha: 0.5,
               ), // Use theme colors
               activeDotColor: colorScheme.primary, // Use theme colors
               dotHeight: 8,
@@ -824,7 +822,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             'No hay imágenes para confirmar.',
             style: textTheme.bodyLarge?.copyWith(
               // Use theme style
-              color: colorScheme.onSurface.withOpacity(0.6),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],

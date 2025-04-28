@@ -15,6 +15,10 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
 import 'dart:io'; // Import dart:io for File type checking
+import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart'; // Import the new screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart'; // Import Food Type screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart'; // Import Special Diet screen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -91,6 +95,30 @@ class AppRouter {
           path: '/forgot-password',
           name: 'forgot-password',
           builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        // Add the Allergy Selector Screen route here (top-level)
+        GoRoute(
+          path: AllergySelectorScreen.routePath,
+          name: AllergySelectorScreen.routeName,
+          builder: (context, state) => const AllergySelectorScreen(),
+        ),
+        // Add the Cooking Level Selector Screen route here (top-level)
+        GoRoute(
+          path: CookingLevelSelectorScreen.routePath,
+          name: CookingLevelSelectorScreen.routeName,
+          builder: (context, state) => const CookingLevelSelectorScreen(),
+        ),
+        // Add the Preferred Food Type Screen route here (top-level)
+        GoRoute(
+          path: PreferredFoodTypeScreen.routePath,
+          name: PreferredFoodTypeScreen.routeName,
+          builder: (context, state) => const PreferredFoodTypeScreen(),
+        ),
+        // Add the Special Diet Selector Screen route here (top-level)
+        GoRoute(
+          path: SpecialDietSelectorScreen.routePath,
+          name: SpecialDietSelectorScreen.routeName,
+          builder: (context, state) => const SpecialDietSelectorScreen(),
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(

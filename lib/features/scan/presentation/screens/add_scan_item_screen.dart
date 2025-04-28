@@ -287,7 +287,7 @@ class AddScanItemScreen extends ConsumerWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: buttonBackgroundColor,
         // Optionally change style when disabled
-        disabledBackgroundColor: buttonBackgroundColor.withOpacity(0.5),
+        disabledBackgroundColor: buttonBackgroundColor.withValues(alpha: 0.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         padding: const EdgeInsets.all(
           20,

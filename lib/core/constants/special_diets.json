@@ -1,0 +1,11 @@
+{
+  "special_diets": [
+    { "emoji": "🥬", "name": "Keto" },
+    { "emoji": "🥗", "name": "Paleo" },
+    { "emoji": "🌾", "name": "Sin gluten" },
+    { "emoji": "🥛", "name": "Sin lácteos" },
+    { "emoji": "🍃", "name": "Plant-based" },
+    { "emoji": "🚫", "name": "No sigo ninguna" },
+    { "emoji": "➕", "name": "Agregar otra dieta" }
+  ]
+} 

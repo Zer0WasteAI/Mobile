@@ -1,0 +1,13 @@
+{
+  "allergies": [
+    { "emoji": "🥜", "name": "Maní" },
+    { "emoji": "🌰", "name": "Nueces de árbol" },
+    { "emoji": "🥛", "name": "Lácteos" },
+    { "emoji": "🥚", "name": "Huevo" },
+    { "emoji": "🌾", "name": "Gluten" },
+    { "emoji": "🐟", "name": "Pescado" },
+    { "emoji": "🍤", "name": "Mariscos" },
+    { "emoji": "🌱", "name": "Soya" },
+    { "emoji": "⚡", "name": "Sésamo" }
+  ]
+} 
