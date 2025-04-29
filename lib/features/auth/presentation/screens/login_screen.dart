@@ -39,7 +39,7 @@ class LoginScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Login failed: ${state.error}',
+              'Error al iniciar sesión: ${state.error}',
               style: TextStyle(color: Colors.white),
             ),
             backgroundColor:
@@ -70,7 +70,7 @@ class LoginScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Welcome Back',
+                        'Bienvenido de Nuevo',
                         style: theme.textTheme.displayLarge?.copyWith(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class LoginScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sign in to continue reducing food waste',
+                        'Inicia sesión para seguir reduciendo el desperdicio de alimentos',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
                           color:

@@ -11,7 +11,7 @@ class ImpactSummaryCard extends ConsumerWidget {
   static const Color _mainTextColor = Color(0xFF3A3A3A);
   static const Color _secondaryTextColor = Color(0xFF70605A);
   // Define a slightly lighter green for the background track, based on image
-  static final Color _progressBackgroundColor = _primaryColor.withOpacity(0.25);
+  static final Color _progressBackgroundColor = _primaryColor.withValues(alpha: 0.25);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +30,7 @@ class ImpactSummaryCard extends ConsumerWidget {
       elevation: 2,
       shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: _primaryColor.withOpacity(0.3), width: 1),
+        side: BorderSide(color: _primaryColor.withValues(alpha: 0.3), width: 1),
         borderRadius: BorderRadius.circular(16.0),
       ),
       color: Colors.white,

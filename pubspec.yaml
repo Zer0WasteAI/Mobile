@@ -42,6 +42,7 @@ dependencies:
   # Image Picking
   image_picker: ^1.1.2
   equatable: ^2.0.7
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:

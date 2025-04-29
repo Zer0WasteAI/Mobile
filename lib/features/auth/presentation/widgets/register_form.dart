@@ -39,12 +39,16 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
 
     ref.listenManual(registerNotifierProvider, (previous, next) {
       // Accede al estado síncrono a través del notifier
-      final currentState = ref.read(registerNotifierProvider.notifier).registerState;
+      final currentState =
+          ref.read(registerNotifierProvider.notifier).registerState;
       _updateControllerTextIfNeeded(_nameController, currentState.name);
       _updateControllerTextIfNeeded(_emailController, currentState.email);
       _updateControllerTextIfNeeded(_phoneController, currentState.phone);
       _updateControllerTextIfNeeded(_passwordController, currentState.password);
-      _updateControllerTextIfNeeded(_confirmPasswordController, currentState.confirmPassword);
+      _updateControllerTextIfNeeded(
+        _confirmPasswordController,
+        currentState.confirmPassword,
+      );
     }, fireImmediately: true);
   }
 
@@ -59,7 +63,10 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     super.dispose();
   }
 
-  void _updateControllerTextIfNeeded(TextEditingController controller, String newStateText) {
+  void _updateControllerTextIfNeeded(
+    TextEditingController controller,
+    String newStateText,
+  ) {
     if (controller.text != newStateText) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -72,14 +79,12 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // Get register state
     final registerNotifier = ref.watch(registerNotifierProvider.notifier);
     final registerState = registerNotifier.registerState;
     final registerAsync = ref.watch(registerNotifierProvider);
-
 
     // Get theme data
     final theme = Theme.of(context);
@@ -96,8 +101,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           // Full Name field
           CustomTextField(
             controller: _nameController,
-            label: 'Full Name',
-            hint: 'Enter your full name',
+            label: 'Nombre Completo',
+            hint: 'Ingresa tu nombre completo',
             icon: FontAwesomeIcons.solidUser,
             errorText: registerState.nameError,
             onChanged: (value) => registerNotifier.updateName(value),
@@ -107,8 +112,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           // Email field
           CustomTextField(
             controller: _emailController,
-            label: 'Email',
-            hint: 'Enter your email',
+            label: 'Correo Electrónico',
+            hint: 'Ingresa tu correo electrónico',
             icon: FontAwesomeIcons.solidEnvelope,
             errorText: registerState.emailError,
             onChanged: (value) => registerNotifier.updateEmail(value),
@@ -118,8 +123,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           // Phone field
           CustomTextField(
             controller: _phoneController,
-            label: 'Phone Number (optional)',
-            hint: 'Enter your phone number',
+            label: 'Número de Teléfono (opcional)',
+            hint: 'Ingresa tu número de teléfono',
             icon: FontAwesomeIcons.phone,
             errorText: registerState.phoneError,
             onChanged: (value) => registerNotifier.updatePhone(value),
@@ -129,8 +134,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           // Password field
           CustomTextField(
             controller: _passwordController,
-            label: 'Password',
-            hint: 'Enter your password',
+            label: 'Contraseña',
+            hint: 'Ingresa tu contraseña',
             icon: FontAwesomeIcons.lock,
             isPassword: true,
             isPasswordVisible: _isPasswordVisible,
@@ -147,8 +152,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           // Confirm Password field
           CustomTextField(
             controller: _confirmPasswordController,
-            label: 'Confirm Password',
-            hint: 'Confirm your password',
+            label: 'Confirmar Contraseña',
+            hint: 'Confirma tu contraseña',
             icon: FontAwesomeIcons.lock,
             isPassword: true,
             isPasswordVisible: _isConfirmPasswordVisible,
@@ -171,9 +176,13 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                       ? () => registerNotifier.register()
                       : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                backgroundColor:
+                    isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(alpha: 0.5),
+                disabledBackgroundColor: (isDark
+                        ? AppColors.darkPrimary
+                        : AppColors.lightPrimary)
+                    .withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -190,7 +199,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                         ),
                       )
                       : Text(
-                        'Create Account',
+                        'Crear Cuenta',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -212,7 +221,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'or register with',
+                  'o regístrate con',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color:
                         isDark
@@ -244,7 +253,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Already have an account? ",
+                '¿Ya tienes una cuenta? ',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color:
                       isDark
@@ -255,7 +264,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
               GestureDetector(
                 onTap: widget.onLogin,
                 child: Text(
-                  'Login',
+                  'Iniciar Sesión',
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color:

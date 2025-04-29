@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpRDnb2Pq7SzmHpuRaEceKP-HtikeAE_q6WXjCxY_bmL5hkRt_1KixRZamCw3z2mlEEf5XxsMa2BcJyewjXEqzvvBA_x4CZCyhkk6hLTyJ4TflW6s6ipC2Pk8PddKdcF_10FP2rhWpFPC7gooHp9sWq9u5e3r6q1drw-vKmVxtkhbCHpyRNYXlODSdl_VF/w212-h212/tomato.jpeg",
+      "cantidad": 3,
+      "nombre": "Tomates",
+      "fecha_de_caducidad": "2024-08-15"
+    },
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEilVgN77bMwZ7VAws9QBHLkdDIiF_5NEnMLhlVN4GE1P26EisvrMMQr8l-DpSbrjqa6DEcmTdIchW6WG_C9vl43a2uQyVzZ-pXKl47fpR7hD5NjZSRMdPQ7TiVED4a1dtOZBd0mDVzNRxrhL_1m9tSzwR7TgnDuagKZJfjOu0LzLwAYQLwvDncgPufK9b3G/w202-h202/onion.jpeg",
+      "cantidad": 2,
+      "nombre": "Cebolla",
+      "fecha_de_caducidad": "2024-08-25"
+    },
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhhlqwajsh_jXC8dQMyrYfA7cNS11zTI1Pdbzk-3JeJTGgjU3yu5950s5yY1ry2XohItIRH4Cve8ZjY3hUB0TbdcbUM7Srb8viLoX85vvN_6uOm8Cy-ouvo7zCUkUK8NIshi98QUGOj4LMF3awKofXpizbVr23DMpNxo6OLciROyvMTEbcca3KyfqZ_H9BX/w207-h207/garlic.jpeg",
+      "cantidad": 5,
+      "nombre": "Ajo",
+      "fecha_de_caducidad": "2024-09-30"
+    },
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPtcghp9CDqIplwMpejcEyPGRNIiqfjaNf4wnJnLBxF3tm5TPZI0LTzbTjvTvrKqTPtj3Vh7hBEzypr230eo_REU9jU1D5vuXZ2gTZRJIGJX6si-O31-UEfizkg2oPL8qWytc2OmN1TV4oAuf3HjHXGcohg5FNeywXkjdRVsRVKsdd_-kmSATJ-SwrbBC2/w212-h212/lettuce.jpeg",
+      "cantidad": 1,
+      "nombre": "Lechuga",
+      "fecha_de_caducidad": "2024-08-10"
+    },
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg5l3whCvxGzTDENTn11BI1YMJrzoILmy5FfbVjt9wnweKisFDb-pNB-EHIGVBCpE185baLpqwMrIInWgyodIAiiuJ-NspbuSXb1DUN9q3WaHRV4ifGfW7bgA01vD_AZvtxRGiFbTityfw1LXOEEs4i5P7B4D0vkeiskInhgoBaO4sBnsP3JDWHlhxbgRA0/w209-h209/pepper.jpeg",
+      "cantidad": 2,
+      "nombre": "Pimiento Verde",
+      "fecha_de_caducidad": "2024-08-18"
+    },
+    {
+      "imagen": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj3JU8ZyZI3h8doH4cbAc1HiO8fl-RHn9nbDQMmGktEIFEaI5wDrzNhfMBXHsjT8H4x24fymoqwulh930VOTWdlmGUBOOH2afUMMM6bxsaaU4A3UapsdQYMZKclQIhW0C5p4u0garCi5tX6sLM-hrNVlXWR40wRCTybLbiPAiMhKKG8a7i3DWDd3TAOxf7J/w210-h210/carrot.jpeg",
+      "cantidad": 4,
+      "nombre": "Zanahoria",
+      "fecha_de_caducidad": "2024-08-22"
+    }
+  ]
+} 

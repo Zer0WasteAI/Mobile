@@ -134,7 +134,9 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     _registerState = _registerState.copyWith(
       name: name,
       nameError:
-          isValid ? null : 'Please enter your full name (first and last name)',
+          isValid
+              ? null
+              : 'Por favor, ingresa tu nombre completo (nombre y apellido)',
     );
     ref.notifyListeners();
   }
@@ -144,7 +146,8 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     final isValid = _controller.isValidEmail(email);
     _registerState = _registerState.copyWith(
       email: email,
-      emailError: isValid ? null : 'Please enter a valid email',
+      emailError:
+          isValid ? null : 'Por favor, ingresa un correo electrónico válido',
     );
     ref.notifyListeners();
   }
@@ -154,7 +157,8 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     final isValid = _controller.isValidPhone(phone);
     _registerState = _registerState.copyWith(
       phone: phone,
-      phoneError: isValid ? null : 'Please enter a valid phone number',
+      phoneError:
+          isValid ? null : 'Por favor, ingresa un número de teléfono válido',
     );
     ref.notifyListeners();
   }
@@ -173,7 +177,7 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
       confirmPasswordError:
           _registerState.confirmPassword.isEmpty
               ? null
-              : (doMatch ? null : 'Passwords do not match'),
+              : (doMatch ? null : 'Las contraseñas no coinciden'),
     );
     ref.notifyListeners();
   }
@@ -186,7 +190,7 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     );
     _registerState = _registerState.copyWith(
       confirmPassword: confirmPassword,
-      confirmPasswordError: doMatch ? null : 'Passwords do not match',
+      confirmPasswordError: doMatch ? null : 'Las contraseñas no coinciden',
     );
     ref.notifyListeners();
   }

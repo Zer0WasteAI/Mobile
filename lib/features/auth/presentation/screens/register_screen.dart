@@ -38,7 +38,7 @@ class RegisterScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Registration failed: ${state.error}',
+              'Error en el registro: ${state.error}',
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor:
@@ -69,7 +69,7 @@ class RegisterScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Create Account',
+                        'Crear Cuenta',
                         style: theme.textTheme.displayLarge?.copyWith(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class RegisterScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Join us and start saving food',
+                        'Únete a nosotros y empieza a ahorrar comida',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
                           color:

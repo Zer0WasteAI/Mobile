@@ -49,8 +49,8 @@ class _LoginFormState extends ConsumerState<LoginForm> {
         children: [
           // Email field
           CustomTextField(
-            label: 'Email',
-            hint: 'Enter your email',
+            label: 'Correo Electrónico',
+            hint: 'Ingresa tu correo electrónico',
             icon: FontAwesomeIcons.solidEnvelope,
             errorText: loginState.emailError,
             isValid:
@@ -61,8 +61,8 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
           // Password field
           CustomTextField(
-            label: 'Password',
-            hint: 'Enter your password',
+            label: 'Contraseña',
+            hint: 'Ingresa tu contraseña',
             icon: FontAwesomeIcons.lock,
             isPassword: true,
             isPasswordVisible: _isPasswordVisible,
@@ -85,7 +85,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             child: GestureDetector(
               onTap: widget.onForgotPassword,
               child: Text(
-                'Forgot your password?',
+                '¿Olvidaste tu contraseña?',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                   color:
@@ -129,7 +129,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                         ),
                       )
                       : Text(
-                        'Login',
+                        'Iniciar Sesión',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -151,7 +151,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'or continue with',
+                  'o continuar con',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color:
                         isDark
@@ -183,7 +183,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Don't have an account? ",
+                '¿No tienes una cuenta? ',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color:
                       isDark
@@ -194,7 +194,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
               GestureDetector(
                 onTap: widget.onRegister,
                 child: Text(
-                  'Register',
+                  'Regístrate',
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color:

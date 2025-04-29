@@ -83,9 +83,9 @@ class LoginNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     // Create a new state with updated email and validated error message
     String? errorMessage;
     if (email.isEmpty) {
-      errorMessage = 'Email is required';
+      errorMessage = 'El correo electrónico es obligatorio';
     } else if (!_controller.isValidEmail(email)) {
-      errorMessage = 'Please enter a valid email';
+      errorMessage = 'Por favor, ingresa un correo electrónico válido';
     } else {
       errorMessage = null;
     }
@@ -101,7 +101,7 @@ class LoginNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     // Create a new state with updated password and validated error message
     String? errorMessage;
     if (password.isEmpty) {
-      errorMessage = 'Password is required';
+      errorMessage = 'La contraseña es obligatoria';
     } else {
       errorMessage = _controller.validatePassword(password);
     }
@@ -200,11 +200,10 @@ final loginControllerProvider = Provider<LoginController>((ref) {
 });
 
 /// Login notifier provider
-final loginNotifierProvider = AsyncNotifierProvider.autoDispose<LoginNotifier, UserEntity?>(
-  () {
-    return LoginNotifier();
-  },
-);
+final loginNotifierProvider =
+    AsyncNotifierProvider.autoDispose<LoginNotifier, UserEntity?>(() {
+      return LoginNotifier();
+    });
 
 /// Login state provider
 final loginStateProvider = Provider.autoDispose<LoginState>((ref) {

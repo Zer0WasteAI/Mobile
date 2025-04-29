@@ -146,7 +146,8 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
     final isValid = _controller.isValidEmail(email);
     state = state.copyWith(
       email: email,
-      emailError: isValid ? null : 'Please enter a valid email',
+      emailError:
+          isValid ? null : 'Por favor, ingresa un correo electrónico válido',
     );
   }
 
@@ -155,7 +156,8 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
     final isValid = _controller.isValidCode(code);
     state = state.copyWith(
       code: code,
-      codeError: isValid ? null : 'Please enter a valid 6-digit code',
+      codeError:
+          isValid ? null : 'Por favor, ingresa un código válido de 6 dígitos',
     );
   }
 
@@ -173,7 +175,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
       confirmPasswordError:
           state.confirmPassword.isEmpty
               ? null
-              : (doMatch ? null : 'Passwords do not match'),
+              : (doMatch ? null : 'Las contraseñas no coinciden'),
     );
   }
 
@@ -185,7 +187,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
     );
     state = state.copyWith(
       confirmPassword: confirmPassword,
-      confirmPasswordError: doMatch ? null : 'Passwords do not match',
+      confirmPasswordError: doMatch ? null : 'Las contraseñas no coinciden',
     );
   }
 
@@ -212,7 +214,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-        emailError: 'Failed to send reset code: $e',
+        emailError: 'Error al enviar el código de restablecimiento: $e',
         isLoading: false,
       );
       return false;
@@ -247,14 +249,14 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
           _stopInternalTimer();
           resetToEmailInput(
             initialEmailError:
-                'Too many verification attempts. Please try again.',
+                'Demasiados intentos de verificación. Por favor, inténtalo de nuevo.',
           );
           // isLoading ya se pondrá a false en resetToEmailInput
           return false;
         } else {
           state = state.copyWith(
             verificationAttempts: newAttempts,
-            codeError: 'Invalid code. Please try again.',
+            codeError: 'Código inválido. Por favor, inténtalo de nuevo.',
             isLoading: false,
           );
           return false;
@@ -263,7 +265,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
     } catch (e) {
       // Check if too many attempts
       state = state.copyWith(
-        codeError: 'Failed to verify code: $e',
+        codeError: 'Error al verificar el código: $e',
         verificationAttempts: state.verificationAttempts + 1,
         isLoading: false,
       );
@@ -296,7 +298,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-        newPasswordError: 'Failed to reset password: $e',
+        newPasswordError: 'Error al restablecer la contraseña: $e',
         isLoading: false,
       );
       return false;

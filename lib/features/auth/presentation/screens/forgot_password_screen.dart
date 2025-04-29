@@ -198,7 +198,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       children: [
         // Title
         Text(
-          'Forgot Password',
+          'Contraseña Olvidada',
           style: theme.textTheme.displayLarge?.copyWith(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Enter your email to receive a reset code',
+          'Ingresa tu correo para recibir un código de restablecimiento',
           style: theme.textTheme.bodyLarge?.copyWith(
             fontSize: 16,
             color:
@@ -221,8 +221,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // Email field
         CustomTextField(
           controller: _emailController,
-          label: 'Email',
-          hint: 'Enter your email',
+          label: 'Correo Electrónico',
+          hint: 'Ingresa tu correo electrónico',
           icon: FontAwesomeIcons.solidEnvelope,
           errorText: state.emailError,
           isValid: state.isEmailFormValid,
@@ -244,7 +244,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                "We've sent a reset code to your email",
+                                'Hemos enviado un código de restablecimiento a tu correo',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               backgroundColor:
@@ -270,7 +270,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 elevation: 0,
               ),
               child: Text(
-                'Send Reset Code',
+                'Enviar Código',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -288,7 +288,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               context.go('/login');
             },
             child: Text(
-              'Back to Login',
+              'Volver a Iniciar Sesión',
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
@@ -314,7 +314,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       children: [
         // Title
         Text(
-          'Verify Code',
+          'Verificar Código',
           style: theme.textTheme.displayLarge?.copyWith(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -323,7 +323,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Enter the 6-digit code we sent to ${state.email}',
+          'Ingresa el código de 6 dígitos que enviamos a ${state.email}',
           style: theme.textTheme.bodyLarge?.copyWith(
             fontSize: 16,
             color:
@@ -336,7 +336,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
         // Code field
         Text(
-          'Code',
+          'Código',
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color:
@@ -365,7 +365,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              'Resend in ${state.resendTimer}s',
+              'Reenviar en ${state.resendTimer}s',
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
                     isDark
@@ -387,7 +387,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        "We've sent a new reset code to your email",
+                        'Hemos enviado un nuevo código de restablecimiento a tu correo',
                         style: const TextStyle(color: Colors.white),
                       ),
                       backgroundColor:
@@ -399,7 +399,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 }
               },
               child: Text(
-                'Resend Code',
+                'Reenviar Código',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
                   color:
@@ -424,7 +424,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           SnackBar(
                             content: Text(
                               state.codeError ??
-                                  'Invalid code. Please try again.',
+                                  'Código inválido. Por favor, inténtalo de nuevo.',
                               style: const TextStyle(color: Colors.white),
                             ),
                             backgroundColor:
@@ -450,7 +450,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Verify Code',
+              'Verificar Código',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -464,7 +464,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         if (state.verificationAttempts > 0)
           Center(
             child: Text(
-              'Attempts: ${state.verificationAttempts}/3',
+              'Intentos: ${state.verificationAttempts}/3',
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
                     state.verificationAttempts >= 2
@@ -493,7 +493,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       children: [
         // Title
         Text(
-          'Reset Password',
+          'Restablecer Contraseña',
           style: theme.textTheme.displayLarge?.copyWith(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -502,7 +502,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Create a new password for your account',
+          'Crea una nueva contraseña para tu cuenta',
           style: theme.textTheme.bodyLarge?.copyWith(
             fontSize: 16,
             color:
@@ -516,8 +516,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // New password field
         CustomTextField(
           controller: _newPasswordController,
-          label: 'New Password',
-          hint: 'Enter new password',
+          label: 'Nueva Contraseña',
+          hint: 'Ingresa la nueva contraseña',
           icon: FontAwesomeIcons.lock,
           isPassword: true,
           isPasswordVisible: _isPasswordVisible,
@@ -534,8 +534,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // Confirm password field
         CustomTextField(
           controller: _confirmPasswordController,
-          label: 'Confirm Password',
-          hint: 'Confirm new password',
+          label: 'Confirmar Contraseña',
+          hint: 'Confirma la nueva contraseña',
           icon: FontAwesomeIcons.lock,
           isPassword: true,
           isPasswordVisible: _isConfirmPasswordVisible,
@@ -561,7 +561,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Password successfully updated',
+                              'Contraseña actualizada con éxito',
                               style: const TextStyle(color: Colors.white),
                             ),
                             backgroundColor:
@@ -590,7 +590,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Update Password',
+              'Actualizar Contraseña',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -622,7 +622,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
         // Title
         Text(
-          'Password Reset Successful',
+          'Restablecimiento de Contraseña Exitoso',
           style: theme.textTheme.displayLarge?.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -632,7 +632,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Your password has been successfully updated. You can now login with your new password.',
+          'Tu contraseña ha sido actualizada con éxito. Ahora puedes iniciar sesión con tu nueva contraseña.',
           style: theme.textTheme.bodyLarge?.copyWith(
             fontSize: 16,
             color:
@@ -661,7 +661,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Back to Login',
+              'Volver a Iniciar Sesión',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,

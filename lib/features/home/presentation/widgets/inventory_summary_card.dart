@@ -19,7 +19,7 @@ class InventorySummaryCard extends ConsumerWidget {
 
     return Card(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       color: Colors.white, // Explicitly white background
       child: Padding(

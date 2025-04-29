@@ -25,7 +25,12 @@ class RegisterController {
   });
 
   /// Register with email and password
-  Future<UserEntity> register(String name, String email, String password, {String? phone}) async {
+  Future<UserEntity> register(
+    String name,
+    String email,
+    String password, {
+    String? phone,
+  }) async {
     // Return a mock user for UI navigation without functionality
     return UserEntity(
       id: 'registered-user-id',
@@ -98,14 +103,20 @@ class RegisterController {
   }
 
   String? validatePassword(String password) {
-    if (password.isEmpty) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
-    if (!RegExp(r'[A-Z]').hasMatch(password)) return 'Password must contain at least one uppercase letter';
-    if (!RegExp(r'[a-z]').hasMatch(password)) return 'Password must contain at least one lowercase letter';
-    if (!RegExp(r'[0-9]').hasMatch(password)) return 'Password must contain at least one number';
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) return 'Password must contain at least one special character';
+    if (password.isEmpty) return 'La contraseña es obligatoria';
+    if (password.length < 6)
+      return 'La contraseña debe tener al menos 6 caracteres';
+    if (!RegExp(r'[A-Z]').hasMatch(password))
+      return 'La contraseña debe contener al menos una letra mayúscula';
+    if (!RegExp(r'[a-z]').hasMatch(password))
+      return 'La contraseña debe contener al menos una letra minúscula';
+    if (!RegExp(r'[0-9]').hasMatch(password))
+      return 'La contraseña debe contener al menos un número';
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password))
+      return 'La contraseña debe contener al menos un carácter especial';
     return null;
   }
+
   /// Validate phone number (optional)
   bool isValidPhone(String? phone) {
     if (phone == null || phone.isEmpty) return true; // Phone is optional

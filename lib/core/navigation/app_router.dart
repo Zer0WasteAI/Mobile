@@ -13,8 +13,9 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_scre
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipes_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
+import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
-import 'dart:io'; // Import dart:io for File type checking
+import 'dart:io';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart'; // Import the new screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart'; // Import Food Type screen
@@ -122,8 +123,8 @@ class AppRouter {
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(
-          path: '/scan/confirm',
-          name: 'scanConfirm',
+          path: ScanConfirmScreen.routePath,
+          name: ScanConfirmScreen.routeName,
           builder: (context, state) {
             // Expect a Map in the extra field
             final extraData = state.extra as Map<String, dynamic>?;
@@ -150,6 +151,38 @@ class AppRouter {
             return ScanConfirmScreen(
               initialImages: images,
               originType: originType, // Pass originType
+            );
+          },
+        ),
+        // Add the ScanResultsScreen route
+        GoRoute(
+          path: ScanResultsScreen.routePath,
+          name: ScanResultsScreen.routeName,
+          builder: (context, state) {
+            // Extract data passed from ScanConfirmScreen (or analysis step)
+            final Map<String, dynamic>? extraData =
+                state.extra as Map<String, dynamic>?;
+            // TODO: Replace List<String> with the actual result type from analysis
+            // Expecting the raw JSON list now
+            final List<Map<String, dynamic>> initialJsonData =
+                extraData?['recognizedItemsJson']
+                    as List<Map<String, dynamic>>? ??
+                [];
+            final ScanItemType itemType =
+                extraData?['itemType'] as ScanItemType? ??
+                ScanItemType.ingredient; // Default if missing
+
+            // Handle case where no data is passed (e.g., direct navigation attempt)
+            // Consider adding a check if initialJsonData is empty if that's an invalid state
+            //   print("ScanResultsScreen missing data, redirecting...");
+            //   WidgetsBinding.instance.addPostFrameCallback((_) {
+            //      context.go('/home'); // Redirect home or to scan start
+            //   });
+            //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+            return ScanResultsScreen(
+              initialJsonData: initialJsonData,
+              itemType: itemType,
             );
           },
         ),

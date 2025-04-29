@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType enum
+import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 // Potentially needed if you want to reuse the same logic/state for picking more
 // import 'package:zer0_waste_ai/features/scan/presentation/providers/add_scan_item_provider.dart';
 
@@ -55,6 +58,8 @@ class ScanConfirmScreen extends ConsumerStatefulWidget {
   final List<File> initialImages;
   final ScanItemType originType;
   static const int maxImages = 10; // Define max image limit
+  static const String routeName = 'scanConfirm'; // Added routeName
+  static const String routePath = '/scan/confirm'; // Added routePath
 
   const ScanConfirmScreen({
     super.key,
@@ -557,7 +562,9 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                 foregroundColor:
                                     colorScheme.primary, // Text/icon color
                                 side: BorderSide(
-                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ), // Border color
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -594,15 +601,60 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
               ),
               // Pinned Bottom Button
               Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 20.0,
-                  top: 10.0,
-                ), // Padding around bottom button
+                padding: const EdgeInsets.only(bottom: 20.0, top: 10.0),
                 child: ElevatedButton(
                   onPressed:
                       images.isEmpty
-                          ? null // Disable if no images
-                          : () => _analyzeImages(images),
+                          ? null
+                          : () async {
+                            print(
+                              'Simulating analysis and navigating to results...',
+                            );
+
+                            // Determine which JSON file to load
+                            final String jsonPath =
+                                widget.originType == ScanItemType.ingredient
+                                    ? 'lib/core/constants/dummy_ingredients.json'
+                                    : 'lib/core/constants/dummy_food.json';
+
+                            List<Map<String, dynamic>> loadedJsonData = [];
+                            try {
+                              // Load and parse the JSON
+                              final jsonString = await rootBundle.loadString(
+                                jsonPath,
+                              );
+                              // Parse directly into the expected List<Map<String, dynamic>> format
+                              final Map<String, dynamic> decodedJson =
+                                  jsonDecode(jsonString);
+                              final List<dynamic> jsonItems =
+                                  decodedJson['items'] as List<dynamic>? ?? [];
+                              loadedJsonData =
+                                  jsonItems.cast<Map<String, dynamic>>();
+                            } catch (e) {
+                              print("Error loading dummy JSON: $e");
+                              // Handle error, maybe show a message or pass empty list
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error al cargar datos simulados: $e',
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+
+                            // Navigate to ScanResultsScreen with loaded data
+                            // Ensure context is still valid after async operation
+                            if (!mounted) return;
+                            context.pushNamed(
+                              ScanResultsScreen.routeName,
+                              extra: {
+                                'recognizedItemsJson': loadedJsonData,
+                                'itemType': widget.originType,
+                              },
+                            );
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
@@ -689,7 +741,9 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                     child: Icon(
                                       Icons.broken_image_outlined,
                                       size: 50,
-                                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                                      color: colorScheme.onSurface.withValues(
+                                        alpha: 0.4,
+                                      ),
                                     ),
                                   );
                                 },
