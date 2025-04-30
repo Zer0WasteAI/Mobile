@@ -1,0 +1,18 @@
+[
+    {
+      "label": "Nombre",
+      "value": "name",
+      "icon": "sort_by_alpha"
+    },
+    {
+      "label": "Fecha de vencimiento",
+      "value": "expiration_date",
+      "icon": "event"
+    },
+    {
+      "label": "Cantidad",
+      "value": "quantity",
+      "icon": "countertops"
+    }
+]
+  

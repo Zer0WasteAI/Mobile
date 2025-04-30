@@ -13,6 +13,18 @@ class AppColors {
   static const lightError = Color(0xFFEF233C);
   static const lightBackground = Color(0xFFFAF9F6);
 
+  // General Semantic Colors (can be used directly or mapped from theme colors)
+  static const Color error = Color(0xFFEF233C);
+  static const Color warning = Color(
+    0xFFFFE066,
+  ); // Original light yellow (e.g., for badges)
+  static const Color warningTextLight = Color(
+    0xFFBC6C00,
+  ); // Darker amber for light theme text
+  static const Color warningTextDark = Color(
+    0xFFFFD54F,
+  ); // Readable yellow for dark theme text
+
   // --- Component Specific Colors ---
   // Bottom Nav Bar
   static const lightBottomNavBackground = Color(

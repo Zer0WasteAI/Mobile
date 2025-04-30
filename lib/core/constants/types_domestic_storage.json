@@ -1,0 +1,88 @@
+[
+    {
+      "label": "Refrigerado",
+      "value": "refrigerated",
+      "icon": "ac_unit"
+    },
+    {
+      "label": "Congelado",
+      "value": "frozen",
+      "icon": "snowflake"
+    },
+    {
+      "label": "Seco",
+      "value": "dry",
+      "icon": "emoji_nature"
+    },
+    {
+      "label": "Despensa",
+      "value": "pantry",
+      "icon": "kitchen"
+    },
+    {
+      "label": "Bodega",
+      "value": "cellar",
+      "icon": "store"
+    },
+    {
+      "label": "Ambiente",
+      "value": "ambient",
+      "icon": "home"
+    },
+    {
+      "label": "Exterior (sol directo)",
+      "value": "sunlight",
+      "icon": "wb_sunny"
+    },
+    {
+      "label": "Cava / Vinoteca",
+      "value": "wine_cellar",
+      "icon": "wine_bar"
+    },
+    {
+      "label": "A granel",
+      "value": "bulk",
+      "icon": "inventory_2"
+    },
+    {
+      "label": "Fermentación",
+      "value": "fermentation",
+      "icon": "science"
+    },
+    {
+      "label": "Conserva en frasco o lata",
+      "value": "canned",
+      "icon": "lunch_dining"
+    },
+    {
+      "label": "Envasado al vacío",
+      "value": "vacuum_sealed",
+      "icon": "compress"
+    },
+    {
+      "label": "Escabeche / en vinagre",
+      "value": "pickled",
+      "icon": "emoji_food_beverage"
+    },
+    {
+      "label": "Salazón / Curado",
+      "value": "salted",
+      "icon": "set_meal"
+    },
+    {
+      "label": "Ahumado",
+      "value": "smoked",
+      "icon": "whatshot"
+    },
+    {
+      "label": "Deshidratado",
+      "value": "dehydrated",
+      "icon": "local_florist"
+    },
+    {
+      "label": "Pasteurizado / UHT",
+      "value": "shelf_stable",
+      "icon": "local_drink"
+    }
+]
+  

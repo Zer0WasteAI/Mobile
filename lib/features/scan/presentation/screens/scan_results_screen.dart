@@ -3,11 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Assuming AppColors exists
+import 'package:uuid/uuid.dart';
+import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/scan/application/providers/scan_results_provider.dart';
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // For ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item_card.dart';
+
+// Assume Uuid instance is available or create one
+final _uuid = Uuid();
 
 class ScanResultsScreen extends ConsumerWidget {
   // Now expects the raw JSON data list and itemType
@@ -120,30 +128,60 @@ class ScanResultsScreen extends ConsumerWidget {
                 onPressed:
                     canAdd
                         ? () {
-                          final itemsToAdd = itemsNotifier.getItemsToAdd();
-                          // TODO: Implement actual inventory adding logic
-                          // e.g., call ref.read(inventoryServiceProvider).addItems(itemsToAdd);
-                          print(
-                            'Adding to inventory: ${itemsToAdd.map((i) => '${i.name} (${i.quantity})').toList()}',
-                          );
+                          final itemsToAddRaw = itemsNotifier.getItemsToAdd();
+
+                          // Map RecognizedItem to InventoryItem
+                          final List<InventoryItem> itemsToAddInventory =
+                              itemsToAddRaw.map((recognizedItem) {
+                                // Determine category based on ScanItemType
+                                final ItemCategory category =
+                                    itemType == ScanItemType.food
+                                        ? ItemCategory.food
+                                        : ItemCategory.ingredient;
+
+                                // Assign default storage (e.g., refrigerated) - consider asking user later
+                                const StorageType defaultStorage =
+                                    StorageType.refrigerated;
+
+                                return InventoryItem(
+                                  id: _uuid.v4(), // Generate a unique ID
+                                  name: recognizedItem.name,
+                                  image:
+                                      recognizedItem.name.isNotEmpty
+                                          ? recognizedItem.name[0]
+                                          : '❓', // Use first letter or default emoji
+                                  quantity: recognizedItem.quantity,
+                                  category: category,
+                                  storageType: defaultStorage,
+                                  addedDate: DateTime.now(),
+                                  // expirationDate: null, // TODO: Optionally prompt user for expiration
+                                  // imageUrl: recognizedItem.imageUrl, // Use this if actual image URL available
+                                );
+                              }).toList();
+
+                          // Add items to inventory via provider
+                          ref
+                              .read(inventoryProvider.notifier)
+                              .addItems(itemsToAddInventory);
 
                           // Show feedback
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text(
-                                'Ítems agregados al inventario (Simulado)',
+                                'Ítems agregados al inventario',
                               ),
                               backgroundColor: primaryColor,
                             ),
                           );
-                          // Optionally navigate away or clear state
-                          // context.go('/inventory');
+
+                          // Navigate to inventory screen
+                          context.go('/inventory');
                         }
                         : null, // Disable button if no items have quantity > 0
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: onPrimaryColor,
-                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.5),
+                  disabledBackgroundColor: primaryColor.withOpacity(0.5),
                   minimumSize: const Size(
                     double.infinity,
                     52,

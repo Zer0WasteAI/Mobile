@@ -1,0 +1,18 @@
+[
+    {
+      "label": "Comidas",
+      "value": "food",
+      "icon": "restaurant"
+    },
+    {
+      "label": "Ingredientes",
+      "value": "ingredient",
+      "icon": "spa"
+    },
+    {
+      "label": "Todos",
+      "value": "all",
+      "icon": "list"
+    }
+  ]
+  

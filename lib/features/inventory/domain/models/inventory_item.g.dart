@@ -1,0 +1,55 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'inventory_item.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$InventoryItemImpl _$$InventoryItemImplFromJson(Map<String, dynamic> json) =>
+    _$InventoryItemImpl(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      image: json['image'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      expirationDate:
+          json['expirationDate'] == null
+              ? null
+              : DateTime.parse(json['expirationDate'] as String),
+      storageType: $enumDecode(_$StorageTypeEnumMap, json['storageType']),
+      category: $enumDecode(_$ItemCategoryEnumMap, json['category']),
+      imageUrl: json['imageUrl'] as String?,
+      addedDate: DateTime.parse(json['addedDate'] as String),
+    );
+
+Map<String, dynamic> _$$InventoryItemImplToJson(_$InventoryItemImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'image': instance.image,
+      'quantity': instance.quantity,
+      'expirationDate': instance.expirationDate?.toIso8601String(),
+      'storageType': _$StorageTypeEnumMap[instance.storageType]!,
+      'category': _$ItemCategoryEnumMap[instance.category]!,
+      'imageUrl': instance.imageUrl,
+      'addedDate': instance.addedDate.toIso8601String(),
+    };
+
+const _$StorageTypeEnumMap = {
+  StorageType.refrigerated: 'refrigerated',
+  StorageType.frozen: 'frozen',
+  StorageType.dry: 'dry',
+  StorageType.pantry: 'pantry',
+  StorageType.cellar: 'cellar',
+  StorageType.ambient: 'ambient',
+  StorageType.sunlight: 'sunlight',
+  StorageType.wineCellar: 'wineCellar',
+  StorageType.bulk: 'bulk',
+  StorageType.fermentation: 'fermentation',
+};
+
+const _$ItemCategoryEnumMap = {
+  ItemCategory.food: 'food',
+  ItemCategory.ingredient: 'ingredient',
+  ItemCategory.all: 'all',
+};
