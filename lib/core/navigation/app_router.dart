@@ -20,6 +20,7 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_sele
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart'; // Import Food Type screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart'; // Import Special Diet screen
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_inventory_item_screen.dart';
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -185,6 +186,12 @@ class AppRouter {
               itemType: itemType,
             );
           },
+        ),
+        // Add the route for AddInventoryItemScreen (top-level for simplicity now)
+        GoRoute(
+          path: AddInventoryItemScreen.routePath, // '/inventory/add'
+          name: AddInventoryItemScreen.routeName, // 'addInventoryItem'
+          builder: (context, state) => const AddInventoryItemScreen(),
         ),
         // Routes accessible via the Bottom Navigation Bar (using ShellRoute)
         ShellRoute(

@@ -6,6 +6,7 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class InventoryItemCard extends ConsumerWidget {
   final InventoryItem item;
@@ -29,31 +30,43 @@ class InventoryItemCard extends ConsumerWidget {
   String _getExpirationStatus(DateTime? expirationDate) {
     if (expirationDate == null) return 'Sin fecha';
     final now = DateTime.now();
-    final difference = expirationDate.difference(now).inDays;
+    // Calculate difference, ensuring we compare date parts only for 'days left'
+    final expirationDay = DateUtils.dateOnly(expirationDate);
+    final today = DateUtils.dateOnly(now);
+    final differenceInDays = expirationDay.difference(today).inDays;
 
-    if (difference < 0) return 'Vencido';
-    if (difference <= 3) return 'Vence pronto ($difference días)';
+    if (differenceInDays < 0) return 'Vencido';
+    // If it expires today (differenceInDays is 0) or tomorrow (differenceInDays is 1) up to the threshold
+    if (differenceInDays <= 3) {
+      // Show '1 día' if it expires today or tomorrow but hasn't passed yet.
+      final displayDays = differenceInDays == 0 ? 1 : differenceInDays;
+      return 'Vence pronto ($displayDays días)';
+    }
+
     return DateFormat('dd/MM/yy').format(expirationDate); // Shorter format
   }
 
   Color _getExpirationBadgeColor(DateTime? expirationDate) {
     if (expirationDate == null) return Colors.transparent;
     final now = DateTime.now();
-    final difference = expirationDate.difference(now).inDays;
+    final expirationDay = DateUtils.dateOnly(expirationDate);
+    final today = DateUtils.dateOnly(now);
+    final differenceInDays = expirationDay.difference(today).inDays;
 
-    if (difference < 0) return AppColors.error.withOpacity(0.15);
-    if (difference <= 3) return expirationWarningColor.withOpacity(0.3);
-    return Colors.transparent; // No badge for normal dates
+    if (differenceInDays < 0) return AppColors.error.withOpacity(0.15);
+    if (differenceInDays <= 3) return expirationWarningColor.withOpacity(0.3);
+    return Colors.transparent;
   }
 
   Color _getExpirationTextColor(DateTime? expirationDate) {
     if (expirationDate == null) return secondaryTextColor;
     final now = DateTime.now();
-    final difference = expirationDate.difference(now).inDays;
+    final expirationDay = DateUtils.dateOnly(expirationDate);
+    final today = DateUtils.dateOnly(now);
+    final differenceInDays = expirationDay.difference(today).inDays;
 
-    if (difference < 0) return AppColors.error;
-    if (difference <= 3)
-      return Colors.orange.shade900; // Darker text on yellow badge
+    if (differenceInDays < 0) return AppColors.error;
+    if (differenceInDays <= 3) return Colors.orange.shade900;
     return secondaryTextColor;
   }
 

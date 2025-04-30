@@ -12,6 +12,9 @@ import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.da
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_item_card.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/storage_filter_bottom_sheet.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/expiration_filter_bottom_sheet.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_inventory_item_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -25,7 +28,11 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isFilterSectionVisible = false; // State to control filter visibility
+  bool _isSummaryExpanded = false; // State to control summary visibility
   late TabController _tabController; // Declare TabController
+
+  // Define route name for AddInventoryItemScreen
+  static const String addInventoryItemRouteName = 'addInventoryItem';
 
   @override
   void initState() {
@@ -200,42 +207,125 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                 ),
                 const SizedBox(height: 12.0),
 
-                // Filter Toggle Button
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    icon: Icon(
-                      _isFilterSectionVisible
-                          ? Icons.filter_list_off_outlined
-                          : Icons.filter_list_outlined,
-                      size: 20,
-                      color: secondaryTextColor,
-                    ),
-                    label: Text(
-                      _isFilterSectionVisible
-                          ? 'Ocultar Filtros'
-                          : 'Mostrar Filtros',
-                      style: GoogleFonts.inter(
-                        color: secondaryTextColor,
-                        fontSize: 13,
+                // --- Row for Summary Toggle and Filter Toggle ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4.0,
+                  ), // Add vertical padding to the row
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Expandable Summary (Consumer moved here)
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final totalCount = ref.watch(totalItemCountProvider);
+                          final expiringSoonCount = ref.watch(
+                            expiringSoonCountProvider,
+                          );
+                          final expiredCount = ref.watch(expiredCountProvider);
+                          final bool isDark =
+                              Theme.of(context).brightness == Brightness.dark;
+                          final Color warningTextColor =
+                              isDark
+                                  ? AppColors.warningTextDark
+                                  : AppColors.warningTextLight;
+
+                          if (totalCount == 0)
+                            return const SizedBox(
+                              width: 0,
+                            ); // Return empty space if no items
+
+                          return Column(
+                            mainAxisSize:
+                                MainAxisSize.min, // Crucial for Row layout
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _isSummaryExpanded = !_isSummaryExpanded;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ), // Padding for tap area
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      RichText(
+                                        text: TextSpan(
+                                          style: textTheme.labelMedium
+                                              ?.copyWith(
+                                                color: secondaryTextColor,
+                                              ),
+                                          children: [
+                                            TextSpan(
+                                              text: '$totalCount',
+                                              style: textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    color: mainTextColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            const TextSpan(text: ' Ítems'),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4.0),
+                                      Icon(
+                                        _isSummaryExpanded
+                                            ? Icons.expand_less
+                                            : Icons.expand_more,
+                                        size: 18,
+                                        color: secondaryTextColor,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Details are still shown below the InkWell when expanded
+                            ],
+                          );
+                        },
                       ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isFilterSectionVisible = !_isFilterSectionVisible;
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+
+                      const Spacer(), // Pushes the filter button to the right
+                      // Filter Toggle Button (moved here)
+                      TextButton.icon(
+                        icon: Icon(
+                          _isFilterSectionVisible
+                              ? Icons.filter_list_off_outlined
+                              : Icons.filter_list_outlined,
+                          size: 20,
+                          color: secondaryTextColor,
+                        ),
+                        label: Text(
+                          _isFilterSectionVisible
+                              ? 'Ocultar Filtros'
+                              : 'Mostrar Filtros',
+                          style: GoogleFonts.inter(
+                            color: secondaryTextColor,
+                            fontSize: 13,
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isFilterSectionVisible = !_isFilterSectionVisible;
+                          });
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
-                      // minimumSize: Size.zero, // Keep compact
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8.0),
+                // Removed SizedBox(height: 8.0) here
 
                 // --- Animated Filter Section ---
                 AnimatedSize(
@@ -580,121 +670,143 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                     ), // End inner Column
                   ), // End Visibility
                 ), // End AnimatedSize
-                // --- Inventory Summary ---
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final totalCount = ref.watch(totalItemCountProvider);
-                      final expiringSoonCount = ref.watch(
-                        expiringSoonCountProvider,
-                      );
-                      final expiredCount = ref.watch(expiredCountProvider);
-                      final bool isDark =
-                          Theme.of(context).brightness == Brightness.dark;
+                // --- Details for Expandable Summary ---
+                // This part stays separate, below the Row and Filters
+                Consumer(
+                  builder: (context, ref, _) {
+                    // Only build the AnimatedSize/Visibility part here
+                    final expiringSoonCount = ref.watch(
+                      expiringSoonCountProvider,
+                    );
+                    final expiredCount = ref.watch(expiredCountProvider);
+                    final bool isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    final Color warningTextColor =
+                        isDark
+                            ? AppColors.warningTextDark
+                            : AppColors.warningTextLight;
 
-                      // Choose warning TEXT color based on theme
-                      final Color warningTextColor =
-                          isDark
-                              ? AppColors.warningTextDark
-                              : AppColors.warningTextLight;
-                      // Use original warning color for less prominent parts if needed (e.g., opacity)
-                      final Color baseWarningColor = AppColors.warning;
+                    // We need the total count only to decide if we show *anything*
+                    final totalCount = ref.watch(totalItemCountProvider);
+                    if (totalCount == 0) return const SizedBox.shrink();
 
-                      if (totalCount == 0) return const SizedBox.shrink();
-
-                      // Use Column for vertical arrangement
-                      return Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start, // Align text left
-                        children: [
-                          // 1. Expiring Soon Message
-                          if (expiringSoonCount > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 4.0,
-                              ), // Add spacing below
-                              child: RichText(
-                                text: TextSpan(
-                                  style: textTheme.labelMedium?.copyWith(
-                                    color: warningTextColor.withOpacity(0.9),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: '$expiringSoonCount',
-                                      style: textTheme.headlineMedium?.copyWith(
-                                        color: warningTextColor,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            textTheme.labelMedium?.fontSize ??
-                                            12,
-                                      ),
-                                    ),
-                                    const TextSpan(
-                                      text: ' productos próximos a vencer',
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          // 2. Expired Message
-                          if (expiredCount > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 4.0,
-                              ), // Add spacing below
-                              child: RichText(
-                                text: TextSpan(
-                                  style: textTheme.labelMedium?.copyWith(
-                                    color: AppColors.error.withOpacity(0.9),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: '$expiredCount',
-                                      style: textTheme.headlineMedium?.copyWith(
-                                        color: AppColors.error,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            textTheme.labelMedium?.fontSize ??
-                                            12,
-                                      ),
-                                    ),
-                                    const TextSpan(text: ' productos vencidos'),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          // 3. Total Count Message
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 4.0,
-                            ), // Add spacing below
-                            child: RichText(
-                              text: TextSpan(
-                                style: textTheme.labelMedium?.copyWith(
-                                  color: secondaryTextColor,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: '$totalCount',
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: mainTextColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          textTheme.labelMedium?.fontSize ?? 12,
-                                    ),
-                                  ),
-                                  const TextSpan(text: ' ítems registrados'),
-                                ],
-                              ),
-                            ),
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      alignment: Alignment.topCenter,
+                      child: Visibility(
+                        visible: _isSummaryExpanded,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 0.0,
+                            bottom: 8.0,
+                            left: 4.0,
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Expiring Soon Message
+                              if (expiringSoonCount > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: textTheme.labelMedium?.copyWith(
+                                        color: warningTextColor.withOpacity(
+                                          0.9,
+                                        ),
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: '$expiringSoonCount',
+                                          style: textTheme.labelMedium
+                                              ?.copyWith(
+                                                color: warningTextColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        const TextSpan(
+                                          text: ' próximos a vencer',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              // Expired Message
+                              if (expiredCount > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 2.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: textTheme.labelMedium?.copyWith(
+                                        color: AppColors.error.withOpacity(0.9),
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: '$expiredCount',
+                                          style: textTheme.labelMedium
+                                              ?.copyWith(
+                                                color: AppColors.error,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        const TextSpan(text: ' vencidos'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
+                // --- End Details for Expandable Summary ---
               ],
+            ),
+          ),
+          // --- Generate Recipe Button ---
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
+            child: OutlinedButton.icon(
+              icon: const Icon(
+                Icons.restaurant_menu_outlined,
+                size: 20,
+              ), // Chef hat icon
+              label: const Text('Generar receta'),
+              onPressed: () {
+                // TODO: Implement navigation or action for recipe generation
+                print('Navigate to recipe generation');
+                // Example: context.push('/generate-recipe');
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: primaryColor, // Text and icon color
+                backgroundColor: Colors.white, // Explicit white background
+                side: const BorderSide(
+                  color: primaryColor,
+                  width: 1.5,
+                ), // Border color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24.0), // Pill shape
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14.0,
+                ), // Button height
+                minimumSize: const Size(
+                  double.infinity,
+                  50,
+                ), // Ensure it stretches
+                textStyle: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600, // Semibold
+                ),
+                elevation: 2, // Add slight elevation for shadow
+                shadowColor: Colors.grey.withOpacity(0.2),
+              ),
             ),
           ),
           // --- TabBar for Expiration Status ---
@@ -753,86 +865,125 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         ),
                       ),
                     )
-                    : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      itemCount: filteredItems.length,
-                      itemBuilder: (context, index) {
-                        final item = filteredItems[index];
-                        final bool isHighlighted = recentlyAddedIds.contains(
-                          item.id,
-                        );
+                    : SlidableAutoCloseBehavior(
+                      // Ensures only one slidable is open at a time
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        itemCount: filteredItems.length,
+                        itemBuilder: (context, index) {
+                          final item = filteredItems[index];
+                          final bool isHighlighted = recentlyAddedIds.contains(
+                            item.id,
+                          );
 
-                        return Dismissible(
-                          key: ValueKey(item.id), // Unique key for Dismissible
-                          direction:
-                              DismissDirection
-                                  .endToStart, // Swipe left to delete
-                          onDismissed: (direction) {
-                            inventoryNotifier.removeItem(item.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${item.name} eliminado'),
-                                backgroundColor: AppColors.error,
-                                action: SnackBarAction(
-                                  label:
-                                      'DESHACER', // Optional: Undo functionality
-                                  textColor: Colors.white,
-                                  onPressed: () {
-                                    // TODO: Implement undo logic if needed
-                                    // inventoryNotifier.addItem(item); // Need original item data
+                          // Replace Dismissible with Slidable
+                          return Slidable(
+                            key: ValueKey(item.id),
+                            // Define the end action pane (for swipe left)
+                            endActionPane: ActionPane(
+                              motion:
+                                  const ScrollMotion(), // Or BehindMotion(), StretchMotion(), etc.
+                              extentRatio:
+                                  0.25, // How much the action pane occupies
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) {
+                                    _showDeleteConfirmationDialog(
+                                      context,
+                                      item,
+                                      inventoryNotifier,
+                                    );
                                   },
+                                  backgroundColor:
+                                      AppColors.error, // Use error color
+                                  foregroundColor: Colors.white, // Icon color
+                                  icon: Icons.delete_outline,
+                                  label: 'Eliminar', // Optional label
+                                  borderRadius: BorderRadius.circular(
+                                    12.0,
+                                  ), // Match card radius
                                 ),
-                              ),
-                            );
-                          },
-                          background: Container(
-                            color: AppColors.error.withOpacity(0.8),
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            alignment: Alignment.centerRight,
-                            child: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.white,
+                              ],
                             ),
-                          ),
-                          child: InventoryItemCard(
-                            item: item,
-                            isHighlighted: isHighlighted,
-                          ),
-                        );
-                      },
+                            // The child is your InventoryItemCard
+                            child: InventoryItemCard(
+                              item: item,
+                              isHighlighted: isHighlighted,
+                            ),
+                          );
+                        },
+                      ),
                     ),
-          ),
-          // Add Manually Button
-          Container(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-            color: screenBackgroundColor, // Ensure button is above list
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              label: const Text('Agregar manualmente'),
-              onPressed: () {
-                print('Navigate to manual add item screen');
-                // TODO: context.push('/inventory/add');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24.0), // Pill shape
-                ),
-                textStyle: GoogleFonts.inter(
-                  fontSize: 16, // labelLarge
-                  fontWeight: FontWeight.w600, // semibold
-                ),
-              ),
-            ),
           ),
         ],
       ),
+      // --- Add Floating Action Button ---
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to the screen for adding a new item
+          // Make sure you have a route named 'addInventoryItem' defined in go_router
+          context.pushNamed(addInventoryItemRouteName);
+        },
+        backgroundColor: primaryColor, // Use your primary color
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Añadir Ítem', // Accessibility feature
+      ),
+      // --- End Floating Action Button ---
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+    BuildContext context,
+    InventoryItem item,
+    InventoryNotifier notifier,
+  ) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button!
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirmar Eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('¿Estás seguro de eliminar "${item.name}"?'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Esta acción no se puede deshacer.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Dismiss the dialog
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text('Eliminar'),
+              onPressed: () {
+                notifier.removeItem(item.id); // Call the remove method
+                Navigator.of(dialogContext).pop(); // Dismiss the dialog
+                // Optional: Show a confirmation SnackBar
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('"${item.name}" eliminado'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
