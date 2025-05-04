@@ -8,12 +8,7 @@ void main() async {
   final container = await DependencyInjection.init();
 
   // Run app with ProviderScope
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const MyApp(),
-    ),
-  );
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
 
 /// Main app widget
@@ -34,9 +29,9 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      // Use the router directly - observers are added during its creation
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
   }
 }
-

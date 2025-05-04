@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
+import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
 
 class RecipeSuggestions extends ConsumerWidget {
   const RecipeSuggestions({super.key});
 
-  // Define colors locally
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+
     final recipes = ref.watch(recipeSuggestionsProvider);
 
     if (recipes.isEmpty) {
@@ -27,7 +30,7 @@ class RecipeSuggestions extends ConsumerWidget {
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: _mainTextColor,
+              color: mainTextColor, // Use theme color
             ),
           ),
         ),
@@ -58,30 +61,43 @@ class RecipeCard extends StatelessWidget {
 
   const RecipeCard({super.key, required this.recipe});
 
-  // Define colors locally
-  static const Color _primaryColor = Color(0xFF00B894);
-  static const Color _accentColor = Color(0xFFF07548);
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-
   @override
   Widget build(BuildContext context) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardBackgroundColor =
+        isDark ? AppColors.darkSurface : Colors.white;
+    final Color primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final Color accentColor =
+        isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color easyBadgeBackgroundColor = primaryColor.withOpacity(0.2);
+    final Color hardBadgeBackgroundColor = accentColor.withOpacity(0.2);
+    final Color easyBadgeTextColor = primaryColor;
+    final Color hardBadgeTextColor = accentColor;
+    final Color placeholderColor = Colors.grey.shade200;
+    final Color placeholderIconColor = Colors.grey.shade400;
+
     // Determine badge color based on difficulty
     final Color badgeColor =
         recipe.difficulty == 'Fácil'
-            ? _primaryColor.withOpacity(0.2)
-            : _accentColor.withOpacity(0.2);
+            ? easyBadgeBackgroundColor
+            : hardBadgeBackgroundColor;
     final Color badgeTextColor =
-        recipe.difficulty == 'Fácil' ? _primaryColor : _accentColor;
+        recipe.difficulty == 'Fácil' ? easyBadgeTextColor : hardBadgeTextColor;
 
     return SizedBox(
       width: 160, // Fixed width for horizontal scroll items
       child: Card(
-        elevation: 2,
+        elevation: isDark ? 1 : 2,
         shadowColor: Colors.black.withOpacity(0.1),
         clipBehavior: Clip.antiAlias, // Clip the image to the card shape
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),
+        color: cardBackgroundColor, // Set theme-aware card background
         child: InkWell(
           borderRadius: BorderRadius.circular(16.0),
           onTap: () {
@@ -107,10 +123,11 @@ class RecipeCard extends StatelessWidget {
                   },
                   errorBuilder: (context, error, stack) {
                     return Container(
-                      color: Colors.grey.shade200,
+                      color: placeholderColor, // Use placeholder color
                       child: Icon(
                         Icons.broken_image_outlined,
-                        color: Colors.grey.shade400,
+                        color:
+                            placeholderIconColor, // Use placeholder icon color
                       ),
                     );
                   },
@@ -126,7 +143,7 @@ class RecipeCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: _mainTextColor,
+                        color: mainTextColor, // Use theme color
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

@@ -1,0 +1,64 @@
+[
+    {
+      "category": "Tipo de receta",
+      "filters": [
+        { "label": "Entrada", "value": "entrada", "icon": "restaurant_menu" },
+        { "label": "Plato principal", "value": "fondo", "icon": "dinner_dining" },
+        { "label": "Postre", "value": "postre", "icon": "icecream" },
+        { "label": "Bebida", "value": "bebida", "icon": "local_cafe" },
+        { "label": "Snack / Bocadito", "value": "snack", "icon": "emoji_food_beverage" }
+      ]
+    },
+    {
+      "category": "Tiempo de preparación",
+      "filters": [
+        { "label": "< 15 min", "value": "short_time", "icon": "timer" },
+        { "label": "15–30 min", "value": "medium_time", "icon": "schedule" },
+        { "label": "> 30 min", "value": "long_time", "icon": "hourglass_bottom" }
+      ]
+    },
+    {
+      "category": "Calorías",
+      "filters": [
+        { "label": "Baja en calorías", "value": "baja_caloria", "icon": "fitness_center" },
+        { "label": "Media", "value": "media_caloria", "icon": "whatshot" },
+        { "label": "Alta", "value": "alta_caloria", "icon": "lunch_dining" }
+      ]
+    },
+    {
+      "category": "Tipo de dieta",
+      "filters": [
+        { "label": "Vegana", "value": "vegana", "icon": "eco" },
+        { "label": "Vegetariana", "value": "vegetariana", "icon": "spa" },
+        { "label": "Omnívora", "value": "omnivora", "icon": "restaurant" },
+        { "label": "Sin gluten", "value": "sin_gluten", "icon": "no_food" },
+        { "label": "Baja en sodio", "value": "bajo_sodio", "icon": "water_drop" },
+        { "label": "Sin lactosa", "value": "sin_lactosa", "icon": "free_breakfast" }
+      ]
+    },
+    {
+      "category": "Sostenibilidad",
+      "filters": [
+        { "label": "Aprovechar sobrantes", "value": "sobrantes", "icon": "recycling" },
+        { "label": "Basado en estación", "value": "estacion", "icon": "sunny" },
+        { "label": "Bajo impacto ambiental", "value": "bajo_impacto", "icon": "compost" }
+      ]
+    },
+    {
+      "category": "Dificultad",
+      "filters": [
+        { "label": "Fácil", "value": "facil", "icon": "light_mode" },
+        { "label": "Intermedio", "value": "intermedio", "icon": "star_half" },
+        { "label": "Difícil", "value": "dificil", "icon": "grade" }
+      ]
+    },
+    {
+      "category": "Costo estimado",
+      "filters": [
+        { "label": "Económico", "value": "barato", "icon": "attach_money" },
+        { "label": "Medio", "value": "medio", "icon": "payments" },
+        { "label": "Alto", "value": "caro", "icon": "monetization_on" }
+      ]
+    }
+]
+  

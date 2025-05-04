@@ -7,14 +7,19 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension
+import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart'; // Import ItemCategory
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // Import for _showQuantityEditDialog
 
 class InventoryItemCard extends ConsumerWidget {
   final InventoryItem item;
   final bool isHighlighted;
+  final List<InventoryItem> allBatchesForIngredient;
 
   const InventoryItemCard({
     super.key,
     required this.item,
+    required this.allBatchesForIngredient,
     this.isHighlighted = false,
   });
 
@@ -26,25 +31,6 @@ class InventoryItemCard extends ConsumerWidget {
   static const Color defaultCardBackground = Colors.white;
   static const Color highlightCardBackground = Color(0xFFE6F9F0);
   static const Color cardBorderColor = Color(0xFFE0E0E0); // Soft grey border
-
-  String _getExpirationStatus(DateTime? expirationDate) {
-    if (expirationDate == null) return 'Sin fecha';
-    final now = DateTime.now();
-    // Calculate difference, ensuring we compare date parts only for 'days left'
-    final expirationDay = DateUtils.dateOnly(expirationDate);
-    final today = DateUtils.dateOnly(now);
-    final differenceInDays = expirationDay.difference(today).inDays;
-
-    if (differenceInDays < 0) return 'Vencido';
-    // If it expires today (differenceInDays is 0) or tomorrow (differenceInDays is 1) up to the threshold
-    if (differenceInDays <= 3) {
-      // Show '1 día' if it expires today or tomorrow but hasn't passed yet.
-      final displayDays = differenceInDays == 0 ? 1 : differenceInDays;
-      return 'Vence pronto ($displayDays días)';
-    }
-
-    return DateFormat('dd/MM/yy').format(expirationDate); // Shorter format
-  }
 
   Color _getExpirationBadgeColor(DateTime? expirationDate) {
     if (expirationDate == null) return Colors.transparent;
@@ -72,11 +58,18 @@ class InventoryItemCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final expirationStatus = _getExpirationStatus(item.expirationDate);
+    // Use the new extension method directly
+    final expirationStatusText = item.expirationDate.formatExpirationStatus();
     final expirationBadgeColor = _getExpirationBadgeColor(item.expirationDate);
     final expirationTextColor = _getExpirationTextColor(item.expirationDate);
 
     final textTheme = Theme.of(context).textTheme;
+
+    // Get screen width to help with responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Calculate approximate width for middle column (adjust as needed)
+    final middleColumnWidth =
+        screenWidth - 150; // Reserve space for image and quantity
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -100,83 +93,169 @@ class InventoryItemCard extends ConsumerWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10.0,
+          vertical: 10.0,
+        ), // Reduced horizontal padding
         child: Row(
+          mainAxisSize: MainAxisSize.max,
           children: [
             // Image/Emoji
             SizedBox(
-              width: 40, // Slightly smaller image area
-              height: 40,
+              width: 36, // Reduced width
+              height: 36, // Reduced height
               child: Center(
                 child: Text(
                   item.image, // Display emoji directly
-                  style: const TextStyle(fontSize: 28),
+                  style: const TextStyle(fontSize: 24), // Smaller emoji
                 ),
               ),
             ),
-            const SizedBox(width: 12.0),
+            const SizedBox(width: 8.0), // Reduced spacing
             // Item Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item.name,
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16, // Corresponds roughly to titleMedium
-                      color: mainTextColor,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 5.0),
-                  // Expiration and Storage Row
+                  // Row for Item Name and Batch Selector Button
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Expanded(
+                        child: Text(
+                          item.name,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15, // Smaller font
+                            color: mainTextColor,
+                          ),
+                          maxLines: 1, // Only one line to save space
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Show indicator for multiple batches
+                      if (allBatchesForIngredient.length > 1)
+                        GestureDetector(
+                          onTap: () {
+                            // Call the batch selector dialog function
+                            showBatchSelectorDialog(
+                              context,
+                              item,
+                              allBatchesForIngredient,
+                              ref,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: primaryColor.withOpacity(0.3),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${allBatchesForIngredient.length}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  'lotes',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  size: 14,
+                                  color: primaryColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4.0), // Reduced spacing
+                  // Expiration date info
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
                         Icons.calendar_today_outlined,
-                        size: 14,
+                        size: 12, // Smaller icon
                         color: secondaryTextColor,
                       ),
-                      const SizedBox(width: 4.0),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: expirationBadgeColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          expirationStatus,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.0,
-                            color: expirationTextColor,
-                            fontWeight: FontWeight.w500,
+                      const SizedBox(width: 2.0), // Smaller spacing
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4, // Smaller padding
+                            vertical: 1, // Smaller padding
+                          ),
+                          decoration: BoxDecoration(
+                            color: expirationBadgeColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            expirationStatusText, // Use the formatted text
+                            style: GoogleFonts.inter(
+                              fontSize: 10.0, // Smaller font
+                              color: expirationTextColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      // Storage Badge (using icon + text maybe? Or just text?)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 3.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100, // Simple grey badge
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Text(
-                          item.storageType.displayName, // Show name from enum
-                          style: GoogleFonts.inter(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                secondaryTextColor, // Dark text on light grey
+                    ],
+                  ),
+
+                  const SizedBox(height: 3.0), // Small spacing between rows
+                  // Storage info
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        item.storageType.icon,
+                        size: 12, // Smaller icon
+                        color: secondaryTextColor,
+                      ),
+                      const SizedBox(width: 2.0), // Smaller spacing
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4, // Smaller padding
+                            vertical: 1, // Smaller padding
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100, // Simple grey badge
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item.storageType.displayName, // Show name from enum
+                            style: GoogleFonts.inter(
+                              fontSize: 10.0, // Smaller font
+                              fontWeight: FontWeight.w500,
+                              color: secondaryTextColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ),
@@ -185,69 +264,93 @@ class InventoryItemCard extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12.0),
-            // Quantity Adjuster
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 28, // Slightly smaller buttons
-                  width: 28,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: primaryColor,
-                      size: 24,
-                    ),
-                    onPressed: () {
-                      ref
-                          .read(inventoryProvider.notifier)
-                          .incrementQuantity(item.id);
-                    },
-                  ),
+            const SizedBox(width: 6.0), // Further reduced spacing
+            // Quantity Display with Edit Button - Make more compact
+            GestureDetector(
+              onTap: () {
+                // Call the dialog function from the screen
+                showQuantityEditDialog(context, item, ref);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6.0, // Minimal padding
+                  vertical: 4.0, // Minimal padding
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 2.0,
-                  ), // Add padding around number
-                  child: Text(
-                    item.quantity.toString(),
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.0,
-                      color: mainTextColor,
-                    ),
-                  ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(6.0),
                 ),
-                SizedBox(
-                  height: 28,
-                  width: 28,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      Icons.remove_circle,
-                      color:
-                          item.quantity > 1
-                              ? primaryColor
-                              : Colors.grey.shade400,
-                      size: 24,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Value and unit in one row
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _formatQuantity(item.quantity, item.unitType),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0, // Smaller font
+                            color: mainTextColor,
+                          ),
+                        ),
+                        const SizedBox(width: 1), // Minimal spacing
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 30),
+                          child: Text(
+                            item.unitType,
+                            style: GoogleFonts.inter(
+                              fontSize: 10.0, // Smaller font
+                              color: secondaryTextColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                    onPressed:
-                        item.quantity > 1
-                            ? () {
-                              ref
-                                  .read(inventoryProvider.notifier)
-                                  .decrementQuantity(item.id);
-                            }
-                            : null,
-                  ),
+                    // Edit icon below, not beside
+                    Icon(
+                      Icons.edit,
+                      size: 11, // Smaller icon
+                      color: primaryColor.withOpacity(0.8),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Helper to format quantity display
+  String _formatQuantity(double quantity, String unitType) {
+    if (unitType.toLowerCase() == 'unidades') {
+      return quantity.toInt().toString(); // Show units as integer
+    } else {
+      // For kg, g, lt, ml, show one decimal place if not whole
+      if (quantity == quantity.truncate()) {
+        return quantity.toInt().toString(); // 5.0 becomes "5"
+      } else {
+        return quantity.toStringAsFixed(1); // 5.1 becomes "5.1"
+      }
+    }
+  }
+
+  // Helper to get minimum quantity based on unit type
+  double _getMinimumQuantity(String unitType) {
+    switch (unitType.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+        return 0.1;
+      case 'unidades':
+      default:
+        return 1.0;
+    }
   }
 }

@@ -24,12 +24,20 @@ mixin _$InventoryItem {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get image => throw _privateConstructorUsedError;
-  int get quantity => throw _privateConstructorUsedError;
+  double get quantity => throw _privateConstructorUsedError;
+  String get unitType => throw _privateConstructorUsedError;
   DateTime? get expirationDate => throw _privateConstructorUsedError;
   StorageType get storageType => throw _privateConstructorUsedError;
   ItemCategory get category => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
+  String? get tips => throw _privateConstructorUsedError;
   DateTime get addedDate => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
+  int? get calories => throw _privateConstructorUsedError;
+  int? get servingQuantity => throw _privateConstructorUsedError;
+  List<String>? get mainIngredients => throw _privateConstructorUsedError;
+  String? get foodCategory => throw _privateConstructorUsedError;
+  String? get sustainabilityNote => throw _privateConstructorUsedError;
 
   /// Serializes this InventoryItem to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,12 +60,20 @@ abstract class $InventoryItemCopyWith<$Res> {
     String id,
     String name,
     String image,
-    int quantity,
+    double quantity,
+    String unitType,
     DateTime? expirationDate,
     StorageType storageType,
     ItemCategory category,
     String? imageUrl,
+    String? tips,
     DateTime addedDate,
+    String? description,
+    int? calories,
+    int? servingQuantity,
+    List<String>? mainIngredients,
+    String? foodCategory,
+    String? sustainabilityNote,
   });
 }
 
@@ -80,11 +96,19 @@ class _$InventoryItemCopyWithImpl<$Res, $Val extends InventoryItem>
     Object? name = null,
     Object? image = null,
     Object? quantity = null,
+    Object? unitType = null,
     Object? expirationDate = freezed,
     Object? storageType = null,
     Object? category = null,
     Object? imageUrl = freezed,
+    Object? tips = freezed,
     Object? addedDate = null,
+    Object? description = freezed,
+    Object? calories = freezed,
+    Object? servingQuantity = freezed,
+    Object? mainIngredients = freezed,
+    Object? foodCategory = freezed,
+    Object? sustainabilityNote = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -107,7 +131,12 @@ class _$InventoryItemCopyWithImpl<$Res, $Val extends InventoryItem>
                 null == quantity
                     ? _value.quantity
                     : quantity // ignore: cast_nullable_to_non_nullable
-                        as int,
+                        as double,
+            unitType:
+                null == unitType
+                    ? _value.unitType
+                    : unitType // ignore: cast_nullable_to_non_nullable
+                        as String,
             expirationDate:
                 freezed == expirationDate
                     ? _value.expirationDate
@@ -128,11 +157,46 @@ class _$InventoryItemCopyWithImpl<$Res, $Val extends InventoryItem>
                     ? _value.imageUrl
                     : imageUrl // ignore: cast_nullable_to_non_nullable
                         as String?,
+            tips:
+                freezed == tips
+                    ? _value.tips
+                    : tips // ignore: cast_nullable_to_non_nullable
+                        as String?,
             addedDate:
                 null == addedDate
                     ? _value.addedDate
                     : addedDate // ignore: cast_nullable_to_non_nullable
                         as DateTime,
+            description:
+                freezed == description
+                    ? _value.description
+                    : description // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            calories:
+                freezed == calories
+                    ? _value.calories
+                    : calories // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            servingQuantity:
+                freezed == servingQuantity
+                    ? _value.servingQuantity
+                    : servingQuantity // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            mainIngredients:
+                freezed == mainIngredients
+                    ? _value.mainIngredients
+                    : mainIngredients // ignore: cast_nullable_to_non_nullable
+                        as List<String>?,
+            foodCategory:
+                freezed == foodCategory
+                    ? _value.foodCategory
+                    : foodCategory // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            sustainabilityNote:
+                freezed == sustainabilityNote
+                    ? _value.sustainabilityNote
+                    : sustainabilityNote // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -152,12 +216,20 @@ abstract class _$$InventoryItemImplCopyWith<$Res>
     String id,
     String name,
     String image,
-    int quantity,
+    double quantity,
+    String unitType,
     DateTime? expirationDate,
     StorageType storageType,
     ItemCategory category,
     String? imageUrl,
+    String? tips,
     DateTime addedDate,
+    String? description,
+    int? calories,
+    int? servingQuantity,
+    List<String>? mainIngredients,
+    String? foodCategory,
+    String? sustainabilityNote,
   });
 }
 
@@ -179,11 +251,19 @@ class __$$InventoryItemImplCopyWithImpl<$Res>
     Object? name = null,
     Object? image = null,
     Object? quantity = null,
+    Object? unitType = null,
     Object? expirationDate = freezed,
     Object? storageType = null,
     Object? category = null,
     Object? imageUrl = freezed,
+    Object? tips = freezed,
     Object? addedDate = null,
+    Object? description = freezed,
+    Object? calories = freezed,
+    Object? servingQuantity = freezed,
+    Object? mainIngredients = freezed,
+    Object? foodCategory = freezed,
+    Object? sustainabilityNote = freezed,
   }) {
     return _then(
       _$InventoryItemImpl(
@@ -206,7 +286,12 @@ class __$$InventoryItemImplCopyWithImpl<$Res>
             null == quantity
                 ? _value.quantity
                 : quantity // ignore: cast_nullable_to_non_nullable
-                    as int,
+                    as double,
+        unitType:
+            null == unitType
+                ? _value.unitType
+                : unitType // ignore: cast_nullable_to_non_nullable
+                    as String,
         expirationDate:
             freezed == expirationDate
                 ? _value.expirationDate
@@ -227,11 +312,46 @@ class __$$InventoryItemImplCopyWithImpl<$Res>
                 ? _value.imageUrl
                 : imageUrl // ignore: cast_nullable_to_non_nullable
                     as String?,
+        tips:
+            freezed == tips
+                ? _value.tips
+                : tips // ignore: cast_nullable_to_non_nullable
+                    as String?,
         addedDate:
             null == addedDate
                 ? _value.addedDate
                 : addedDate // ignore: cast_nullable_to_non_nullable
                     as DateTime,
+        description:
+            freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        calories:
+            freezed == calories
+                ? _value.calories
+                : calories // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        servingQuantity:
+            freezed == servingQuantity
+                ? _value.servingQuantity
+                : servingQuantity // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        mainIngredients:
+            freezed == mainIngredients
+                ? _value._mainIngredients
+                : mainIngredients // ignore: cast_nullable_to_non_nullable
+                    as List<String>?,
+        foodCategory:
+            freezed == foodCategory
+                ? _value.foodCategory
+                : foodCategory // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        sustainabilityNote:
+            freezed == sustainabilityNote
+                ? _value.sustainabilityNote
+                : sustainabilityNote // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -245,12 +365,20 @@ class _$InventoryItemImpl implements _InventoryItem {
     required this.name,
     required this.image,
     required this.quantity,
+    required this.unitType,
     this.expirationDate,
     required this.storageType,
     required this.category,
     this.imageUrl,
+    this.tips,
     required this.addedDate,
-  });
+    this.description,
+    this.calories,
+    this.servingQuantity,
+    final List<String>? mainIngredients,
+    this.foodCategory,
+    this.sustainabilityNote,
+  }) : _mainIngredients = mainIngredients;
 
   factory _$InventoryItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$InventoryItemImplFromJson(json);
@@ -262,7 +390,9 @@ class _$InventoryItemImpl implements _InventoryItem {
   @override
   final String image;
   @override
-  final int quantity;
+  final double quantity;
+  @override
+  final String unitType;
   @override
   final DateTime? expirationDate;
   @override
@@ -272,11 +402,33 @@ class _$InventoryItemImpl implements _InventoryItem {
   @override
   final String? imageUrl;
   @override
+  final String? tips;
+  @override
   final DateTime addedDate;
+  @override
+  final String? description;
+  @override
+  final int? calories;
+  @override
+  final int? servingQuantity;
+  final List<String>? _mainIngredients;
+  @override
+  List<String>? get mainIngredients {
+    final value = _mainIngredients;
+    if (value == null) return null;
+    if (_mainIngredients is EqualUnmodifiableListView) return _mainIngredients;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final String? foodCategory;
+  @override
+  final String? sustainabilityNote;
 
   @override
   String toString() {
-    return 'InventoryItem(id: $id, name: $name, image: $image, quantity: $quantity, expirationDate: $expirationDate, storageType: $storageType, category: $category, imageUrl: $imageUrl, addedDate: $addedDate)';
+    return 'InventoryItem(id: $id, name: $name, image: $image, quantity: $quantity, unitType: $unitType, expirationDate: $expirationDate, storageType: $storageType, category: $category, imageUrl: $imageUrl, tips: $tips, addedDate: $addedDate, description: $description, calories: $calories, servingQuantity: $servingQuantity, mainIngredients: $mainIngredients, foodCategory: $foodCategory, sustainabilityNote: $sustainabilityNote)';
   }
 
   @override
@@ -289,6 +441,8 @@ class _$InventoryItemImpl implements _InventoryItem {
             (identical(other.image, image) || other.image == image) &&
             (identical(other.quantity, quantity) ||
                 other.quantity == quantity) &&
+            (identical(other.unitType, unitType) ||
+                other.unitType == unitType) &&
             (identical(other.expirationDate, expirationDate) ||
                 other.expirationDate == expirationDate) &&
             (identical(other.storageType, storageType) ||
@@ -297,8 +451,23 @@ class _$InventoryItemImpl implements _InventoryItem {
                 other.category == category) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
+            (identical(other.tips, tips) || other.tips == tips) &&
             (identical(other.addedDate, addedDate) ||
-                other.addedDate == addedDate));
+                other.addedDate == addedDate) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.calories, calories) ||
+                other.calories == calories) &&
+            (identical(other.servingQuantity, servingQuantity) ||
+                other.servingQuantity == servingQuantity) &&
+            const DeepCollectionEquality().equals(
+              other._mainIngredients,
+              _mainIngredients,
+            ) &&
+            (identical(other.foodCategory, foodCategory) ||
+                other.foodCategory == foodCategory) &&
+            (identical(other.sustainabilityNote, sustainabilityNote) ||
+                other.sustainabilityNote == sustainabilityNote));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -309,11 +478,19 @@ class _$InventoryItemImpl implements _InventoryItem {
     name,
     image,
     quantity,
+    unitType,
     expirationDate,
     storageType,
     category,
     imageUrl,
+    tips,
     addedDate,
+    description,
+    calories,
+    servingQuantity,
+    const DeepCollectionEquality().hash(_mainIngredients),
+    foodCategory,
+    sustainabilityNote,
   );
 
   /// Create a copy of InventoryItem
@@ -335,12 +512,20 @@ abstract class _InventoryItem implements InventoryItem {
     required final String id,
     required final String name,
     required final String image,
-    required final int quantity,
+    required final double quantity,
+    required final String unitType,
     final DateTime? expirationDate,
     required final StorageType storageType,
     required final ItemCategory category,
     final String? imageUrl,
+    final String? tips,
     required final DateTime addedDate,
+    final String? description,
+    final int? calories,
+    final int? servingQuantity,
+    final List<String>? mainIngredients,
+    final String? foodCategory,
+    final String? sustainabilityNote,
   }) = _$InventoryItemImpl;
 
   factory _InventoryItem.fromJson(Map<String, dynamic> json) =
@@ -353,7 +538,9 @@ abstract class _InventoryItem implements InventoryItem {
   @override
   String get image;
   @override
-  int get quantity;
+  double get quantity;
+  @override
+  String get unitType;
   @override
   DateTime? get expirationDate;
   @override
@@ -363,7 +550,21 @@ abstract class _InventoryItem implements InventoryItem {
   @override
   String? get imageUrl;
   @override
+  String? get tips;
+  @override
   DateTime get addedDate;
+  @override
+  String? get description;
+  @override
+  int? get calories;
+  @override
+  int? get servingQuantity;
+  @override
+  List<String>? get mainIngredients;
+  @override
+  String? get foodCategory;
+  @override
+  String? get sustainabilityNote;
 
   /// Create a copy of InventoryItem
   /// with the given fields replaced by the non-null parameter values.

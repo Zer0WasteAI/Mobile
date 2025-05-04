@@ -3,25 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
+import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
+import 'package:go_router/go_router.dart'; // Import GoRouter
 
 class InventorySummaryCard extends ConsumerWidget {
   const InventorySummaryCard({super.key});
 
-  // Define colors locally
-  static const Color _primaryColor = Color(0xFF00B894);
-  static const Color _accentColor = Color(0xFFF07548);
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-  static const Color _secondaryTextColor = Color(0xFF70605A);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardBackgroundColor =
+        isDark ? AppColors.darkSurface : Colors.white;
+    final Color primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final Color expiringSoonColor =
+        isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
+
     final summary = ref.watch(inventorySummaryProvider);
 
     return Card(
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      elevation: isDark ? 1 : 2, // Less elevation in dark mode
+      shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      color: Colors.white, // Explicitly white background
+      color: cardBackgroundColor, // Use theme-aware card color
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
@@ -40,7 +49,7 @@ class InventorySummaryCard extends ConsumerWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: _mainTextColor,
+                      color: mainTextColor, // Use theme color
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -50,8 +59,8 @@ class InventorySummaryCard extends ConsumerWidget {
                       fontSize: 12,
                       color:
                           summary.expiringSoonItems > 0
-                              ? _accentColor
-                              : _secondaryTextColor, // Orange if items are expiring
+                              ? expiringSoonColor // Use theme warning color
+                              : secondaryTextColor, // Use theme color
                       fontWeight:
                           summary.expiringSoonItems > 0
                               ? FontWeight.bold
@@ -64,8 +73,9 @@ class InventorySummaryCard extends ConsumerWidget {
             const SizedBox(width: 8),
             TextButton(
               onPressed: () {
-                // TODO: Implement navigation to inventory screen
-                print("Navigate to Inventory Screen");
+                // Navigate to the inventory screen
+                context.go('/inventory');
+                // print("Navigate to Inventory Screen"); // Original print statement
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
@@ -75,7 +85,7 @@ class InventorySummaryCard extends ConsumerWidget {
                 minimumSize: Size.zero, // Remove default min size
                 tapTargetSize:
                     MaterialTapTargetSize.shrinkWrap, // Reduce tap area
-                foregroundColor: _primaryColor,
+                foregroundColor: primaryColor, // Use theme color
               ),
               child: Text(
                 'Ver Inventario',

@@ -11,7 +11,8 @@ _$InventoryItemImpl _$$InventoryItemImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       image: json['image'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num).toDouble(),
+      unitType: json['unitType'] as String,
       expirationDate:
           json['expirationDate'] == null
               ? null
@@ -19,7 +20,17 @@ _$InventoryItemImpl _$$InventoryItemImplFromJson(Map<String, dynamic> json) =>
       storageType: $enumDecode(_$StorageTypeEnumMap, json['storageType']),
       category: $enumDecode(_$ItemCategoryEnumMap, json['category']),
       imageUrl: json['imageUrl'] as String?,
+      tips: json['tips'] as String?,
       addedDate: DateTime.parse(json['addedDate'] as String),
+      description: json['description'] as String?,
+      calories: (json['calories'] as num?)?.toInt(),
+      servingQuantity: (json['servingQuantity'] as num?)?.toInt(),
+      mainIngredients:
+          (json['mainIngredients'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList(),
+      foodCategory: json['foodCategory'] as String?,
+      sustainabilityNote: json['sustainabilityNote'] as String?,
     );
 
 Map<String, dynamic> _$$InventoryItemImplToJson(_$InventoryItemImpl instance) =>
@@ -28,11 +39,19 @@ Map<String, dynamic> _$$InventoryItemImplToJson(_$InventoryItemImpl instance) =>
       'name': instance.name,
       'image': instance.image,
       'quantity': instance.quantity,
+      'unitType': instance.unitType,
       'expirationDate': instance.expirationDate?.toIso8601String(),
       'storageType': _$StorageTypeEnumMap[instance.storageType]!,
       'category': _$ItemCategoryEnumMap[instance.category]!,
       'imageUrl': instance.imageUrl,
+      'tips': instance.tips,
       'addedDate': instance.addedDate.toIso8601String(),
+      'description': instance.description,
+      'calories': instance.calories,
+      'servingQuantity': instance.servingQuantity,
+      'mainIngredients': instance.mainIngredients,
+      'foodCategory': instance.foodCategory,
+      'sustainabilityNote': instance.sustainabilityNote,
     };
 
 const _$StorageTypeEnumMap = {

@@ -50,6 +50,7 @@ class InventoryState with _$InventoryState {
     InventorySortCriteria sortCriteria,
     @Default(true) bool sortAscending, // Default A-Z for name
     @Default({}) Set<String> recentlyAddedIds,
+    @Default({}) Map<String, String> userSelectedBatchOverrides,
     @Default(false) bool isLoading,
     String? errorMessage,
   }) = _InventoryState;

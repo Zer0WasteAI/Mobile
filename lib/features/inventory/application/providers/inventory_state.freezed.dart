@@ -27,6 +27,8 @@ mixin _$InventoryState {
   bool get sortAscending =>
       throw _privateConstructorUsedError; // Default A-Z for name
   Set<String> get recentlyAddedIds => throw _privateConstructorUsedError;
+  Map<String, String> get userSelectedBatchOverrides =>
+      throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
 
@@ -53,6 +55,7 @@ abstract class $InventoryStateCopyWith<$Res> {
     InventorySortCriteria sortCriteria,
     bool sortAscending,
     Set<String> recentlyAddedIds,
+    Map<String, String> userSelectedBatchOverrides,
     bool isLoading,
     String? errorMessage,
   });
@@ -81,6 +84,7 @@ class _$InventoryStateCopyWithImpl<$Res, $Val extends InventoryState>
     Object? sortCriteria = null,
     Object? sortAscending = null,
     Object? recentlyAddedIds = null,
+    Object? userSelectedBatchOverrides = null,
     Object? isLoading = null,
     Object? errorMessage = freezed,
   }) {
@@ -126,6 +130,11 @@ class _$InventoryStateCopyWithImpl<$Res, $Val extends InventoryState>
                     ? _value.recentlyAddedIds
                     : recentlyAddedIds // ignore: cast_nullable_to_non_nullable
                         as Set<String>,
+            userSelectedBatchOverrides:
+                null == userSelectedBatchOverrides
+                    ? _value.userSelectedBatchOverrides
+                    : userSelectedBatchOverrides // ignore: cast_nullable_to_non_nullable
+                        as Map<String, String>,
             isLoading:
                 null == isLoading
                     ? _value.isLoading
@@ -160,6 +169,7 @@ abstract class _$$InventoryStateImplCopyWith<$Res>
     InventorySortCriteria sortCriteria,
     bool sortAscending,
     Set<String> recentlyAddedIds,
+    Map<String, String> userSelectedBatchOverrides,
     bool isLoading,
     String? errorMessage,
   });
@@ -187,6 +197,7 @@ class __$$InventoryStateImplCopyWithImpl<$Res>
     Object? sortCriteria = null,
     Object? sortAscending = null,
     Object? recentlyAddedIds = null,
+    Object? userSelectedBatchOverrides = null,
     Object? isLoading = null,
     Object? errorMessage = freezed,
   }) {
@@ -232,6 +243,11 @@ class __$$InventoryStateImplCopyWithImpl<$Res>
                 ? _value._recentlyAddedIds
                 : recentlyAddedIds // ignore: cast_nullable_to_non_nullable
                     as Set<String>,
+        userSelectedBatchOverrides:
+            null == userSelectedBatchOverrides
+                ? _value._userSelectedBatchOverrides
+                : userSelectedBatchOverrides // ignore: cast_nullable_to_non_nullable
+                    as Map<String, String>,
         isLoading:
             null == isLoading
                 ? _value.isLoading
@@ -259,11 +275,13 @@ class _$InventoryStateImpl implements _InventoryState {
     this.sortCriteria = InventorySortCriteria.name,
     this.sortAscending = true,
     final Set<String> recentlyAddedIds = const {},
+    final Map<String, String> userSelectedBatchOverrides = const {},
     this.isLoading = false,
     this.errorMessage,
   }) : _items = items,
        _storageFilter = storageFilter,
-       _recentlyAddedIds = recentlyAddedIds;
+       _recentlyAddedIds = recentlyAddedIds,
+       _userSelectedBatchOverrides = userSelectedBatchOverrides;
 
   final List<InventoryItem> _items;
   @override
@@ -309,6 +327,16 @@ class _$InventoryStateImpl implements _InventoryState {
     return EqualUnmodifiableSetView(_recentlyAddedIds);
   }
 
+  final Map<String, String> _userSelectedBatchOverrides;
+  @override
+  @JsonKey()
+  Map<String, String> get userSelectedBatchOverrides {
+    if (_userSelectedBatchOverrides is EqualUnmodifiableMapView)
+      return _userSelectedBatchOverrides;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_userSelectedBatchOverrides);
+  }
+
   @override
   @JsonKey()
   final bool isLoading;
@@ -317,7 +345,7 @@ class _$InventoryStateImpl implements _InventoryState {
 
   @override
   String toString() {
-    return 'InventoryState(items: $items, searchQuery: $searchQuery, categoryFilter: $categoryFilter, storageFilter: $storageFilter, expirationStatusFilter: $expirationStatusFilter, sortCriteria: $sortCriteria, sortAscending: $sortAscending, recentlyAddedIds: $recentlyAddedIds, isLoading: $isLoading, errorMessage: $errorMessage)';
+    return 'InventoryState(items: $items, searchQuery: $searchQuery, categoryFilter: $categoryFilter, storageFilter: $storageFilter, expirationStatusFilter: $expirationStatusFilter, sortCriteria: $sortCriteria, sortAscending: $sortAscending, recentlyAddedIds: $recentlyAddedIds, userSelectedBatchOverrides: $userSelectedBatchOverrides, isLoading: $isLoading, errorMessage: $errorMessage)';
   }
 
   @override
@@ -344,6 +372,10 @@ class _$InventoryStateImpl implements _InventoryState {
               other._recentlyAddedIds,
               _recentlyAddedIds,
             ) &&
+            const DeepCollectionEquality().equals(
+              other._userSelectedBatchOverrides,
+              _userSelectedBatchOverrides,
+            ) &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
             (identical(other.errorMessage, errorMessage) ||
@@ -361,6 +393,7 @@ class _$InventoryStateImpl implements _InventoryState {
     sortCriteria,
     sortAscending,
     const DeepCollectionEquality().hash(_recentlyAddedIds),
+    const DeepCollectionEquality().hash(_userSelectedBatchOverrides),
     isLoading,
     errorMessage,
   );
@@ -387,6 +420,7 @@ abstract class _InventoryState implements InventoryState {
     final InventorySortCriteria sortCriteria,
     final bool sortAscending,
     final Set<String> recentlyAddedIds,
+    final Map<String, String> userSelectedBatchOverrides,
     final bool isLoading,
     final String? errorMessage,
   }) = _$InventoryStateImpl;
@@ -407,6 +441,8 @@ abstract class _InventoryState implements InventoryState {
   bool get sortAscending; // Default A-Z for name
   @override
   Set<String> get recentlyAddedIds;
+  @override
+  Map<String, String> get userSelectedBatchOverrides;
   @override
   bool get isLoading;
   @override

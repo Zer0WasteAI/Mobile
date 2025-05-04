@@ -38,6 +38,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSLocalNetworkUsageDescription</key>
+    <string>Se necesita acceso a la red local para funcionalidades de depuración de Flutter (ej. Hot Reload).</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_dartobservatory._tcp</string>
+    </array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

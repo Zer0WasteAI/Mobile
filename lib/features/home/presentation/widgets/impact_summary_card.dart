@@ -2,19 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
+import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
 
 class ImpactSummaryCard extends ConsumerWidget {
   const ImpactSummaryCard({super.key});
 
-  // Define colors locally
-  static const Color _primaryColor = Color(0xFF00B894);
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-  static const Color _secondaryTextColor = Color(0xFF70605A);
-  // Define a slightly lighter green for the background track, based on image
-  static final Color _progressBackgroundColor = _primaryColor.withValues(alpha: 0.25);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardBackgroundColor =
+        isDark ? AppColors.darkSurface : Colors.white;
+    final Color primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color progressBackgroundColor = primaryColor.withOpacity(0.25);
+    final Color cardBorderColor = primaryColor.withOpacity(0.3);
+
     final impact = ref.watch(impactSummaryProvider);
 
     final String foodSavedFormatted = impact.foodSavedKg.toStringAsFixed(1);
@@ -27,13 +32,16 @@ class ImpactSummaryCard extends ConsumerWidget {
     // --- End Progress Value and Text ---
 
     return Card(
-      elevation: 2,
+      elevation: isDark ? 1 : 2,
       shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: _primaryColor.withValues(alpha: 0.3), width: 1),
+        side: BorderSide(
+          color: cardBorderColor,
+          width: 1,
+        ), // Use theme border color
         borderRadius: BorderRadius.circular(16.0),
       ),
-      color: Colors.white,
+      color: cardBackgroundColor, // Use theme card color
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Row(
@@ -48,7 +56,7 @@ class ImpactSummaryCard extends ConsumerWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: _mainTextColor,
+                      color: mainTextColor, // Use theme text color
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -57,7 +65,7 @@ class ImpactSummaryCard extends ConsumerWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: _mainTextColor,
+                      color: mainTextColor, // Use theme text color
                     ),
                   ),
                 ],
@@ -77,9 +85,9 @@ class ImpactSummaryCard extends ConsumerWidget {
                       child: CircularProgressIndicator(
                         value: progressValue,
                         strokeWidth: 8, // Adjust thickness like the image
-                        color: _primaryColor, // Darker green for progress
+                        color: primaryColor, // Use theme primary color
                         backgroundColor:
-                            _progressBackgroundColor, // Lighter green background track
+                            progressBackgroundColor, // Use theme progress background
                         strokeCap: StrokeCap.round, // Rounded ends
                       ),
                     ),
@@ -92,7 +100,7 @@ class ImpactSummaryCard extends ConsumerWidget {
                           style: GoogleFonts.inter(
                             fontSize: 18, // Adjust size as needed
                             fontWeight: FontWeight.bold,
-                            color: _primaryColor, // Use primary green color
+                            color: primaryColor, // Use theme primary color
                           ),
                         ),
                       ],

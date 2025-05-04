@@ -150,10 +150,11 @@ class ScanResultsScreen extends ConsumerWidget {
                                       recognizedItem.name.isNotEmpty
                                           ? recognizedItem.name[0]
                                           : '❓', // Use first letter or default emoji
-                                  quantity: recognizedItem.quantity,
+                                  quantity: recognizedItem.quantity.toDouble(),
                                   category: category,
                                   storageType: defaultStorage,
                                   addedDate: DateTime.now(),
+                                  unitType: 'unidades',
                                   // expirationDate: null, // TODO: Optionally prompt user for expiration
                                   // imageUrl: recognizedItem.imageUrl, // Use this if actual image URL available
                                 );
@@ -181,7 +182,7 @@ class ScanResultsScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: onPrimaryColor,
-                  disabledBackgroundColor: primaryColor.withOpacity(0.5),
+                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.5),
                   minimumSize: const Size(
                     double.infinity,
                     52,

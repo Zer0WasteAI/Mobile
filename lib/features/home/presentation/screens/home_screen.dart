@@ -17,12 +17,14 @@ class HomeScreen extends ConsumerWidget {
   // Define constants for padding and colors
   static const double _horizontalPadding = 16.0;
   static const double _sectionSpacing = 16.0;
-  static const Color _backgroundColor = Color(0xFFFAF9F6);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get background color from theme
+    final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
-      backgroundColor: _backgroundColor,
+      backgroundColor: backgroundColor, // Use theme background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

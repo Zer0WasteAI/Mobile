@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
+import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
 
 class WelcomeHeader extends StatelessWidget {
   const WelcomeHeader({super.key});
 
-  // Define colors locally for simplicity in this widget, or pass from parent
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-  static const Color _secondaryTextColor = Color(0xFF70605A);
-
   @override
   Widget build(BuildContext context) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -24,16 +28,13 @@ class WelcomeHeader extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 22, // Adjust size as needed
                 fontWeight: FontWeight.bold,
-                color: _mainTextColor,
+                color: mainTextColor,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Listo para salvar alimentos hoy?',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: _secondaryTextColor,
-              ),
+              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
             ),
           ],
         ),
@@ -46,18 +47,21 @@ class WelcomeHeader extends StatelessWidget {
 class EcoCoinBadge extends ConsumerWidget {
   const EcoCoinBadge({super.key});
 
-  // Define colors locally
-  static const Color _primaryColor = Color(0xFF00B894);
-  static const Color _mainTextColor = Color(0xFF3A3A3A);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get colors from theme
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+
     final coins = ref.watch(ecoCoinsProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _primaryColor.withOpacity(0.2),
+        color: primaryColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -71,7 +75,7 @@ class EcoCoinBadge extends ConsumerWidget {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: _mainTextColor,
+              color: mainTextColor,
             ),
           ),
         ],

@@ -10,7 +10,7 @@ import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigat
 import 'package:zer0_waste_ai/features/navigation/presentation/screens/main_screen.dart';
 import 'package:zer0_waste_ai/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_screen.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipes_screen.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart';
@@ -21,12 +21,38 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_leve
 import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart'; // Import Food Type screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart'; // Import Special Diet screen
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_inventory_item_screen.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/ingredient_detail_screen.dart'; // Import the new screen
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_detail_screen.dart'; // Import FoodDetailScreen
+import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart'; // Import RecipeMode
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
 // Global key for the root navigator
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+// Define route names (add one for smart recipes)
+const String splashRouteName = 'splash';
+const String onboardingRouteName = 'onboarding';
+const String loginRouteName = 'login';
+const String registerRouteName = 'register';
+const String forgotPasswordRouteName = 'forgot-password';
+const String homeRouteName = 'home';
+const String inventoryRouteName = 'inventory';
+const String recipesRouteName = 'recipes'; // For explore mode via bottom nav
+const String smartRecipesRouteName = 'smart-recipes'; // For generation flow
+const String profileRouteName = 'profile';
+const String addInventoryItemRouteName = AddInventoryItemScreen.routeName;
+const String ingredientDetailRouteName = 'ingredientDetail';
+const String foodDetailRouteName = 'foodDetail';
+const String addScanItemRouteName = 'addScanItem';
+const String scanConfirmRouteName = ScanConfirmScreen.routeName;
+const String scanResultsRouteName = ScanResultsScreen.routeName;
+const String allergySelectorRouteName = AllergySelectorScreen.routeName;
+const String cookingLevelSelectorRouteName =
+    CookingLevelSelectorScreen.routeName;
+const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
+const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -68,64 +94,69 @@ final routerProvider = Provider<GoRouter>((ref) {
 class AppRouter {
   /// GoRouter instance factory
   static GoRouter createRouter(Ref ref) {
+    // Create the HeroController
+    final heroController = HeroController();
+
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/splash',
       debugLogDiagnostics: true,
+      // Add the observer here
+      observers: [heroController],
       routes: [
         GoRoute(
           path: '/splash',
-          name: 'splash',
+          name: splashRouteName,
           builder: (context, state) => const SplashScreen(),
         ),
         GoRoute(
           path: '/onboarding',
-          name: 'onboarding',
+          name: onboardingRouteName,
           builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(
           path: '/login',
-          name: 'login',
+          name: loginRouteName,
           builder: (context, state) => const LoginScreen(),
         ),
         GoRoute(
           path: '/register',
-          name: 'register',
+          name: registerRouteName,
           builder: (context, state) => const RegisterScreen(),
         ),
         GoRoute(
           path: '/forgot-password',
-          name: 'forgot-password',
+          name: forgotPasswordRouteName,
           builder: (context, state) => const ForgotPasswordScreen(),
         ),
         // Add the Allergy Selector Screen route here (top-level)
         GoRoute(
           path: AllergySelectorScreen.routePath,
-          name: AllergySelectorScreen.routeName,
+          name: allergySelectorRouteName,
           builder: (context, state) => const AllergySelectorScreen(),
         ),
         // Add the Cooking Level Selector Screen route here (top-level)
         GoRoute(
           path: CookingLevelSelectorScreen.routePath,
-          name: CookingLevelSelectorScreen.routeName,
+          name: cookingLevelSelectorRouteName,
           builder: (context, state) => const CookingLevelSelectorScreen(),
         ),
         // Add the Preferred Food Type Screen route here (top-level)
         GoRoute(
           path: PreferredFoodTypeScreen.routePath,
-          name: PreferredFoodTypeScreen.routeName,
+          name: preferredFoodTypeRouteName,
           builder: (context, state) => const PreferredFoodTypeScreen(),
         ),
         // Add the Special Diet Selector Screen route here (top-level)
         GoRoute(
           path: SpecialDietSelectorScreen.routePath,
-          name: SpecialDietSelectorScreen.routeName,
+          name: specialDietSelectorRouteName,
           builder: (context, state) => const SpecialDietSelectorScreen(),
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(
           path: ScanConfirmScreen.routePath,
-          name: ScanConfirmScreen.routeName,
+          name: scanConfirmRouteName,
           builder: (context, state) {
             // Expect a Map in the extra field
             final extraData = state.extra as Map<String, dynamic>?;
@@ -158,7 +189,7 @@ class AppRouter {
         // Add the ScanResultsScreen route
         GoRoute(
           path: ScanResultsScreen.routePath,
-          name: ScanResultsScreen.routeName,
+          name: scanResultsRouteName,
           builder: (context, state) {
             // Extract data passed from ScanConfirmScreen (or analysis step)
             final Map<String, dynamic>? extraData =
@@ -173,14 +204,6 @@ class AppRouter {
                 extraData?['itemType'] as ScanItemType? ??
                 ScanItemType.ingredient; // Default if missing
 
-            // Handle case where no data is passed (e.g., direct navigation attempt)
-            // Consider adding a check if initialJsonData is empty if that's an invalid state
-            //   print("ScanResultsScreen missing data, redirecting...");
-            //   WidgetsBinding.instance.addPostFrameCallback((_) {
-            //      context.go('/home'); // Redirect home or to scan start
-            //   });
-            //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
-
             return ScanResultsScreen(
               initialJsonData: initialJsonData,
               itemType: itemType,
@@ -190,8 +213,71 @@ class AppRouter {
         // Add the route for AddInventoryItemScreen (top-level for simplicity now)
         GoRoute(
           path: AddInventoryItemScreen.routePath, // '/inventory/add'
-          name: AddInventoryItemScreen.routeName, // 'addInventoryItem'
+          name: addInventoryItemRouteName,
           builder: (context, state) => const AddInventoryItemScreen(),
+        ),
+        // Route for Ingredient Detail Screen
+        GoRoute(
+          path: '/inventory/ingredient/:itemId', // Define path with parameter
+          name: ingredientDetailRouteName,
+          builder: (context, state) {
+            final itemId = state.pathParameters['itemId'];
+            if (itemId == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/inventory');
+              });
+              return const Scaffold(
+                body: Center(child: Text('Item ID missing')),
+              );
+            }
+            return IngredientDetailScreen(itemId: itemId);
+          },
+        ),
+        // Route for Food Detail Screen
+        GoRoute(
+          path: '/inventory/food/:itemId', // Define path with parameter
+          name: foodDetailRouteName,
+          builder: (context, state) {
+            final itemId = state.pathParameters['itemId'];
+            if (itemId == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/inventory');
+              });
+              return const Scaffold(
+                body: Center(child: Text('Item ID missing')),
+              );
+            }
+            return FoodDetailScreen(itemId: itemId);
+          },
+        ),
+        // --- Route for Smart Recipe Generation (No Bottom Bar) ---
+        GoRoute(
+          path: '/smart-recipes',
+          name: smartRecipesRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          pageBuilder: (context, state) {
+            // Expect smart mode, default is handled by the screen if needed but shouldn't happen here
+            final mode =
+                state.extra is RecipeMode &&
+                        state.extra == RecipeMode.smartFromInventory
+                    ? RecipeMode.smartFromInventory
+                    : RecipeMode
+                        .smartFromInventory; // Assume smart if launched via this route
+
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: RecipeScreen(mode: mode),
+              transitionsBuilder: (
+                context,
+                animation,
+                secondaryAnimation,
+                child,
+              ) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            );
+          },
         ),
         // Routes accessible via the Bottom Navigation Bar (using ShellRoute)
         ShellRoute(
@@ -219,32 +305,36 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/home',
-              name: 'home',
+              name: homeRouteName,
               parentNavigatorKey: _shellNavigatorKey,
               builder: (context, state) => const HomeScreen(),
             ),
             GoRoute(
               path: '/inventory',
-              name: 'inventory',
+              name: inventoryRouteName,
               parentNavigatorKey: _shellNavigatorKey,
               builder: (context, state) => const InventoryScreen(),
             ),
             GoRoute(
               path: '/recipes',
-              name: 'recipes',
+              name: recipesRouteName,
               parentNavigatorKey: _shellNavigatorKey,
-              builder: (context, state) => const RecipesScreen(),
+              // This route (from bottom nav) always goes to explore mode
+              builder:
+                  (context, state) => RecipeScreen(
+                    mode: RecipeMode.explore,
+                  ), // Use correct screen and mode
             ),
             GoRoute(
               path: '/profile',
-              name: 'profile',
+              name: profileRouteName,
               parentNavigatorKey: _shellNavigatorKey,
               builder: (context, state) => const ProfileScreen(),
             ),
             // Add new routes for scanning under the ShellRoute
             GoRoute(
               path: '/scan/add/:itemType', // Use path parameter for item type
-              name: 'addScanItem',
+              name: addScanItemRouteName,
               parentNavigatorKey: _shellNavigatorKey,
               builder: (context, state) {
                 // Extract itemType from path parameters
@@ -255,9 +345,6 @@ class AppRouter {
                 } else if (itemTypeString == 'food') {
                   itemType = ScanItemType.food;
                 } else {
-                  // Handle invalid or missing parameter, maybe default or error
-                  // For now, default to ingredient or throw an error
-                  // Or redirect to a safe place, e.g., home
                   print(
                     'Invalid itemType in route: $itemTypeString, defaulting to ingredient',
                   );
