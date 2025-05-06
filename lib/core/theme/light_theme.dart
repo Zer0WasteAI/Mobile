@@ -35,9 +35,7 @@ class LightTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.lightPrimary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -63,6 +61,22 @@ class LightTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.lightLabel,
         labelStyle: TextStyle(color: AppColors.lightMainText),
+      ),
+      cardTheme: CardTheme(color: Colors.white),
+      dialogTheme: DialogTheme(
+        backgroundColor: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: TextStyle(
+          color: AppColors.lightMainText,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        contentTextStyle: TextStyle(
+          color: AppColors.lightSecondaryText,
+          fontSize: 16,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 16.0),
       ),
     );
   }

@@ -24,6 +24,7 @@ import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_invent
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/ingredient_detail_screen.dart'; // Import the new screen
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_detail_screen.dart'; // Import FoodDetailScreen
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart'; // Import RecipeMode
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/ai_recipe_generation_screen.dart'; // Import AIRecipeGenerationScreen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -53,6 +54,7 @@ const String cookingLevelSelectorRouteName =
     CookingLevelSelectorScreen.routeName;
 const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
 const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
+const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -249,6 +251,12 @@ class AppRouter {
             }
             return FoodDetailScreen(itemId: itemId);
           },
+        ),
+        // Route for AI Recipe Generation Screen
+        GoRoute(
+          path: '/recipes/ai-generation',
+          name: aiRecipeGenerationRouteName,
+          builder: (context, state) => const AIRecipeGenerationScreen(),
         ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(

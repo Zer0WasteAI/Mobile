@@ -35,9 +35,7 @@ class DarkTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.darkPrimary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -64,11 +62,21 @@ class DarkTheme {
         backgroundColor: AppColors.darkLabel,
         labelStyle: TextStyle(color: AppColors.darkMainText),
       ),
-      cardTheme: CardTheme(
-        color: AppColors.darkSurface,
-      ),
+      cardTheme: CardTheme(color: AppColors.darkSurface),
       dialogTheme: DialogTheme(
         backgroundColor: AppColors.darkSurface,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: TextStyle(
+          color: AppColors.darkMainText,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        contentTextStyle: TextStyle(
+          color: AppColors.darkSecondaryText,
+          fontSize: 16,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 16.0),
       ),
     );
   }

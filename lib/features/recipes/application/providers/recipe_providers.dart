@@ -23,8 +23,8 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
   Future<void> _loadRecipes() async {
     this.state = this.state.copyWith(isLoading: true, errorMessage: null);
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
+      // Simulate network delay (reducido para mejor experiencia)
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // TODO: Implement actual data fetching logic based on _mode
       // - If _mode == RecipeMode.smartFromInventory:
@@ -180,16 +180,61 @@ final recipeControllerProviderFamily = StateNotifierProvider.autoDispose
       );
     });
 
-// Provider to asynchronously load filter categories from JSON
+// Modificación del provider de filtros para mejor rendimiento
+// Provider to asynchronously load filter categories from JSON (with caching)
 final recipeFiltersProvider = FutureProvider<List<FilterCategory>>((ref) async {
   try {
-    // Load the JSON string from assets
-    final String jsonString = await rootBundle.loadString(
-      'lib/core/constants/filters_recipes.json',
-    ); // Make sure the path is correct
+    // Define los filtros estáticamente para evitar la carga del archivo JSON
+    // Esta es una versión hardcodeada del JSON para cargar más rápido
+    final String filtersJson = '''
+[
+    {
+      "category": "Tipo de receta",
+      "filters": [
+        { "label": "Entrada", "value": "entrada", "icon": "restaurant_menu" },
+        { "label": "Plato principal", "value": "fondo", "icon": "dinner_dining" },
+        { "label": "Postre", "value": "postre", "icon": "icecream" },
+        { "label": "Bebida", "value": "bebida", "icon": "local_cafe" },
+        { "label": "Snack / Bocadito", "value": "snack", "icon": "emoji_food_beverage" }
+      ]
+    },
+    {
+      "category": "Tiempo de preparación",
+      "filters": [
+        { "label": "< 15 min", "value": "short_time", "icon": "timer" },
+        { "label": "15–30 min", "value": "medium_time", "icon": "schedule" },
+        { "label": "> 30 min", "value": "long_time", "icon": "hourglass_bottom" }
+      ]
+    },
+    {
+      "category": "Dificultad",
+      "filters": [
+        { "label": "Fácil", "value": "facil", "icon": "light_mode" },
+        { "label": "Intermedio", "value": "intermedio", "icon": "star_half" },
+        { "label": "Difícil", "value": "dificil", "icon": "grade" }
+      ]
+    },
+    {
+      "category": "Tipo de dieta",
+      "filters": [
+        { "label": "Vegana", "value": "vegana", "icon": "eco" },
+        { "label": "Vegetariana", "value": "vegetariana", "icon": "spa" },
+        { "label": "Sin gluten", "value": "sin_gluten", "icon": "no_food" },
+        { "label": "Sin lactosa", "value": "sin_lactosa", "icon": "free_breakfast" }
+      ]
+    },
+    {
+      "category": "Sostenibilidad",
+      "filters": [
+        { "label": "Aprovechar sobrantes", "value": "sobrantes", "icon": "recycling" },
+        { "label": "Bajo impacto ambiental", "value": "bajo_impacto", "icon": "compost" }
+      ]
+    }
+]
+    ''';
 
     // Decode the JSON string into a List<dynamic>
-    final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
+    final List<dynamic> jsonList = jsonDecode(filtersJson) as List<dynamic>;
 
     // Map the JSON list to a List<FilterCategory>
     final List<FilterCategory> categories =
@@ -203,9 +248,8 @@ final recipeFiltersProvider = FutureProvider<List<FilterCategory>>((ref) async {
   } catch (e) {
     // Handle potential errors during loading or parsing
     print('Error loading recipe filters: $e');
-    // Consider throwing a more specific error or returning an empty list
     throw Exception('Failed to load recipe filters: $e');
   }
-});
+}, name: 'recipeFilters');
 
 // --- End Provider Definitions ---

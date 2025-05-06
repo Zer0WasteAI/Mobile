@@ -7,12 +7,7 @@ import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.da
 
 part 'inventory_state.freezed.dart';
 
-enum InventorySortCriteria {
-  name,
-  quantity,
-  expirationDate,
-  // addedDate removed
-}
+enum InventorySortCriteria { name, quantity, expirationDate, addedDate }
 
 extension InventorySortCriteriaExtension on InventorySortCriteria {
   String get displayName {
@@ -23,6 +18,8 @@ extension InventorySortCriteriaExtension on InventorySortCriteria {
         return 'Cantidad';
       case InventorySortCriteria.expirationDate:
         return 'Vencimiento';
+      case InventorySortCriteria.addedDate:
+        return 'Fecha de adición';
     }
   }
 
@@ -34,6 +31,8 @@ extension InventorySortCriteriaExtension on InventorySortCriteria {
         return Icons.pin_outlined; // Placeholder
       case InventorySortCriteria.expirationDate:
         return Icons.event_available_outlined;
+      case InventorySortCriteria.addedDate:
+        return Icons.date_range;
     }
   }
 }
@@ -46,9 +45,9 @@ class InventoryState with _$InventoryState {
     @Default(ItemCategory.all) ItemCategory categoryFilter,
     @Default({}) Set<StorageType> storageFilter,
     @Default(ExpirationStatus.all) ExpirationStatus expirationStatusFilter,
-    @Default(InventorySortCriteria.name) // Default sort by name now
+    @Default(InventorySortCriteria.addedDate)
     InventorySortCriteria sortCriteria,
-    @Default(true) bool sortAscending, // Default A-Z for name
+    @Default(false) bool sortAscending,
     @Default({}) Set<String> recentlyAddedIds,
     @Default({}) Map<String, String> userSelectedBatchOverrides,
     @Default(false) bool isLoading,

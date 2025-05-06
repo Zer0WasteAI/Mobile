@@ -11,6 +11,7 @@ import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart'
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/nutrition_info_chip.dart'; // Assuming this widget exists or will be created
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // For batch dialog
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // For date formatting
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_consumed_screen.dart'; // Nueva pantalla que crearemos
 
 // TODO: Define route name constant if needed elsewhere
 // const String foodDetailRouteName = 'foodDetail';
@@ -201,6 +202,9 @@ class FoodDetailScreen extends ConsumerWidget {
         item.tips ??
         "Consejos sobre cómo conservar mejor el plato, si se puede recalentar, etc.";
 
+    // Determinar si el alimento ha vencido
+    final bool isExpired = expirationStatus == ExpirationStatus.expired;
+
     return Scaffold(
       backgroundColor: screenBackgroundColor,
       appBar: AppBar(
@@ -219,6 +223,43 @@ class FoodDetailScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
       ),
+      floatingActionButton:
+          isExpired
+              ? null // No mostrar botón si está vencido
+              : FloatingActionButton.extended(
+                onPressed: () {
+                  // Calcular CO2 y agua ahorrada (valores ilustrativos)
+                  final double co2Saved = 2.3; // kg
+                  final int waterSaved = 500; // litros
+                  final int coinsEarned = 50; // monedas ganadas
+
+                  // Mostrar pantalla de felicitación
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => FoodConsumedScreen(
+                            foodName: item.name,
+                            foodEmoji:
+                                item.image.isNotEmpty ? item.image : '🍲',
+                            co2Saved: co2Saved,
+                            waterSaved: waterSaved,
+                            coinsEarned: coinsEarned,
+                          ),
+                    ),
+                  );
+
+                  // Eliminar el alimento del inventario
+                  inventoryNotifier.removeItemById(item.id);
+                },
+                icon: const Icon(Icons.check_circle_outline),
+                label: Text(
+                  'Consumido',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                ),
+                backgroundColor: primaryColor,
+                foregroundColor: isDark ? Colors.black : Colors.white,
+              ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: CustomScrollView(
         slivers: [
           // --- Header ---
@@ -548,22 +589,22 @@ class FoodDetailScreen extends ConsumerWidget {
           ),
 
           // --- Main Ingredients ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Ingredientes principales",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: mainTextColor,
+          if (mainIngredients.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Ingredientes principales",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: mainTextColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  if (mainIngredients.isNotEmpty)
+                    const SizedBox(height: 12.0),
                     Padding(
                       padding: const EdgeInsets.only(
                         left: 8.0,
@@ -600,15 +641,142 @@ class FoodDetailScreen extends ConsumerWidget {
                                 )
                                 .toList(),
                       ),
-                    )
-                  else
-                    Text(
-                      'No se especificaron ingredientes.',
-                      style: GoogleFonts.inter(
-                        color: secondaryTextColor.withOpacity(0.8),
-                        fontSize: 14,
-                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+
+          // --- Impacto Evitado ---
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Impacto ambiental",
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: mainTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12.0),
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: tipsBackgroundColor,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.eco_outlined,
+                              size: 20,
+                              color: Colors.green[600],
+                            ),
+                            const SizedBox(width: 12.0),
+                            Expanded(
+                              child: Text(
+                                "Al consumir este plato evitas:",
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16.0),
+                        // CO2 saved
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: BoxDecoration(
+                                  color: cardBackgroundColor,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.cloud_outlined,
+                                      size: 28,
+                                      color: Colors.blue[400],
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    Text(
+                                      "2.3 kg",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: mainTextColor,
+                                      ),
+                                    ),
+                                    Text(
+                                      "de CO₂",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: secondaryTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12.0),
+                            // Water saved
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: BoxDecoration(
+                                  color: cardBackgroundColor,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.water_drop_outlined,
+                                      size: 28,
+                                      color: Colors.blue[700],
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    Text(
+                                      "500 L",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: mainTextColor,
+                                      ),
+                                    ),
+                                    Text(
+                                      "de agua",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: secondaryTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -617,7 +785,7 @@ class FoodDetailScreen extends ConsumerWidget {
           // --- Tips ---
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 80.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 140.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

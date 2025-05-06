@@ -494,7 +494,8 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
 
   // --- Highlight Management ---
   void _scheduleHighlightClear(Set<String> idsToClear) {
-    Future.delayed(const Duration(seconds: 3), () {
+    // Aumentar el tiempo del efecto visual a 15 segundos para mayor visibilidad
+    Future.delayed(const Duration(seconds: 15), () {
       final currentHighlights = state.recentlyAddedIds;
       // Remove only the specific IDs that were highlighted in this batch
       final updatedHighlights = currentHighlights.difference(idsToClear);
@@ -509,6 +510,14 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
     if (mounted) {
       state = state.copyWith(recentlyAddedIds: {});
     }
+  }
+
+  // --- Item Removal ---
+  void removeItemById(String itemId) {
+    final updatedItems =
+        state.items.where((item) => item.id != itemId).toList();
+    state = state.copyWith(items: updatedItems);
+    // TODO: Update persistence layer
   }
 }
 
@@ -641,6 +650,17 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
           comparison = -1;
         else
           comparison = a.expirationDate!.compareTo(b.expirationDate!);
+        break;
+      case InventorySortCriteria.addedDate:
+        // Ordenar por fecha de adición (más reciente primero por defecto)
+        if (a.addedDate == null && b.addedDate == null)
+          comparison = 0;
+        else if (a.addedDate == null)
+          comparison = 1;
+        else if (b.addedDate == null)
+          comparison = -1;
+        else
+          comparison = a.addedDate!.compareTo(b.addedDate!);
         break;
     }
     return inventoryState.sortAscending ? comparison : -comparison;

@@ -73,6 +73,33 @@ class _InventoryFilterBottomSheetState
     });
   }
 
+  // Calcula el número de filtros activos
+  int _getActiveFiltersCount() {
+    int count = 0;
+
+    // Categoría (si no es 'Todos')
+    if (_selectedCategory != ItemCategory.all) {
+      count++;
+    }
+
+    // Almacenamiento (cuenta cada tipo seleccionado)
+    if (_selectedStorageTypes.isNotEmpty) {
+      count += _selectedStorageTypes.length;
+    }
+
+    // Criterio de ordenación (si no es el predeterminado 'name')
+    if (_selectedSortCriteria != InventorySortCriteria.name) {
+      count++;
+    }
+
+    // Dirección de ordenación (si no es el predeterminado 'ascendente')
+    if (!_sortAscending) {
+      count++;
+    }
+
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -130,15 +157,47 @@ class _InventoryFilterBottomSheetState
                     color: mainTextColor,
                   ),
                 ),
-                TextButton(
-                  onPressed: _resetFilters,
-                  child: Text(
-                    'Limpiar todo',
-                    style: GoogleFonts.inter(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w500,
+                Row(
+                  children: [
+                    if (_getActiveFiltersCount() > 0)
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_getActiveFiltersCount()}',
+                          style: GoogleFonts.inter(
+                            color: buttonTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    TextButton(
+                      onPressed: _resetFilters,
+                      child: Text(
+                        'Limpiar todo',
+                        style: GoogleFonts.inter(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: secondaryTextColor),
+                      onPressed: () => Navigator.pop(context),
+                      tooltip: 'Cerrar',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 24,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -371,7 +430,11 @@ class _InventoryFilterBottomSheetState
                 ); // Pass the selected filters back
                 Navigator.pop(context); // Close the bottom sheet
               },
-              child: const Text('Aplicar filtros'),
+              child: Text(
+                _getActiveFiltersCount() > 0
+                    ? 'Aplicar (${_getActiveFiltersCount()} filtros)'
+                    : 'Aplicar filtros',
+              ),
             ),
           ),
         ],

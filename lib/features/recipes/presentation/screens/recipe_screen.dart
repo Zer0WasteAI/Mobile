@@ -11,6 +11,252 @@ import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_filte
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'dart:convert';
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/create_recipe_screen.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/unfocus_detector.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart'; // Importar el provider de recetas IA
+
+// Mapa con datos de preparación e ingredientes para las recetas más comunes
+final Map<String, Map<String, dynamic>> recipeDetailsMap = {
+  'pasta_carbonara': {
+    'description':
+        'Un clásico italiano que combina pasta con una salsa cremosa a base de huevo, queso y panceta.',
+    'ingredients': [
+      {'name': 'Spaghetti', 'quantity': '400', 'unit': 'g'},
+      {'name': 'Panceta', 'quantity': '200', 'unit': 'g'},
+      {'name': 'Huevos', 'quantity': '3', 'unit': 'unidad(es)'},
+      {'name': 'Queso parmesano', 'quantity': '100', 'unit': 'g'},
+      {'name': 'Pimienta negra', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Sal', 'quantity': '', 'unit': 'al gusto'},
+    ],
+    'steps': [
+      'Cocer la pasta en agua con sal según las instrucciones del paquete.',
+      'Mientras tanto, cortar la panceta en dados y dorarlos en una sartén a fuego medio hasta que estén crujientes.',
+      'En un bol, batir los huevos con el queso parmesano rallado y pimienta negra.',
+      'Cuando la pasta esté lista, escurrirla y mezclarla inmediatamente con la panceta.',
+      'Retirar la sartén del fuego y añadir rápidamente la mezcla de huevo, revolviendo constantemente para evitar que se cuaje.',
+      'Servir inmediatamente con más queso parmesano rallado y pimienta negra al gusto.',
+    ],
+    'tags': ['italiana', 'cremosa'],
+    'notes':
+        'El secreto está en agregar la mezcla de huevo fuera del fuego para que no se cuaje y quede cremosa.',
+  },
+  'ensalada_cesar': {
+    'description':
+        'Una ensalada fresca y crujiente con aderezo César cremoso, crutones y queso parmesano.',
+    'ingredients': [
+      {'name': 'Lechuga romana', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Pan de molde', 'quantity': '3', 'unit': 'rebanadas'},
+      {'name': 'Queso parmesano', 'quantity': '50', 'unit': 'g'},
+      {'name': 'Aceite de oliva', 'quantity': '3', 'unit': 'cucharadas'},
+      {'name': 'Ajo', 'quantity': '1', 'unit': 'diente'},
+      {'name': 'Anchoas', 'quantity': '3', 'unit': 'filetes'},
+      {'name': 'Yema de huevo', 'quantity': '1', 'unit': 'unidad'},
+    ],
+    'steps': [
+      'Cortar el pan en cubos y dorarlos en una sartén con un poco de aceite para hacer los crutones.',
+      'Lavar y cortar la lechuga romana en trozos grandes.',
+      'Para el aderezo César, mezclar en un procesador la yema de huevo, ajo, anchoas, mostaza y jugo de limón.',
+      'Añadir el aceite lentamente mientras mezclas para crear una emulsión.',
+      'Colocar la lechuga en un bol grande, añadir el aderezo y mezclar bien.',
+      'Agregar los crutones y el queso parmesano rallado encima.',
+      'Servir inmediatamente para mantener la textura crujiente.',
+    ],
+    'tags': ['fresca', 'ensalada'],
+    'notes':
+        'Para una versión más ligera, puedes sustituir la yema de huevo por un poco de yogur natural.',
+  },
+  'tacos_pollo': {
+    'description':
+        'Tacos de pollo al estilo mexicano con salsa, guacamole y todos los acompañamientos tradicionales.',
+    'ingredients': [
+      {'name': 'Pechuga de pollo', 'quantity': '500', 'unit': 'g'},
+      {'name': 'Tortillas de maíz', 'quantity': '8', 'unit': 'unidad(es)'},
+      {'name': 'Cebolla', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Aguacate', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Limón', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Tomate', 'quantity': '2', 'unit': 'unidad(es)'},
+      {'name': 'Cilantro', 'quantity': '1', 'unit': 'manojo'},
+      {'name': 'Chile jalapeño', 'quantity': '1', 'unit': 'unidad'},
+    ],
+    'steps': [
+      'Marinar el pollo con sal, pimienta, comino y jugo de limón durante 20 minutos.',
+      'Preparar el guacamole machacando el aguacate con limón, sal, cebolla y cilantro picados.',
+      'Cocinar el pollo en una sartén hasta que esté dorado y completamente cocido.',
+      'Picar finamente el pollo cocido.',
+      'Calentar las tortillas en una sartén caliente.',
+      'Montar los tacos colocando el pollo sobre las tortillas calientes y añadiendo guacamole, tomate picado, cebolla y cilantro.',
+      'Servir con rodajas de limón y salsa picante al gusto.',
+    ],
+    'tags': ['mexicana', 'picante'],
+    'notes':
+        'Puedes sustituir el pollo por proteínas vegetales para una versión vegetariana.',
+  },
+  'pizza_margarita': {
+    'description':
+        'La clásica pizza italiana con salsa de tomate, mozzarella fresca y albahaca.',
+    'ingredients': [
+      {'name': 'Masa de pizza', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Tomates', 'quantity': '4', 'unit': 'unidad(es)'},
+      {'name': 'Mozzarella fresca', 'quantity': '200', 'unit': 'g'},
+      {'name': 'Albahaca fresca', 'quantity': '1', 'unit': 'manojo'},
+      {'name': 'Aceite de oliva', 'quantity': '2', 'unit': 'cucharadas'},
+    ],
+    'steps': [
+      'Precalentar el horno a su máxima temperatura.',
+      'Estirar la masa de pizza sobre una superficie enharinada hasta conseguir un círculo fino.',
+      'Preparar la salsa de tomate cocinando los tomates pelados con sal, aceite y un poco de orégano.',
+      'Cubrir la masa con una capa fina de salsa de tomate.',
+      'Cortar la mozzarella en rodajas y distribuirla sobre la pizza.',
+      'Hornear la pizza durante 8-10 minutos o hasta que los bordes estén dorados y el queso burbujeante.',
+      'Agregar las hojas de albahaca fresca, un chorrito de aceite de oliva y servir inmediatamente.',
+    ],
+    'tags': ['italiana', 'al horno'],
+    'notes':
+        'Para una base más crujiente, puedes precalentar una piedra para pizza en el horno.',
+  },
+  'curry_lentejas': {
+    'description':
+        'Un curry vegano reconfortante a base de lentejas, rico en proteínas y especias aromáticas.',
+    'ingredients': [
+      {'name': 'Lentejas', 'quantity': '250', 'unit': 'g'},
+      {'name': 'Cebolla', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Ajo', 'quantity': '3', 'unit': 'dientes'},
+      {'name': 'Jengibre', 'quantity': '1', 'unit': 'trozo pequeño'},
+      {'name': 'Curry en polvo', 'quantity': '2', 'unit': 'cucharadas'},
+      {'name': 'Tomate', 'quantity': '2', 'unit': 'unidad(es)'},
+      {'name': 'Leche de coco', 'quantity': '400', 'unit': 'ml'},
+      {'name': 'Espinacas', 'quantity': '200', 'unit': 'g'},
+      {'name': 'Cilantro fresco', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Arroz basmati', 'quantity': '200', 'unit': 'g'},
+    ],
+    'steps': [
+      'Lavar las lentejas y cocerlas en agua con sal durante unos 20 minutos hasta que estén tiernas. Escurrir y reservar.',
+      'En una olla grande, sofreír la cebolla, el ajo y el jengibre picados hasta que estén dorados.',
+      'Añadir el curry en polvo y cocinar 1 minuto para activar los aromas.',
+      'Agregar los tomates picados y cocinar hasta que se ablanden.',
+      'Incorporar las lentejas cocidas y la leche de coco, cocinar a fuego lento durante 10 minutos.',
+      'Añadir las espinacas y cocinar hasta que se marchiten.',
+      'Mientras tanto, cocinar el arroz basmati según las instrucciones del paquete.',
+      'Servir el curry sobre el arroz y decorar con cilantro fresco picado.',
+    ],
+    'tags': ['vegana', 'india', 'proteica'],
+    'notes':
+        'Para un toque de acidez, añade un chorrito de zumo de limón al final de la cocción.',
+  },
+  'hamburguesas_garbanzos': {
+    'description':
+        'Hamburguesas vegetarianas caseras a base de garbanzos, nutritivas y llenas de sabor.',
+    'ingredients': [
+      {'name': 'Garbanzos cocidos', 'quantity': '400', 'unit': 'g'},
+      {'name': 'Cebolla', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Ajo', 'quantity': '2', 'unit': 'dientes'},
+      {'name': 'Comino', 'quantity': '1', 'unit': 'cucharadita'},
+      {'name': 'Cilantro', 'quantity': '1/4', 'unit': 'taza'},
+      {'name': 'Pan rallado', 'quantity': '1/2', 'unit': 'taza'},
+      {'name': 'Huevo', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Sal y pimienta', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Aceite de oliva', 'quantity': '2', 'unit': 'cucharadas'},
+    ],
+    'steps': [
+      'Escurrir y enjuagar los garbanzos, secarlos bien con papel de cocina.',
+      'En un procesador de alimentos, combinar los garbanzos, cebolla, ajo y cilantro hasta obtener una mezcla homogénea.',
+      'Transferir a un bol y añadir el comino, pan rallado, huevo, sal y pimienta. Mezclar bien.',
+      'Formar 4-6 hamburguesas con las manos, presionando para compactar la mezcla.',
+      'Refrigerar las hamburguesas durante 30 minutos para que se afirmen.',
+      'Calentar aceite en una sartén a fuego medio-alto y cocinar las hamburguesas 3-4 minutos por cada lado.',
+      'Servir en panes de hamburguesa con tus condimentos favoritos como aguacate, tomate y lechuga.',
+    ],
+    'tags': ['vegetariana', 'proteica'],
+    'notes':
+        'Para una versión vegana, sustituye el huevo por 3 cucharadas de aquafaba (líquido de los garbanzos en conserva).',
+  },
+  'brownies': {
+    'description':
+        'Brownies de chocolate densos y húmedos con un exterior crujiente y un interior suave.',
+    'ingredients': [
+      {'name': 'Chocolate negro', 'quantity': '200', 'unit': 'g'},
+      {'name': 'Mantequilla', 'quantity': '180', 'unit': 'g'},
+      {'name': 'Azúcar', 'quantity': '250', 'unit': 'g'},
+      {'name': 'Huevos', 'quantity': '3', 'unit': 'unidad(es)'},
+      {'name': 'Harina', 'quantity': '120', 'unit': 'g'},
+      {'name': 'Cacao en polvo', 'quantity': '30', 'unit': 'g'},
+      {'name': 'Nueces (opcional)', 'quantity': '100', 'unit': 'g'},
+      {'name': 'Sal', 'quantity': '1', 'unit': 'pizca'},
+    ],
+    'steps': [
+      'Precalentar el horno a 180°C y forrar un molde cuadrado con papel de hornear.',
+      'Derretir el chocolate y la mantequilla al baño maría o en el microondas, removiendo ocasionalmente.',
+      'En un bol grande, batir los huevos con el azúcar hasta que estén espumosos.',
+      'Añadir la mezcla de chocolate derretido y mezclar bien.',
+      'Tamizar la harina, el cacao y la sal sobre la mezcla e incorporar suavemente.',
+      'Si se usan, añadir las nueces troceadas y mezclar.',
+      'Verter la masa en el molde preparado y hornear durante 25-30 minutos.',
+      'Dejar enfriar completamente antes de cortar en cuadrados.',
+    ],
+    'tags': ['postre', 'chocolate'],
+    'notes':
+        'La clave de un buen brownie es no hornearlo demasiado tiempo para que mantenga su interior húmedo.',
+  },
+  'omelette': {
+    'description':
+        'Un omelette clásico y esponjoso, perfecto para el desayuno o una comida rápida.',
+    'ingredients': [
+      {'name': 'Huevos', 'quantity': '3', 'unit': 'unidad(es)'},
+      {'name': 'Leche', 'quantity': '2', 'unit': 'cucharadas'},
+      {'name': 'Sal', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Pimienta', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Mantequilla', 'quantity': '1', 'unit': 'cucharada'},
+      {'name': 'Queso rallado (opcional)', 'quantity': '30', 'unit': 'g'},
+      {
+        'name': 'Hierbas frescas (opcional)',
+        'quantity': '',
+        'unit': 'al gusto',
+      },
+    ],
+    'steps': [
+      'Batir los huevos en un bol con la leche, sal y pimienta hasta que estén bien integrados.',
+      'Calentar una sartén antiadherente a fuego medio y añadir la mantequilla.',
+      'Cuando la mantequilla esté derretida, verter la mezcla de huevo en la sartén.',
+      'A medida que el omelette se cuaja, levantar los bordes con una espátula y dejar que el huevo líquido fluya por debajo.',
+      'Cuando esté casi cuajado pero aún ligeramente húmedo en la superficie, añadir el queso rallado si se desea.',
+      'Doblar el omelette por la mitad con la ayuda de la espátula.',
+      'Deslizar el omelette en un plato y decorar con hierbas frescas picadas.',
+    ],
+    'tags': ['desayuno', 'rápido', 'proteico'],
+    'notes':
+        'Puedes añadir tus ingredientes favoritos como champiñones, espinacas o jamón antes de doblar el omelette.',
+  },
+  'tostadas_aguacate': {
+    'description':
+        'Tostadas con aguacate machacado, un desayuno nutritivo y energético.',
+    'ingredients': [
+      {'name': 'Pan integral', 'quantity': '2', 'unit': 'rebanadas'},
+      {'name': 'Aguacate maduro', 'quantity': '1', 'unit': 'unidad'},
+      {'name': 'Limón', 'quantity': '1/2', 'unit': 'unidad'},
+      {'name': 'Sal marina', 'quantity': '', 'unit': 'al gusto'},
+      {'name': 'Pimienta negra', 'quantity': '', 'unit': 'al gusto'},
+      {
+        'name': 'Hojuelas de chile (opcional)',
+        'quantity': '',
+        'unit': 'al gusto',
+      },
+      {'name': 'Huevo (opcional)', 'quantity': '1', 'unit': 'unidad'},
+    ],
+    'steps': [
+      'Tostar el pan hasta que esté crujiente.',
+      'Mientras tanto, cortar el aguacate por la mitad, quitar el hueso y sacar la pulpa con una cuchara.',
+      'En un bol pequeño, machacar el aguacate con un tenedor y añadir el jugo de limón, sal y pimienta al gusto.',
+      'Untar generosamente el aguacate machacado sobre las tostadas.',
+      'Opcionalmente, puedes añadir un huevo frito o pochado encima para aumentar el aporte proteico.',
+      'Espolvorear con hojuelas de chile si deseas un toque picante.',
+      'Servir inmediatamente para disfrutar de la textura crujiente del pan.',
+    ],
+    'tags': ['desayuno', 'vegano', 'rápido'],
+    'notes':
+        'Para evitar que el aguacate se oxide, añade siempre jugo de limón fresco y prepáralo justo antes de servir.',
+  },
+};
 
 // Define a provider for recipe filters
 final recipeFiltersProvider = FutureProvider<List<FilterCategory>>((ref) async {
@@ -204,6 +450,16 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
         });
       }
     });
+
+    // Precargar los filtros cuando se inicia la pantalla
+    Future.microtask(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Utilizar un enfoque diferente para precargar
+          ProviderScope.containerOf(context).read(recipeFiltersProvider.future);
+        }
+      });
+    });
   }
 
   @override
@@ -331,8 +587,12 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
           _showFab // Use the state variable
               ? FloatingActionButton(
                 onPressed: () {
-                  // TODO: Navigate to CreateRecipeFormScreen
-                  print('Navigate to Create Recipe Screen');
+                  // Navigate to CreateRecipeScreen
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const CreateRecipeScreen(),
+                    ),
+                  );
                 },
                 backgroundColor: primaryColor,
                 child: Icon(Icons.add, color: onPrimaryColor),
@@ -453,35 +713,272 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     Color mainTextColor,
     Color secondaryTextColor,
   ) {
-    // TODO: Connect to user uploaded recipes source
-    // For now, show placeholder
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.upload_file, size: 60, color: Colors.grey),
-            const SizedBox(height: 20),
-            Text(
-              'No has subido recetas todavía',
+    // Colores para la tarjeta de receta
+    final Color primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final Color cardBackgroundColor =
+        isDark ? AppColors.darkSurface : Colors.white;
+
+    // Datos de la receta de pasta que el usuario quiere mostrar manualmente
+    final Map<String, dynamic> pastaRecipe = {
+      'id': 'manual_pasta_recipe',
+      'name': 'Pasta con Salsa de Champiñones y Espinacas',
+      'emoji': '🍝',
+      'time': '25 min',
+      'difficulty': 'Fácil',
+      'type': 'fondo', // Plato principal
+      'description':
+          'Una deliciosa pasta cremosa con champiñones y espinacas, perfecta para una cena rápida y nutritiva.',
+      'requiredIngredientsCount': 11,
+      'availableIngredientsCount': 11,
+      'ingredients': [
+        {'name': 'Pasta', 'quantity': '250', 'unit': 'g'},
+        {'name': 'Champiñones', 'quantity': '200', 'unit': 'g'},
+        {'name': 'Espinaca', 'quantity': '150', 'unit': 'g'},
+        {'name': 'Ajo', 'quantity': '3', 'unit': 'unidad(es)'},
+        {'name': 'Cebolla', 'quantity': '1', 'unit': 'mediana'},
+        {'name': 'Crema para cocinar', 'quantity': '200', 'unit': 'ml'},
+        {'name': 'Queso parmesano rallado', 'quantity': '50', 'unit': 'g'},
+        {'name': 'Aceite de oliva', 'quantity': '2', 'unit': 'cucharada(s)'},
+        {'name': 'Sal', 'quantity': '', 'unit': 'al gusto'},
+        {'name': 'Pimienta negra', 'quantity': '', 'unit': 'al gusto'},
+        {'name': 'Orégano seco', 'quantity': '1', 'unit': 'cucharadita(s)'},
+      ],
+      'steps': [
+        'Hervir agua en una olla grande, añadir sal y cocinar la pasta según las instrucciones del paquete.',
+        'Mientras la pasta se cocina, picar finamente la cebolla y el ajo. Limpiar y cortar los champiñones en láminas.',
+        'En una sartén grande, calentar el aceite de oliva a fuego medio y saltear la cebolla hasta que esté transparente.',
+        'Añadir el ajo y cocinar por 30 segundos hasta que desprenda su aroma.',
+        'Agregar los champiñones y cocinar por 5-6 minutos hasta que estén dorados.',
+        'Incorporar las espinacas y cocinar hasta que se marchiten, aproximadamente 2 minutos.',
+        'Verter la crema para cocinar, añadir el orégano y cocinar a fuego lento por 3-4 minutos.',
+        'Salpimentar al gusto y añadir la mitad del queso parmesano, mezclando bien.',
+        'Escurrir la pasta y mezclarla con la salsa en la sartén.',
+        'Servir inmediatamente con el resto del queso parmesano espolvoreado por encima.',
+      ],
+      'tags': ['vegetariana', 'italiana', 'cremosa'],
+      'sustainabilityOptions': ['bajo_impacto'],
+      'notes':
+          'Para una versión vegana, puedes sustituir la crema por crema vegetal y el queso parmesano por levadura nutricional.',
+    };
+
+    final Color difficultyColor =
+        pastaRecipe['difficulty'] == 'Fácil'
+            ? Colors.green
+            : pastaRecipe['difficulty'] == 'Medio'
+            ? Colors.orange
+            : Colors.red;
+
+    // Mostrar la tarjeta de la receta
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              'Mis Recetas Subidas',
               style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
                 color: mainTextColor,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Crea y sube tus propias recetas tocando el botón "+" abajo.',
-              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
-              textAlign: TextAlign.center,
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 16.0),
+            decoration: BoxDecoration(
+              color: cardBackgroundColor,
+              borderRadius: BorderRadius.circular(16.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16.0),
+              onTap: () {
+                // Navegar a la pantalla de detalle de receta
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (context) => RecipeDetailScreen(recipe: pastaRecipe),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    // Recipe emoji
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          pastaRecipe['emoji'],
+                          style: const TextStyle(fontSize: 30),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16.0),
+
+                    // Recipe info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pastaRecipe['name'],
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: mainTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: secondaryTextColor,
+                              ),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                pastaRecipe['time'],
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                              const SizedBox(width: 16.0),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 2.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: difficultyColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Text(
+                                  pastaRecipe['difficulty'],
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: difficultyColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            pastaRecipe['description'],
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: secondaryTextColor,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Arrow icon
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: secondaryTextColor.withOpacity(0.7),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Mensaje para añadir más recetas
+          Center(
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateRecipeScreen(),
+                  ),
+                );
+              },
+              icon: Icon(Icons.add_circle_outline, color: primaryColor),
+              label: Text(
+                'Añadir otra receta',
+                style: GoogleFonts.inter(
+                  color: primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  // Método auxiliar para construir los chips de información
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 4.0),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Método para obtener etiquetas amigables
+  String _getTagLabel(String tag) {
+    final Map<String, String> tagLabels = {
+      'vegetariana': 'Vegetariana',
+      'vegana': 'Vegana',
+      'sin_gluten': 'Sin Gluten',
+      'sin_lactosa': 'Sin Lactosa',
+      'italiana': 'Italiana',
+      'mexicana': 'Mexicana',
+      'española': 'Española',
+      'asiática': 'Asiática',
+      'sobrantes': 'Aprovecha sobrantes',
+      'estacion': 'De temporada',
+      'bajo_impacto': 'Bajo impacto ambiental',
+    };
+
+    return tagLabels[tag] ?? tag;
   }
 
   // Favorite Recipes View
@@ -917,6 +1414,101 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
             ? Colors.orange
             : Colors.red;
 
+    // Determinar el tipo de receta basado en el nombre o categoría
+    String? recipeType;
+
+    // Determinar tipo basado en categoría si es una categoría clara
+    if (categoryName == 'Postres') {
+      recipeType = 'postre';
+    } else if (categoryName == 'Vegetarianas') {
+      // Las categorías no corresponden directamente a tipo de receta
+    }
+
+    // Determinar tipo basado en el contenido del nombre o emoji
+    final String nameLC = recipe['name'].toString().toLowerCase();
+    final String emoji = recipe['emoji'].toString();
+
+    if (recipeType == null) {
+      if (nameLC.contains('ensalada') ||
+          nameLC.contains('salad') ||
+          nameLC.contains('sopa') ||
+          nameLC.contains('crema') ||
+          nameLC.contains('ceviche') ||
+          nameLC.contains('cóctel') ||
+          emoji == '🥗' ||
+          emoji == '🥣') {
+        recipeType = 'entrada';
+      } else if (nameLC.contains('pasta') ||
+          nameLC.contains('arroz') ||
+          nameLC.contains('hamburguesa') ||
+          nameLC.contains('pollo') ||
+          emoji == '🍝' ||
+          emoji == '🍗' ||
+          emoji == '🍖' ||
+          emoji == '🍔' ||
+          emoji == '🌮' ||
+          emoji == '🥘') {
+        recipeType = 'fondo';
+      } else if (nameLC.contains('pastel') ||
+          nameLC.contains('tarta') ||
+          nameLC.contains('helado') ||
+          nameLC.contains('brownie') ||
+          nameLC.contains('galleta') ||
+          nameLC.contains('pudín') ||
+          emoji == '🍰' ||
+          emoji == '🧁' ||
+          emoji == '🍮' ||
+          emoji == '🍦' ||
+          emoji == '🍨' ||
+          emoji == '🍪') {
+        recipeType = 'postre';
+      } else if (nameLC.contains('batido') ||
+          nameLC.contains('café') ||
+          nameLC.contains('té') ||
+          nameLC.contains('jugo') ||
+          nameLC.contains('bebida') ||
+          nameLC.contains('limonada') ||
+          emoji == '🥤' ||
+          emoji == '🧃' ||
+          emoji == '☕' ||
+          emoji == '🍹' ||
+          emoji == '🍵') {
+        recipeType = 'bebida';
+      } else if (nameLC.contains('snack') ||
+          nameLC.contains('bocadito') ||
+          nameLC.contains('tostada') ||
+          nameLC.contains('chips') ||
+          emoji == '🥨' ||
+          emoji == '🥯' ||
+          emoji == '🥪') {
+        recipeType = 'snack';
+      }
+    }
+
+    // Colores para el tag de tipo de receta
+    final Map<String, Color> typeColors = {
+      'entrada': Colors.blue,
+      'fondo': Colors.deepPurple,
+      'postre': Colors.pink,
+      'bebida': Colors.teal,
+      'snack': Colors.amber,
+    };
+
+    // Labels amigables para mostrar
+    final Map<String, String> typeLabels = {
+      'entrada': 'Entrada',
+      'fondo': 'Plato principal',
+      'postre': 'Postre',
+      'bebida': 'Bebida',
+      'snack': 'Snack',
+    };
+
+    // Obtener color y label para el tipo de receta
+    final String recipeTypeValue =
+        recipeType ?? 'fondo'; // Valor por defecto si es null
+    final Color typeColor = typeColors[recipeTypeValue] ?? primaryColor;
+    final String typeLabel = typeLabels[recipeTypeValue] ?? 'Plato principal';
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? Colors.grey.shade800 : Colors.white,
@@ -952,6 +1544,31 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
                   ),
                 ),
               ),
+
+              // Tag de tipo de receta
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: typeColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    typeLabel,
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: typeColor,
+                    ),
+                  ),
+                ),
+              ),
+
               // Botón de favoritos
               Positioned(
                 top: 8,
@@ -1444,27 +2061,24 @@ class ExploreTabWidget extends HookConsumerWidget {
             if (activeFiltersState.value.containsKey('Tiempo de preparación')) {
               final timeFilters =
                   activeFiltersState.value['Tiempo de preparación']!;
+              if (timeFilters.isNotEmpty) {
+                filteredRecipes =
+                    filteredRecipes.where((recipe) {
+                      final time = recipe['time'];
+                      final minutes = int.tryParse(time.split(' ')[0]) ?? 0;
 
-              if (timeFilters.contains('short_time')) {
-                filteredRecipes =
-                    filteredRecipes.where((recipe) {
-                      final time = recipe['time'];
-                      return time.contains('< 15') ||
-                          (int.tryParse(time.split(' ')[0]) ?? 100) < 15;
-                    }).toList();
-              } else if (timeFilters.contains('medium_time')) {
-                filteredRecipes =
-                    filteredRecipes.where((recipe) {
-                      final time = recipe['time'];
-                      final minutes = int.tryParse(time.split(' ')[0]) ?? 0;
-                      return minutes >= 15 && minutes <= 30;
-                    }).toList();
-              } else if (timeFilters.contains('long_time')) {
-                filteredRecipes =
-                    filteredRecipes.where((recipe) {
-                      final time = recipe['time'];
-                      final minutes = int.tryParse(time.split(' ')[0]) ?? 0;
-                      return minutes > 30;
+                      if (timeFilters.contains('short_time') && minutes < 15) {
+                        return true;
+                      }
+                      if (timeFilters.contains('medium_time') &&
+                          minutes >= 15 &&
+                          minutes <= 30) {
+                        return true;
+                      }
+                      if (timeFilters.contains('long_time') && minutes > 30) {
+                        return true;
+                      }
+                      return false;
                     }).toList();
               }
             }
@@ -1472,47 +2086,135 @@ class ExploreTabWidget extends HookConsumerWidget {
             // Apply difficulty filters
             if (activeFiltersState.value.containsKey('Dificultad')) {
               final difficultyFilters = activeFiltersState.value['Dificultad']!;
-
               if (difficultyFilters.isNotEmpty) {
                 filteredRecipes =
                     filteredRecipes.where((recipe) {
                       final difficulty = recipe['difficulty'];
-                      if (difficultyFilters.contains('facil') &&
-                          difficulty == 'Fácil')
-                        return true;
-                      if (difficultyFilters.contains('intermedio') &&
-                          difficulty == 'Medio')
-                        return true;
-                      if (difficultyFilters.contains('dificil') &&
-                          difficulty == 'Difícil')
-                        return true;
-                      return false;
+                      return (difficultyFilters.contains('facil') &&
+                              difficulty == 'Fácil') ||
+                          (difficultyFilters.contains('intermedio') &&
+                              difficulty == 'Medio') ||
+                          (difficultyFilters.contains('dificil') &&
+                              difficulty == 'Difícil');
                     }).toList();
               }
             }
 
-            // Apply diet type filters (example implementation)
+            // Apply recipe type filters
+            if (activeFiltersState.value.containsKey('Tipo de receta')) {
+              final typeFilters = activeFiltersState.value['Tipo de receta']!;
+              if (typeFilters.isNotEmpty) {
+                // En un caso real, estas recetas tendrían una propiedad 'type'
+                // Aquí simulamos la aplicación de estos filtros usando el nombre de la categoría
+                if (typeFilters.contains('postre') &&
+                    category['name'] != 'Postres') {
+                  filteredRecipes = [];
+                } else if (typeFilters.contains('entrada') &&
+                    ![
+                      'Rápidas y Fáciles',
+                      'Saludables',
+                    ].contains(category['name'])) {
+                  filteredRecipes = [];
+                } else if (typeFilters.contains('bebida')) {
+                  // Filtrar para mostrar solo recetas de bebidas - en una app real tendríamos una propiedad de tipo
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        final name = recipe['name'].toString().toLowerCase();
+                        final emoji = recipe['emoji'] ?? '';
+                        return name.contains('batido') ||
+                            name.contains('bebida') ||
+                            name.contains('café') ||
+                            emoji == '🥤' ||
+                            emoji == '🧃' ||
+                            emoji == '☕';
+                      }).toList();
+                } else if (typeFilters.contains('snack')) {
+                  // Filtrar para mostrar solo snacks
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        final name = recipe['name'].toString().toLowerCase();
+                        return name.contains('snack') ||
+                            name.contains('galletas') ||
+                            name.contains('bocadito') ||
+                            (category['name'] == 'Rápidas y Fáciles' &&
+                                recipe['time'].toString().contains('< 15'));
+                      }).toList();
+                }
+                // Implementar otros tipos según sea necesario
+              }
+            }
+
+            // Apply diet type filters
             if (activeFiltersState.value.containsKey('Tipo de dieta')) {
               final dietFilters = activeFiltersState.value['Tipo de dieta']!;
+              if (dietFilters.isNotEmpty) {
+                // Para vegetarianas
+                if (dietFilters.contains('vegetariana')) {
+                  if (category['name'] != 'Vegetarianas') {
+                    // Para esta demo, asumimos que solo la categoría "Vegetarianas" tiene recetas vegetarianas
+                    filteredRecipes = [];
+                  }
+                }
 
-              if (dietFilters.contains('vegetariana')) {
-                // Filter vegetarian recipes - for demo, let's say all recipes in 'Vegetarianas' category are vegetarian
-                if (category['name'] != 'Vegetarianas' &&
-                    dietFilters.contains('vegetariana')) {
-                  filteredRecipes = [];
+                // Para veganas (simulado - en una app real cada receta tendría estas propiedades)
+                if (dietFilters.contains('vegana')) {
+                  // Para el ejemplo, asumimos que solo recetas con emoji 🌱 o en la categoría vegetarianas con ciertos nombres son veganas
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        return recipe['emoji'] == '🌱' ||
+                            (category['name'] == 'Vegetarianas' &&
+                                (recipe['name'].toString().contains('Buddha') ||
+                                    recipe['name'].toString().contains(
+                                      'Garbanzos',
+                                    )));
+                      }).toList();
+                }
+
+                // Para sin gluten (simulado)
+                if (dietFilters.contains('sin_gluten')) {
+                  // Simular filtro de sin gluten - en una app real esto sería una propiedad en cada receta
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        // Ejemplo simple: excluir recetas con palabras clave relacionadas con gluten
+                        final name = recipe['name'].toString().toLowerCase();
+                        return !name.contains('pasta') &&
+                            !name.contains('pan') &&
+                            !name.contains('pizza') &&
+                            !name.contains('galletas');
+                      }).toList();
                 }
               }
+            }
 
-              if (dietFilters.contains('vegana')) {
-                // For demo purposes - filter by emoji (🌱 for vegan)
-                filteredRecipes =
-                    filteredRecipes
-                        .where(
-                          (recipe) =>
-                              recipe['emoji'] == '🌱' ||
-                              category['name'] == 'Vegetarianas',
-                        )
-                        .toList();
+            // Apply sustainability filters
+            if (activeFiltersState.value.containsKey('Sostenibilidad')) {
+              final sustainabilityFilters =
+                  activeFiltersState.value['Sostenibilidad']!;
+              if (sustainabilityFilters.isNotEmpty) {
+                // En una app real, estas serían propiedades de cada receta
+                // Para esta demo, simplemente filtramos aleatoriamente
+                if (sustainabilityFilters.contains('sobrantes')) {
+                  // Filtrar al azar algunas recetas como ejemplo
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        // Un criterio simple: recetas con 'id' de longitud par
+                        return recipe['id'].toString().length % 2 == 0;
+                      }).toList();
+                }
+
+                if (sustainabilityFilters.contains('bajo_impacto')) {
+                  // Simular filtrado para bajo impacto
+                  filteredRecipes =
+                      filteredRecipes.where((recipe) {
+                        // Ejemplos de recetas de "bajo impacto"
+                        return !recipe['name']
+                                .toString()
+                                .toLowerCase()
+                                .contains('carne') &&
+                            !recipe['emoji'].toString().contains('🍖') &&
+                            !recipe['emoji'].toString().contains('🥩');
+                      }).toList();
+                }
               }
             }
 
@@ -1530,205 +2232,261 @@ class ExploreTabWidget extends HookConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => recipeNotifier.retryLoad(),
       color: primaryColor,
-      child: CustomScrollView(
-        slivers: [
-          // --- Filters/Search/Switch (Explore Mode) ---
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 12.0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Search Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: cardBackgroundColor,
-                      borderRadius: BorderRadius.circular(16.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              isDark
-                                  ? Colors.black.withOpacity(0.25)
-                                  : Colors.grey.withOpacity(0.15),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      onChanged: recipeNotifier.setSearchQuery,
-                      decoration: InputDecoration(
-                        hintText: 'Buscar recetas por nombre o ingredientes',
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: searchBarIconColor,
-                        ),
-                        filled: true,
-                        fillColor: cardBackgroundColor,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14.0,
-                          horizontal: 16.0,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintStyle: GoogleFonts.inter(color: secondaryTextColor),
-                      ),
-                      style: GoogleFonts.inter(color: mainTextColor),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // First row: Filter button and ingredients switch
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Filter Button
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextButton.icon(
-                                icon: Icon(
-                                  Icons.filter_list_rounded,
-                                  color: primaryColor,
-                                ),
-                                label: Text(
-                                  'Filtros${activeFiltersState.value.isNotEmpty ? ' (${_countActiveFilters(activeFiltersState.value)})' : ''}',
-                                  style: GoogleFonts.inter(color: primaryColor),
-                                ),
-                                onPressed: () {
-                                  // Show Filter Bottom Sheet
-                                  final filtersData = ref.read(
-                                    recipeFiltersProvider,
-                                  );
-
-                                  filtersData.when(
-                                    data: (filterCategories) {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent,
-                                        builder:
-                                            (
-                                              context,
-                                            ) => RecipeFilterBottomSheet(
-                                              filterCategories:
-                                                  filterCategories,
-                                              initialSelectedFilters:
-                                                  activeFiltersState.value,
-                                              onApply: (newFilters) {
-                                                // Update active filters state
-                                                activeFiltersState.value =
-                                                    newFilters;
-                                              },
-                                            ),
-                                      );
-                                    },
-                                    error: (error, stack) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'No se pudieron cargar los filtros: $error',
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    loading: () {
-                                      // Show loading indicator in the bottom sheet instead
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder:
-                                            (context) => const Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.all(24.0),
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            ),
-                                      );
-                                    },
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  alignment: Alignment.centerLeft,
-                                ),
-                              ),
-
-                              // "Limpiar filtros" button below the filter button
-                              if (activeFiltersState.value.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 4.0,
-                                    left: 4.0,
-                                  ),
-                                  child: TextButton(
-                                    onPressed: () {
-                                      // Clear all filters
-                                      activeFiltersState.value = {};
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      'Limpiar filtros',
-                                      style: GoogleFonts.inter(
-                                        color: errorColor,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-
-                          // My Ingredients Switch
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Solo con mis ingredientes',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: secondaryTextColor,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(width: 4),
-                              Transform.scale(
-                                scale: 0.85,
-                                child: Switch.adaptive(
-                                  value: recipeState.showOnlyWithMyIngredients,
-                                  onChanged:
-                                      recipeNotifier
-                                          .toggleShowOnlyWithMyIngredients,
-                                  activeColor: switchActiveColor,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              ),
-                            ],
+      child: UnfocusDetector(
+        child: CustomScrollView(
+          slivers: [
+            // --- Filters/Search/Switch (Explore Mode) ---
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    Container(
+                      decoration: BoxDecoration(
+                        color: cardBackgroundColor,
+                        borderRadius: BorderRadius.circular(16.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                isDark
+                                    ? Colors.black.withOpacity(0.25)
+                                    : Colors.grey.withOpacity(0.15),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                      child: TextField(
+                        onChanged: recipeNotifier.setSearchQuery,
+                        decoration: InputDecoration(
+                          hintText: 'Buscar recetas por nombre o ingredientes',
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: searchBarIconColor,
+                          ),
+                          filled: true,
+                          fillColor: cardBackgroundColor,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14.0,
+                            horizontal: 16.0,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintStyle: GoogleFonts.inter(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                        style: GoogleFonts.inter(color: mainTextColor),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // First row: Filter button and ingredients switch
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .start, // Alinear al inicio para que los botones se alineen correctamente
+                          children: [
+                            // Filter Button
+                            Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Botón de filtros
+                                  TextButton.icon(
+                                    icon: Icon(
+                                      Icons.filter_list_rounded,
+                                      color: primaryColor,
+                                    ),
+                                    label: Text(
+                                      'Filtros${activeFiltersState.value.isNotEmpty ? ' (${_countActiveFilters(activeFiltersState.value)})' : ''}',
+                                      style: GoogleFonts.inter(
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      // Show Filter Bottom Sheet
+                                      final filtersData = ref.read(
+                                        recipeFiltersProvider,
+                                      );
 
-                  // Display active filters as chips
+                                      // Primero verificamos si los datos ya están disponibles
+                                      if (filtersData
+                                          is AsyncData<List<FilterCategory>>) {
+                                        // Si ya tenemos los datos, mostrar el modal directamente
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder:
+                                              (
+                                                context,
+                                              ) => RecipeFilterBottomSheet(
+                                                filterCategories:
+                                                    filtersData.value,
+                                                initialSelectedFilters:
+                                                    activeFiltersState.value,
+                                                onApply: (newFilters) {
+                                                  // Update active filters state
+                                                  activeFiltersState.value =
+                                                      newFilters;
+                                                },
+                                              ),
+                                        );
+                                      } else {
+                                        // Mostrar un indicador de carga breve
+                                        final loadingSnackBar = SnackBar(
+                                          content: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: primaryColor,
+                                                    ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Text('Cargando filtros...'),
+                                            ],
+                                          ),
+                                          duration: const Duration(seconds: 1),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(loadingSnackBar);
+
+                                        // Precarga los datos antes de mostrar el modal
+                                        ref
+                                            .read(recipeFiltersProvider.future)
+                                            .then(
+                                              (filterCategories) {
+                                                // Una vez cargados, mostrar el modal
+                                                showModalBottomSheet(
+                                                  context: context,
+                                                  isScrollControlled: true,
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  builder:
+                                                      (
+                                                        context,
+                                                      ) => RecipeFilterBottomSheet(
+                                                        filterCategories:
+                                                            filterCategories,
+                                                        initialSelectedFilters:
+                                                            activeFiltersState
+                                                                .value,
+                                                        onApply: (newFilters) {
+                                                          // Update active filters state
+                                                          activeFiltersState
+                                                                  .value =
+                                                              newFilters;
+                                                        },
+                                                      ),
+                                                );
+                                              },
+                                              onError: (error, stack) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'No se pudieron cargar los filtros: $error',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                      }
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      alignment: Alignment.centerLeft,
+                                    ),
+                                  ),
+
+                                  // "Limpiar filtros" button debajo del botón de filtros
+                                  if (activeFiltersState.value.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 4.0,
+                                        left: 4.0,
+                                      ),
+                                      child: TextButton(
+                                        onPressed: () {
+                                          // Clear all filters
+                                          activeFiltersState.value = {};
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          'Limpiar filtros',
+                                          style: GoogleFonts.inter(
+                                            color: errorColor,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                            // My Ingredients Switch - Alineado al top para coincidir con el botón de filtros
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Solo con mis ingredientes',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: secondaryTextColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(width: 4),
+                                Transform.scale(
+                                  scale: 0.85,
+                                  child: Switch.adaptive(
+                                    value:
+                                        recipeState.showOnlyWithMyIngredients,
+                                    onChanged:
+                                        recipeNotifier
+                                            .toggleShowOnlyWithMyIngredients,
+                                    activeColor: switchActiveColor,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    // Display active filters as chips
+                    // Eliminamos esta sección para que no se muestren los chips individuales
+                    // y solo aparezca el número de filtros en el botón "Filtros"
+                    /*
                   if (activeFiltersState.value.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -1751,154 +2509,227 @@ class ExploreTabWidget extends HookConsumerWidget {
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-          ),
-
-          // --- Featured Categories Chips ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 8.0,
-                bottom: 8.0,
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: [
-                    _buildCategoryChip(
-                      'Todas',
-                      '🍴',
-                      selectedCategoryState.value == 'Todas',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Todas',
-                    ),
-                    _buildCategoryChip(
-                      'Destacados',
-                      '✨',
-                      selectedCategoryState.value == 'Destacados',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Destacados',
-                    ),
-                    _buildCategoryChip(
-                      'Rápidas',
-                      '⏱️',
-                      selectedCategoryState.value == 'Rápidas',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Rápidas',
-                    ),
-                    _buildCategoryChip(
-                      'Vegetarianas',
-                      '🥬',
-                      selectedCategoryState.value == 'Vegetarianas',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Vegetarianas',
-                    ),
-                    _buildCategoryChip(
-                      'Postres',
-                      '🍰',
-                      selectedCategoryState.value == 'Postres',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Postres',
-                    ),
-                    _buildCategoryChip(
-                      'Saludables',
-                      '💪',
-                      selectedCategoryState.value == 'Saludables',
-                      primaryColor,
-                      isDark,
-                      () => selectedCategoryState.value = 'Saludables',
-                    ),
+                  */
                   ],
                 ),
               ),
             ),
-          ),
 
-          // Loading indicator (if needed)
-          if (recipeState.isLoading)
-            const SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 32.0),
-                  child: CircularProgressIndicator(),
+            // --- Featured Categories Chips ---
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 8.0,
+                  bottom: 8.0,
                 ),
-              ),
-            ),
-
-          // --- Recipe Categories with Carousels ---
-          if (!recipeState.isLoading && recipeState.errorMessage == null)
-            SliverList.builder(
-              itemCount: filteredCategories.length,
-              itemBuilder: (context, index) {
-                final category = filteredCategories[index];
-                return _buildRecipeCategorySection(
-                  category['name'],
-                  category['emoji'],
-                  category['recipes'],
-                  screenWidth,
-                  isDark,
-                  primaryColor,
-                  mainTextColor,
-                  secondaryTextColor,
-                  cardBackgroundColor,
-                  context,
-                );
-              },
-            ),
-
-          // Show error if needed
-          if (!recipeState.isLoading && recipeState.errorMessage != null)
-            SliverFillRemaining(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: errorColor, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        '¡Ups! Algo salió mal',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: mainTextColor,
-                        ),
-                        textAlign: TextAlign.center,
+                      _buildCategoryChip(
+                        'Todas',
+                        '🍴',
+                        selectedCategoryState.value == 'Todas',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Todas',
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        recipeState.errorMessage!,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: secondaryTextColor,
-                        ),
-                        textAlign: TextAlign.center,
+                      _buildCategoryChip(
+                        'Destacados',
+                        '✨',
+                        selectedCategoryState.value == 'Destacados',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Destacados',
                       ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reintentar'),
-                        onPressed: recipeNotifier.retryLoad,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor:
-                              isDark ? darkOnPrimaryColor : onPrimaryColor,
-                        ),
+                      _buildCategoryChip(
+                        'Rápidas',
+                        '⏱️',
+                        selectedCategoryState.value == 'Rápidas',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Rápidas',
+                      ),
+                      _buildCategoryChip(
+                        'Vegetarianas',
+                        '🥬',
+                        selectedCategoryState.value == 'Vegetarianas',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Vegetarianas',
+                      ),
+                      _buildCategoryChip(
+                        'Postres',
+                        '🍰',
+                        selectedCategoryState.value == 'Postres',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Postres',
+                      ),
+                      _buildCategoryChip(
+                        'Saludables',
+                        '💪',
+                        selectedCategoryState.value == 'Saludables',
+                        primaryColor,
+                        isDark,
+                        () => selectedCategoryState.value = 'Saludables',
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-        ],
+
+            // Loading indicator (if needed)
+            if (recipeState.isLoading)
+              const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 32.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+
+            // --- "No hay recetas" message when filtered recipes are empty ---
+            if (!recipeState.isLoading &&
+                recipeState.errorMessage == null &&
+                filteredCategories.isEmpty &&
+                activeFiltersState.value.isNotEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.filter_list_off,
+                            size: 64,
+                            color: secondaryTextColor.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'No hay recetas que coincidan con tus filtros',
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: mainTextColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Prueba ajustando o eliminando algunos filtros para ver más recetas.',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: secondaryTextColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.filter_list),
+                            label: const Text('Limpiar filtros'),
+                            onPressed: () {
+                              // Limpiar todos los filtros
+                              activeFiltersState.value = {};
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: onPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // --- Recipe Categories with Carousels ---
+            if (!recipeState.isLoading &&
+                recipeState.errorMessage == null &&
+                filteredCategories.isNotEmpty)
+              SliverList.builder(
+                itemCount: filteredCategories.length,
+                itemBuilder: (context, index) {
+                  final category = filteredCategories[index];
+                  return _buildRecipeCategorySection(
+                    category['name'],
+                    category['emoji'],
+                    category['recipes'],
+                    screenWidth,
+                    isDark,
+                    primaryColor,
+                    mainTextColor,
+                    secondaryTextColor,
+                    cardBackgroundColor,
+                    context,
+                  );
+                },
+              ),
+
+            // Show error if needed
+            if (!recipeState.isLoading && recipeState.errorMessage != null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: errorColor,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '¡Ups! Algo salió mal',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: mainTextColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            recipeState.errorMessage!,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: secondaryTextColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Reintentar'),
+                            onPressed: recipeNotifier.retryLoad,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor:
+                                  isDark ? darkOnPrimaryColor : onPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -2105,6 +2936,101 @@ class ExploreTabWidget extends HookConsumerWidget {
                 itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) {
                   final recipe = filteredRecipes[index];
+
+                  // Determinar el tipo de receta basado en el nombre o categoría
+                  String? recipeType;
+
+                  // Determinar tipo basado en categoría
+                  if (categoryName == 'Postres') {
+                    recipeType = 'postre';
+                  } else if (categoryName == 'Vegetarianas') {
+                    // Solo establece el tipo de dieta, no el tipo de receta
+                  } else if (categoryName == 'Saludables') {
+                    // Solo establece característica, no tipo
+                  } else if (categoryName == 'Rápidas y Fáciles') {
+                    // La mayoría suelen ser entradas o snacks, pero verificar primero
+                  }
+
+                  // Determinar tipo basado en el contenido del nombre o emoji
+                  final String nameLC = recipe['name'].toString().toLowerCase();
+                  final String emoji = recipe['emoji'].toString();
+
+                  if (recipeType == null) {
+                    if (nameLC.contains('ensalada') ||
+                        nameLC.contains('salad')) {
+                      recipeType = 'entrada';
+                    } else if (nameLC.contains('pasta') ||
+                        nameLC.contains('arroz') ||
+                        nameLC.contains('hamburguesa') ||
+                        nameLC.contains('pollo') ||
+                        nameLC.contains('carne') ||
+                        nameLC.contains('pescado') ||
+                        nameLC.contains('filete') ||
+                        nameLC.contains('guiso') ||
+                        nameLC.contains('chuleta') ||
+                        nameLC.contains('pechuga') ||
+                        emoji == '🍝' ||
+                        emoji == '🍗' ||
+                        emoji == '🍖' ||
+                        emoji == '🍔' ||
+                        emoji == '🌮' ||
+                        emoji == '🥘') {
+                      recipeType = 'fondo';
+                    } else if (nameLC.contains('pastel') ||
+                        nameLC.contains('tarta') ||
+                        nameLC.contains('helado') ||
+                        nameLC.contains('brownie') ||
+                        nameLC.contains('galleta') ||
+                        nameLC.contains('pudín') ||
+                        emoji == '🍰' ||
+                        emoji == '🧁' ||
+                        emoji == '🍮' ||
+                        emoji == '🍦' ||
+                        emoji == '🍨' ||
+                        emoji == '🍪') {
+                      recipeType = 'postre';
+                    } else if (nameLC.contains('batido') ||
+                        nameLC.contains('café') ||
+                        nameLC.contains('té') ||
+                        nameLC.contains('jugo') ||
+                        nameLC.contains('bebida') ||
+                        nameLC.contains('limonada') ||
+                        emoji == '🥤' ||
+                        emoji == '🧃' ||
+                        emoji == '☕' ||
+                        emoji == '🍹' ||
+                        emoji == '🍵') {
+                      recipeType = 'bebida';
+                    } else if (nameLC.contains('snack') ||
+                        nameLC.contains('bocadito') ||
+                        nameLC.contains('tostada') ||
+                        nameLC.contains('chips') ||
+                        emoji == '🥨' ||
+                        emoji == '🥯' ||
+                        emoji == '🥪') {
+                      recipeType = 'snack';
+                    }
+                  }
+
+                  // Si no se ha identificado un tipo, asignar uno por defecto basado en el tiempo de preparación
+                  if (recipeType == null) {
+                    final int minutes =
+                        int.tryParse(recipe['time'].toString().split(' ')[0]) ??
+                        0;
+
+                    if (minutes <= 15) {
+                      // Recetas muy rápidas suelen ser snacks o bebidas
+                      recipeType = 'snack';
+                    } else if (minutes >= 45) {
+                      // Recetas que toman más tiempo suelen ser platos principales
+                      recipeType = 'fondo';
+                    } else {
+                      // Valor por defecto para cualquier receta no identificada
+                      recipeType =
+                          'fondo'; // Asumimos plato principal por defecto
+                    }
+                  }
+
                   return _buildRecipeCard(
                     recipe['name'],
                     recipe['emoji'],
@@ -2120,7 +3046,9 @@ class ExploreTabWidget extends HookConsumerWidget {
                     requiredIngredients: recipe['requiredIngredientsCount'],
                     showIngredientInfo: showOnlyWithIngredients,
                     recipeId: recipe['id'], // Usar el ID que ya está definido
+                    recipeType: recipeType, // Añadir el tipo de receta
                     ref: ref,
+                    context: context,
                   );
                 },
               );
@@ -2147,7 +3075,10 @@ class ExploreTabWidget extends HookConsumerWidget {
     int? requiredIngredients,
     bool showIngredientInfo = false,
     String? recipeId, // Añadir ID para identificar recetas
+    String?
+    recipeType, // Tipo de receta: entrada, plato principal, postre, etc.
     required WidgetRef ref,
+    required BuildContext context,
   }) {
     final Color difficultyColor =
         difficulty == 'Fácil'
@@ -2169,10 +3100,76 @@ class ExploreTabWidget extends HookConsumerWidget {
     final favorites = ref.watch(favoritesProvider);
     final isFavorite = recipeId != null && favorites.contains(recipeId);
 
+    // Colores para el tag de tipo de receta
+    final Map<String, Color> typeColors = {
+      'entrada': Colors.blue,
+      'fondo': Colors.deepPurple,
+      'postre': Colors.pink,
+      'bebida': Colors.teal,
+      'snack': Colors.amber,
+    };
+
+    // Labels amigables para mostrar
+    final Map<String, String> typeLabels = {
+      'entrada': 'Entrada',
+      'fondo': 'Plato principal',
+      'postre': 'Postre',
+      'bebida': 'Bebida',
+      'snack': 'Snack',
+    };
+
+    // Obtener color y label para el tipo de receta
+    final String recipeTypeValue =
+        recipeType ?? 'fondo'; // Valor por defecto si es null
+    final Color typeColor = typeColors[recipeTypeValue] ?? primaryColor;
+    final String typeLabel = typeLabels[recipeTypeValue] ?? 'Plato principal';
+
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to recipe detail
-        print('Tapped on recipe: $recipeName');
+        // Navigate to recipe detail
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => RecipeDetailScreen(
+                  recipe: {
+                    'name': recipeName,
+                    'emoji': recipeEmoji,
+                    'time': cookingTime,
+                    'difficulty': difficulty,
+                    'type': recipeTypeValue,
+                    'id': recipeId,
+                    // Obtener los detalles de la receta del mapa si existen
+                    'description':
+                        recipeDetailsMap[recipeId]?['description'] ??
+                        'Una deliciosa receta casera.',
+                    'steps':
+                        recipeDetailsMap[recipeId]?['steps'] ??
+                        [
+                          'Preparar los ingredientes',
+                          'Seguir las instrucciones de la receta',
+                          'Cocinar a la temperatura adecuada',
+                          'Servir y disfrutar',
+                        ],
+                    'ingredients':
+                        recipeDetailsMap[recipeId]?['ingredients'] ??
+                        [
+                          {
+                            'name': 'Ingredientes varios',
+                            'quantity': '',
+                            'unit': 'según necesidad',
+                          },
+                        ],
+                    'notes':
+                        recipeDetailsMap[recipeId]?['notes'] ??
+                        'Personaliza esta receta a tu gusto.',
+                    'tags': recipeDetailsMap[recipeId]?['tags'] ?? [],
+                    'availableIngredientsCount': availableIngredients,
+                    'requiredIngredientsCount': requiredIngredients,
+                    'isFavorite': isFavorite,
+                  },
+                ),
+          ),
+        );
       },
       child: Container(
         width: screenWidth * 0.42, // Width based on screen size
@@ -2213,6 +3210,31 @@ class ExploreTabWidget extends HookConsumerWidget {
                     ),
                   ),
                 ),
+
+                // Tag de tipo de receta
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: typeColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      typeLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: typeColor,
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Botón de favoritos
                 Positioned(
                   top: 8,
@@ -2482,7 +3504,29 @@ class CategoryDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16.0),
                       onTap: () {
                         // Navigate to recipe detail in the future
-                        print('Tapped on recipe: ${recipe['name']}');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => RecipeDetailScreen(
+                                  recipe: {
+                                    'name': recipe['name'],
+                                    'emoji': recipe['emoji'],
+                                    'time': recipe['time'],
+                                    'difficulty': recipe['difficulty'],
+                                    'type': recipe['type'],
+                                    'id': recipe['id'],
+                                    'steps': [], // Pasos vacíos por ahora
+                                    'ingredients':
+                                        [], // Ingredientes vacíos por ahora
+                                    'availableIngredientsCount':
+                                        recipe['availableIngredientsCount'],
+                                    'requiredIngredientsCount':
+                                        recipe['requiredIngredientsCount'],
+                                    'isFavorite': recipe['isFavorite'],
+                                  },
+                                ),
+                          ),
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),

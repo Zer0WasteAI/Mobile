@@ -4,6 +4,12 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/filter_models.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+// Definir qué categorías son single-select
+const List<String> _singleSelectCategories = [
+  'Dificultad',
+  'Tiempo de preparación',
+];
+
 class RecipeFilterBottomSheet extends HookWidget {
   final List<FilterCategory> filterCategories;
   final Map<String, Set<String>> initialSelectedFilters;
@@ -15,6 +21,11 @@ class RecipeFilterBottomSheet extends HookWidget {
     required this.initialSelectedFilters,
     required this.onApply,
   });
+
+  // Verificar si una categoría es single-select
+  bool _isSingleSelectCategory(String category) {
+    return _singleSelectCategories.contains(category);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +40,22 @@ class RecipeFilterBottomSheet extends HookWidget {
     final scaffoldBackgroundColor =
         isDark ? AppColors.darkBackground : AppColors.lightBackground;
 
-    // Initialize selected filters state with the provided initial values
+    // Inicializar los filtros seleccionados, asegurando que las categorías single-select tengan solo un valor
+    final Map<String, Set<String>> initialFilters = {};
+    for (final entry in initialSelectedFilters.entries) {
+      if (entry.value.isNotEmpty) {
+        if (_isSingleSelectCategory(entry.key)) {
+          // Para categorías single-select, solo tomar el primer valor
+          initialFilters[entry.key] = {entry.value.first};
+        } else {
+          // Para categorías multi-select, tomar todos los valores
+          initialFilters[entry.key] = Set<String>.from(entry.value);
+        }
+      }
+    }
+
     final selectedFilters = useState<Map<String, Set<String>>>(
-      Map<String, Set<String>>.from(initialSelectedFilters),
+      Map<String, Set<String>>.from(initialFilters),
     );
 
     return Container(
@@ -89,6 +113,9 @@ class RecipeFilterBottomSheet extends HookWidget {
                         secondaryTextColor: secondaryTextColor,
                         primaryColor: primaryColor,
                         isDark: isDark,
+                        isSingleSelect: _isSingleSelectCategory(
+                          category.category,
+                        ),
                       );
                     }).toList(),
               ),
@@ -164,6 +191,7 @@ class RecipeFilterBottomSheet extends HookWidget {
     required Color secondaryTextColor,
     required Color primaryColor,
     required bool isDark,
+    required bool isSingleSelect,
   }) {
     // Check if there are any filters in this category that are selected
     final hasSelectedFilters =
@@ -229,7 +257,21 @@ class RecipeFilterBottomSheet extends HookWidget {
               ],
             ],
           ),
-          const SizedBox(height: 12),
+          // Subtitle to indicate si es single o multi-select
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
+            child: Text(
+              isSingleSelect
+                  ? 'Selecciona una opción:'
+                  : 'Puedes seleccionar varias opciones:',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: secondaryTextColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
 
           // Filters as chips in a wrapped layout
           Wrap(
@@ -269,13 +311,18 @@ class RecipeFilterBottomSheet extends HookWidget {
                       );
 
                       if (selected) {
-                        // Add the filter
-                        if (!newFilters.containsKey(category.category)) {
-                          newFilters[category.category] = {};
+                        if (isSingleSelect) {
+                          // Para single-select: reemplazar con el nuevo valor
+                          newFilters[category.category] = {filter.value};
+                        } else {
+                          // Para multi-select: agregar a los valores existentes
+                          if (!newFilters.containsKey(category.category)) {
+                            newFilters[category.category] = {};
+                          }
+                          newFilters[category.category]!.add(filter.value);
                         }
-                        newFilters[category.category]!.add(filter.value);
                       } else {
-                        // Remove the filter
+                        // Eliminar el filtro
                         if (newFilters.containsKey(category.category)) {
                           newFilters[category.category]!.remove(filter.value);
                           if (newFilters[category.category]!.isEmpty) {

@@ -29,7 +29,9 @@ class InventoryItemCard extends ConsumerWidget {
   static const Color expirationWarningColor = Color(0xFFFFE066);
   static const Color primaryColor = Color(0xFF00B894);
   static const Color defaultCardBackground = Colors.white;
-  static const Color highlightCardBackground = Color(0xFFE6F9F0);
+  static const Color highlightCardBackground = Color(
+    0xFFE6F9F0,
+  ); // Color de fondo para elementos destacados
   static const Color cardBorderColor = Color(0xFFE0E0E0); // Soft grey border
 
   Color _getExpirationBadgeColor(DateTime? expirationDate) {
@@ -71,258 +73,275 @@ class InventoryItemCard extends ConsumerWidget {
     final middleColumnWidth =
         screenWidth - 150; // Reserve space for image and quantity
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
-      decoration: BoxDecoration(
-        color: isHighlighted ? highlightCardBackground : defaultCardBackground,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color:
-              isHighlighted ? primaryColor.withOpacity(0.5) : cardBorderColor,
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10.0,
-          vertical: 10.0,
-        ), // Reduced horizontal padding
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            // Image/Emoji
-            SizedBox(
-              width: 36, // Reduced width
-              height: 36, // Reduced height
-              child: Center(
-                child: Text(
-                  item.image, // Display emoji directly
-                  style: const TextStyle(fontSize: 24), // Smaller emoji
-                ),
-              ),
+    return Stack(
+      children: [
+        // Tarjeta principal del ítem
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.symmetric(vertical: 6.0),
+          decoration: BoxDecoration(
+            color:
+                isHighlighted ? highlightCardBackground : defaultCardBackground,
+            borderRadius: BorderRadius.circular(12.0),
+            border: Border.all(
+              color:
+                  isHighlighted
+                      ? primaryColor.withOpacity(0.8)
+                      : cardBorderColor,
+              width: isHighlighted ? 1.5 : 1.0,
             ),
-            const SizedBox(width: 8.0), // Reduced spacing
-            // Item Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Row for Item Name and Batch Selector Button
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+            boxShadow: [
+              BoxShadow(
+                color:
+                    isHighlighted
+                        ? primaryColor.withOpacity(0.15)
+                        : Colors.grey.withOpacity(0.08),
+                spreadRadius: isHighlighted ? 2 : 1,
+                blurRadius: isHighlighted ? 6 : 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 10.0,
+            ), // Reduced horizontal padding
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                // Image/Emoji
+                SizedBox(
+                  width: 36, // Reduced width
+                  height: 36, // Reduced height
+                  child: Center(
+                    child: Text(
+                      item.image, // Display emoji directly
+                      style: const TextStyle(fontSize: 24), // Smaller emoji
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8.0), // Reduced spacing
+                // Item Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15, // Smaller font
-                            color: mainTextColor,
-                          ),
-                          maxLines: 1, // Only one line to save space
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      // Show indicator for multiple batches
-                      if (allBatchesForIngredient.length > 1)
-                        GestureDetector(
-                          onTap: () {
-                            // Call the batch selector dialog function
-                            showBatchSelectorDialog(
-                              context,
-                              item,
-                              allBatchesForIngredient,
-                              ref,
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 4),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                      // Row for Item Name and Batch Selector Button
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15, // Smaller font
+                                color: mainTextColor,
+                              ),
+                              maxLines: 1, // Only one line to save space
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: primaryColor.withOpacity(0.3),
-                                width: 1.0,
+                          ),
+                          // Show indicator for multiple batches
+                          if (allBatchesForIngredient.length > 1)
+                            GestureDetector(
+                              onTap: () {
+                                // Call the batch selector dialog function
+                                showBatchSelectorDialog(
+                                  context,
+                                  item,
+                                  allBatchesForIngredient,
+                                  ref,
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(left: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: primaryColor.withOpacity(0.3),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${allBatchesForIngredient.length}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      'lotes',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.arrow_drop_down,
+                                      size: 14,
+                                      color: primaryColor,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${allBatchesForIngredient.length}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
+                        ],
+                      ),
+                      const SizedBox(height: 4.0), // Reduced spacing
+                      // Expiration date info
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 12, // Smaller icon
+                            color: secondaryTextColor,
+                          ),
+                          const SizedBox(width: 2.0), // Smaller spacing
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4, // Smaller padding
+                                vertical: 1, // Smaller padding
+                              ),
+                              decoration: BoxDecoration(
+                                color: expirationBadgeColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                expirationStatusText, // Use the formatted text
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.0, // Smaller font
+                                  color: expirationTextColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  'lotes',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                Icon(
-                                  Icons.arrow_drop_down,
-                                  size: 14,
-                                  color: primaryColor,
-                                ),
-                              ],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4.0), // Reduced spacing
-                  // Expiration date info
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        size: 12, // Smaller icon
-                        color: secondaryTextColor,
+                        ],
                       ),
-                      const SizedBox(width: 2.0), // Smaller spacing
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4, // Smaller padding
-                            vertical: 1, // Smaller padding
-                          ),
-                          decoration: BoxDecoration(
-                            color: expirationBadgeColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            expirationStatusText, // Use the formatted text
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0, // Smaller font
-                              color: expirationTextColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 3.0), // Small spacing between rows
-                  // Storage info
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        item.storageType.icon,
-                        size: 12, // Smaller icon
-                        color: secondaryTextColor,
-                      ),
-                      const SizedBox(width: 2.0), // Smaller spacing
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4, // Smaller padding
-                            vertical: 1, // Smaller padding
+                      const SizedBox(height: 3.0), // Small spacing between rows
+                      // Storage info
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item.storageType.icon,
+                            size: 12, // Smaller icon
+                            color: secondaryTextColor,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100, // Simple grey badge
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item.storageType.displayName, // Show name from enum
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0, // Smaller font
-                              fontWeight: FontWeight.w500,
-                              color: secondaryTextColor,
+                          const SizedBox(width: 2.0), // Smaller spacing
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4, // Smaller padding
+                                vertical: 1, // Smaller padding
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    Colors.grey.shade100, // Simple grey badge
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item
+                                    .storageType
+                                    .displayName, // Show name from enum
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.0, // Smaller font
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 6.0), // Further reduced spacing
-            // Quantity Display with Edit Button - Make more compact
-            GestureDetector(
-              onTap: () {
-                // Call the dialog function from the screen
-                showQuantityEditDialog(context, item, ref);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6.0, // Minimal padding
-                  vertical: 4.0, // Minimal padding
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6.0),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Value and unit in one row
-                    Row(
+                const SizedBox(width: 6.0), // Further reduced spacing
+                // Quantity Display with Edit Button - Make more compact
+                GestureDetector(
+                  onTap: () {
+                    // Call the dialog function from the screen
+                    showQuantityEditDialog(context, item, ref);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, // Minimal padding
+                      vertical: 4.0, // Minimal padding
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          _formatQuantity(item.quantity, item.unitType),
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.0, // Smaller font
-                            color: mainTextColor,
-                          ),
-                        ),
-                        const SizedBox(width: 1), // Minimal spacing
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 30),
-                          child: Text(
-                            item.unitType,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0, // Smaller font
-                              color: secondaryTextColor,
+                        // Value and unit in one row
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _formatQuantity(item.quantity, item.unitType),
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0, // Smaller font
+                                color: mainTextColor,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 1), // Minimal spacing
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 30),
+                              child: Text(
+                                item.unitType,
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.0, // Smaller font
+                                  color: secondaryTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Edit icon below, not beside
+                        Icon(
+                          Icons.edit,
+                          size: 11, // Smaller icon
+                          color: primaryColor.withOpacity(0.8),
                         ),
                       ],
                     ),
-                    // Edit icon below, not beside
-                    Icon(
-                      Icons.edit,
-                      size: 11, // Smaller icon
-                      color: primaryColor.withOpacity(0.8),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        // Etiqueta "Nuevo" animada
+        if (isHighlighted)
+          Positioned(top: 0, right: 0, child: PulsingNewBadge()),
+      ],
     );
   }
 
@@ -352,5 +371,79 @@ class InventoryItemCard extends ConsumerWidget {
       default:
         return 1.0;
     }
+  }
+}
+
+/// Widget que muestra una etiqueta "Nuevo" con efecto pulsante
+class PulsingNewBadge extends StatefulWidget {
+  const PulsingNewBadge({Key? key}) : super(key: key);
+
+  @override
+  State<PulsingNewBadge> createState() => _PulsingNewBadgeState();
+}
+
+class _PulsingNewBadgeState extends State<PulsingNewBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Configurar la animación pulsante
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+
+    // Animación de escala suave
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF5252), // Rojo brillante
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF5252).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              'Nuevo',
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

@@ -7,7 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType enum
+import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 // Potentially needed if you want to reuse the same logic/state for picking more
 // import 'package:zer0_waste_ai/features/scan/presentation/providers/add_scan_item_provider.dart';
@@ -312,82 +313,23 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     if (!mounted) return;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24.0),
+        return AppDialog(
+          icon: Icons.priority_high_rounded,
+          iconColor: colorScheme.error,
+          title: 'Límite de imágenes alcanzado',
+          content: Text(
+            'Puedes seleccionar un máximo de ${ScanConfirmScreen.maxImages} imágenes en total.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
           ),
-          // Use a theme surface color
-          backgroundColor: colorScheme.surfaceContainerHigh,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 32.0,
-              horizontal: 24.0,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icon with themed background circle
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    // Use error container color from theme
-                    color: colorScheme.errorContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons
-                        .priority_high_rounded, // Or Icons.warning_amber_rounded
-                    // Use onError container color for icon
-                    color: colorScheme.onErrorContainer,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Title Text
-                Text(
-                  'Límite de imágenes alcanzado',
-                  textAlign: TextAlign.center,
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    // Use text color appropriate for the dialog background
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Description Text
-                Text(
-                  'Puedes seleccionar un máximo de ${ScanConfirmScreen.maxImages} imágenes en total.',
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyLarge?.copyWith(
-                    // Use a secondary/variant text color from theme
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                // Action Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    textStyle: textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  child: const Text('Entendido'),
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                ),
-              ],
-            ),
+          primaryAction: AppDialog.createPrimaryButton(
+            context: context,
+            text: 'Entendido',
+            onPressed: () => Navigator.of(dialogContext).pop(),
           ),
         );
       },
