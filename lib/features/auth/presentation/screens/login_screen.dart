@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/widgets/login_form.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
 
 /// Login screen
@@ -16,31 +17,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _signInWithEmailAndPassword() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signInWithEmailAndPassword(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -99,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Inicia sesión para seguir reduciendo el desperdicio de alimentos',
+                        'Inicie sesión para seguir reduciendo el desperdicio de alimentos',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
                           color:
@@ -114,102 +92,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 40),
 
                 // Login form
-                Form(
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingresa tu email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Por favor ingresa un email válido';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: const InputDecoration(
-                            labelText: 'Contraseña',
-                            border: OutlineInputBorder(),
-                          ),
-                          obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingresa tu contraseña';
-                            }
-                            if (value.length < 6) {
-                              return 'La contraseña debe tener al menos 6 caracteres';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed:
-                                authState.isLoading
-                                    ? null
-                                    : _signInWithEmailAndPassword,
-                            child:
-                                authState.isLoading
-                                    ? const CircularProgressIndicator()
-                                    : const Text('Iniciar Sesión'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Social login buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed:
-                          authState.isLoading
-                              ? null
-                              : () =>
-                                  ref
-                                      .read(authControllerProvider.notifier)
-                                      .signInWithGoogle(),
-                      icon: const Icon(Icons.g_mobiledata),
-                    ),
-                    IconButton(
-                      onPressed:
-                          authState.isLoading
-                              ? null
-                              : () =>
-                                  ref
-                                      .read(authControllerProvider.notifier)
-                                      .signInWithApple(),
-                      icon: const Icon(Icons.apple),
-                    ),
-                    IconButton(
-                      onPressed:
-                          authState.isLoading
-                              ? null
-                              : () =>
-                                  ref
-                                      .read(authControllerProvider.notifier)
-                                      .signInWithFacebook(),
-                      icon: const Icon(Icons.facebook),
-                    ),
-                  ],
+                LoginForm(
+                  onForgotPassword: () {
+                    context.go('/forgot-password');
+                  },
+                  onRegister: () {
+                    context.go('/register');
+                  },
                 ),
               ],
             ),

@@ -79,16 +79,21 @@ class LoginController {
   /// Validate password
   String? validatePassword(String password) {
     if (password.isEmpty) return 'La contraseña es obligatoria';
-    if (password.length < 6)
-      return 'La contraseña debe tener al menos 6 caracteres';
-    if (!RegExp(r'[A-Z]').hasMatch(password))
+    if (password.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
       return 'La contraseña debe contener al menos una letra mayúscula';
-    if (!RegExp(r'[a-z]').hasMatch(password))
+    }
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
       return 'La contraseña debe contener al menos una letra minúscula';
-    if (!RegExp(r'[0-9]').hasMatch(password))
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
       return 'La contraseña debe contener al menos un número';
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password))
+    }
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
       return 'La contraseña debe contener al menos un carácter especial';
+    }
     return null;
   }
 }
