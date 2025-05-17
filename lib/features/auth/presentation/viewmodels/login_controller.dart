@@ -30,7 +30,7 @@ class LoginController {
       id: 'mock-user-id',
       email: email,
       displayName: 'UI Navigation User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -41,7 +41,7 @@ class LoginController {
       id: 'google-user-id',
       email: 'google@example.com',
       displayName: 'Google User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -52,7 +52,7 @@ class LoginController {
       id: 'facebook-user-id',
       email: 'facebook@example.com',
       displayName: 'Facebook User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -63,7 +63,7 @@ class LoginController {
       id: 'apple-user-id',
       email: 'apple@example.com',
       displayName: 'Apple User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 

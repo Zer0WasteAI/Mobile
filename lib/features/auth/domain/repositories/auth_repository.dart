@@ -1,27 +1,34 @@
-import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 
 /// Authentication repository interface
 abstract class AuthRepository {
   /// Sign in with email and password
-  Future<UserEntity> signInWithEmailAndPassword(String email, String password);
+  Future<UserModel> signInWithEmailAndPassword(String email, String password);
 
-  /// Register with email, password and name
-  Future<UserEntity> registerWithEmailAndPassword(String name, String email, String password, {String? phone});
+  /// Sign up with email and password
+  Future<UserModel> signUpWithEmailAndPassword(
+    String email,
+    String password,
+    String displayName,
+  );
 
   /// Sign in with Google
-  Future<UserEntity> signInWithGoogle();
+  Future<UserModel> signInWithGoogle();
 
   /// Sign in with Facebook
-  Future<UserEntity> signInWithFacebook();
+  Future<UserModel> signInWithFacebook();
 
   /// Sign in with Apple
-  Future<UserEntity> signInWithApple();
+  Future<UserModel> signInWithApple();
 
   /// Sign out
   Future<void> signOut();
 
   /// Get current user
-  Future<UserEntity?> getCurrentUser();
+  UserModel? get currentUser;
+
+  /// Stream of auth state changes
+  Stream<UserModel?> get authStateChanges;
 
   /// Send password reset email
   Future<void> sendPasswordResetEmail(String email);
@@ -29,6 +36,12 @@ abstract class AuthRepository {
   /// Verify reset code
   Future<bool> verifyResetCode(String email, String code);
 
-  /// Reset password with code
+  /// Reset password with verification code
   Future<void> resetPassword(String email, String code, String newPassword);
+
+  /// Update user profile
+  Future<void> updateUserProfile({String? displayName, String? photoURL});
+
+  /// Delete account
+  Future<void> deleteAccount();
 }

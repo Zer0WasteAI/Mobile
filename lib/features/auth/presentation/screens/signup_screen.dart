@@ -6,34 +6,35 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
 
-/// Login screen
-class LoginScreen extends ConsumerStatefulWidget {
-  /// Constructor
-  const LoginScreen({super.key});
+class SignUpScreen extends ConsumerStatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
-  Future<void> _signInWithEmailAndPassword() async {
+  Future<void> _signUpWithEmailAndPassword() async {
     if (_formKey.currentState?.validate() ?? false) {
       await ref
           .read(authControllerProvider.notifier)
-          .signInWithEmailAndPassword(
+          .signUpWithEmailAndPassword(
             _emailController.text.trim(),
             _passwordController.text,
+            _nameController.text.trim(),
           );
     }
   }
@@ -56,7 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error al iniciar sesión: ${state.error}',
+              'Error al registrarse: ${state.error}',
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor:
@@ -87,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Bienvenido de Nuevo',
+                        'Crear Cuenta',
                         style: theme.textTheme.displayLarge?.copyWith(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -99,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Inicia sesión para seguir reduciendo el desperdicio de alimentos',
+                        'Regístrate para empezar a reducir el desperdicio de alimentos',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
                           color:
@@ -113,13 +114,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Login form
+                // Signup form
                 Form(
                   key: _formKey,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       children: [
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Nombre',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor ingresa tu nombre';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailController,
                           decoration: const InputDecoration(
@@ -162,11 +177,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed:
                                 authState.isLoading
                                     ? null
-                                    : _signInWithEmailAndPassword,
+                                    : _signUpWithEmailAndPassword,
                             child:
                                 authState.isLoading
                                     ? const CircularProgressIndicator()
-                                    : const Text('Iniciar Sesión'),
+                                    : const Text('Registrarse'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => context.go('/login'),
+                          child: const Text(
+                            '¿Ya tienes una cuenta? Inicia sesión',
                           ),
                         ),
                       ],

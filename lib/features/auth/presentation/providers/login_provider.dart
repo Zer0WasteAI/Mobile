@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/data/datasources/auth_api.dart';
-import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
+import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/login_controller.dart';
 
@@ -160,10 +161,93 @@ final authApiProvider = Provider<AuthApi>((ref) {
 });
 
 /// Auth repository provider
-final authRepositoryProvider = Provider<AuthRepositoryImpl>((ref) {
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final authApi = ref.watch(authApiProvider);
-  return AuthRepositoryImpl(authApi);
+
+  // For testing purposes, use a simple implementation of AuthRepository
+  // that delegates to the MockAuthApi
+  return MockAuthRepository(authApi);
 });
+
+/// A mock implementation of AuthRepository that uses AuthApi
+class MockAuthRepository implements AuthRepository {
+  final AuthApi _authApi;
+
+  MockAuthRepository(this._authApi);
+
+  @override
+  Future<UserModel> signInWithEmailAndPassword(String email, String password) {
+    return _authApi.signInWithEmailAndPassword(email, password);
+  }
+
+  @override
+  Future<UserModel> signUpWithEmailAndPassword(
+    String email,
+    String password,
+    String displayName,
+  ) {
+    return _authApi.registerWithEmailAndPassword(displayName, email, password);
+  }
+
+  @override
+  Future<UserModel> signInWithGoogle() {
+    return _authApi.signInWithGoogle();
+  }
+
+  @override
+  Future<UserModel> signInWithFacebook() {
+    return _authApi.signInWithFacebook();
+  }
+
+  @override
+  Future<UserModel> signInWithApple() {
+    return _authApi.signInWithApple();
+  }
+
+  @override
+  Future<void> signOut() {
+    return _authApi.signOut();
+  }
+
+  @override
+  UserModel? get currentUser {
+    // For mock purposes, return null
+    return null;
+  }
+
+  @override
+  Stream<UserModel?> get authStateChanges {
+    // For mock purposes, return a stream that emits once from getCurrentUser()
+    return Stream.fromFuture(_authApi.getCurrentUser());
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) {
+    return _authApi.sendPasswordResetEmail(email);
+  }
+
+  @override
+  Future<bool> verifyResetCode(String email, String code) {
+    return _authApi.verifyResetCode(email, code);
+  }
+
+  @override
+  Future<void> resetPassword(String email, String code, String newPassword) {
+    return _authApi.resetPassword(email, code, newPassword);
+  }
+
+  @override
+  Future<void> updateUserProfile({String? displayName, String? photoURL}) {
+    // Not implemented in the mock
+    return Future.value();
+  }
+
+  @override
+  Future<void> deleteAccount() {
+    // Not implemented in the mock
+    return Future.value();
+  }
+}
 
 /// Login use case provider
 final loginUseCaseProvider = Provider<LoginUseCase>((ref) {

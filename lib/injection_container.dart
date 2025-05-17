@@ -5,11 +5,15 @@ import 'package:zer0_waste_ai/core/local_storage/hive_config.dart';
 import 'package:zer0_waste_ai/core/local_storage/shared_prefs_helper.dart';
 import 'package:zer0_waste_ai/core/navigation/app_router.dart';
 import 'package:zer0_waste_ai/core/theme/theme.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart'
+    as login;
 import 'package:zer0_waste_ai/features/auth/presentation/providers/register_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/forgot_password_provider.dart';
 import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 import 'package:zer0_waste_ai/features/onboarding/presentation/viewmodels/onboarding_controller.dart';
+import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 /// Initialize all dependencies
 class DependencyInjection {
@@ -29,6 +33,8 @@ class DependencyInjection {
       overrides: [
         // Override the SharedPreferencesHelper provider
         sharedPrefsProvider.overrideWithValue(sharedPrefsHelper),
+        // Register AuthRepository
+        authRepositoryProvider.overrideWithValue(AuthRepositoryImpl()),
       ],
     );
 
@@ -54,13 +60,13 @@ class AppProviders {
   static final sharedPrefs = sharedPrefsProvider;
 
   /// Auth API provider
-  static final authApi = authApiProvider;
+  static final authApi = login.authApiProvider;
 
   /// Auth repository provider
   static final authRepository = authRepositoryProvider;
 
   /// Login notifier provider
-  static final loginNotifier = loginNotifierProvider;
+  static final loginNotifier = login.loginNotifierProvider;
 
   /// Register notifier provider
   static final registerNotifier = registerNotifierProvider;

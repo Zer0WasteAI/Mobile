@@ -71,7 +71,7 @@
 	  <dict>
 	  <key>CFBundleURLSchemes</key>
 	  <array>
-	    <string>2105469753205916</string>
+	    <string>fb2105469753205916</string>
 	  </array>
 	  </dict>
 	</array>
@@ -86,6 +86,8 @@
 	<array>
 	  <string>fbapi</string>
 	  <string>fb-messenger-share-api</string>
+	  <string>fbauth2</string>
+	  <string>fbshareextension</string>
 	</array>
 
 	<key>GIDClientID</key>

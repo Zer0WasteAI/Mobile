@@ -40,6 +40,8 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_poli
 import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/signup_screen.dart';
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -93,38 +95,72 @@ const String supportRouteName = SupportScreen.routeName;
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  final router = AppRouter.createRouter(ref);
+  final authState = ref.watch(authStateProvider);
 
-  // Listen to route changes and update the navigation provider
-  router.routerDelegate.addListener(() {
-    // Use the root navigator key context to get the current location safely
-    final context = router.routerDelegate.navigatorKey.currentContext;
-    if (context != null) {
-      // Use GoRouter.of(context).location to get the current displayed route
-      final routeMatchList = router.routerDelegate.currentConfiguration.matches;
-      if (routeMatchList.isNotEmpty) {
-        final currentLocation = routeMatchList.last.matchedLocation;
+  return GoRouter(
+    initialLocation: '/',
+    debugLogDiagnostics: true,
+    redirect: (context, state) {
+      final isLoggedIn = authState.value != null;
+      final isGoingToLogin = state.matchedLocation == '/login';
+      final isGoingToSignup = state.matchedLocation == '/signup';
+      final isGoingToForgotPassword =
+          state.matchedLocation == '/forgot-password';
+      final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+      final isGoingToSplash = state.matchedLocation == '/';
 
-        // Only update if the location is one of the main tab routes
-        if ([
-          '/home',
-          '/inventory',
-          '/recipes',
-          '/profile',
-        ].contains(currentLocation)) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            // Check if the provider's state needs updating
-            if (ref.read(currentNavigationProvider) != currentLocation) {
-              ref.read(currentNavigationProvider.notifier).state =
-                  currentLocation;
-            }
-          });
-        }
+      // If not logged in and not going to login, signup, forgot password, onboarding or splash, redirect to login
+      if (!isLoggedIn &&
+          !isGoingToLogin &&
+          !isGoingToSignup &&
+          !isGoingToForgotPassword &&
+          !isGoingToOnboarding &&
+          !isGoingToSplash) {
+        return '/login';
       }
-    }
-  });
 
-  return router;
+      // If logged in and trying to go to login, signup, forgot password, onboarding or splash, redirect to home
+      if (isLoggedIn &&
+          (isGoingToLogin ||
+              isGoingToSignup ||
+              isGoingToForgotPassword ||
+              isGoingToOnboarding ||
+              isGoingToSplash)) {
+        return '/home';
+      }
+
+      return null;
+    },
+    routes: [
+      // Splash route
+      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+
+      // Onboarding route
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // Auth routes
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+
+      // Main app routes
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/allergies',
+        name: AllergySelectorScreen.routeName,
+        builder: (context, state) => const AllergySelectorScreen(),
+      ),
+    ],
+  );
 });
 
 /// App router configuration

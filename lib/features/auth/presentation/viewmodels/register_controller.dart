@@ -36,7 +36,7 @@ class RegisterController {
       id: 'registered-user-id',
       email: email,
       displayName: name,
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -47,7 +47,7 @@ class RegisterController {
       id: 'google-user-id',
       email: 'google@example.com',
       displayName: 'Google User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -58,7 +58,7 @@ class RegisterController {
       id: 'facebook-user-id',
       email: 'facebook@example.com',
       displayName: 'Facebook User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 
@@ -69,7 +69,7 @@ class RegisterController {
       id: 'apple-user-id',
       email: 'apple@example.com',
       displayName: 'Apple User',
-      photoUrl: 'https://via.placeholder.com/150',
+      photoURL: 'https://via.placeholder.com/150',
     );
   }
 

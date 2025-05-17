@@ -8,7 +8,12 @@ abstract class AuthApi {
   Future<UserModel> signInWithEmailAndPassword(String email, String password);
 
   /// Register with email, password and name
-  Future<UserModel> registerWithEmailAndPassword(String name, String email, String password, {String? phone});
+  Future<UserModel> registerWithEmailAndPassword(
+    String name,
+    String email,
+    String password, {
+    String? phone,
+  });
 
   /// Sign in with Google
   Future<UserModel> signInWithGoogle();
@@ -42,7 +47,7 @@ class MockAuthApi implements AuthApi {
     id: 'mock-user-id',
     email: 'user@example.com',
     displayName: 'Mock User',
-    photoUrl: 'https://via.placeholder.com/150',
+    photoURL: 'https://via.placeholder.com/150',
   );
 
   /// Mock delay for simulating network requests
@@ -58,7 +63,10 @@ class MockAuthApi implements AuthApi {
   final Map<String, int> _verificationAttempts = {};
 
   @override
-  Future<UserModel> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserModel> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     // Simulate network delay
     await Future.delayed(_delay);
 
@@ -133,7 +141,12 @@ class MockAuthApi implements AuthApi {
   }
 
   @override
-  Future<UserModel> registerWithEmailAndPassword(String name, String email, String password, {String? phone}) async {
+  Future<UserModel> registerWithEmailAndPassword(
+    String name,
+    String email,
+    String password, {
+    String? phone,
+  }) async {
     // Simulate network delay
     await Future.delayed(_delay);
 
@@ -171,7 +184,8 @@ class MockAuthApi implements AuthApi {
     }
 
     // Generate a 6-digit code
-    final code = (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
+    final code =
+        (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
 
     // Store the code for this email
     _resetCodes[email] = code;
@@ -213,7 +227,11 @@ class MockAuthApi implements AuthApi {
   }
 
   @override
-  Future<void> resetPassword(String email, String code, String newPassword) async {
+  Future<void> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     // Simulate network delay
     await Future.delayed(_delay);
 
@@ -254,13 +272,13 @@ extension UserModelExtension on UserModel {
     String? id,
     String? email,
     String? displayName,
-    String? photoUrl,
+    String? photoURL,
   }) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
-      photoUrl: photoUrl ?? this.photoUrl,
+      photoURL: photoURL ?? this.photoURL,
     );
   }
 }

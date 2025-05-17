@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
 part 'recipe_state.freezed.dart';
 
 // Model for a single Recipe (adjust fields as needed)
 @freezed
-class Recipe with _$Recipe {
+abstract class Recipe with _$Recipe {
   const factory Recipe({
     required String id,
     required String name,
@@ -24,7 +23,7 @@ class Recipe with _$Recipe {
 
 // State for the Recipe Screen
 @freezed
-class RecipeState with _$RecipeState {
+abstract class RecipeState with _$RecipeState {
   const factory RecipeState({
     @Default(false) bool isLoading,
     @Default([]) List<Recipe> recipes,
