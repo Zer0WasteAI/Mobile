@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "620002955074",
+    "project_id": "zer0wasteai-91408",
+    "storage_bucket": "zer0wasteai-91408.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620002955074:android:9a9a28e66e304e1491c2db",
+        "android_client_info": {
+          "package_name": "com.upc.zerowasteai.zer0_waste_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "620002955074-hu3rdjpgu1v826i72ulq5und60obd0pq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.upc.zerowasteai.zer0_waste_ai",
+            "certificate_hash": "fcf57edda17661d6d154a15007154187f3316c75"
+          }
+        },
+        {
+          "client_id": "620002955074-jemlmuao3cjlk552p2noebq6474smq5t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3p8WHkhcXF52Iv2PaWRoSxjbIj-xGcQw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620002955074-jemlmuao3cjlk552p2noebq6474smq5t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "620002955074-jtegrh6u92tb9f38h13q3ta77vlh7r98.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.upc.zerowasteai.zeroWasteAi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

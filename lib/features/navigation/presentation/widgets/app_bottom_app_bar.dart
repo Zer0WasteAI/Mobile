@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart';
+import 'package:zer0_waste_ai/features/navigation/presentation/widgets/more_options_modal.dart';
 
 class AppBottomAppBar extends ConsumerWidget {
   const AppBottomAppBar({super.key});
@@ -17,6 +18,7 @@ class AppBottomAppBar extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final currentPath = ref.watch(currentNavigationProvider);
     final isScanModalOpen = ref.watch(isScanModalOpenProvider);
+    final isMoreMenuOpen = ref.watch(isMoreMenuOpenProvider);
 
     // Get current route location to check for scan flow routes
     final currentRouteLocation = GoRouterState.of(context).matchedLocation;
@@ -41,68 +43,84 @@ class AppBottomAppBar extends ConsumerWidget {
     final Color navItemUnselectedColor =
         defaultUnselectedColor; // Unselected is always default
 
-    return BottomAppBar(
-      color: currentBackgroundColor,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          _buildNavItem(
-            context,
-            ref,
-            FontAwesomeIcons.house,
-            'Inicio',
-            '/home',
-            currentPath,
-            navItemSelecedColor,
-            navItemUnselectedColor,
-            isScanFlowActive,
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        // Bottom App Bar
+        BottomAppBar(
+          color: currentBackgroundColor,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              _buildNavItem(
+                context,
+                ref,
+                FontAwesomeIcons.house,
+                'Inicio',
+                '/home',
+                currentPath,
+                navItemSelecedColor,
+                navItemUnselectedColor,
+                isScanFlowActive,
+              ),
+              _buildNavItem(
+                context,
+                ref,
+                'assets/icons/navbar/inventory.png',
+                'Inventario',
+                '/inventory',
+                currentPath,
+                navItemSelecedColor,
+                navItemUnselectedColor,
+                isScanFlowActive,
+              ),
+              _buildScanItem(
+                context,
+                ref,
+                'assets/icons/navbar/scan.png',
+                'Escanear',
+                isScanFlowActive,
+                navItemSelecedColor,
+                navItemUnselectedColor,
+              ),
+              _buildNavItem(
+                context,
+                ref,
+                'assets/icons/navbar/recipes.png',
+                'Recetas',
+                '/recipes',
+                currentPath,
+                navItemSelecedColor,
+                navItemUnselectedColor,
+                isScanFlowActive,
+              ),
+              _buildMoreNavItem(
+                context,
+                ref,
+                FontAwesomeIcons.ellipsis,
+                'Más',
+                isMoreMenuOpen,
+                navItemSelecedColor,
+                navItemUnselectedColor,
+              ),
+            ],
           ),
-          _buildNavItem(
-            context,
-            ref,
-            'assets/icons/navbar/inventory.png',
-            'Inventario',
-            '/inventory',
-            currentPath,
-            navItemSelecedColor,
-            navItemUnselectedColor,
-            isScanFlowActive,
+        ),
+
+        // "Más" Options Modal
+        if (isMoreMenuOpen)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: MoreOptionsModal(
+              onClose:
+                  () => ref.read(isMoreMenuOpenProvider.notifier).state = false,
+            ),
           ),
-          _buildScanItem(
-            context,
-            ref,
-            'assets/icons/navbar/scan.png',
-            'Escanear',
-            isScanFlowActive,
-            navItemSelecedColor,
-            navItemUnselectedColor,
-          ),
-          _buildNavItem(
-            context,
-            ref,
-            'assets/icons/navbar/recipes.png',
-            'Recetas',
-            '/recipes',
-            currentPath,
-            navItemSelecedColor,
-            navItemUnselectedColor,
-            isScanFlowActive,
-          ),
-          _buildNavItem(
-            context,
-            ref,
-            FontAwesomeIcons.solidUser,
-            'Perfil',
-            '/profile',
-            currentPath,
-            navItemSelecedColor,
-            navItemUnselectedColor,
-            isScanFlowActive,
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -210,6 +228,49 @@ class AppBottomAppBar extends ConsumerWidget {
                 style: textStyle.copyWith(
                   color: labelColor,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreNavItem(
+    BuildContext context,
+    WidgetRef ref,
+    IconData icon,
+    String label,
+    bool isMoreMenuOpen,
+    Color selectedColor,
+    Color defaultUnselectedColor,
+  ) {
+    final Color color = isMoreMenuOpen ? selectedColor : defaultUnselectedColor;
+    final theme = Theme.of(context);
+    final textStyle =
+        theme.textTheme.bodySmall ?? const TextStyle(fontSize: 10);
+    const double iconSize = 24;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          ref.read(isMoreMenuOpenProvider.notifier).state = !isMoreMenuOpen;
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(icon, color: color, size: iconSize),
+              Text(
+                label,
+                style: textStyle.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.normal,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),

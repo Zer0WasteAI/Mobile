@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
 
@@ -101,8 +102,38 @@ class RecipeCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16.0),
           onTap: () {
-            // TODO: Implement navigation to recipe details
-            print("Navigate to Recipe: ${recipe.title}");
+            // Convertir el objeto Recipe a un Map para pasarlo a la pantalla de detalle
+            final recipeMap = {
+              'id': recipe.id,
+              'title': recipe.title,
+              'difficulty': recipe.difficulty,
+              'imageUrl': recipe.imageUrl,
+              'description':
+                  'Receta basada en los ingredientes disponibles en tu despensa.',
+              'preparationTime': '30 min',
+              'servings': 2,
+              'ingredients': [
+                'Ingredientes sugeridos basados en tu inventario',
+                '4 cucharadas de aceite de oliva',
+                'Sal y pimienta al gusto',
+              ],
+              'steps': [
+                'Preparar los ingredientes',
+                'Cocinar según instrucciones detalladas',
+                'Servir y disfrutar',
+              ],
+              'nutrients': {
+                'calories': '350 kcal',
+                'protein': '15g',
+                'carbs': '45g',
+                'fats': '12g',
+              },
+              'tags': ['Saludable', 'Rápido'],
+              'emoji': '🍽️',
+            };
+
+            // Navegar a la pantalla de detalle
+            context.push('/recipes/detail', extra: recipeMap);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

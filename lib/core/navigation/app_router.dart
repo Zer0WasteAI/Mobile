@@ -25,6 +25,21 @@ import 'package:zer0_waste_ai/features/inventory/presentation/screens/ingredient
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_detail_screen.dart'; // Import FoodDetailScreen
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart'; // Import RecipeMode
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/ai_recipe_generation_screen.dart'; // Import AIRecipeGenerationScreen
+import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_cooking_level_selector_screen.dart'; // Import profile cooking level screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_preferred_food_type_screen.dart'; // Import profile food type screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_allergy_selector_screen.dart'; // Import profile allergy screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_special_diet_selector_screen.dart'; // Import profile special diet screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/units_screen.dart'; // Import units screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/faqs_screen.dart'; // Import FAQs screen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_policy_screen.dart'; // Import PrivacyPolicyScreen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
+import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -43,6 +58,8 @@ const String inventoryRouteName = 'inventory';
 const String recipesRouteName = 'recipes'; // For explore mode via bottom nav
 const String smartRecipesRouteName = 'smart-recipes'; // For generation flow
 const String profileRouteName = 'profile';
+const String impactRouteName = 'impact'; // For impact panel
+const String plannerRouteName = 'planner'; // For weekly planner
 const String addInventoryItemRouteName = AddInventoryItemScreen.routeName;
 const String ingredientDetailRouteName = 'ingredientDetail';
 const String foodDetailRouteName = 'foodDetail';
@@ -55,6 +72,24 @@ const String cookingLevelSelectorRouteName =
 const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
 const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
+
+// Profile-specific selector route names
+const String profileCookingLevelSelectorRouteName =
+    ProfileCookingLevelSelectorScreen.routeName;
+const String profilePreferredFoodTypeRouteName =
+    ProfilePreferredFoodTypeScreen.routeName;
+const String profileAllergySelectorRouteName =
+    ProfileAllergySelectorScreen.routeName;
+const String profileSpecialDietSelectorRouteName =
+    ProfileSpecialDietSelectorScreen.routeName;
+const String notificationsRouteName = NotificationsScreen.routeName;
+const String languageRouteName = LanguageScreen.routeName;
+const String unitsRouteName = UnitsScreen.routeName;
+const String faqsRouteName = FAQsScreen.routeName;
+const String privacyPolicyRouteName = PrivacyPolicyScreen.routeName;
+const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
+const String aboutAppRouteName = AboutAppScreen.routeName;
+const String supportRouteName = SupportScreen.routeName;
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -258,6 +293,38 @@ class AppRouter {
           name: aiRecipeGenerationRouteName,
           builder: (context, state) => const AIRecipeGenerationScreen(),
         ),
+        // Route for Recipe Detail Screen
+        GoRoute(
+          path: '/recipes/detail',
+          name: 'recipeDetail',
+          builder: (context, state) {
+            // Esperar los datos de la receta como parameter extra
+            final recipe = state.extra as Map<String, dynamic>?;
+            if (recipe == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/home');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return RecipeDetailScreen(recipe: recipe);
+          },
+        ),
+        // Route for Impact Panel
+        GoRoute(
+          path: '/impact',
+          name: impactRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const ImpactScreen(),
+        ),
+        // Route for Weekly Planner
+        GoRoute(
+          path: '/planner',
+          name: plannerRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const PlannerScreen(),
+        ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(
           path: '/smart-recipes',
@@ -363,6 +430,76 @@ class AppRouter {
               },
             ),
           ],
+        ),
+        // Add the profile-specific preference screens routes
+        GoRoute(
+          path: ProfileCookingLevelSelectorScreen.routePath,
+          name: profileCookingLevelSelectorRouteName,
+          builder:
+              (context, state) => const ProfileCookingLevelSelectorScreen(),
+        ),
+        GoRoute(
+          path: ProfilePreferredFoodTypeScreen.routePath,
+          name: profilePreferredFoodTypeRouteName,
+          builder: (context, state) => const ProfilePreferredFoodTypeScreen(),
+        ),
+        GoRoute(
+          path: ProfileAllergySelectorScreen.routePath,
+          name: profileAllergySelectorRouteName,
+          builder: (context, state) => const ProfileAllergySelectorScreen(),
+        ),
+        GoRoute(
+          path: ProfileSpecialDietSelectorScreen.routePath,
+          name: profileSpecialDietSelectorRouteName,
+          builder: (context, state) => const ProfileSpecialDietSelectorScreen(),
+        ),
+        // Add the notifications screen route
+        GoRoute(
+          path: NotificationsScreen.routePath,
+          name: notificationsRouteName,
+          builder: (context, state) => const NotificationsScreen(),
+        ),
+        // Add the language screen route
+        GoRoute(
+          path: LanguageScreen.routePath,
+          name: languageRouteName,
+          builder: (context, state) => const LanguageScreen(),
+        ),
+        // Add the units screen route
+        GoRoute(
+          path: UnitsScreen.routePath,
+          name: unitsRouteName,
+          builder: (context, state) => const UnitsScreen(),
+        ),
+        // Add the FAQs screen route
+        GoRoute(
+          path: FAQsScreen.routePath,
+          name: faqsRouteName,
+          builder: (context, state) => const FAQsScreen(),
+        ),
+        // Add the Privacy Policy screen route
+        GoRoute(
+          path: PrivacyPolicyScreen.routePath,
+          name: privacyPolicyRouteName,
+          builder: (context, state) => const PrivacyPolicyScreen(),
+        ),
+        // Add the Terms and Conditions screen route
+        GoRoute(
+          path: TermsAndConditionsScreen.routePath,
+          name: termsAndConditionsRouteName,
+          builder: (context, state) => const TermsAndConditionsScreen(),
+        ),
+        // Add the About App screen route
+        GoRoute(
+          path: AboutAppScreen.routePath,
+          name: aboutAppRouteName,
+          builder: (context, state) => const AboutAppScreen(),
+        ),
+        // Add the Support screen route
+        GoRoute(
+          path: SupportScreen.routePath,
+          name: supportRouteName,
+          builder: (context, state) => const SupportScreen(),
         ),
       ],
       errorBuilder:

@@ -8,15 +8,17 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/motivational_ca
 import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
+import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
 
-/// Home screen
+/// The HomeScreen widget is the main entry point of the app.
+/// It displays a welcome message, a motivational card, inventory summary,
+/// recipe suggestions, impact summary, and other personalized content.
 class HomeScreen extends ConsumerWidget {
-  /// Constructor
-  const HomeScreen({super.key});
-
-  // Define constants for padding and colors
+  // Common spacing values
   static const double _horizontalPadding = 16.0;
   static const double _sectionSpacing = 16.0;
+
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,34 +29,52 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: backgroundColor, // Use theme background
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24), // Top spacing
-                // 1. Welcome Header
-                const WelcomeHeader(),
-                const SizedBox(
-                  height: _sectionSpacing * 1.5,
-                ), // More space after header
-                // 2. Motivational Card
-                const MotivationalCard(),
-                const SizedBox(height: _sectionSpacing),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24), // Espacio superior
+              // Welcome Header con padding horizontal
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: WelcomeHeader(),
+              ),
 
-                // 3. Inventory Summary Card
-                const InventorySummaryCard(),
-                const SizedBox(height: _sectionSpacing * 1.5),
+              const SizedBox(height: 24), // Espacio después del header
+              // Daily Planner Widget - Planificación de comidas del día (NUEVO)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: DailyPlannerWidget(),
+              ),
+              const SizedBox(height: _sectionSpacing),
 
-                // 4. Recipe Suggestions
-                const RecipeSuggestions(),
-                const SizedBox(height: _sectionSpacing * 1.5),
+              // Motivational Card
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: MotivationalCard(),
+              ),
+              const SizedBox(height: _sectionSpacing),
 
-                // 5. Impact Summary Card
-                const ImpactSummaryCard(),
-                const SizedBox(height: 24), // Bottom spacing
-              ],
-            ),
+              // Inventory Summary Card
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: InventorySummaryCard(),
+              ),
+              const SizedBox(height: _sectionSpacing),
+
+              // Recipe Suggestions
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: RecipeSuggestions(),
+              ),
+              const SizedBox(height: _sectionSpacing),
+
+              // Impact Summary Card
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                child: ImpactSummaryCard(),
+              ),
+              const SizedBox(height: 24), // Bottom spacing
+            ],
           ),
         ),
       ),

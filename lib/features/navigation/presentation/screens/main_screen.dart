@@ -5,6 +5,7 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/widgets/app_bottom_app_bar.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/scan_options_modal.dart';
+import 'package:zer0_waste_ai/features/navigation/presentation/widgets/more_options_modal.dart';
 
 class MainScreen extends ConsumerWidget {
   final Widget child;
@@ -17,9 +18,11 @@ class MainScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final isScanOpen = ref.watch(isScanModalOpenProvider);
+    final isMoreMenuOpen = ref.watch(isMoreMenuOpenProvider);
 
     // Get current route location
     final currentRouteLocation = GoRouterState.of(context).matchedLocation;
+
     // Determine if we are in the scan flow (modal open OR on add screen)
     final bool isScanFlowActive =
         isScanOpen || currentRouteLocation.startsWith('/scan/add/');
@@ -35,39 +38,64 @@ class MainScreen extends ConsumerWidget {
     // Use AppColors for FAB Icon (cannot be const if AppColors is not const)
     final Color fabIconColor = AppColors.fabIcon;
 
+    // Listen for navigation events to close modals
+    ref.listen<String>(currentNavigationProvider, (previous, current) {
+      // Close modals when navigating
+      if (previous != current) {
+        if (ref.read(isScanModalOpenProvider.notifier).state) {
+          ref.read(isScanModalOpenProvider.notifier).state = false;
+        }
+        if (ref.read(isMoreMenuOpenProvider.notifier).state) {
+          ref.read(isMoreMenuOpenProvider.notifier).state = false;
+        }
+      }
+    });
+
     return Scaffold(
-      bottomNavigationBar: const AppBottomAppBar(),
+      bottomNavigationBar:
+          isMoreMenuOpen
+              ? null // Ocultar bottomNavigationBar cuando el menú está abierto
+              : const AppBottomAppBar(),
       // Restore FloatingActionButton and its location
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        backgroundColor: fabBackgroundColor,
-        onPressed: () {
-          // FAB now toggles the state that controls the modal in the Stack
-          ref.read(isScanModalOpenProvider.notifier).update((state) => !state);
-        },
-        elevation: 2.0,
-        child: Image.asset(
-          'assets/icons/navbar/scan.png',
-          color: fabIconColor,
-          width: 28,
-          height: 28,
-        ),
-      ),
+      floatingActionButton:
+          isMoreMenuOpen
+              ? null // No mostrar el FAB cuando el menú "Más" está abierto
+              : FloatingActionButton(
+                shape: const CircleBorder(),
+                backgroundColor: fabBackgroundColor,
+                onPressed: () {
+                  // Close More menu if open
+                  if (isMoreMenuOpen) {
+                    ref.read(isMoreMenuOpenProvider.notifier).state = false;
+                  }
+                  // Toggle scan modal
+                  ref
+                      .read(isScanModalOpenProvider.notifier)
+                      .update((state) => !state);
+                },
+                elevation: 2.0,
+                child: Image.asset(
+                  'assets/icons/navbar/scan.png',
+                  color: fabIconColor,
+                  width: 28,
+                  height: 28,
+                ),
+              ),
       // Keep Stack in body for ModalBarrier and positioned ScanOptionsModal
       body: Stack(
         children: [
           // Main screen content
           child,
 
-          // Dimming barrier
+          // Dimming barrier for scan modal
           if (isScanOpen)
             ModalBarrier(
               color: Colors.black.withValues(alpha: 0.3),
               dismissible: false,
             ),
 
-          // Conditionally display the modal (positioned relative to bottom)
+          // Conditionally display the scan modal
           if (isScanOpen)
             Positioned.fill(
               child: Align(
@@ -78,6 +106,28 @@ class MainScreen extends ConsumerWidget {
                           ref.read(isScanModalOpenProvider.notifier).state =
                               false,
                 ),
+              ),
+            ),
+
+          // Dimming barrier for more menu
+          if (isMoreMenuOpen)
+            ModalBarrier(
+              color: Colors.black.withValues(alpha: 0.3),
+              dismissible: true,
+              onDismiss:
+                  () => ref.read(isMoreMenuOpenProvider.notifier).state = false,
+            ),
+
+          // Conditionally display the more menu
+          if (isMoreMenuOpen)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: MoreOptionsModal(
+                onClose:
+                    () =>
+                        ref.read(isMoreMenuOpenProvider.notifier).state = false,
               ),
             ),
         ],

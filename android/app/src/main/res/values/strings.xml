@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zero Waste AI</string>
+    <string name="facebook_app_id">2105469753205916</string>
+    <string name="fb_login_protocol_scheme">fb2105469753205916</string>
+    <string name="facebook_client_token">65be40cf025b7c5f8f404239a1bef11a</string>
+</resources>
