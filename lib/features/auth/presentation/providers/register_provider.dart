@@ -3,6 +3,7 @@ import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/register_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/register_controller.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 class _NotPassed {
   const _NotPassed();

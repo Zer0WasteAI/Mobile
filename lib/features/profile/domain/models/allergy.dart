@@ -4,14 +4,25 @@ import 'package:flutter/foundation.dart';
 class Allergy {
   final String emoji;
   final String name;
+  final bool isCustom;
 
-  const Allergy({required this.emoji, required this.name});
+  const Allergy({
+    required this.emoji,
+    required this.name,
+    this.isCustom = false,
+  });
 
   factory Allergy.fromJson(Map<String, dynamic> json) {
     return Allergy(
       emoji: json['emoji'] as String,
       name: json['name'] as String,
+      isCustom: json['isCustom'] as bool? ?? false,
     );
+  }
+
+  // Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {'emoji': emoji, 'name': name, 'isCustom': isCustom};
   }
 
   // Display string combines emoji and name

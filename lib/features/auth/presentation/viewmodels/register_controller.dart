@@ -1,3 +1,4 @@
+import 'package:zer0_waste_ai/core/usecases/usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/register_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
@@ -31,46 +32,28 @@ class RegisterController {
     String password, {
     String? phone,
   }) async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'registered-user-id',
+    final params = RegisterParams(
+      name: name,
       email: email,
-      displayName: name,
-      photoURL: 'https://via.placeholder.com/150',
+      password: password,
+      phone: phone,
     );
+    return await registerUseCase(params);
   }
 
   /// Login with Google
   Future<UserEntity> loginWithGoogle() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'google-user-id',
-      email: 'google@example.com',
-      displayName: 'Google User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    return await googleLoginUseCase(const NoParams());
   }
 
   /// Login with Facebook
   Future<UserEntity> loginWithFacebook() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'facebook-user-id',
-      email: 'facebook@example.com',
-      displayName: 'Facebook User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    return await facebookLoginUseCase(const NoParams());
   }
 
   /// Login with Apple
   Future<UserEntity> loginWithApple() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'apple-user-id',
-      email: 'apple@example.com',
-      displayName: 'Apple User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    return await appleLoginUseCase(const NoParams());
   }
 
   /// Validate name
@@ -104,16 +87,21 @@ class RegisterController {
 
   String? validatePassword(String password) {
     if (password.isEmpty) return 'La contraseña es obligatoria';
-    if (password.length < 6)
-      return 'La contraseña debe tener al menos 6 caracteres';
-    if (!RegExp(r'[A-Z]').hasMatch(password))
+    if (password.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
       return 'La contraseña debe contener al menos una letra mayúscula';
-    if (!RegExp(r'[a-z]').hasMatch(password))
+    }
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
       return 'La contraseña debe contener al menos una letra minúscula';
-    if (!RegExp(r'[0-9]').hasMatch(password))
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
       return 'La contraseña debe contener al menos un número';
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password))
+    }
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
       return 'La contraseña debe contener al menos un carácter especial';
+    }
     return null;
   }
 

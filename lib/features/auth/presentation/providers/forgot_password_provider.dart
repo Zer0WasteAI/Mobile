@@ -6,6 +6,7 @@ import 'package:zer0_waste_ai/features/auth/domain/usecases/verify_code_usecase.
 import 'package:zer0_waste_ai/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/forgot_password_controller.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 /// Forgot password step
 enum ForgotPasswordStep {

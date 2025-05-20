@@ -85,8 +85,28 @@ class MainScreen extends ConsumerWidget {
       // Keep Stack in body for ModalBarrier and positioned ScanOptionsModal
       body: Stack(
         children: [
-          // Main screen content
-          child,
+          // Main screen content with AnimatedSwitcher for smooth transitions
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.03, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            child: child,
+          ),
 
           // Dimming barrier for scan modal
           if (isScanOpen)

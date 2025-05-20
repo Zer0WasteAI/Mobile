@@ -3,23 +3,58 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // --- Enum & State Management ---
 
 enum CookingLevel { beginner, intermediate, advanced }
 
-final selectedCookingLevelProvider =
-    StateNotifierProvider<SelectedCookingLevelNotifier, CookingLevel?>((ref) {
-      // TODO: Load saved preference if available (e.g., from SharedPreferences)
-      return SelectedCookingLevelNotifier(null); // Start with nothing selected
-    });
+// Extension to convert enum to string for storage
+extension CookingLevelExtension on CookingLevel {
+  String toStorageString() {
+    switch (this) {
+      case CookingLevel.beginner:
+        return 'beginner';
+      case CookingLevel.intermediate:
+        return 'intermediate';
+      case CookingLevel.advanced:
+        return 'advanced';
+    }
+  }
+
+  static CookingLevel fromStorageString(String? value) {
+    switch (value) {
+      case 'beginner':
+        return CookingLevel.beginner;
+      case 'intermediate':
+        return CookingLevel.intermediate;
+      case 'advanced':
+        return CookingLevel.advanced;
+      default:
+        return CookingLevel.beginner; // Default value
+    }
+  }
+}
+
+final selectedCookingLevelProvider = StateNotifierProvider.autoDispose<
+  SelectedCookingLevelNotifier,
+  CookingLevel?
+>((ref) {
+  // Using autoDispose to ensure state is reset when leaving the screen
+  return SelectedCookingLevelNotifier(null); // Start with nothing selected
+});
 
 class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
   SelectedCookingLevelNotifier(super.initialState);
 
   void selectLevel(CookingLevel level) {
     state = level;
-    // TODO: Save selected preference (e.g., to SharedPreferences)
+  }
+
+  void reset() {
+    state = null;
+    print("Resetting cooking level selection");
   }
 }
 
@@ -35,48 +70,41 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLevel = ref.watch(selectedCookingLevelProvider);
     final notifier = ref.read(selectedCookingLevelProvider.notifier);
+    final authController = ref.read(authControllerProvider.notifier);
 
-    // --- Theme Colors Integration ---
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    // --- End Theme Colors Integration ---
+    // Use Theme colors for consistent styling
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    // Remove hardcoded const colors if they are now derived from theme
-    // const primaryColor = Color(0xFF00B894);
-    // const secondaryColor = Color(0xFF70605A);
-    // const backgroundColor = Color(0xFFFAF9F6);
     const cardRadius = Radius.circular(16.0);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface, // Use theme background
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Titles
               Text(
                 '¿Cuál es tu nivel de cocina?',
                 style: GoogleFonts.inter(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface, // Use theme text color
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Queremos sugerirte recetas adecuadas para ti.',
+                'Selecciona tu nivel para recibir recetas adecuadas a tu experiencia.',
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color:
-                      colorScheme
-                          .onSurfaceVariant, // Use theme secondary text color
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Selection Cards
+              // Cooking level cards
               Expanded(
                 child: ListView(
                   padding: EdgeInsets.zero,
@@ -147,34 +175,66 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      selectedLevel == null
-                          ? null
-                          : () {
-                            print('Selected Level: $selectedLevel');
-                            // Navigate to the Food Preferences screen
-                            context.go(PreferredFoodTypeScreen.routePath);
-                          },
+                  onPressed: () async {
+                    try {
+                      // Mostrar indicador de carga
+                      if (context.mounted) {
+                        showLoadingSnackBar(
+                          context,
+                          message: 'Guardando nivel de cocina...',
+                        );
+                      }
+
+                      // Save cooking level to Firestore - use a default if none selected
+                      final cookingLevelString =
+                          selectedLevel != null
+                              ? selectedLevel.toStorageString()
+                              : CookingLevel.beginner
+                                  .toStorageString(); // Default to beginner if none selected
+
+                      print("Guardando nivel de cocina: $cookingLevelString");
+
+                      await ref
+                          .read(authRepositoryProvider)
+                          .saveUserCookingLevel(cookingLevelString);
+
+                      // Reset state to avoid keeping selections
+                      notifier.reset();
+
+                      // Navigate to the cooking level selector screen
+                      if (context.mounted) {
+                        // Usar go en lugar de replace para transiciones más fluidas
+                        context.go(PreferredFoodTypeScreen.routePath);
+                      }
+                    } catch (e) {
+                      print("Error guardando nivel de cocina: $e");
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Error: No se pudo guardar el nivel de cocina: $e',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary, // Theme primary
-                    foregroundColor:
-                        colorScheme.onPrimary, // Theme text on primary
-                    disabledBackgroundColor: colorScheme.primary.withValues(
-                      alpha: 0.5,
-                    ),
-                    disabledForegroundColor: colorScheme.onPrimary.withValues(
-                      alpha: 0.7,
-                    ),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    textStyle: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ), // Apply text style here
                   ),
-                  child: const Text('Continuar'), // Text widget is simpler now
+                  child: Text(
+                    'Continuar',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -185,8 +245,7 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
   }
 }
 
-// --- Reusable Card Widget ---
-
+// Widget for displaying cooking level cards with animation
 class _CookingLevelCard extends StatelessWidget {
   final CookingLevel level;
   final String title;
@@ -252,16 +311,8 @@ class _CookingLevelCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Image.asset(
-                imagePath,
-                width: 50,
-                height: 50,
-                errorBuilder:
-                    (context, error, stackTrace) =>
-                        const Icon(Icons.error, size: 50),
-              ),
-              const SizedBox(width: 16),
               Expanded(
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -269,12 +320,12 @@ class _CookingLevelCard extends StatelessWidget {
                     Text(
                       title,
                       style: GoogleFonts.inter(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: textColor,
+                        color: isSelected ? selectedColor : textColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
                       description,
                       style: GoogleFonts.inter(
@@ -282,7 +333,62 @@ class _CookingLevelCard extends StatelessWidget {
                         color: secondaryTextColor,
                       ),
                     ),
+                    if (isSelected) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selectedColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: selectedColor,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Seleccionado',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: selectedColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Opacity(
+                  opacity: 0.9,
+                  child: Image.asset(
+                    imagePath,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 80,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

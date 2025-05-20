@@ -4,20 +4,25 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart'; // Import auth provider
 
-class WelcomeHeader extends StatelessWidget {
+class WelcomeHeader extends ConsumerWidget {
   const WelcomeHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Get colors from theme
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
     final Color secondaryTextColor =
         isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
-    final Color primaryColor =
+    final Color _ =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+
+    // Get user data
+    final authState = ref.watch(authStateProvider);
+    final userName = authState.value?.displayName ?? 'Usuario';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -36,7 +41,7 @@ class WelcomeHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hola, Rafael 👋',
+                      'Hola, $userName 👋',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -71,18 +76,29 @@ class WelcomeHeader extends StatelessWidget {
   }
 }
 
-class UserAvatar extends StatelessWidget {
+class UserAvatar extends ConsumerWidget {
   final double size;
 
   const UserAvatar({super.key, this.size = 38});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color backgroundColor = primaryColor.withOpacity(0.15);
+    final Color backgroundColor = primaryColor.withValues(alpha: 0.15);
     final Color textColor = primaryColor;
+
+    // Get user data from auth state
+    final authState = ref.watch(authStateProvider);
+    final user = authState.value;
+    final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
+
+    // Determine the display letter (first letter of display name or default)
+    final String displayLetter =
+        user?.displayName?.isNotEmpty == true
+            ? user!.displayName![0].toUpperCase()
+            : 'U';
 
     return GestureDetector(
       onTap: () {
@@ -100,7 +116,7 @@ class UserAvatar extends StatelessWidget {
               border: Border.all(color: primaryColor, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -108,17 +124,23 @@ class UserAvatar extends StatelessWidget {
             ),
             child: Hero(
               tag: 'user-avatar',
-              child: CircleAvatar(
-                backgroundColor: backgroundColor,
-                child: Text(
-                  'R',
-                  style: GoogleFonts.inter(
-                    color: textColor,
-                    fontSize: size * 0.45,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              child:
+                  hasPhoto
+                      ? CircleAvatar(
+                        backgroundImage: NetworkImage(user.photoURL!),
+                        backgroundColor: backgroundColor,
+                      )
+                      : CircleAvatar(
+                        backgroundColor: backgroundColor,
+                        child: Text(
+                          displayLetter,
+                          style: GoogleFonts.inter(
+                            color: textColor,
+                            fontSize: size * 0.45,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
             ),
           ),
           // Badge pequeño que indique que es clicable
@@ -154,7 +176,7 @@ class EcoCoinBadge extends ConsumerWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color mainTextColor =
+    final Color _ =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
 
     final coins = ref.watch(ecoCoinsProvider);
@@ -167,9 +189,9 @@ class EcoCoinBadge extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: primaryColor.withOpacity(0.15),
+          color: primaryColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
+          border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

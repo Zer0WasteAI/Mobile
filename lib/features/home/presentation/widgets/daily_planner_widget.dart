@@ -11,7 +11,7 @@ import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_pr
 /// Widget que muestra la planificación de comidas para el día actual
 /// y proporciona un acceso rápido al planificador semanal completo
 class DailyPlannerWidget extends ConsumerStatefulWidget {
-  const DailyPlannerWidget({Key? key}) : super(key: key);
+  const DailyPlannerWidget({super.key});
 
   @override
   ConsumerState<DailyPlannerWidget> createState() => _DailyPlannerWidgetState();
@@ -97,7 +97,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                   // Indicador de día
                   Container(
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -153,7 +153,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.1),
+                                  color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -263,7 +263,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                         ),
                       ),
                       style: TextButton.styleFrom(
-                        backgroundColor: primaryColor.withOpacity(0.1),
+                        backgroundColor: primaryColor.withValues(alpha: 0.1),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
@@ -310,7 +310,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
         Padding(
           padding: const EdgeInsets.only(right: 4),
           child: CircleAvatar(
-            backgroundColor: type.color.withOpacity(0.2),
+            backgroundColor: type.color.withValues(alpha: 0.2),
             radius: 14,
             child: Icon(type.icon, size: 14, color: type.color),
           ),
@@ -325,7 +325,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -356,7 +356,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   ) {
     return Container(
       color:
-          isDark ? Colors.grey.shade900.withOpacity(0.5) : Colors.grey.shade50,
+          isDark ? Colors.grey.shade900.withValues(alpha: 0.5) : Colors.grey.shade50,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,7 +365,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: type.color.withOpacity(0.2),
+                backgroundColor: type.color.withValues(alpha: 0.2),
                 radius: 12,
                 child: Icon(type.icon, size: 12, color: type.color),
               ),
@@ -386,7 +386,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     vertical: 1,
                   ),
                   decoration: BoxDecoration(
-                    color: type.color.withOpacity(0.1),
+                    color: type.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -449,7 +449,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),

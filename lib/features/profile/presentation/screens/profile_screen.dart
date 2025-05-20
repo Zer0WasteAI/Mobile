@@ -1,20 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   static const String routeName = 'profile';
   static const String routePath = '/profile';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refrescar datos del usuario al construir la pantalla
+    Future.microtask(() {
+      ref.read(authControllerProvider.notifier).refreshUserFromFirestore();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final screenSize = MediaQuery.of(context).size;
+    final _ = theme.colorScheme;
+    final _ = MediaQuery.of(context).size;
+
+    // Obtener datos del usuario actual
+    final authState = ref.watch(authControllerProvider);
+    final user = authState.value;
+
+    // Valores predeterminados por si no hay usuario
+    final String displayName = user?.displayName ?? 'Usuario';
+    final String email = user?.email ?? 'usuario@ejemplo.com';
+    final String? photoURL = user?.photoURL;
+    final bool hasPhoto = photoURL != null && photoURL.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -46,8 +70,8 @@ class ProfileScreen extends ConsumerWidget {
                 child: IconButton(
                   icon: const Icon(Icons.edit, color: Colors.white),
                   onPressed: () {
-                    // Mostrar diálogo para editar perfil
-                    _showEditProfileDialog(context);
+                    // Navigate to the Edit Profile screen
+                    context.push('/edit-profile');
                   },
                   tooltip: 'Editar perfil',
                   iconSize: 20,
@@ -72,13 +96,19 @@ class ProfileScreen extends ConsumerWidget {
                           color: Colors.white,
                           border: Border.all(color: Colors.white, width: 4),
                         ),
-                        child: Center(
-                          child: Icon(
-                            Icons.person,
-                            size: 50,
-                            color: const Color(0xFF00BFA5),
-                          ),
-                        ),
+                        child:
+                            hasPhoto
+                                ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Image.network(
+                                    photoURL,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return _buildAvatarInitial(displayName);
+                                    },
+                                  ),
+                                )
+                                : _buildAvatarInitial(displayName),
                       ),
                     ),
                   ),
@@ -106,7 +136,7 @@ class ProfileScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.07),
+                            color: Colors.black.withValues(alpha: 0.07),
                             blurRadius: 15,
                             offset: const Offset(0, 4),
                           ),
@@ -115,7 +145,7 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         children: [
                           Text(
-                            'Usuario',
+                            displayName,
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -124,7 +154,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'usuario@ejemplo.com',
+                            email,
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               color: Colors.black54,
@@ -190,7 +220,7 @@ class ProfileScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
 
-                    _buildLogoutButton(context),
+                    _buildLogoutButton(context, ref),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -211,7 +241,7 @@ class ProfileScreen extends ConsumerWidget {
     required Color bgColor,
   }) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final _ = theme.colorScheme;
 
     return Expanded(
       child: Column(
@@ -279,6 +309,32 @@ class ProfileScreen extends ConsumerWidget {
       const Color(0xFFF3E5F5), // Light purple
     ];
 
+    // Obtener datos del usuario
+    final user = ref.watch(authControllerProvider).value;
+
+    // Debug information for user preferences
+    print('User preferences debug in profile screen:');
+    print(' - Allergies: ${user?.allergies?.length ?? 0} items');
+    print(' - AllergyItems: ${user?.allergyItems?.length ?? 0} items');
+    print(
+      ' - Special Diets: ${user?.specialDiets?.length ?? 0} items: ${user?.specialDiets}',
+    );
+    print(
+      ' - SpecialDietItems: ${user?.specialDietItems?.length ?? 0} items: ${user?.specialDietItems}',
+    );
+    print(
+      ' - Preferred Food Types: ${user?.preferredFoodTypes?.length ?? 0} items',
+    );
+    print(
+      ' - PreferredFoodTypeItems: ${user?.preferredFoodTypeItems?.length ?? 0} items',
+    );
+
+    // Valores para mostrar en las preferencias
+    final String cookingLevelText = _getCookingLevelText(user?.cookingLevel);
+    final String foodTypesText = _getFoodTypesText(user?.preferredFoodTypes);
+    final String allergiesText = _getAllergiesText(user?.allergies);
+    final String specialDietsText = _getSpecialDietsText(user?.specialDiets);
+
     return GridView.count(
       crossAxisCount: 2,
       mainAxisSpacing: 12,
@@ -292,7 +348,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.restaurant_rounded,
           title: 'Nivel de co...',
-          value: 'Intermedio',
+          value: cookingLevelText,
           iconColor: iconColors[0],
           bgColor: bgColors[0],
           onTap: () => context.push('/profile/cooking-level-selector'),
@@ -301,7 +357,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.restaurant_menu_rounded,
           title: 'Tipos de co...',
-          value: '4 seleccionad...',
+          value: foodTypesText,
           iconColor: iconColors[1],
           bgColor: bgColors[1],
           onTap: () => context.push('/profile/preferred-food-type'),
@@ -310,7 +366,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.no_food_rounded,
           title: 'Alergias',
-          value: '2 seleccionad...',
+          value: allergiesText,
           iconColor: iconColors[2],
           bgColor: bgColors[2],
           onTap: () => context.push('/profile/allergy-selector'),
@@ -319,13 +375,109 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.spa_rounded,
           title: 'Dietas esp...',
-          value: 'Vegetariana',
+          value: specialDietsText,
           iconColor: iconColors[3],
           bgColor: bgColors[3],
           onTap: () => context.push('/profile/special-diet-selector'),
         ),
       ],
     );
+  }
+
+  // Función auxiliar para obtener el texto del nivel de cocina
+  String _getCookingLevelText(String? cookingLevel) {
+    if (cookingLevel == null || cookingLevel.isEmpty) {
+      return 'No definido';
+    }
+
+    switch (cookingLevel.toLowerCase()) {
+      case 'beginner':
+        return 'Principiante';
+      case 'intermediate':
+        return 'Intermedio';
+      case 'advanced':
+        return 'Avanzado';
+      default:
+        return cookingLevel;
+    }
+  }
+
+  // Función auxiliar para obtener el texto de tipos de comida
+  String _getFoodTypesText(List<String>? foodTypes) {
+    // First check the new preferredFoodTypeItems field from the user model
+    final user = ref.watch(authControllerProvider).value;
+    final foodTypeItems = user?.preferredFoodTypeItems;
+
+    if (foodTypeItems != null && foodTypeItems.isNotEmpty) {
+      if (foodTypeItems.length == 1) {
+        // Get the name from the first item
+        return foodTypeItems.first['name'] as String? ?? 'Comida';
+      }
+      return '${foodTypeItems.length} seleccionados';
+    }
+
+    // Fall back to legacy preferredFoodTypes field if needed
+    if (foodTypes == null || foodTypes.isEmpty) {
+      return 'No definido';
+    }
+
+    if (foodTypes.length == 1) {
+      return foodTypes.first;
+    }
+
+    return '${foodTypes.length} seleccionados';
+  }
+
+  // Función auxiliar para obtener el texto de alergias
+  String _getAllergiesText(List<String>? allergies) {
+    // First check the new allergyItems field from the user model
+    final user = ref.watch(authControllerProvider).value;
+    final allergyItems = user?.allergyItems;
+
+    if (allergyItems != null && allergyItems.isNotEmpty) {
+      if (allergyItems.length == 1) {
+        // Get the name from the first item
+        return allergyItems.first['name'] as String? ?? 'Alergia';
+      }
+      return '${allergyItems.length} seleccionadas';
+    }
+
+    // Fall back to legacy allergies field if needed
+    if (allergies == null || allergies.isEmpty) {
+      return 'Ninguna';
+    }
+
+    if (allergies.length == 1) {
+      return allergies.first;
+    }
+
+    return '${allergies.length} seleccionadas';
+  }
+
+  // Función auxiliar para obtener el texto de dietas especiales
+  String _getSpecialDietsText(List<String>? diets) {
+    // First check the new specialDietItems field from the user model
+    final user = ref.watch(authControllerProvider).value;
+    final dietItems = user?.specialDietItems;
+
+    if (dietItems != null && dietItems.isNotEmpty) {
+      if (dietItems.length == 1) {
+        // Get the name from the first item
+        return dietItems.first['name'] as String? ?? 'Dieta';
+      }
+      return '${dietItems.length} seleccionadas';
+    }
+
+    // Fall back to legacy specialDiets field if needed
+    if (diets == null || diets.isEmpty) {
+      return 'Ninguna';
+    }
+
+    if (diets.length == 1) {
+      return diets.first;
+    }
+
+    return '${diets.length} seleccionadas';
   }
 
   Widget _buildPreferenceGridItem(
@@ -682,14 +834,129 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+    final authController = ref.read(authControllerProvider.notifier);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Redirigir al usuario a la pantalla de login
-          context.go('/login');
+        onPressed: () async {
+          // Mostrar un diálogo de confirmación
+          final result = await showDialog<bool>(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: Text(
+                    'Cerrar sesión',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                  ),
+                  content: Text(
+                    '¿Estás seguro de que deseas cerrar sesión?',
+                    style: GoogleFonts.inter(),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text('Cancelar', style: GoogleFonts.inter()),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE53935),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('Cerrar sesión', style: GoogleFonts.inter()),
+                    ),
+                  ],
+                ),
+          );
+
+          // Si el usuario confirma, cerrar la sesión
+          if (result == true && context.mounted) {
+            // IMPORTANTE: Usamos un widget de superposición opaco para prevenir interacciones
+            // durante el cierre de sesión y evitar frames adicionales
+            OverlayEntry overlayEntry = OverlayEntry(
+              builder:
+                  (context) => Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Cerrando sesión...',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+            );
+
+            if (context.mounted) {
+              // Mostrar overlay
+              Overlay.of(context).insert(overlayEntry);
+            }
+
+            // Overlay tracking
+            bool overlayRemoved = false;
+
+            try {
+              // Cerrar sesión (esto es asíncrono)
+              await authController.signOut();
+
+              // Pequeña pausa para asegurar que el estado se actualice completamente
+              await Future.delayed(const Duration(milliseconds: 300));
+
+              // Quitar overlay de forma segura
+              if (!overlayRemoved) {
+                try {
+                  overlayEntry.remove();
+                  overlayRemoved = true;
+                } catch (overlayError) {
+                  // Ignorar errores relacionados con el overlay
+                  print('Error al quitar overlay: $overlayError');
+                }
+              }
+
+              if (context.mounted) {
+                // Usar replaceNamed en lugar de go para evitar el splash
+                context.replace('/login');
+              }
+            } catch (e) {
+              // En caso de error, quitar overlay si existe
+              if (!overlayRemoved) {
+                try {
+                  overlayEntry.remove();
+                  overlayRemoved = true;
+                } catch (overlayError) {
+                  // Ignorar errores relacionados con el overlay
+                  print('Error al quitar overlay en catch: $overlayError');
+                }
+              }
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error al cerrar sesión: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
         },
         icon: const Icon(Icons.logout_rounded),
         label: Text(
@@ -710,1389 +977,82 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showEditProfileDialog(BuildContext context) {
-    // Controladores para los campos de texto
-    final nameController = TextEditingController(text: 'Usuario');
-
+    // Implementación simple del diálogo de edición de perfil
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Editar perfil',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Foto de perfil
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        // Mostrar opciones para cambiar foto
-                        _showPhotoSourceOptions(context);
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFE0F2F1),
-                          border: Border.all(
-                            color: Colors.grey.shade200,
-                            width: 2,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Color(0xFF00BFA5),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00BFA5),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Campo de nombre
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nombre',
-                    labelStyle: GoogleFonts.inter(color: Colors.black54),
-                    prefixIcon: const Icon(
-                      Icons.person_outline,
-                      color: Color(0xFF00BFA5),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF00BFA5),
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 16,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-                // Texto para cambiar contraseña
-                TextButton(
-                  onPressed: () {
-                    // Cerrar el diálogo actual
-                    Navigator.of(context).pop();
-
-                    // Mostrar diálogo para cambiar contraseña
-                    _showChangePasswordDialog(context);
-                  },
-                  child: Text(
-                    'Cambiar contraseña',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF00BFA5),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancelar',
-                style: GoogleFonts.inter(
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Aquí iría la lógica para guardar los cambios
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Perfil actualizado correctamente'),
-                    backgroundColor: Color(0xFF00BFA5),
-                  ),
-                );
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BFA5),
-                foregroundColor: Colors.white,
+      builder:
+          (context) => Container(
+            color: Colors.black.withOpacity(0.5),
+            child: Center(
+              child: Card(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Guardar',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showChangePasswordDialog(BuildContext context) {
-    // Controladores para los campos de texto
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    // Variable para ocultar/mostrar contraseñas
-    bool _obscureCurrentPassword = true;
-    bool _obscureNewPassword = true;
-    bool _obscureConfirmPassword = true;
-
-    // Para seguimiento de la fortaleza de la contraseña
-    double _passwordStrength = 0.0;
-    String _passwordStrengthText = 'Débil';
-    Color _passwordStrengthColor = Colors.red;
-
-    // Función para calcular la fortaleza de la contraseña
-    void _calculatePasswordStrength(String password) {
-      double strength = 0;
-
-      if (password.isEmpty) {
-        strength = 0;
-      } else {
-        // Criterios básicos
-        if (password.length >= 8) strength += 0.25;
-        if (password.contains(RegExp(r'[A-Z]'))) strength += 0.25;
-        if (password.contains(RegExp(r'[0-9]'))) strength += 0.25;
-        if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')))
-          strength += 0.25;
-      }
-
-      _passwordStrength = strength;
-
-      if (strength <= 0.25) {
-        _passwordStrengthText = 'Débil';
-        _passwordStrengthColor = Colors.red;
-      } else if (strength <= 0.5) {
-        _passwordStrengthText = 'Regular';
-        _passwordStrengthColor = Colors.orange;
-      } else if (strength <= 0.75) {
-        _passwordStrengthText = 'Buena';
-        _passwordStrengthColor = Colors.yellow.shade800;
-      } else {
-        _passwordStrengthText = 'Fuerte';
-        _passwordStrengthColor = Colors.green;
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F2F1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.lock_outline,
-                      color: Color(0xFF00BFA5),
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Cambiar contraseña',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tu contraseña debe tener al menos 8 caracteres',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Contraseña actual
-                    Text(
-                      'Contraseña actual',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: currentPasswordController,
-                      obscureText: _obscureCurrentPassword,
-                      decoration: InputDecoration(
-                        hintText: 'Ingresa tu contraseña actual',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                          color: Color(0xFF00BFA5),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureCurrentPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureCurrentPassword =
-                                  !_obscureCurrentPassword;
-                            });
-                          },
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF00BFA5),
-                            width: 1.5,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                      ),
-                    ),
-
-                    // Agregar enlace de "¿Olvidaste tu contraseña?"
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          // Cerrar diálogo actual
-                          Navigator.pop(context);
-                          // Mostrar flujo de recuperación de contraseña
-                          _showForgotPasswordFlow(context);
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                        child: Text(
-                          '¿Olvidaste tu contraseña?',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF00BFA5),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Divisor con texto
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: Colors.grey.shade300)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'Nueva contraseña',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ),
-                        Expanded(child: Divider(color: Colors.grey.shade300)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Nueva contraseña
-                    TextField(
-                      controller: newPasswordController,
-                      obscureText: _obscureNewPassword,
-                      onChanged: (value) {
-                        setState(() {
-                          _calculatePasswordStrength(value);
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Crea una nueva contraseña',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                          color: Color(0xFF00BFA5),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureNewPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureNewPassword = !_obscureNewPassword;
-                            });
-                          },
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF00BFA5),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Indicador de fortaleza de contraseña
-                    if (newPasswordController.text.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: LinearProgressIndicator(
-                              value: _passwordStrength,
-                              backgroundColor: Colors.grey.shade200,
-                              color: _passwordStrengthColor,
-                              minHeight: 5,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _passwordStrengthText,
-                            style: GoogleFonts.inter(
-                              color: _passwordStrengthColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Usa 8+ caracteres con letras, números y símbolos',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 16),
-
-                    // Confirmar contraseña
-                    TextField(
-                      controller: confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      decoration: InputDecoration(
-                        hintText: 'Confirma tu nueva contraseña',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                          color: Color(0xFF00BFA5),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
-                            });
-                          },
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF00BFA5),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Mostrar error si las contraseñas no coinciden
-                    if (confirmPasswordController.text.isNotEmpty &&
-                        newPasswordController.text.isNotEmpty &&
-                        confirmPasswordController.text !=
-                            newPasswordController.text) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Las contraseñas no coinciden',
-                            style: GoogleFonts.inter(
-                              color: Colors.red,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    'Cancelar',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Verificar que las contraseñas coincidan
-                    if (newPasswordController.text.isEmpty ||
-                        currentPasswordController.text.isEmpty ||
-                        confirmPasswordController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, completa todos los campos'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (newPasswordController.text !=
-                        confirmPasswordController.text) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Las contraseñas no coinciden'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    // Aquí iría la lógica para cambiar la contraseña
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Contraseña actualizada correctamente'),
-                        backgroundColor: Color(0xFF00BFA5),
-                      ),
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00BFA5),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Text(
-                    'Actualizar',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // Agregar el nuevo método para el flujo de recuperación de contraseña
-  void _showForgotPasswordFlow(BuildContext context) {
-    // Para seguimiento del progreso
-    int _currentStep = 0;
-    // Para mostrar códigos enviados
-    String? _verificationCode;
-    // Controladores para los campos
-    final emailController = TextEditingController(text: 'usuario@ejemplo.com');
-    final codeController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    // Variables para ocultar/mostrar contraseñas
-    bool _obscureNewPassword = true;
-    bool _obscureConfirmPassword = true;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            // Widget para el paso 1: Enviar código de verificación
-            Widget _buildStep1() {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Te enviaremos un código de verificación para confirmar tu identidad',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Email field (readonly - mostrado pero no editable)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.email_outlined,
-                          color: Color(0xFF00BFA5),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Email',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            Text(
-                              'usuario@ejemplo.com',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  Text(
-                    'Enviaremos instrucciones a esta dirección de email registrada',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              );
-            }
-
-            // Widget para el paso 2: Ingresar código de verificación
-            Widget _buildStep2() {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Hemos enviado un código de verificación a tu email',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Simular que se muestra el código (para la demostración)
-                  if (_verificationCode != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F2F1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF00BFA5).withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            color: Color(0xFF00BFA5),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Código de demostración: $_verificationCode',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFF00BFA5),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  const SizedBox(height: 20),
-
-                  // Campo para ingresar el código
-                  TextField(
-                    controller: codeController,
-                    decoration: InputDecoration(
-                      labelText: 'Código de verificación',
-                      hintText: 'Ingresa el código enviado a tu email',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.grey.shade400,
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.vpn_key_outlined,
-                        color: Color(0xFF00BFA5),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF00BFA5),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '¿No recibiste el código?',
+                        'Editar Perfil',
                         style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.black54,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          // Simular reenvío de código
-                          setState(() {
-                            _verificationCode = _generateRandomCode();
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Código reenviado'),
-                              backgroundColor: Color(0xFF00BFA5),
-                              duration: Duration(seconds: 2),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Esta funcionalidad estará disponible próximamente.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 16),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00BFA5),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          minimumSize: Size.zero,
-                        ),
-                        child: Text(
-                          'Reenviar código',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF00BFA5),
-                            fontWeight: FontWeight.w500,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            'Entendido',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                ],
-              );
-            }
-
-            // Widget para el paso 3: Establecer nueva contraseña
-            Widget _buildStep3() {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Establece tu nueva contraseña',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Nueva contraseña
-                  Text(
-                    'Nueva contraseña',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: newPasswordController,
-                    obscureText: _obscureNewPassword,
-                    decoration: InputDecoration(
-                      hintText: 'Crea una nueva contraseña',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.grey.shade400,
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFF00BFA5),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureNewPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureNewPassword = !_obscureNewPassword;
-                          });
-                        },
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF00BFA5),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Confirmar contraseña
-                  Text(
-                    'Confirmar contraseña',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    decoration: InputDecoration(
-                      hintText: 'Confirma tu nueva contraseña',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.grey.shade400,
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFF00BFA5),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF00BFA5),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Mostrar error si las contraseñas no coinciden
-                  if (confirmPasswordController.text.isNotEmpty &&
-                      newPasswordController.text.isNotEmpty &&
-                      confirmPasswordController.text !=
-                          newPasswordController.text) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.red,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Las contraseñas no coinciden',
-                          style: GoogleFonts.inter(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              );
-            }
-
-            // Contenido según el paso actual
-            Widget _getStepContent() {
-              switch (_currentStep) {
-                case 0:
-                  return _buildStep1();
-                case 1:
-                  return _buildStep2();
-                case 2:
-                  return _buildStep3();
-                default:
-                  return Container();
-              }
-            }
-
-            // Determinar el botón según el paso actual
-            Widget _getStepButton() {
-              switch (_currentStep) {
-                case 0:
-                  return ElevatedButton(
-                    onPressed: () {
-                      // Simular envío de código
-                      setState(() {
-                        _currentStep = 1;
-                        _verificationCode = _generateRandomCode();
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00BFA5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: Text(
-                      'Enviar código',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                    ),
-                  );
-                case 1:
-                  return ElevatedButton(
-                    onPressed: () {
-                      // Validar código
-                      if (codeController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Por favor, ingresa el código'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Simulación de verificación
-                      // En producción, aquí se validaría contra el backend
-                      if (codeController.text == _verificationCode) {
-                        setState(() {
-                          _currentStep = 2;
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Código incorrecto'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00BFA5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: Text(
-                      'Verificar código',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                    ),
-                  );
-                case 2:
-                  return ElevatedButton(
-                    onPressed: () {
-                      // Validar contraseñas
-                      if (newPasswordController.text.isEmpty ||
-                          confirmPasswordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Por favor, completa todos los campos',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (newPasswordController.text !=
-                          confirmPasswordController.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Las contraseñas no coinciden'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Simular cambio de contraseña exitoso
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Contraseña restablecida correctamente',
-                          ),
-                          backgroundColor: Color(0xFF00BFA5),
-                        ),
-                      );
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00BFA5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: Text(
-                      'Guardar nueva contraseña',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                    ),
-                  );
-                default:
-                  return Container();
-              }
-            }
-
-            // Obtener el título según el paso actual
-            String _getStepTitle() {
-              switch (_currentStep) {
-                case 0:
-                  return 'Recuperar contraseña';
-                case 1:
-                  return 'Verificar código';
-                case 2:
-                  return 'Nueva contraseña';
-                default:
-                  return '';
-              }
-            }
-
-            // Obtener icono según el paso actual
-            IconData _getStepIcon() {
-              switch (_currentStep) {
-                case 0:
-                  return Icons.mail_outline;
-                case 1:
-                  return Icons.security;
-                case 2:
-                  return Icons.lock_outline;
-                default:
-                  return Icons.error_outline;
-              }
-            }
-
-            // Construir los indicadores de pasos
-            Widget _buildStepIndicators() {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildStepDot(0, _currentStep >= 0),
-                  _buildStepLine(_currentStep >= 1),
-                  _buildStepDot(1, _currentStep >= 1),
-                  _buildStepLine(_currentStep >= 2),
-                  _buildStepDot(2, _currentStep >= 2),
-                ],
-              );
-            }
-
-            // Construir el diálogo
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              titlePadding: const EdgeInsets.all(16),
-              title: Column(
-                children: [
-                  // Indicadores de pasos
-                  _buildStepIndicators(),
-                  const SizedBox(height: 16),
-
-                  // Icono del paso actual
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F2F1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _getStepIcon(),
-                      color: const Color(0xFF00BFA5),
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Título del paso actual
-                  Text(
-                    _getStepTitle(),
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-              contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              content: _getStepContent(),
-              actions: [
-                // Botón para cancelar
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    'Cancelar',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
                 ),
-                // Botón dinámico según el paso
-                _getStepButton(),
-              ],
-              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              actionsAlignment: MainAxisAlignment.spaceBetween,
-            );
-          },
-        );
-      },
+              ),
+            ),
+          ),
     );
   }
 
-  // Método auxiliar para generar un indicador de paso
-  Widget _buildStepDot(int step, bool isActive) {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF00BFA5) : Colors.grey.shade200,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isActive ? const Color(0xFF00BFA5) : Colors.grey.shade300,
-          width: 1,
+  // Método para construir avatar con la inicial del nombre
+  Widget _buildAvatarInitial(String displayName) {
+    // Obtener la primera letra del nombre o usar 'U' por defecto
+    final String initial =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
+
+    return Center(
+      child: Text(
+        initial,
+        style: GoogleFonts.inter(
+          fontSize: 40,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF00BFA5),
         ),
       ),
-      child: Center(
-        child: Text(
-          '${step + 1}',
-          style: GoogleFonts.inter(
-            color: isActive ? Colors.white : Colors.grey.shade500,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Método auxiliar para generar una línea entre pasos
-  Widget _buildStepLine(bool isActive) {
-    return Container(
-      width: 40,
-      height: 2,
-      color: isActive ? const Color(0xFF00BFA5) : Colors.grey.shade200,
-    );
-  }
-
-  // Método auxiliar para generar un código aleatorio
-  String _generateRandomCode() {
-    // En un entorno real, este código se generaría en el backend
-    return (10000 + (DateTime.now().millisecondsSinceEpoch % 90000)).toString();
-  }
-
-  // Agregar este nuevo método para mostrar las opciones de cambio de foto
-  void _showPhotoSourceOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Cambiar foto de perfil',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE0F2F1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Color(0xFF00BFA5),
-                    size: 24,
-                  ),
-                ),
-                title: Text(
-                  'Tomar foto',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  'Usar la cámara para tomar una nueva foto',
-                  style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
-                ),
-                onTap: () {
-                  // Cerrar el bottom sheet
-                  Navigator.pop(context);
-
-                  // Aquí iría la lógica para acceder a la cámara
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Accediendo a la cámara...'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-              ),
-              const Divider(height: 1, indent: 70),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE0F2F1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.photo_library,
-                    color: Color(0xFF00BFA5),
-                    size: 24,
-                  ),
-                ),
-                title: Text(
-                  'Seleccionar de la galería',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  'Elegir una foto de tu galería',
-                  style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
-                ),
-                onTap: () {
-                  // Cerrar el bottom sheet
-                  Navigator.pop(context);
-
-                  // Aquí iría la lógica para acceder a la galería
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Accediendo a la galería...'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancelar',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

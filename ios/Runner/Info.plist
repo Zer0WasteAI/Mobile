@@ -34,6 +34,8 @@
 	<string>We need access to your camera to scan ingredients and foods.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to your microphone to scan ingredients and foods.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Este permiso nos permite ofrecerte una experiencia personalizada y contenido relevante al permitir el inicio de sesión completo de Facebook.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -66,13 +68,8 @@
 		<key>CFBundleURLSchemes</key>
 		<array>
 			<string>com.googleusercontent.apps.620002955074-jtegrh6u92tb9f38h13q3ta77vlh7r98</string>
+			<string>fb2105469753205916</string>
 		</array>
-	  </dict>
-	  <dict>
-	  <key>CFBundleURLSchemes</key>
-	  <array>
-	    <string>fb2105469753205916</string>
-	  </array>
 	  </dict>
 	</array>
 	<key>FacebookAppID</key>
@@ -80,14 +77,29 @@
 	<key>FacebookClientToken</key>
 	<string>65be40cf025b7c5f8f404239a1bef11a</string>
 	<key>FacebookDisplayName</key>
-	<string>Zero Waste AI</string>
-
+	<string>Zer0WasteAI</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<false/>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 	  <string>fbapi</string>
 	  <string>fb-messenger-share-api</string>
 	  <string>fbauth2</string>
-	  <string>fbshareextension</string>
+  	  <string>fbshareextension</string>
+	  <string>fb-messenger</string>
+	  <string>fbapi20130214</string>
+	  <string>fbapi20130410</string>
+	  <string>fbapi20130702</string>
+	  <string>fbapi20131010</string>
+	  <string>fbapi20131219</string>
+	  <string>fbapi20140410</string>
+	  <string>fbapi20140116</string>
+	  <string>fbapi20150313</string>
+	  <string>fbapi20150629</string>
+	  <string>fbauth</string>
+	  <string>fb-messenger-api20140430</string>
 	</array>
 
 	<key>GIDClientID</key>

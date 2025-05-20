@@ -13,6 +13,10 @@ extension UserModelToEntityMapper on UserModel {
       phoneNumber: phoneNumber,
       emailVerified: emailVerified,
       favoriteRecipes: favoriteRecipes,
+      allergies: allergies,
+      cookingLevel: cookingLevel,
+      preferredFoodTypes: preferredFoodTypes,
+      initialPreferencesCompleted: initialPreferencesCompleted,
       createdAt: createdAt,
       lastLoginAt: lastLoginAt,
     );
@@ -31,6 +35,10 @@ extension UserEntityToModelMapper on UserEntity {
       phoneNumber: phoneNumber,
       emailVerified: emailVerified,
       favoriteRecipes: favoriteRecipes,
+      allergies: allergies,
+      cookingLevel: cookingLevel,
+      preferredFoodTypes: preferredFoodTypes,
+      initialPreferencesCompleted: initialPreferencesCompleted,
       createdAt: createdAt,
       lastLoginAt: lastLoginAt,
     );

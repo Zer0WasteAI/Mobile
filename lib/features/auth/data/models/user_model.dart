@@ -13,8 +13,18 @@ abstract class UserModel with _$UserModel {
     String? phoneNumber,
     @Default(false) bool emailVerified,
     @Default([]) List<String> favoriteRecipes,
+    @Default([]) List<String> allergies,
+    @Default([]) List<Map<String, dynamic>> allergyItems,
+    @Default([]) List<String> specialDiets,
+    @Default([]) List<Map<String, dynamic>> specialDietItems,
+    String? cookingLevel,
+    @Default([]) List<String> preferredFoodTypes,
+    @Default([]) List<Map<String, dynamic>> preferredFoodTypeItems,
+    @Default(false) bool initialPreferencesCompleted,
     DateTime? createdAt,
     DateTime? lastLoginAt,
+    @Default(false) bool needsAdditionalInfo,
+    @Default('password') String providerId,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

@@ -56,7 +56,7 @@ class MotivationalCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: cardBackgroundColor.withOpacity(0.3),
+            color: cardBackgroundColor.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
+import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 
 // Enum para los tipos de dieta especial
 enum SpecialDietType {
@@ -111,20 +116,237 @@ class SelectedDietNotifier extends StateNotifier<SpecialDietType?> {
   }
 }
 
-class ProfileSpecialDietSelectorScreen extends ConsumerWidget {
+class ProfileSpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const ProfileSpecialDietSelectorScreen({super.key});
 
   static const String routeName = 'profile_special_diet_selector';
   static const String routePath = '/profile/special-diet-selector';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDiet = ref.watch(selectedDietProvider);
-    final notifier = ref.read(selectedDietProvider.notifier);
-    final colorScheme = Theme.of(context).colorScheme;
+  ConsumerState<ProfileSpecialDietSelectorScreen> createState() =>
+      _ProfileSpecialDietSelectorScreenState();
+}
+
+class _ProfileSpecialDietSelectorScreenState
+    extends ConsumerState<ProfileSpecialDietSelectorScreen> {
+  bool _isLoading = true;
+  final TextEditingController _dietController = TextEditingController();
+  final List<String> _commonEmojis = [
+    '🥗',
+    '🥦',
+    '🥑',
+    '🍖',
+    '🥩',
+    '🐟',
+    '🥛',
+    '🧀',
+    '🍽️',
+  ];
+  String _selectedEmoji = '🍽️';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize diets after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeDiets();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dietController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeDiets() async {
+    final dietsAsyncValue = ref.read(predefinedDietsProvider);
+    final user = ref.read(authStateProvider).value;
+
+    // Wait for diets to load if they haven't yet
+    if (dietsAsyncValue is AsyncLoading) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // Get the list of all available diets
+    final availableDiets = ref.read(predefinedDietsProvider).value ?? [];
+
+    // Get user's selected diets from profile
+    final userDiets = user?.specialDiets ?? [];
+    final userDietItems = user?.specialDietItems;
+
+    print('Initializing special diets selector with:');
+    print('- Legacy diet names: $userDiets');
+    print('- Special diet items: $userDietItems');
+
+    List<String> dietNamesToInitialize = userDiets;
+
+    // If we have specialDietItems, use those instead of legacy specialDiets
+    if (userDietItems != null && userDietItems.isNotEmpty) {
+      dietNamesToInitialize =
+          userDietItems.map((item) => item['name'] as String).toList();
+    }
+
+    // Initialize the selected diets
+    if (dietNamesToInitialize.isNotEmpty) {
+      ref
+          .read(specialDietsProviderWithPersistence.notifier)
+          .initializeFromUserProfile(dietNamesToInitialize, availableDiets);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Show dialog to add custom diet
+  void _showAddDietDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Añadir dieta personalizada',
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _dietController,
+                      decoration: InputDecoration(
+                        labelText: 'Nombre de la dieta',
+                        hintText: 'Ej: Ayuno intermitente, Kosher, etc.',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Elige un emoji:',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children:
+                          _commonEmojis.map((emoji) {
+                            final isSelected = emoji == _selectedEmoji;
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedEmoji = emoji;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(32),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isSelected
+                                          ? Theme.of(
+                                            context,
+                                          ).colorScheme.primary.withOpacity(0.1)
+                                          : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(32),
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .outline
+                                                .withOpacity(0.5),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancelar',
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_dietController.text.trim().isNotEmpty) {
+                      // Add custom diet
+                      final customDiet = SpecialDiet(
+                        name: _dietController.text.trim(),
+                        emoji: _selectedEmoji,
+                        isCustom: true,
+                      );
+
+                      ref
+                          .read(specialDietsProviderWithPersistence.notifier)
+                          .addCustomDiet(customDiet);
+
+                      // Reset controller and close dialog
+                      _dietController.clear();
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  child: Text(
+                    'Añadir',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
+    final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
+    final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
+    final authRepository = ref.read(authRepositoryProvider);
+    final authController = ref.read(authControllerProvider.notifier);
+
+    // Theme colors
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final backgroundColor = colorScheme.surface;
+    final primaryColor = colorScheme.primary;
+    final defaultChipTextColor = colorScheme.onSurfaceVariant;
+    final defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Dieta especial',
@@ -136,80 +358,225 @@ class ProfileSpecialDietSelectorScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '¿Sigues alguna dieta especial?',
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Selecciona tu tipo de dieta para recibir recetas adecuadas.',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
+      body: predefinedDietsAsyncValue.when(
+        data: (predefinedDiets) {
+          if (_isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children:
-                      SpecialDietType.values.map((dietType) {
-                        final isSelected = selectedDiet == dietType;
-                        return _SpecialDietCard(
-                          dietType: dietType,
-                          isSelected: isSelected,
-                          onTap:
-                              () => notifier.selectDiet(
-                                isSelected ? null : dietType,
-                              ),
-                          primaryColor: colorScheme.primary,
-                          surfaceColor: colorScheme.surface,
-                        );
-                      }).toList(),
-                ),
-              ),
+          // Filter out the "Add" button from selection
+          final dietOptions =
+              predefinedDiets
+                  .where(
+                    (diet) => diet.name != SpecialDietsNotifier.addDietName,
+                  )
+                  .toList();
 
-              // Botón de guardar
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Guardar selección y volver al perfil
-                      print('Dieta seleccionada: $selectedDiet');
-                      context.pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    child: const Text('Guardar'),
+          // Create a list of all widget items to display
+          final List<Widget> dietChips = [];
+
+          // Add predefined diets
+          for (final diet in dietOptions) {
+            dietChips.add(
+              SelectableItemChip(
+                label: diet.name,
+                emoji: diet.emoji,
+                isSelected: selectedDiets.contains(diet),
+                onTap: () => notifier.toggleDiet(diet, predefinedDiets),
+                selectedColor: primaryColor,
+                defaultBackgroundColor: backgroundColor,
+                defaultTextColor: defaultChipTextColor,
+                defaultBorderColor: defaultChipBorderColor,
+              ),
+            );
+          }
+
+          // Add custom diets that aren't in predefined diets
+          for (final customDiet in selectedDiets) {
+            // Skip if it's in the predefined list
+            if (dietOptions.any((d) => d.name == customDiet.name)) {
+              continue;
+            }
+
+            dietChips.add(
+              SelectableItemChip(
+                label: customDiet.name,
+                emoji: customDiet.emoji,
+                isSelected: true,
+                isCustom: true,
+                onTap: () => notifier.toggleDiet(customDiet, predefinedDiets),
+                onDelete:
+                    () => notifier.toggleDiet(customDiet, predefinedDiets),
+                selectedColor: primaryColor,
+                defaultBackgroundColor: backgroundColor,
+                defaultTextColor: defaultChipTextColor,
+                defaultBorderColor: defaultChipBorderColor,
+              ),
+            );
+          }
+
+          // Add "Añadir" chip
+          dietChips.add(
+            InkWell(
+              onTap: _showAddDietDialog,
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceVariant.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: colorScheme.outline.withOpacity(0.5),
+                    width: 1,
                   ),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.add,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Añadir',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '¿Sigues alguna dieta especial?',
+                    style: GoogleFonts.inter(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Selecciona tu tipo de dieta para recibir recetas adecuadas.',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Lista de dietas disponibles
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 12.0,
+                        runSpacing: 12.0,
+                        children: dietChips,
+                      ),
+                    ),
+                  ),
+
+                  // Botón de guardar
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          // Mostrar indicador de carga
+                          if (context.mounted) {
+                            showLoadingSnackBar(
+                              context,
+                              message: 'Guardando dieta especial...',
+                            );
+                          }
+
+                          try {
+                            // Save special diets to Firestore
+                            final dietNames =
+                                selectedDiets.map((diet) => diet.name).toList();
+
+                            // Create dietItems with custom flag
+                            final dietItems =
+                                selectedDiets
+                                    .map((diet) => diet.toJson())
+                                    .toList();
+
+                            print("Guardando dietas especiales: $dietNames");
+                            print("Guardando diet items: $dietItems");
+
+                            // Save the diets using new method
+                            await authRepository.saveUserSpecialDietItems(
+                              dietItems,
+                            );
+
+                            // Refresh user data
+                            await authController.refreshUserFromFirestore();
+
+                            if (context.mounted) {
+                              // Show success message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Dieta actualizada'),
+                                  backgroundColor: colorScheme.primary,
+                                ),
+                              );
+                              context.pop();
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error al guardar: $e'),
+                                  backgroundColor: colorScheme.error,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Guardar'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error:
+            (error, stack) => Center(
+              child: Text(
+                'Error al cargar dietas: $error',
+                style: TextStyle(color: colorScheme.error),
+              ),
+            ),
       ),
     );
   }

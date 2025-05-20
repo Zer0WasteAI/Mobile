@@ -5,6 +5,7 @@ import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/login_controller.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart'; // Importamos el provider de auth
 
 /// Login state
 class LoginState {
@@ -155,21 +156,18 @@ class LoginNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
   }
 }
 
-/// Auth API provider
+/// Auth API provider para desarrollo
 final authApiProvider = Provider<AuthApi>((ref) {
+  // Nota: Este provider está solo para desarrollo
+  // En producción se debería usar la implementación real
   return MockAuthApi();
 });
 
-/// Auth repository provider
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final authApi = ref.watch(authApiProvider);
-
-  // For testing purposes, use a simple implementation of AuthRepository
-  // that delegates to the MockAuthApi
-  return MockAuthRepository(authApi);
-});
+// No sobreescribimos authRepositoryProvider aquí
+// para permitir que se use la implementación real desde injection_container.dart
 
 /// A mock implementation of AuthRepository that uses AuthApi
+
 class MockAuthRepository implements AuthRepository {
   final AuthApi _authApi;
 
@@ -246,6 +244,122 @@ class MockAuthRepository implements AuthRepository {
   Future<void> deleteAccount() {
     // Not implemented in the mock
     return Future.value();
+  }
+
+  @override
+  Future<bool> isFirstTimeUser(String userId) {
+    // For mock purposes, always return true to ensure users go through onboarding
+    return Future.value(true);
+  }
+
+  @override
+  Future<void> markOnboardingCompleted(String userId) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> sendVerificationEmail() {
+    // Para propósitos de prueba, no hace nada
+    return Future.value();
+  }
+
+  @override
+  Future<bool> isEmailVerified() {
+    // Verificar si hay un usuario autenticado antes de devolver el resultado
+    final user = currentUser;
+    if (user == null) {
+      return Future.value(false);
+    }
+    // Para propósitos de desarrollo, implementar una verificación real aquí
+    // En este caso estamos simulando que el usuario necesita verificar su email
+    return Future.value(false);
+  }
+
+  @override
+  Future<void> reloadUser() {
+    // Para propósitos de prueba, no hace nada
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserAllergies(List<String> allergies) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserCookingLevel(String cookingLevel) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserPreferredFoodTypes(List<String> foodTypes) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserSpecialDiets(List<String> specialDiets) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> markInitialPreferencesCompleted() {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<bool> hasCompletedInitialPreferences() {
+    // For mock purposes, always return false to ensure users go through preferences setup
+    return Future.value(false);
+  }
+
+  @override
+  Future<void> saveUserAllergyItems(List<Map<String, dynamic>> allergyItems) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserSpecialDietItems(List<Map<String, dynamic>> dietItems) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserPreferredFoodTypeItems(
+    List<Map<String, dynamic>> foodTypeItems,
+  ) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<UserModel> updateUserAfterAppleSignIn(
+    String displayName,
+    String email,
+  ) {
+    // For mock purposes, return a user with the provided information
+    return Future.value(
+      UserModel(
+        id: 'apple-user-id',
+        email: email,
+        displayName: displayName,
+        photoURL: 'https://via.placeholder.com/150',
+        needsAdditionalInfo: false,
+        providerId: 'apple.com',
+      ),
+    );
+  }
+
+  @override
+  Future<UserModel?> getCurrentUserWithFirestore() {
+    // Para propósitos de prueba, devolver el mismo resultado que currentUser
+    return _authApi.getCurrentUser();
   }
 }
 

@@ -5,7 +5,8 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/register_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/register_form.dart';
-import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/email_verification_screen.dart';
 
 /// Register screen
 class RegisterScreen extends ConsumerWidget {
@@ -23,13 +24,12 @@ class RegisterScreen extends ConsumerWidget {
 
     // Handle register success
     ref.listen<AsyncValue>(registerNotifierProvider, (_, state) {
-      state.whenData((user) {
+      state.whenData((user) async {
         if (user != null) {
-          // TODO: Check if this is the user's first time registering/logging in.
-          // If first time, navigate to AllergySelectorScreen, otherwise to /home.
-          // For now, always navigate to allergy selector after registration.
-          context.go(AllergySelectorScreen.routePath);
-          // context.go('/home'); // Original navigation
+          // Cuando un usuario se registra, cerrar sesión y dirigirlo a la pantalla de verificación de correo
+          final authController = ref.read(authControllerProvider.notifier);
+          await authController.signOut();
+          context.go(EmailVerificationScreen.routePath);
         }
       });
 

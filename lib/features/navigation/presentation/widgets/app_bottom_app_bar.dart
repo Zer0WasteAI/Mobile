@@ -212,8 +212,11 @@ class AppBottomAppBar extends ConsumerWidget {
     return Expanded(
       child: InkWell(
         onTap: () {
-          ref.read(currentNavigationProvider.notifier).state = path;
-          context.go(path);
+          // Avoiding redirect if it's already the current path
+          if (currentPath != path) {
+            ref.read(currentNavigationProvider.notifier).state = path;
+            context.go(path);
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

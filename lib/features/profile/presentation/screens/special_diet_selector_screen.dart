@@ -8,33 +8,93 @@ import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 
 // TODO: Define route name if needed
 // No: Defined below
 
-class SpecialDietSelectorScreen extends ConsumerWidget {
+class SpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const SpecialDietSelectorScreen({super.key});
 
   static const String routeName = 'special_diet_selector';
   static const String routePath = '/special-diet-selector';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDiets = ref.watch(specialDietsProvider);
-    final notifier = ref.read(specialDietsProvider.notifier);
-    final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
+  ConsumerState<SpecialDietSelectorScreen> createState() =>
+      _SpecialDietSelectorScreenState();
+}
 
-    // Use Theme colors
+class _SpecialDietSelectorScreenState
+    extends ConsumerState<SpecialDietSelectorScreen> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize diets after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeDiets();
+    });
+  }
+
+  Future<void> _initializeDiets() async {
+    if (_isInitialized) return;
+
+    final predefinedDietsAsyncValue = ref.read(predefinedDietsProvider);
+    final user = ref.read(authControllerProvider).value;
+
+    // Wait for diets to load if they haven't yet
+    if (predefinedDietsAsyncValue is AsyncLoading) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // Get the list of all available diets
+    final availableDiets = ref.read(predefinedDietsProvider).value ?? [];
+
+    // Get user's selected diets from profile
+    final userDiets = user?.specialDiets ?? [];
+    final userDietItems = user?.specialDietItems;
+
+    print('Initializing special diets selector with:');
+    print('- Legacy diet names: $userDiets');
+    print('- Special diet items: $userDietItems');
+
+    List<String> dietNamesToInitialize = userDiets;
+
+    // If we have specialDietItems, use those instead of legacy specialDiets
+    if (userDietItems != null && userDietItems.isNotEmpty) {
+      dietNamesToInitialize =
+          userDietItems.map((item) => item['name'] as String).toList();
+    }
+
+    // Initialize the selected diets
+    if (dietNamesToInitialize.isNotEmpty) {
+      ref
+          .read(specialDietsProviderWithPersistence.notifier)
+          .initializeFromUserProfile(dietNamesToInitialize, availableDiets);
+    }
+
+    _isInitialized = true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
+    final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
+    final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
+    final authRepository = ref.read(authRepositoryProvider);
+    final authController = ref.read(authControllerProvider.notifier);
+
+    // Theme colors
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final Color primaryColor = colorScheme.primary;
-    final Color backgroundColor = colorScheme.surface;
-    final Color mainTextColor = colorScheme.onSurface;
-    final Color secondaryTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
-    final Color secondaryTextColorForDialog = colorScheme.onSurfaceVariant;
+    const backgroundColor = Colors.white;
+    final primaryColor = colorScheme.primary;
+    final defaultChipTextColor = colorScheme.onSurfaceVariant;
+    final defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final secondaryTextColorForDialog = colorScheme.onSurfaceVariant;
 
     return predefinedDietsAsyncValue.when(
       data: (predefinedDiets) {
@@ -63,23 +123,23 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "¿Sigues alguna dieta especial?",
+                  '¿Sigues alguna dieta especial?',
                   style: GoogleFonts.inter(
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: mainTextColor,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Esto nos ayudará a sugerirte recetas adecuadas.",
+                  'Selecciona las dietas que sigues para recibir mejores sugerencias.',
                   style: GoogleFonts.inter(
                     fontSize: 16,
-                    color: secondaryTextColor,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 32),
-                // Diet list/grid implementation
+                const SizedBox(height: 24),
+                // Diet selection area
                 Expanded(
                   child: SingleChildScrollView(
                     child: Wrap(
@@ -173,35 +233,142 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    onPressed: () async {
+                      // Mostrar indicador de carga
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 16),
+                                Text('Guardando preferencias...'),
+                              ],
+                            ),
+                            duration: Duration(seconds: 1),
+                            backgroundColor: Colors.black54,
+                          ),
+                        );
+                      }
+
+                      try {
+                        // 1. Save special diets to Firestore
+                        final dietNames =
+                            selectedDiets.map((diet) => diet.name).toList();
+
+                        // Create diet items with metadata
+                        final dietItems =
+                            selectedDiets.map((diet) => diet.toJson()).toList();
+
+                        print(
+                          "Guardando dietas especiales en Firestore: $dietNames",
+                        );
+                        print(
+                          "Guardando dietas especiales con metadata: $dietItems",
+                        );
+
+                        // Guardar las dietas con metadata
+                        await authRepository.saveUserSpecialDietItems(
+                          dietItems,
+                        );
+
+                        // 2. Mark initial preferences as completed
+                        await authRepository.markInitialPreferencesCompleted();
+
+                        // 3. Refresh user data from Firestore
+                        await authController.refreshUserFromFirestore();
+
+                        // 4. Mark preferences as completed in memory to avoid redirection loops
+                        ref
+                            .read(userPreferencesProvider.notifier)
+                            .markPreferencesAsCompleted();
+
+                        // Forzar actualización del estado de userPreferences para el router
+                        final userPreferencesNotifier = ref.read(
+                          userPreferencesProvider.notifier,
+                        );
+                        await userPreferencesNotifier.loadUserPreferences();
+
+                        // Forzar actualización directa desde el estado del usuario (doble verificación)
+                        await userPreferencesNotifier
+                            .forceUpdateFromUserState();
+
+                        // Reset state to avoid keeping selections
+                        notifier.reset();
+
+                        print("Resetting special diet selections");
+
+                        // Debug logs para diagnóstico
+                        print(
+                          '====== ESTADO DE PREFERENCIAS ANTES DE NAVEGACIÓN ======',
+                        );
+                        print(
+                          'userPreferencesProvider.hasCompletedPreferences = ${ref.read(userPreferencesProvider).hasCompletedPreferences}',
+                        );
+                        print(
+                          'userPreferencesProvider.isLoading = ${ref.read(userPreferencesProvider).isLoading}',
+                        );
+                        print(
+                          'authState.initialPreferencesCompleted = ${ref.read(authControllerProvider).value?.initialPreferencesCompleted}',
+                        );
+                        print('====== FIN ESTADO DE PREFERENCIAS ======');
+
+                        // 5. Navigate to home screen or dashboard
+                        if (context.mounted) {
+                          // Navigate to home page with replaced stack
+                          print("Going to /home");
+                          context.go(
+                            '/home',
+                          ); // Using go instead of replace for smoother transition
+
+                          // Show success message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '¡Preferencias guardadas! Tus recomendaciones ahora serán personalizadas.',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        print("Error guardando preferencias: $e");
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error: No se pudieron guardar tus preferencias: $e',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(30),
                       ),
-                      elevation: 2, // Subtle shadow
-                      shadowColor: primaryColor.withOpacity(0.3),
-                      foregroundColor:
-                          colorScheme.onPrimary, // Use theme color for text
-                    ),
-                    onPressed: () {
-                      // Navigate to HomeScreen
-                      // TODO: Ensure '/home' is the correct route path for HomeScreen
-                      print("Selected Diets on Continue: $selectedDiets");
-                      context.go(
-                        '/home',
-                      ); // Navigate to home (changed from '/')
-                    },
-                    child: Text(
-                      'Continuar',
-                      style: GoogleFonts.inter(
+                      foregroundColor: colorScheme.onPrimary,
+                      textStyle: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    child: const Text('Finalizar configuración'),
                   ),
                 ),
-                const SizedBox(height: 16), // Add some padding at the bottom
               ],
             ),
           ),
@@ -211,15 +378,15 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
       loading:
           () => Scaffold(
             backgroundColor: backgroundColor,
-            body: Center(child: CircularProgressIndicator(color: primaryColor)),
+            body: const Center(child: CircularProgressIndicator()),
           ),
       error:
           (error, stackTrace) => Scaffold(
             backgroundColor: backgroundColor,
             body: Center(
               child: Text(
-                'Error al cargar las dietas: $error',
-                style: GoogleFonts.inter(color: colorScheme.error),
+                'Error: $error',
+                style: GoogleFonts.inter(color: Colors.red),
               ),
             ),
           ),

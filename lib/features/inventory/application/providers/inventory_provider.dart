@@ -642,25 +642,28 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
         comparison = a.quantity.compareTo(b.quantity);
         break;
       case InventorySortCriteria.expirationDate:
-        if (a.expirationDate == null && b.expirationDate == null)
+        if (a.expirationDate == null && b.expirationDate == null) {
           comparison = 0;
-        else if (a.expirationDate == null)
+        } else if (a.expirationDate == null) {
           comparison = 1;
-        else if (b.expirationDate == null)
+        } else if (b.expirationDate == null) {
           comparison = -1;
-        else
+        }
+        else {
           comparison = a.expirationDate!.compareTo(b.expirationDate!);
+        }
         break;
       case InventorySortCriteria.addedDate:
         // Ordenar por fecha de adición (más reciente primero por defecto)
-        if (a.addedDate == null && b.addedDate == null)
+        if (a.addedDate == null && b.addedDate == null) {
           comparison = 0;
-        else if (a.addedDate == null)
+        } else if (a.addedDate == null) {
           comparison = 1;
-        else if (b.addedDate == null)
+        } else if (b.addedDate == null) {
           comparison = -1;
-        else
-          comparison = a.addedDate!.compareTo(b.addedDate!);
+        } else {
+          comparison = a.addedDate.compareTo(b.addedDate);
+        }
         break;
     }
     return inventoryState.sortAscending ? comparison : -comparison;

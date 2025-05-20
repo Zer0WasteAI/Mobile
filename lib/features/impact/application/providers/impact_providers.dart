@@ -396,33 +396,37 @@ ImpactGoal createNewGoal({
 
   // Rangos de dificultad según el tipo de métrica
   if (metricType == GoalMetricType.foodSaved) {
-    if (targetValue > 20)
+    if (targetValue > 20) {
       difficultyMultiplier = 3.0;
-    else if (targetValue > 10)
+    } else if (targetValue > 10) {
       difficultyMultiplier = 2.0;
-    else if (targetValue > 5)
+    } else if (targetValue > 5) {
       difficultyMultiplier = 1.5;
+    }
   } else if (metricType == GoalMetricType.co2Avoided) {
-    if (targetValue > 50)
+    if (targetValue > 50) {
       difficultyMultiplier = 3.0;
-    else if (targetValue > 25)
+    } else if (targetValue > 25) {
       difficultyMultiplier = 2.0;
-    else if (targetValue > 10)
+    } else if (targetValue > 10) {
       difficultyMultiplier = 1.5;
+    }
   } else if (metricType == GoalMetricType.waterSaved) {
-    if (targetValue > 2000)
+    if (targetValue > 2000) {
       difficultyMultiplier = 3.0;
-    else if (targetValue > 1000)
+    } else if (targetValue > 1000) {
       difficultyMultiplier = 2.0;
-    else if (targetValue > 500)
+    } else if (targetValue > 500) {
       difficultyMultiplier = 1.5;
+    }
   } else {
-    if (targetValue > 15)
+    if (targetValue > 15) {
       difficultyMultiplier = 3.0;
-    else if (targetValue > 10)
+    } else if (targetValue > 10) {
       difficultyMultiplier = 2.0;
-    else if (targetValue > 5)
+    } else if (targetValue > 5) {
       difficultyMultiplier = 1.5;
+    }
   }
 
   // Aplicar multiplicador

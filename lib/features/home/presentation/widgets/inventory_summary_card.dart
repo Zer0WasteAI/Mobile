@@ -28,7 +28,7 @@ class InventorySummaryCard extends ConsumerWidget {
 
     return Card(
       elevation: isDark ? 1 : 2, // Less elevation in dark mode
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       color: cardBackgroundColor, // Use theme-aware card color
       child: Padding(

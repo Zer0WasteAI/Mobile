@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/food_types_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/selected_food_types_provider.dart';
+import 'package:zer0_waste_ai/features/profile/domain/models/food_type.dart';
 
 // Definir los tipos de comida disponibles
 enum FoodType {
@@ -100,20 +106,106 @@ class SelectedFoodTypesNotifier extends StateNotifier<List<FoodType>> {
   }
 }
 
-class ProfilePreferredFoodTypeScreen extends ConsumerWidget {
+class ProfilePreferredFoodTypeScreen extends ConsumerStatefulWidget {
   const ProfilePreferredFoodTypeScreen({super.key});
 
   static const String routeName = 'profile_preferred_food_type';
   static const String routePath = '/profile/preferred-food-type';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedTypes = ref.watch(selectedFoodTypesProvider);
-    final notifier = ref.read(selectedFoodTypesProvider.notifier);
-    final colorScheme = Theme.of(context).colorScheme;
+  ConsumerState<ProfilePreferredFoodTypeScreen> createState() =>
+      _ProfilePreferredFoodTypeScreenState();
+}
+
+class _ProfilePreferredFoodTypeScreenState
+    extends ConsumerState<ProfilePreferredFoodTypeScreen> {
+  bool _isInitialized = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize food types after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeFoodTypes();
+    });
+  }
+
+  Future<void> _initializeFoodTypes() async {
+    if (_isInitialized) return;
+
+    final foodTypesAsyncValue = ref.read(foodTypesProvider);
+    final user = ref.read(authControllerProvider).value;
+
+    // Wait for food types to load if they haven't yet
+    if (foodTypesAsyncValue is AsyncLoading) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // Get the list of all available food types
+    final availableFoodTypes = ref.read(foodTypesProvider).value ?? [];
+
+    // Get user's selected food types from profile
+    final userFoodTypes = user?.preferredFoodTypes ?? [];
+    final userFoodTypeItems = user?.preferredFoodTypeItems;
+
+    print('Initializing food types selector with:');
+    print('- Legacy food type names: $userFoodTypes');
+    print('- Food type items: $userFoodTypeItems');
+
+    List<String> foodTypeNamesToInitialize = userFoodTypes;
+
+    // If we have preferredFoodTypeItems, use those instead of legacy preferredFoodTypes
+    if (userFoodTypeItems != null && userFoodTypeItems.isNotEmpty) {
+      foodTypeNamesToInitialize =
+          userFoodTypeItems.map((item) => item['name'] as String).toList();
+    }
+
+    // Initialize the selectedFoodTypesProviderWithPersistence with user's saved preferences
+    if (foodTypeNamesToInitialize.isNotEmpty && availableFoodTypes.isNotEmpty) {
+      final notifier = ref.read(
+        selectedFoodTypesProviderWithPersistence.notifier,
+      );
+
+      for (final foodTypeName in foodTypeNamesToInitialize) {
+        for (final availableFoodType in availableFoodTypes) {
+          if (availableFoodType.name.toLowerCase() ==
+              foodTypeName.toLowerCase()) {
+            notifier.toggleFoodType(availableFoodType);
+            print('Added food type to selection: ${availableFoodType.name}');
+            break;
+          }
+        }
+      }
+    }
+
+    setState(() {
+      _isInitialized = true;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedTypes = ref.watch(selectedFoodTypesProviderWithPersistence);
+    final notifier = ref.read(
+      selectedFoodTypesProviderWithPersistence.notifier,
+    );
+    final allFoodTypesAsyncValue = ref.watch(foodTypesProvider);
+    final authRepository = ref.read(authRepositoryProvider);
+    final authController = ref.read(authControllerProvider.notifier);
+
+    // Use Theme colors
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final Color primaryColor = colorScheme.primary;
+    final Color backgroundColor = colorScheme.surface;
+    final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
+    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Comidas preferidas',
@@ -126,94 +218,182 @@ class ProfilePreferredFoodTypeScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '¿Qué tipos de comida prefieres?',
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Selecciona tus cocinas favoritas para recibir mejores recomendaciones.',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
+        child:
+            _isLoading
+                ? Center(child: CircularProgressIndicator(color: primaryColor))
+                : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '¿Qué tipos de comida prefieres?',
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selecciona tus cocinas favoritas para recibir mejores recomendaciones.',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-              Expanded(
-                child: GridView.builder(
-                  padding: EdgeInsets.zero,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.9,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: FoodType.values.length,
-                  itemBuilder: (context, index) {
-                    final foodType = FoodType.values[index];
-                    final isSelected = selectedTypes.contains(foodType);
-
-                    return _FoodTypeCard(
-                      foodType: foodType,
-                      isSelected: isSelected,
-                      onTap: () => notifier.toggle(foodType),
-                      primaryColor: colorScheme.primary,
-                      surfaceColor: colorScheme.surface,
-                    );
-                  },
-                ),
-              ),
-
-              // Botón de guardar
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed:
-                        selectedTypes.isNotEmpty
-                            ? () {
-                              // Guardar selecciones y volver al perfil
-                              print(
-                                'Tipos de comida seleccionados: $selectedTypes',
+                      Expanded(
+                        child: allFoodTypesAsyncValue.when(
+                          data: (allFoodTypes) {
+                            if (allFoodTypes.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  'No se pudieron cargar los tipos de comida.',
+                                  style: GoogleFonts.inter(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
                               );
-                              context.pop();
                             }
-                            : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
-                      disabledBackgroundColor: colorScheme.primary.withOpacity(
-                        0.5,
+                            return SingleChildScrollView(
+                              child: Wrap(
+                                spacing: 12.0,
+                                runSpacing: 12.0,
+                                children:
+                                    allFoodTypes.map((foodType) {
+                                      final isSelected = selectedTypes.contains(
+                                        foodType,
+                                      );
+                                      return SelectableItemChip(
+                                        label: foodType.name,
+                                        emoji: foodType.emoji,
+                                        isSelected: isSelected,
+                                        onTap:
+                                            () => notifier.toggleFoodType(
+                                              foodType,
+                                            ),
+                                        selectedColor: primaryColor,
+                                        defaultBackgroundColor: backgroundColor,
+                                        defaultTextColor: defaultChipTextColor,
+                                        defaultBorderColor:
+                                            defaultChipBorderColor,
+                                      );
+                                    }).toList(),
+                              ),
+                            );
+                          },
+                          loading:
+                              () => Center(
+                                child: CircularProgressIndicator(
+                                  color: primaryColor,
+                                ),
+                              ),
+                          error:
+                              (error, stack) => Center(
+                                child: Text(
+                                  'Error al cargar tipos de comida: $error',
+                                  style: GoogleFonts.inter(
+                                    color: colorScheme.error,
+                                  ),
+                                ),
+                              ),
+                        ),
                       ),
-                      disabledForegroundColor: colorScheme.onPrimary
-                          .withOpacity(0.7),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+
+                      // Botón de guardar
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                allFoodTypesAsyncValue.hasValue
+                                    ? () async {
+                                      // Mostrar indicador de carga
+                                      if (context.mounted) {
+                                        showLoadingSnackBar(
+                                          context,
+                                          message:
+                                              'Guardando preferencias de comida...',
+                                        );
+                                      }
+
+                                      try {
+                                        // Save selected food types to Firestore - even if empty list
+                                        final foodTypeNames =
+                                            selectedTypes
+                                                .map(
+                                                  (foodType) => foodType.name,
+                                                )
+                                                .toList();
+
+                                        print(
+                                          "Guardando tipos de comida en Firestore: $foodTypeNames",
+                                        );
+
+                                        await authRepository
+                                            .saveUserPreferredFoodTypes(
+                                              foodTypeNames, // Could be empty list
+                                            );
+
+                                        // Actualizar datos del usuario en memoria
+                                        await authController
+                                            .refreshUserFromFirestore();
+
+                                        if (context.mounted) {
+                                          // Mostrar mensaje de éxito
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Preferencias actualizadas',
+                                              ),
+                                              backgroundColor:
+                                                  colorScheme.primary,
+                                            ),
+                                          );
+                                          // Volver al perfil
+                                          context.pop();
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Error al guardar: $e',
+                                              ),
+                                              backgroundColor:
+                                                  colorScheme.error,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                    : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              textStyle: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            child: const Text('Guardar'),
+                          ),
+                        ),
                       ),
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    child: const Text('Guardar'),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

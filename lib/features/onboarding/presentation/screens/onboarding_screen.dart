@@ -25,27 +25,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     {
       'image': 'assets/images/onboarding/onboarding_1.png',
       'title': 'Bienvenido a Zero Waste AI',
-      'description': 'Transforma tu cocina en un espacio inteligente. Empieza a reducir el desperdicio de alimentos de manera sencilla.',
+      'description':
+          'Transforma tu cocina en un espacio inteligente. Empieza a reducir el desperdicio de alimentos de manera sencilla.',
     },
     {
       'image': 'assets/images/onboarding/onboarding_2.png',
       'title': 'Escanea tus ingredientes',
-      'description': 'Toma una foto de tus alimentos y deja que la inteligencia artificial los identifique por ti.',
+      'description':
+          'Toma una foto de tus alimentos y deja que la inteligencia artificial los identifique por ti.',
     },
     {
       'image': 'assets/images/onboarding/onboarding_3.png',
       'title': 'Recibe recetas personalizadas',
-      'description': 'Obtén sugerencias de recetas basadas en lo que ya tienes en casa.',
+      'description':
+          'Obtén sugerencias de recetas basadas en lo que ya tienes en casa.',
     },
     {
       'image': 'assets/images/onboarding/onboarding_4.png',
       'title': 'Organiza y planifica tus comidas',
-      'description': 'Controla tu despensa, planea tus menús semanales y evita que la comida se pierda.',
+      'description':
+          'Controla tu despensa, planea tus menús semanales y evita que la comida se pierda.',
     },
     {
       'image': 'assets/images/onboarding/onboarding_5.png',
       'title': 'Haz seguimiento de tu impacto',
-      'description': 'Descubre cuánto has ahorrado y cómo ayudas al planeta reduciendo el desperdicio.',
+      'description':
+          'Descubre cuánto has ahorrado y cómo ayudas al planeta reduciendo el desperdicio.',
     },
   ];
 
@@ -58,11 +63,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final onboardingState = ref.watch(onboardingControllerProvider);
-    final onboardingController = ref.read(onboardingControllerProvider.notifier);
+    final onboardingController = ref.read(
+      onboardingControllerProvider.notifier,
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -72,11 +80,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: TextButton(
-                  onPressed: () => _completeOnboarding(context, onboardingController),
+                  onPressed:
+                      () => _completeOnboarding(context, onboardingController),
                   child: Text(
                     'Skip',
                     style: TextStyle(
-                      color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                      color:
+                          isDark
+                              ? AppColors.darkSecondaryText
+                              : AppColors.lightSecondaryText,
                     ),
                   ),
                 ),
@@ -138,8 +150,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // Complete onboarding and navigate to login
-  void _completeOnboarding(BuildContext context, OnboardingController controller) async {
+  void _completeOnboarding(
+    BuildContext context,
+    OnboardingController controller,
+  ) async {
+    // Guardar que el onboarding ya fue visto
     await controller.setOnboardingSeen();
+    print("OnboardingScreen: Onboarding completado, navegando a login");
+
     if (context.mounted) {
       context.go('/login');
     }

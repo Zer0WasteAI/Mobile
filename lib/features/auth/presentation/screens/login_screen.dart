@@ -5,7 +5,12 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/login_form.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/widgets/email_verification_dialog.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/widgets/user_info_dialog.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 /// Login screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -24,9 +29,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     // Handle auth state changes
     ref.listen<AsyncValue>(authControllerProvider, (_, state) {
-      state.whenData((user) {
+      state.whenData((user) async {
         if (user != null) {
-          context.go(AllergySelectorScreen.routePath);
+          final authController = ref.read(authControllerProvider.notifier);
+
+          // Verificar si se necesita información adicional (específico para Apple Sign In)
+          if (user.needsAdditionalInfo == true) {
+            if (mounted) {
+              // Mostrar diálogo para recopilar información adicional
+              await showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder:
+                    (context) => UserInfoDialog(
+                      onSubmit: (displayName, email) async {
+                        // Actualizar la información del usuario
+                        await authController.updateUserAfterAppleSignIn(
+                          displayName,
+                          email,
+                        );
+                        // Cerrar el diálogo
+                        if (mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+              );
+
+              // Después del diálogo, el usuario ya debería estar actualizado
+              // No es necesario hacer más verificaciones aquí
+              return;
+            }
+          }
+
+          // Verificar si el correo está verificado (solo si el proveedor es password)
+          final authMethod = user.providerId;
+          final isEmailPassword =
+              authMethod == 'password' || authMethod == null;
+
+          if (isEmailPassword) {
+            // Recargar usuario para obtener el estado de verificación más reciente
+            await authController.reloadUser();
+            final isVerified = await authController.isEmailVerified();
+
+            if (!isVerified) {
+              // Si el correo no está verificado, mostrar diálogo
+              if (mounted) {
+                await showEmailVerificationDialog(
+                  context: context,
+                  onConfirm: () async {
+                    // Cerrar sesión y redirigir a la pantalla de verificación
+                    await authController.signOut();
+                    if (mounted) {
+                      context.go(EmailVerificationScreen.routePath);
+                    }
+                  },
+                );
+                return;
+              }
+            }
+          }
+
+          // Si pasó la verificación o usa otro método de login, continuar con flujo normal
+          // En lugar de verificar las preferencias aquí, usar la pantalla de transición
+          if (mounted) {
+            // Mostrar indicador de carga antes de navegar para una transición más suave
+            showLoadingSnackBar(
+              context,
+              message: 'Iniciando sesión...',
+              duration: const Duration(milliseconds: 1000),
+            );
+
+            // Usar un pequeño delay para permitir que el SnackBar se muestre
+            // antes de navegar a la pantalla de transición
+            Future.delayed(const Duration(milliseconds: 600), () {
+              // Verificar que el contexto todavía está montado
+              if (mounted) {
+                // Mostrar pantalla de transición que manejará las verificaciones
+                context.go(AuthTransitionScreen.routePath);
+              }
+            });
+          }
         }
       });
 

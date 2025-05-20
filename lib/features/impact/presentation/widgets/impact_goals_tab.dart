@@ -55,7 +55,7 @@ class ImpactGoalsTab extends ConsumerWidget {
                 'No tienes objetivos activos. ¡Crea uno nuevo!',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: textColor.withOpacity(0.7),
+                  color: textColor.withValues(alpha: 0.7),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -126,16 +126,16 @@ class ImpactGoalsTab extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.1),
+            color: primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: primaryColor.withOpacity(0.5), width: 1),
+            border: Border.all(color: primaryColor.withValues(alpha: 0.5), width: 1),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.add_rounded, color: primaryColor, size: 24),
@@ -158,7 +158,7 @@ class ImpactGoalsTab extends ConsumerWidget {
                       'Define tus propias metas de impacto ambiental',
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: textColor.withOpacity(0.7),
+                        color: textColor.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -285,33 +285,37 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
     double difficultyMultiplier = 1.0;
 
     if (metricType == GoalMetricType.foodSaved) {
-      if (targetValue > 20)
+      if (targetValue > 20) {
         difficultyMultiplier = 3.0;
-      else if (targetValue > 10)
+      } else if (targetValue > 10) {
         difficultyMultiplier = 2.0;
-      else if (targetValue > 5)
+      } else if (targetValue > 5) {
         difficultyMultiplier = 1.5;
+      }
     } else if (metricType == GoalMetricType.co2Avoided) {
-      if (targetValue > 50)
+      if (targetValue > 50) {
         difficultyMultiplier = 3.0;
-      else if (targetValue > 25)
+      } else if (targetValue > 25) {
         difficultyMultiplier = 2.0;
-      else if (targetValue > 10)
+      } else if (targetValue > 10) {
         difficultyMultiplier = 1.5;
+      }
     } else if (metricType == GoalMetricType.waterSaved) {
-      if (targetValue > 2000)
+      if (targetValue > 2000) {
         difficultyMultiplier = 3.0;
-      else if (targetValue > 1000)
+      } else if (targetValue > 1000) {
         difficultyMultiplier = 2.0;
-      else if (targetValue > 500)
+      } else if (targetValue > 500) {
         difficultyMultiplier = 1.5;
+      }
     } else {
-      if (targetValue > 15)
+      if (targetValue > 15) {
         difficultyMultiplier = 3.0;
-      else if (targetValue > 10)
+      } else if (targetValue > 10) {
         difficultyMultiplier = 2.0;
-      else if (targetValue > 5)
+      } else if (targetValue > 5) {
         difficultyMultiplier = 1.5;
+      }
     }
 
     // Aplicar multiplicador
@@ -480,10 +484,9 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
 
               // Valor objetivo con etiqueta
               Text(
-                'Valor objetivo: ${_targetValue.toStringAsFixed(1)}' +
-                    (_getMetricUnit(_selectedMetricType).isNotEmpty
+                'Valor objetivo: ${_targetValue.toStringAsFixed(1)}${_getMetricUnit(_selectedMetricType).isNotEmpty
                         ? ' ${_getMetricUnit(_selectedMetricType)}'
-                        : ''),
+                        : ''}',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -577,9 +580,9 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: primaryColor.withOpacity(0.3)),
+                  border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,10 +605,10 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.green.withOpacity(0.3),
+                              color: Colors.green.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -637,10 +640,10 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.orange.withOpacity(0.3),
+                              color: Colors.orange.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -895,7 +898,7 @@ class _GoalCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: metricColor.withOpacity(0.15),
+                      color: metricColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(metricIcon, color: metricColor, size: 16),
@@ -918,7 +921,7 @@ class _GoalCard extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.2),
+                        color: Colors.amber.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.amber, width: 1),
                       ),
@@ -949,7 +952,7 @@ class _GoalCard extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: metricColor.withOpacity(0.1),
+                        color: metricColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -1007,7 +1010,7 @@ class _GoalCard extends ConsumerWidget {
 
               // Sección de recompensas
               const SizedBox(height: 12),
-              Divider(height: 1, color: secondaryTextColor.withOpacity(0.2)),
+              Divider(height: 1, color: secondaryTextColor.withValues(alpha: 0.2)),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1032,10 +1035,10 @@ class _GoalCard extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.green.withOpacity(0.3),
+                        color: Colors.green.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -1067,10 +1070,10 @@ class _GoalCard extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.orange.withOpacity(0.3),
+                        color: Colors.orange.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -1108,7 +1111,7 @@ class _GoalCard extends ConsumerWidget {
       borderRadius: BorderRadius.circular(4),
       child: LinearProgressIndicator(
         value: goal.progress,
-        backgroundColor: color.withOpacity(0.2),
+        backgroundColor: color.withValues(alpha: 0.2),
         valueColor: AlwaysStoppedAnimation<Color>(color),
         minHeight: 8,
       ),
@@ -1160,7 +1163,7 @@ class _CompletedGoalCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final secondaryTextColor =
+    final _ =
         isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
     final cardColor = isDark ? AppColors.darkSurface : Colors.white;
 
@@ -1170,7 +1173,7 @@ class _CompletedGoalCard extends StatelessWidget {
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: cardColor.withOpacity(0.8),
+      color: cardColor.withValues(alpha: 0.8),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -1178,7 +1181,7 @@ class _CompletedGoalCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: completedColor.withOpacity(0.15),
+                color: completedColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -1199,7 +1202,7 @@ class _CompletedGoalCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       color: textColor,
                       decoration: TextDecoration.lineThrough,
-                      decorationColor: textColor.withOpacity(0.5),
+                      decorationColor: textColor.withValues(alpha: 0.5),
                       decorationThickness: 2,
                     ),
                   ),

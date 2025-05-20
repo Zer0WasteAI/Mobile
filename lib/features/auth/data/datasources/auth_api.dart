@@ -163,6 +163,24 @@ class MockAuthApi implements AuthApi {
       throw Exception('Password must be at least 6 characters');
     }
 
+    // Para pruebas: Simular que algunos correos ya están registrados con proveedores sociales
+    if (email.toLowerCase().contains('google')) {
+      throw Exception(
+        'Este correo ya está registrado con Google. '
+        'Por favor, inicia sesión usando ese método.',
+      );
+    } else if (email.toLowerCase().contains('facebook')) {
+      throw Exception(
+        'Este correo ya está registrado con Facebook. '
+        'Por favor, inicia sesión usando ese método.',
+      );
+    } else if (email.toLowerCase().contains('apple')) {
+      throw Exception(
+        'Este correo ya está registrado con Apple. '
+        'Por favor, inicia sesión usando ese método.',
+      );
+    }
+
     // Create and set current user
     _currentUser = _mockUser.copyWith(
       id: 'registered-user-${DateTime.now().millisecondsSinceEpoch}',
@@ -279,6 +297,17 @@ extension UserModelExtension on UserModel {
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       photoURL: photoURL ?? this.photoURL,
+      phoneNumber: this.phoneNumber,
+      emailVerified: this.emailVerified,
+      favoriteRecipes: this.favoriteRecipes,
+      allergies: this.allergies,
+      cookingLevel: this.cookingLevel,
+      preferredFoodTypes: this.preferredFoodTypes,
+      initialPreferencesCompleted: this.initialPreferencesCompleted,
+      createdAt: this.createdAt,
+      lastLoginAt: this.lastLoginAt,
+      needsAdditionalInfo: this.needsAdditionalInfo,
+      providerId: this.providerId,
     );
   }
 }

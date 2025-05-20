@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/core/presentation/screens/custom_loading_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/register_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/email_verification_screen.dart'; // Import EmailVerificationScreen
+import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart'; // Import AuthTransitionScreen
 import 'package:zer0_waste_ai/features/home/presentation/screens/home_screen.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart';
@@ -41,7 +44,9 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_co
 import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/screens/signup_screen.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart'; // Importar el servicio de preferencias
+import 'package:zer0_waste_ai/features/splash/presentation/providers/splash_provider.dart'; // Import splashControllerProvider
+import 'package:zer0_waste_ai/features/profile/presentation/screens/edit_profile_screen.dart'; // Import EditProfileScreen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -51,10 +56,16 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // Define route names (add one for smart recipes)
 const String splashRouteName = 'splash';
+const String routerEntryName = 'router_entry';
 const String onboardingRouteName = 'onboarding';
 const String loginRouteName = 'login';
 const String registerRouteName = 'register';
 const String forgotPasswordRouteName = 'forgot-password';
+const String emailVerificationRouteName =
+    EmailVerificationScreen.routeName; // Add email verification route name
+const String authTransitionRouteName =
+    AuthTransitionScreen.routeName; // Add auth transition route name
+const String loadingRouteName = 'loading'; // Add loading route name
 const String homeRouteName = 'home';
 const String inventoryRouteName = 'inventory';
 const String recipesRouteName = 'recipes'; // For explore mode via bottom nav
@@ -92,75 +103,11 @@ const String privacyPolicyRouteName = PrivacyPolicyScreen.routeName;
 const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
 const String aboutAppRouteName = AboutAppScreen.routeName;
 const String supportRouteName = SupportScreen.routeName;
+const String editProfileRouteName = EditProfileScreen.routeName;
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-
-  return GoRouter(
-    initialLocation: '/',
-    debugLogDiagnostics: true,
-    redirect: (context, state) {
-      final isLoggedIn = authState.value != null;
-      final isGoingToLogin = state.matchedLocation == '/login';
-      final isGoingToSignup = state.matchedLocation == '/signup';
-      final isGoingToForgotPassword =
-          state.matchedLocation == '/forgot-password';
-      final isGoingToOnboarding = state.matchedLocation == '/onboarding';
-      final isGoingToSplash = state.matchedLocation == '/';
-
-      // If not logged in and not going to login, signup, forgot password, onboarding or splash, redirect to login
-      if (!isLoggedIn &&
-          !isGoingToLogin &&
-          !isGoingToSignup &&
-          !isGoingToForgotPassword &&
-          !isGoingToOnboarding &&
-          !isGoingToSplash) {
-        return '/login';
-      }
-
-      // If logged in and trying to go to login, signup, forgot password, onboarding or splash, redirect to home
-      if (isLoggedIn &&
-          (isGoingToLogin ||
-              isGoingToSignup ||
-              isGoingToForgotPassword ||
-              isGoingToOnboarding ||
-              isGoingToSplash)) {
-        return '/home';
-      }
-
-      return null;
-    },
-    routes: [
-      // Splash route
-      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-
-      // Onboarding route
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-
-      // Auth routes
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignUpScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
-
-      // Main app routes
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-      GoRoute(
-        path: '/allergies',
-        name: AllergySelectorScreen.routeName,
-        builder: (context, state) => const AllergySelectorScreen(),
-      ),
-    ],
-  );
+  return AppRouter.createRouter(ref);
 });
 
 /// App router configuration
@@ -169,6 +116,32 @@ class AppRouter {
   static GoRouter createRouter(Ref ref) {
     // Create the HeroController
     final heroController = HeroController();
+    final authState = ref.watch(authStateProvider);
+
+    // Watch the user preferences state to avoid async calls during redirects
+    final userPreferences = ref.watch(userPreferencesProvider);
+
+    // Definir transición personalizada para hacer navegación más fluida
+    CustomTransitionPage<void> buildPageWithDefaultTransition<T>({
+      required BuildContext context,
+      required GoRouterState state,
+      required Widget child,
+    }) {
+      return CustomTransitionPage<T>(
+        key: state.pageKey,
+        child: child,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Fade transition para una experiencia más suave
+          return FadeTransition(
+            opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(
+          milliseconds: 150,
+        ), // Transición rápida para evitar pantallas negras
+      );
+    }
 
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -176,11 +149,245 @@ class AppRouter {
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
+      redirect: (context, state) {
+        // Use synchronous state data from the provider instead of async calls
+        final isLoggedIn = authState.value != null;
+        final isLoading = userPreferences.isLoading;
+        final hasCompletedPreferences = userPreferences.hasCompletedPreferences;
+
+        // DEBUG INFO
+        print('================== ROUTER REDIRECT INFO ==================');
+        print(
+          'Route: ${state.matchedLocation}, isLoggedIn: $isLoggedIn, isLoading: $isLoading, hasCompletedPreferences: $hasCompletedPreferences',
+        );
+
+        // Get initialPreferencesCompleted directly from Firestore
+        final firestorePreferencesCompleted =
+            isLoggedIn && authState.value != null
+                ? authState.value!.initialPreferencesCompleted
+                : false;
+
+        if (isLoggedIn && authState.value != null) {
+          final firebaseValue = authState.value!.initialPreferencesCompleted;
+          final inMemoryValue = userPreferences.hasCompletedPreferences;
+          print('User: ${authState.value!.id}');
+          print('Firestore initialPreferencesCompleted: $firebaseValue');
+          print('In-memory hasCompletedPreferences: $inMemoryValue');
+
+          if (firebaseValue != inMemoryValue) {
+            print(
+              '⚠️ ALERTA: Inconsistencia entre valores de Firestore ($firebaseValue) y memoria ($inMemoryValue)',
+            );
+            // Actualizar el estado en memoria si está desincronizado con Firestore
+            if (firebaseValue && !inMemoryValue && !isLoading) {
+              print(
+                'Sincronizando estado en memoria con valor de Firestore...',
+              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(userPreferencesProvider.notifier)
+                    .markPreferencesAsCompleted();
+              });
+            }
+          }
+        }
+        print('========================================================');
+
+        // === EVITAR LOOPS DE REDIRECCIÓN ===
+        // Si estamos en el splash, permitir mostrar el splash por un tiempo adecuado
+        if (state.matchedLocation == '/splash') {
+          print('En splash, permitiendo mostrar animación...');
+          return null;
+        }
+
+        // Si viene de la ruta /router-entry (después del splash), redireccionar según estado
+        if (state.matchedLocation == '/router-entry') {
+          // Verificar si ya vio el onboarding
+          final splashController = ref.read(splashControllerProvider);
+          if (!splashController.onboardingSeen) {
+            print('Router: Primera vez abriendo la app, mostrando onboarding');
+            return '/onboarding';
+          }
+
+          // Si no está autenticado, ir a login
+          if (!isLoggedIn) {
+            print('Router: Usuario no autenticado, redirigiendo a login');
+            return '/login';
+          }
+
+          // Si está cargando preferencias, mostrar pantalla de carga
+          if (isLoading) {
+            print('Router: Preferencias cargando, mostrando pantalla de carga');
+            return '/loading';
+          }
+
+          // SIEMPRE priorizar el valor de Firestore sobre cualquier otro
+          if (firestorePreferencesCompleted) {
+            print(
+              'Router: Usuario completó preferencias según Firestore, redirigiendo a home',
+            );
+            return '/home';
+          } else {
+            print(
+              'Router: Usuario sin preferencias completadas según Firestore, redirigiendo a selector de alergias',
+            );
+            return AllergySelectorScreen.routePath;
+          }
+        }
+
+        // PASO 1: Si estamos en alguna ruta de la app principal y tenemos confirmado que el
+        // usuario ha completado preferencias en Firestore, permitir la navegación
+        if (isLoggedIn &&
+            !isLoading &&
+            firestorePreferencesCompleted &&
+            ![
+              '/login',
+              '/register',
+              '/signup',
+              '/forgot-password',
+              '/onboarding',
+            ].contains(state.matchedLocation)) {
+          print(
+            'Usuario autenticado con preferencias confirmadas en Firestore, permitiendo navegación a: ${state.matchedLocation}',
+          );
+          return null;
+        }
+
+        // Rutas que no requieren autenticación
+        final isGoingToLogin = state.matchedLocation == '/login';
+        final isGoingToSignup = state.matchedLocation == '/signup';
+        final isGoingToSignup2 = state.matchedLocation == '/register';
+        final isGoingToForgotPassword =
+            state.matchedLocation == '/forgot-password';
+        final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+        final isGoingToSplash =
+            state.matchedLocation == '/' || state.matchedLocation == '/splash';
+        final isGoingToEmailVerification =
+            state.matchedLocation == EmailVerificationScreen.routePath;
+        final isGoingToAuthTransition =
+            state.matchedLocation == AuthTransitionScreen.routePath;
+
+        // Rutas relacionadas con el flujo de preferencias de usuario
+        final isGoingToUserPreferences =
+            state.matchedLocation == AllergySelectorScreen.routePath ||
+            state.matchedLocation == CookingLevelSelectorScreen.routePath ||
+            state.matchedLocation == PreferredFoodTypeScreen.routePath ||
+            state.matchedLocation == SpecialDietSelectorScreen.routePath;
+
+        print(
+          'isGoingToUserPreferences=$isGoingToUserPreferences, path=${state.matchedLocation}',
+        );
+
+        // Determinar si necesita completar preferencias basado en el estado del provider en lugar de llamada asincrónica
+        final needsToCompletePreferences =
+            isLoggedIn && !hasCompletedPreferences && !isLoading;
+        print('needsToCompletePreferences=$needsToCompletePreferences (sync)');
+
+        // Si va a la pantalla de home después de completar las dietas especiales,
+        // y el marcador de preferencias está en true, permitir la navegación y no redireccionar
+        if (isLoggedIn &&
+            state.matchedLocation == '/home' &&
+            (hasCompletedPreferences || firestorePreferencesCompleted)) {
+          print(
+            'Usuario autenticado con preferencias completadas, permitiendo ir al home',
+          );
+          return null;
+        }
+
+        // CASO ESPECIAL: Si está autenticado, necesita completar preferencias
+        // y NO está yendo a una pantalla de preferencias, FORZAR redirección al selector de alergias
+        if (isLoggedIn &&
+            needsToCompletePreferences &&
+            !firestorePreferencesCompleted && // Verificar directamente con Firestore para evitar bucles
+            !isGoingToUserPreferences &&
+            !isGoingToSplash && // Excepción para splash (manejo especial)
+            !isGoingToAuthTransition // Permitir la pantalla de transición
+            ) {
+          print('FORZANDO NAVEGACIÓN AL SELECTOR DE ALERGIAS');
+          return AllergySelectorScreen.routePath;
+        }
+
+        // 2. Permitir el acceso al splash solo cuando la app se inicia por primera vez (es la ruta inicial)
+        if (isGoingToSplash) {
+          return null; // Permitir mostrar siempre el splash, la navegación será gestionada por este
+        }
+
+        // 3. Si el usuario no está autenticado y no está yendo a una pantalla permitida sin autenticación,
+        //    redirigir al login
+        if (!isLoggedIn &&
+            !isGoingToLogin &&
+            !isGoingToSignup &&
+            !isGoingToSignup2 &&
+            !isGoingToForgotPassword &&
+            !isGoingToOnboarding &&
+            !isGoingToEmailVerification &&
+            !isGoingToAuthTransition &&
+            !isGoingToSplash) {
+          print('Usuario no autenticado, redirigiendo al login');
+          return '/login';
+        }
+
+        // 4. Si está autenticado y está intentando ir a pantallas de inicio de sesión o registro,
+        //    pero no está en el flujo de preferencias de usuario, redirigir a la pantalla principal
+        if (isLoggedIn &&
+            (isGoingToLogin ||
+                isGoingToSignup ||
+                isGoingToSignup2 ||
+                isGoingToForgotPassword ||
+                isGoingToOnboarding) &&
+            !isGoingToUserPreferences &&
+            !isGoingToAuthTransition) {
+          if (isLoading) {
+            print(
+              'Usuario autenticado, preferencias cargando, mostrando pantalla de transición',
+            );
+            return AuthTransitionScreen.routePath;
+          }
+
+          // Si necesita completar preferencias, enviarlo al selector de alergias en lugar de home
+          if (needsToCompletePreferences && !firestorePreferencesCompleted) {
+            print(
+              'Usuario autenticado sin preferencias, redirigiendo al selector de alergias',
+            );
+            return AllergySelectorScreen.routePath;
+          }
+
+          print('Usuario autenticado con preferencias, redirigiendo al home');
+          return '/home';
+        }
+
+        // No redirigir si no se cumple ninguna de las condiciones anteriores
+        print(
+          'No se aplica ninguna regla de redirección, manteniendo ruta: ${state.matchedLocation}',
+        );
+        return null;
+      },
       routes: [
         GoRoute(
           path: '/splash',
           name: splashRouteName,
           builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/loading',
+          name: loadingRouteName,
+          pageBuilder:
+              (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const CustomLoadingScreen(
+                  message: 'Cargando...',
+                  subMessage: 'Personalizando tu experiencia',
+                ),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+              ),
         ),
         GoRoute(
           path: '/onboarding',
@@ -202,29 +409,66 @@ class AppRouter {
           name: forgotPasswordRouteName,
           builder: (context, state) => const ForgotPasswordScreen(),
         ),
+        // Add the Email Verification Screen route
+        GoRoute(
+          path: EmailVerificationScreen.routePath,
+          name: emailVerificationRouteName,
+          builder: (context, state) => const EmailVerificationScreen(),
+        ),
+        // Add the Auth Transition Screen route
+        GoRoute(
+          path: AuthTransitionScreen.routePath,
+          name: authTransitionRouteName,
+          pageBuilder:
+              (context, state) => buildPageWithDefaultTransition<void>(
+                context: context,
+                state: state,
+                child: const AuthTransitionScreen(),
+              ),
+        ),
         // Add the Allergy Selector Screen route here (top-level)
         GoRoute(
           path: AllergySelectorScreen.routePath,
           name: allergySelectorRouteName,
-          builder: (context, state) => const AllergySelectorScreen(),
+          pageBuilder:
+              (context, state) => buildPageWithDefaultTransition<void>(
+                context: context,
+                state: state,
+                child: const AllergySelectorScreen(),
+              ),
         ),
         // Add the Cooking Level Selector Screen route here (top-level)
         GoRoute(
           path: CookingLevelSelectorScreen.routePath,
           name: cookingLevelSelectorRouteName,
-          builder: (context, state) => const CookingLevelSelectorScreen(),
+          pageBuilder:
+              (context, state) => buildPageWithDefaultTransition<void>(
+                context: context,
+                state: state,
+                child: const CookingLevelSelectorScreen(),
+              ),
         ),
         // Add the Preferred Food Type Screen route here (top-level)
         GoRoute(
           path: PreferredFoodTypeScreen.routePath,
           name: preferredFoodTypeRouteName,
-          builder: (context, state) => const PreferredFoodTypeScreen(),
+          pageBuilder:
+              (context, state) => buildPageWithDefaultTransition<void>(
+                context: context,
+                state: state,
+                child: const PreferredFoodTypeScreen(),
+              ),
         ),
         // Add the Special Diet Selector Screen route here (top-level)
         GoRoute(
           path: SpecialDietSelectorScreen.routePath,
           name: specialDietSelectorRouteName,
-          builder: (context, state) => const SpecialDietSelectorScreen(),
+          pageBuilder:
+              (context, state) => buildPageWithDefaultTransition<void>(
+                context: context,
+                state: state,
+                child: const SpecialDietSelectorScreen(),
+              ),
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(
@@ -418,36 +662,149 @@ class AppRouter {
               path: '/home',
               name: homeRouteName,
               parentNavigatorKey: _shellNavigatorKey,
-              builder: (context, state) => const HomeScreen(),
+              pageBuilder:
+                  (context, state) => CustomTransitionPage<void>(
+                    key: state.pageKey,
+                    child: const HomeScreen(),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      return FadeTransition(
+                        opacity: CurveTween(
+                          curve: Curves.easeInOut,
+                        ).animate(animation),
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ),
             ),
             GoRoute(
               path: '/inventory',
               name: inventoryRouteName,
               parentNavigatorKey: _shellNavigatorKey,
-              builder: (context, state) => const InventoryScreen(),
+              pageBuilder:
+                  (context, state) => CustomTransitionPage<void>(
+                    key: state.pageKey,
+                    child: const InventoryScreen(),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      return FadeTransition(
+                        opacity: CurveTween(
+                          curve: Curves.easeInOut,
+                        ).animate(animation),
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ),
             ),
             GoRoute(
               path: '/recipes',
               name: recipesRouteName,
               parentNavigatorKey: _shellNavigatorKey,
               // This route (from bottom nav) always goes to explore mode
-              builder:
-                  (context, state) => RecipeScreen(
-                    mode: RecipeMode.explore,
-                  ), // Use correct screen and mode
+              pageBuilder:
+                  (context, state) => CustomTransitionPage<void>(
+                    key: state.pageKey,
+                    child: RecipeScreen(mode: RecipeMode.explore),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      return FadeTransition(
+                        opacity: CurveTween(
+                          curve: Curves.easeInOut,
+                        ).animate(animation),
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ),
             ),
             GoRoute(
               path: '/profile',
               name: profileRouteName,
               parentNavigatorKey: _shellNavigatorKey,
-              builder: (context, state) => const ProfileScreen(),
+              pageBuilder:
+                  (context, state) => CustomTransitionPage<void>(
+                    key: state.pageKey,
+                    child: const ProfileScreen(),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      return FadeTransition(
+                        opacity: CurveTween(
+                          curve: Curves.easeInOut,
+                        ).animate(animation),
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ),
             ),
             // Add new routes for scanning under the ShellRoute
             GoRoute(
               path: '/scan/add/:itemType', // Use path parameter for item type
               name: addScanItemRouteName,
               parentNavigatorKey: _shellNavigatorKey,
-              builder: (context, state) {
+              pageBuilder: (context, state) {
                 // Extract itemType from path parameters
                 final itemTypeString = state.pathParameters['itemType'];
                 ScanItemType itemType;
@@ -462,7 +819,35 @@ class AppRouter {
                   itemType =
                       ScanItemType.ingredient; // Or handle error appropriately
                 }
-                return AddScanItemScreen(itemType: itemType);
+                return CustomTransitionPage<void>(
+                  key: state.pageKey,
+                  child: AddScanItemScreen(itemType: itemType),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(
+                      opacity: CurveTween(
+                        curve: Curves.easeInOut,
+                      ).animate(animation),
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.05, 0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                        child: child,
+                      ),
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                );
               },
             ),
           ],
@@ -536,6 +921,12 @@ class AppRouter {
           path: SupportScreen.routePath,
           name: supportRouteName,
           builder: (context, state) => const SupportScreen(),
+        ),
+        // Add the Edit Profile screen route
+        GoRoute(
+          path: EditProfileScreen.routePath,
+          name: editProfileRouteName,
+          builder: (context, state) => const EditProfileScreen(),
         ),
       ],
       errorBuilder:

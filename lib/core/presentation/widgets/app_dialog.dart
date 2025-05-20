@@ -34,7 +34,7 @@ class AppDialog extends StatelessWidget {
   final bool constrainWidth;
 
   const AppDialog({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.primaryAction,
@@ -44,7 +44,7 @@ class AppDialog extends StatelessWidget {
     this.emoji,
     this.subtitle,
     this.constrainWidth = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,7 @@ class AppDialog extends StatelessWidget {
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.3),
+            color: colorScheme.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
