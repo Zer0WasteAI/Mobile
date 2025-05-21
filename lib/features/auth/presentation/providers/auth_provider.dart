@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:zer0_waste_ai/core/navigation/app_router.dart' as router;
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   throw UnimplementedError('AuthRepository not initialized');
@@ -53,36 +54,23 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
   Future<void> _init() async {
     state = const AsyncValue.loading();
     try {
-      // Obtener datos completos del usuario con Firestore
-      final user = await _authRepository.getCurrentUserWithFirestore();
+      final user = _authRepository.currentUser;
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  /// Refrescar datos del usuario desde Firestore
-  Future<void> refreshUserFromFirestore() async {
-    try {
-      // Verificar si hay un usuario en el estado actual
-      final currentState = state.value;
-      if (currentState != null) {
-        final user = await _authRepository.getCurrentUserWithFirestore();
-        state = AsyncValue.data(user);
-      }
-    } catch (e) {
-      print('Error al refrescar datos del usuario: $e');
-      // No actualizamos el estado para no afectar la UI si hay error
-    }
-  }
-
   Future<void> signInWithEmailAndPassword(String email, String password) async {
+    // No necesitamos mostrar la pantalla de carga, manejaremos el loading en la UI
     state = const AsyncValue.loading();
+
     try {
       final user = await _authRepository.signInWithEmailAndPassword(
         email,
         password,
       );
+
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -94,13 +82,16 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     String password,
     String displayName,
   ) async {
+    // No necesitamos mostrar la pantalla de carga, manejaremos el loading en la UI
     state = const AsyncValue.loading();
+
     try {
       final user = await _authRepository.signUpWithEmailAndPassword(
         email,
         password,
         displayName,
       );
+
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -121,17 +112,6 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     state = const AsyncValue.loading();
     try {
       final user = await _authRepository.signInWithApple();
-
-      // Verificar si necesitamos información adicional
-      // Nota: en este punto el usuario ya está autenticado en Firebase,
-      // pero necesitamos solicitar información adicional
-      if (user.needsAdditionalInfo) {
-        // Establecemos el estado con el usuario parcial
-        // El controlador de UI puede verificar esta bandera y mostrar un diálogo
-        state = AsyncValue.data(user);
-        return;
-      }
-
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -152,15 +132,9 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     state = const AsyncValue.loading();
     try {
       await _authRepository.signOut();
-      // Asegurarse de que el estado se actualice antes de la navegación
       state = const AsyncValue.data(null);
-      // No hay necesidad de redirigir aquí, el router se encargará de eso
-      // basado en el cambio del estado de autenticación
-    } catch (e) {
-      print('Error en signOut: $e');
-      // Aún cuando hay un error, marcamos el estado como desconectado
-      // para permitir navegación apropiada
-      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
     }
   }
 
@@ -202,54 +176,7 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     if (state.value == null || state.value?.id == null) {
       return true; // If no user is logged in or no ID, assume first time
     }
-
-    print(
-      'Verificando si el usuario ${state.value!.id} necesita completar preferencias...',
-    );
-
-    // IMPORTANTE: Siempre verificar con Firestore para Apple/Google/Facebook auth
-    // ya que state.value puede tener datos antiguos o incompletos
-
-    // Forzar recarga del usuario desde Firestore primero
-    await refreshUserFromFirestore();
-
-    // Verificar si el usuario ha completado las preferencias iniciales
-    final isFirstTime = await _authRepository.isFirstTimeUser(state.value!.id);
-    final hasCompletedPreferences = await hasCompletedInitialPreferences();
-
-    print(
-      'Resultado verificación: isFirstTime=$isFirstTime, hasCompletedPreferences=$hasCompletedPreferences',
-    );
-    print(
-      'Necesita ir al selector de preferencias: ${isFirstTime || !hasCompletedPreferences}',
-    );
-
-    // El usuario debe ir al flujo de preferencias si es primera vez O no ha completado preferencias
-    return isFirstTime || !hasCompletedPreferences;
-  }
-
-  /// Check if user has completed initial preferences setup
-  Future<bool> hasCompletedInitialPreferences() async {
-    try {
-      if (state.value == null) {
-        print('hasCompletedInitialPreferences: No hay usuario autenticado');
-        return false; // If no user is logged in, return false
-      }
-
-      print('Verificando estado de preferencias para ${state.value!.id}...');
-
-      // Forzar recarga de datos de Firestore - CRÍTICO para autenticación social (Apple, Google, Facebook)
-      // IGNORA el valor de initialPreferencesCompleted almacenado en el modelo local
-      final result = await _authRepository.hasCompletedInitialPreferences();
-      print(
-        'Resultado directo de Firestore: preferencias completadas = $result',
-      );
-
-      return result;
-    } catch (e) {
-      print('Error verificando preferencias completadas: $e');
-      return false; // En caso de error, retornar false para asegurar que el usuario pase por configuración
-    }
+    return await _authRepository.isFirstTimeUser(state.value!.id);
   }
 
   /// Mark user as having completed onboarding
@@ -287,19 +214,28 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     }
   }
 
-  // Agregar un nuevo método para actualizar la información después de Apple Sign In
-  Future<void> updateUserAfterAppleSignIn(
-    String displayName,
-    String email,
-  ) async {
+  /// Refresh user data from Firestore
+  Future<void> refreshUserFromFirestore() async {
     try {
-      final updatedUser = await _authRepository.updateUserAfterAppleSignIn(
-        displayName,
-        email,
-      );
-      state = AsyncValue.data(updatedUser);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      // First reload the Firebase user to ensure we have the latest auth state
+      await reloadUser();
+
+      // Get user data directly from Firestore (bypass cache)
+      final firestoreUser = await _authRepository.getCurrentUserWithFirestore();
+
+      if (firestoreUser != null) {
+        // Actualizar directamente el estado con los datos de Firestore
+        state = AsyncValue.data(firestoreUser);
+        print('User data refreshed from Firestore successfully');
+      } else {
+        // Si no hay usuario en Firestore, re-inicializar
+        await _init();
+        print('No user found in Firestore, using Firebase Auth data');
+      }
+    } catch (e) {
+      print('Error refreshing user from Firestore: $e');
+      // En caso de error, intentar inicializar desde Firebase Auth
+      await _init();
     }
   }
 }

@@ -17,7 +17,7 @@ class WelcomeHeader extends ConsumerWidget {
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
     final Color secondaryTextColor =
         isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
-    final Color _ =
+    final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
     // Get user data
@@ -86,7 +86,7 @@ class UserAvatar extends ConsumerWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color backgroundColor = primaryColor.withValues(alpha: 0.15);
+    final Color backgroundColor = primaryColor.withOpacity(0.15);
     final Color textColor = primaryColor;
 
     // Get user data from auth state
@@ -116,7 +116,7 @@ class UserAvatar extends ConsumerWidget {
               border: Border.all(color: primaryColor, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -127,7 +127,7 @@ class UserAvatar extends ConsumerWidget {
               child:
                   hasPhoto
                       ? CircleAvatar(
-                        backgroundImage: NetworkImage(user.photoURL!),
+                        backgroundImage: NetworkImage(user!.photoURL!),
                         backgroundColor: backgroundColor,
                       )
                       : CircleAvatar(
@@ -176,7 +176,7 @@ class EcoCoinBadge extends ConsumerWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color _ =
+    final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
 
     final coins = ref.watch(ecoCoinsProvider);
@@ -189,9 +189,9 @@ class EcoCoinBadge extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: primaryColor.withValues(alpha: 0.15),
+          color: primaryColor.withOpacity(0.15),
           borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 1),
+          border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

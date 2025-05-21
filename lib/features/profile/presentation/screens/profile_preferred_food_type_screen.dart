@@ -338,6 +338,10 @@ class _ProfilePreferredFoodTypeScreenState
                                               foodTypeNames, // Could be empty list
                                             );
 
+                                        // Marcar explícitamente como completado en Firestore
+                                        await authRepository
+                                            .markInitialPreferencesCompleted();
+
                                         // Actualizar datos del usuario en memoria
                                         await authController
                                             .refreshUserFromFirestore();

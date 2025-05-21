@@ -6,6 +6,9 @@ void showLoadingSnackBar(
   String message = 'Guardando...',
   Duration duration = const Duration(seconds: 1),
 }) {
+  // Eliminar cualquier SnackBar existente para evitar colisión de GlobalKeys
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Row(

@@ -10,7 +10,6 @@ abstract class UserModel with _$UserModel {
     required String email,
     String? displayName,
     String? photoURL,
-    String? phoneNumber,
     @Default(false) bool emailVerified,
     @Default([]) List<String> favoriteRecipes,
     @Default([]) List<String> allergies,
@@ -24,7 +23,9 @@ abstract class UserModel with _$UserModel {
     DateTime? createdAt,
     DateTime? lastLoginAt,
     @Default(false) bool needsAdditionalInfo,
-    @Default('password') String providerId,
+    @Default('email') String providerId,
+    @Default('es') String language,
+    @Default('metric') String measurementUnit,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

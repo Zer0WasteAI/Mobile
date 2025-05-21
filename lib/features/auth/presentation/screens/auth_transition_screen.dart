@@ -53,7 +53,8 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
 
   Future<void> _loadUserPreferences() async {
     // Asegurar un tiempo mínimo de visualización para la animación
-    final minTimeCompleter = Future.delayed(const Duration(milliseconds: 2000));
+    // Aumentar el tiempo mínimo para evitar navegaciones rápidas que causen conflictos
+    final minTimeCompleter = Future.delayed(const Duration(milliseconds: 2500));
 
     try {
       // Cargar preferencias del usuario usando el servicio dedicado
@@ -70,13 +71,20 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
 
       // Determinar la siguiente ruta basada en las preferencias
       final hasCompletedPreferences = preferences.hasCompletedPreferences;
+
+      // Añadir un parámetro para indicar que venimos de auth_transition
       _nextRoute =
-          hasCompletedPreferences ? '/home' : AllergySelectorScreen.routePath;
+          hasCompletedPreferences
+              ? '/home?from=auth_transition'
+              : '${AllergySelectorScreen.routePath}?from=auth_transition';
 
       // Iniciar la transición de salida
       setState(() {
         _hasCompletedCheck = true;
       });
+
+      // Pequeña pausa antes de iniciar animación
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // Iniciar la animación de fade out
       _animationController.forward();
@@ -84,6 +92,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
       // Navegar después de que se complete la animación
       _animationController.addStatusListener((status) {
         if (status == AnimationStatus.completed && mounted) {
+          print('Navegando desde AuthTransitionScreen a $_nextRoute');
           context.go(_nextRoute);
         }
       });
@@ -104,33 +113,113 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
         ),
       );
 
-      // Usar home como ruta predeterminada en caso de error
+      // Usar home como ruta predeterminada en caso de error con parámetro
       setState(() {
         _hasCompletedCheck = true;
-        _nextRoute = '/home';
+        _nextRoute = '/home?from=auth_transition_error';
       });
 
-      // Iniciar la animación de salida
+      // Iniciar la animación de salida después de una pequeña pausa
+      await Future.delayed(const Duration(milliseconds: 300));
       _animationController.forward();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return AnimatedBuilder(
       animation: _fadeOutAnimation,
       builder: (context, child) {
         return Opacity(
           opacity: _fadeOutAnimation.value,
-          child: CustomLoadingScreen(
-            message:
-                _hasCompletedCheck
-                    ? '¡Listo para comenzar!'
-                    : 'Preparando tu experiencia...',
-            subMessage:
-                _hasCompletedCheck
-                    ? 'Abriendo tu Zer0 Waste AI'
-                    : 'Cargando tus preferencias personalizadas',
+          child: Scaffold(
+            backgroundColor: colorScheme.background,
+            body: Stack(
+              children: [
+                // Círculos decorativos
+                Positioned(
+                  top: -150,
+                  right: -100,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -120,
+                  left: -80,
+                  child: Container(
+                    width: 250,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+
+                // Contenido central
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Animación de carga
+                      Container(
+                        width: 80,
+                        height: 80,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            colorScheme.primary,
+                          ),
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Mensaje principal
+                      Text(
+                        _hasCompletedCheck
+                            ? '¡Listo para comenzar!'
+                            : 'Preparando tu experiencia...',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onBackground,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Mensaje secundario
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          _hasCompletedCheck
+                              ? 'Abriendo tu Zer0 Waste AI'
+                              : 'Cargando tus preferencias personalizadas',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.onBackground.withOpacity(0.7),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

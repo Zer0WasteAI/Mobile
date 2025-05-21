@@ -11,7 +11,6 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   email: json['email'] as String,
   displayName: json['displayName'] as String?,
   photoURL: json['photoURL'] as String?,
-  phoneNumber: json['phoneNumber'] as String?,
   emailVerified: json['emailVerified'] as bool? ?? false,
   favoriteRecipes:
       (json['favoriteRecipes'] as List<dynamic>?)
@@ -58,7 +57,9 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
           ? null
           : DateTime.parse(json['lastLoginAt'] as String),
   needsAdditionalInfo: json['needsAdditionalInfo'] as bool? ?? false,
-  providerId: json['providerId'] as String? ?? 'password',
+  providerId: json['providerId'] as String? ?? 'email',
+  language: json['language'] as String? ?? 'es',
+  measurementUnit: json['measurementUnit'] as String? ?? 'metric',
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -67,7 +68,6 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'email': instance.email,
       'displayName': instance.displayName,
       'photoURL': instance.photoURL,
-      'phoneNumber': instance.phoneNumber,
       'emailVerified': instance.emailVerified,
       'favoriteRecipes': instance.favoriteRecipes,
       'allergies': instance.allergies,
@@ -82,4 +82,6 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'lastLoginAt': instance.lastLoginAt?.toIso8601String(),
       'needsAdditionalInfo': instance.needsAdditionalInfo,
       'providerId': instance.providerId,
+      'language': instance.language,
+      'measurementUnit': instance.measurementUnit,
     };

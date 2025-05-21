@@ -6,7 +6,6 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/register_prov
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/register_form.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/screens/email_verification_screen.dart';
 
 /// Register screen
 class RegisterScreen extends ConsumerWidget {
@@ -26,10 +25,137 @@ class RegisterScreen extends ConsumerWidget {
     ref.listen<AsyncValue>(registerNotifierProvider, (_, state) {
       state.whenData((user) async {
         if (user != null) {
-          // Cuando un usuario se registra, cerrar sesión y dirigirlo a la pantalla de verificación de correo
+          final email = user.email;
+
+          // When a user registers, send verification email and sign out
           final authController = ref.read(authControllerProvider.notifier);
+
+          // Ensure email is sent
+          await authController.sendVerificationEmail();
+
+          // Sign out completely to prevent redirection to preferences
           await authController.signOut();
-          context.go(EmailVerificationScreen.routePath);
+
+          // Add a small delay to ensure sign out is complete
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          // Verify we're fully signed out before showing dialog
+          final currentUser =
+              await ref
+                  .read(authRepositoryProvider)
+                  .getCurrentUserWithFirestore();
+          if (currentUser != null) {
+            // If somehow still logged in, try signing out again
+            await authController.signOut();
+            await Future.delayed(const Duration(milliseconds: 300));
+          }
+
+          // Show non-dismissible dialog with WillPopScope to prevent back button
+          if (context.mounted) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext dialogContext) {
+                return WillPopScope(
+                  onWillPop: () async => false, // Prevent back button
+                  child: AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    backgroundColor:
+                        isDark ? AppColors.darkBackground : Colors.white,
+                    title: Text(
+                      'Verificación de email necesaria',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isDark
+                                ? AppColors.darkMainText
+                                : AppColors.lightMainText,
+                      ),
+                    ),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.mark_email_unread_rounded,
+                            size: 80,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Se ha enviado un enlace de verificación',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color:
+                                  isDark
+                                      ? AppColors.darkMainText
+                                      : AppColors.lightMainText,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Hemos enviado un enlace de verificación a $email. Por favor, revisa tu correo y haz clic en el enlace para activar tu cuenta.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color:
+                                  isDark
+                                      ? AppColors.darkSecondaryText
+                                      : AppColors.lightSecondaryText,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Si no encuentras el correo, revisa tu carpeta de spam.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color:
+                                  isDark
+                                      ? AppColors.darkSecondaryText
+                                      : AppColors.lightSecondaryText,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          // Ensure we go to login and not get redirected elsewhere
+                          WidgetsBinding.instance.addPostFrameCallback((
+                            _,
+                          ) async {
+                            // Double-check there's no user still in memory
+                            final authController = ref.read(
+                              authControllerProvider.notifier,
+                            );
+                            await authController.signOut();
+
+                            // Ensure the navigation stack is cleared
+                            if (context.mounted) {
+                              context.replace('/login');
+                            }
+                          });
+                        },
+                        child: const Text('Ir a iniciar sesión'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
         }
       });
 

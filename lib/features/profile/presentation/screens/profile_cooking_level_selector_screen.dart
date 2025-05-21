@@ -203,6 +203,10 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                                 levelString,
                               );
 
+                              // Marcar explícitamente como completado en Firestore
+                              await authRepository
+                                  .markInitialPreferencesCompleted();
+
                               // Actualizar datos del usuario en memoria
                               await authController.refreshUserFromFirestore();
 

@@ -29,15 +29,9 @@ class RegisterController {
   Future<UserEntity> register(
     String name,
     String email,
-    String password, {
-    String? phone,
-  }) async {
-    final params = RegisterParams(
-      name: name,
-      email: email,
-      password: password,
-      phone: phone,
-    );
+    String password,
+  ) async {
+    final params = RegisterParams(name: name, email: email, password: password);
     return await registerUseCase(params);
   }
 
@@ -103,15 +97,6 @@ class RegisterController {
       return 'La contraseña debe contener al menos un carácter especial';
     }
     return null;
-  }
-
-  /// Validate phone number (optional)
-  bool isValidPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return true; // Phone is optional
-
-    // Simple phone validation: at least 10 digits
-    final digitsOnly = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    return digitsOnly.length >= 10;
   }
 
   /// Validate password confirmation

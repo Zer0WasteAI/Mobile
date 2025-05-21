@@ -231,6 +231,15 @@ class _PreferredFoodTypeScreenState
                                             foodTypeNames, // Could be empty list
                                           );
 
+                                      // Marcar explícitamente como completado en Firestore
+                                      await authRepository
+                                          .markInitialPreferencesCompleted();
+
+                                      // Refrescar datos de usuario
+                                      await ref
+                                          .read(authControllerProvider.notifier)
+                                          .refreshUserFromFirestore();
+
                                       // Reset state to avoid keeping selections
                                       notifier.reset();
 
@@ -245,6 +254,9 @@ class _PreferredFoodTypeScreenState
                                         "Error guardando tipos de comida: $e",
                                       );
                                       if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).hideCurrentSnackBar();
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(

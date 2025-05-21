@@ -9,14 +9,14 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:zer0_waste_ai/features/profile/application/providers/allergies_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/allergy.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart'; // Importar widget de carga
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_allergy_selector_screen.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
 final selectedAllergiesProvider =
-    StateNotifierProvider.autoDispose<SelectedAllergiesNotifier, Set<String>>((
-      ref,
-    ) {
-      // Using autoDispose to ensure state is reset when leaving the screen
+    StateNotifierProvider<SelectedAllergiesNotifier, Set<String>>((ref) {
+      // TODO: Implement loading from persistence if needed
       return SelectedAllergiesNotifier();
     });
 
@@ -45,11 +45,6 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
     state = {...state}..remove(allergyName);
     print("Selected allergy names: $state");
   }
-
-  // Reset state
-  void reset() {
-    state = {};
-  }
 }
 
 // --- Screen Widget ---
@@ -65,7 +60,6 @@ class AllergySelectorScreen extends ConsumerWidget {
     final selectedAllergyNames = ref.watch(selectedAllergiesProvider);
     final notifier = ref.read(selectedAllergiesProvider.notifier);
     final allergiesAsyncValue = ref.watch(allergiesProvider);
-    final authRepository = ref.read(authRepositoryProvider);
 
     // Use Theme colors for consistency
     final theme = Theme.of(context);
@@ -81,28 +75,185 @@ class AllergySelectorScreen extends ConsumerWidget {
     final Color secondaryTextColorForDialog =
         colorScheme.onSurfaceVariant; // For dialog text
 
+    final TextEditingController _allergyController = TextEditingController();
+    final List<String> _commonEmojis = [
+      '🍞',
+      '🥚',
+      '🥜',
+      '🥛',
+      '🦐',
+      '🌾',
+      '🌿',
+      '🫘',
+      '⚠️',
+    ];
+
+    String _selectedEmoji = '⚠️';
+
+    void _showAddAllergyDialog() {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Añadir alergia personalizada',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _allergyController,
+                        decoration: InputDecoration(
+                          labelText: 'Nombre de la alergia',
+                          hintText: 'Ej: Mostaza, Apio, etc.',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Elige un emoji:',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children:
+                            _commonEmojis.map((emoji) {
+                              final isSelected = emoji == _selectedEmoji;
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedEmoji = emoji;
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(32),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withOpacity(0.1)
+                                            : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(32),
+                                    border: Border.all(
+                                      color:
+                                          isSelected
+                                              ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5),
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    emoji,
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: GoogleFonts.inter(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_allergyController.text.trim().isNotEmpty) {
+                        // Add custom allergy
+                        ref
+                            .read(
+                              selectedAllergiesProviderWithPersistence.notifier,
+                            )
+                            .addCustomAllergy(
+                              _allergyController.text.trim(),
+                              _selectedEmoji,
+                            );
+
+                        // Reset controller and close dialog
+                        _allergyController.clear();
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    child: Text(
+                      'Añadir',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
+
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: backgroundColor, // Use theme-based background
+      appBar: AppBar(
+        title: Text(
+          'Alergias alimentarias',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        backgroundColor: primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: Colors.white,
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '¿Tienes alguna alergia alimentaria?',
+                '¿Tienes alguna alergia?',
                 style: GoogleFonts.inter(
-                  fontSize: 26,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                  color: colorScheme.onSurface, // Use theme text color
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Selecciona tus alergias para evitar recetas inadecuadas para ti.',
+                'Selecciona los alimentos a los que eres alérgico para evitarlos en tus recetas.',
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color: colorScheme.onSurfaceVariant,
+                  color:
+                      colorScheme
+                          .onSurfaceVariant, // Use theme secondary text color
                 ),
               ),
               const SizedBox(height: 24),
@@ -157,38 +308,24 @@ class AllergySelectorScreen extends ConsumerWidget {
                     // Add the "Add" button chip
                     chipWidgets.add(
                       SelectableItemChip(
-                        label: 'Agregar otra',
+                        label: 'Añadir',
                         isSelected: false,
                         isAddButton: true,
                         onTap: () {
-                          // Show a dialog for adding a custom allergy
-                          showAddItemDialog(
-                            context: context,
-                            title: 'Agregar Alergia Personalizada',
-                            fieldLabel: 'Nombre de la alergia:',
-                            hintText: 'Ej: Fresas, pescado, etc.',
-                            iconData: FontAwesomeIcons.allergies,
-                            existingItemNames: selectedAllergyNames,
-                            onAdd: (newAllergyName) {
-                              notifier.addCustomAllergy(newAllergyName);
-                            },
-                            primaryColor: primaryColor,
-                            backgroundColor: backgroundColor,
-                            secondaryTextColor: secondaryTextColorForDialog,
-                          );
+                          _showAddAllergyDialog();
                         },
                         selectedColor: primaryColor,
                         defaultBackgroundColor: backgroundColor,
-                        defaultTextColor: defaultChipTextColor,
+                        defaultTextColor:
+                            defaultChipTextColor, // Add button text color managed internally
                         defaultBorderColor: defaultChipBorderColor,
                       ),
                     );
 
-                    // Return the wrap with all chips
                     return SingleChildScrollView(
                       child: Wrap(
-                        spacing: 12.0,
-                        runSpacing: 12.0,
+                        spacing: 10.0,
+                        runSpacing: 10.0,
                         children: chipWidgets,
                       ),
                     );
@@ -213,48 +350,83 @@ class AllergySelectorScreen extends ConsumerWidget {
                   onPressed:
                       allergiesAsyncValue.hasValue
                           ? () async {
+                            print(
+                              'Selected allergy names: $selectedAllergyNames',
+                            );
+
+                            // Mostrar indicador de carga
+                            if (context.mounted) {
+                              showLoadingSnackBar(
+                                context,
+                                message: 'Guardando alergias...',
+                              );
+                            }
+
+                            // Obtener referencia al repositorio de auth y controller
+                            final authRepository = ref.read(
+                              authRepositoryProvider,
+                            );
+                            final authController = ref.read(
+                              authControllerProvider.notifier,
+                            );
+
                             try {
-                              // Mostrar indicador de carga
-                              if (context.mounted) {
-                                showLoadingSnackBar(
-                                  context,
-                                  message: 'Guardando alergias...',
-                                );
-                              }
+                              // Convertir nombres de alergias a items de alergias
+                              final allergyItems =
+                                  selectedAllergyNames.map((name) {
+                                    // Buscar la alergia en la lista de alergias predefinidas
+                                    final predefinedAllergies =
+                                        ref.read(allergiesProvider).value ?? [];
+                                    final predefinedAllergy =
+                                        predefinedAllergies.firstWhere(
+                                          (a) => a.name == name,
+                                          orElse:
+                                              () => Allergy(
+                                                name: name,
+                                                emoji: '⚠️',
+                                              ), // Default emoji para custom
+                                        );
 
-                              // Siempre guardar la lista de alergias (incluso si está vacía)
-                              // Esto garantiza que se guarde un array vacío si no se selecciona ninguna
-                              final allergyList = selectedAllergyNames.toList();
-                              print(
-                                "Guardando alergias en Firestore: $allergyList",
+                                    // Determinar si es una alergia personalizada
+                                    final isCustom =
+                                        !predefinedAllergies.any(
+                                          (a) => a.name == name,
+                                        );
+
+                                    return {
+                                      'name': name,
+                                      'emoji': predefinedAllergy.emoji,
+                                      'isCustom': isCustom,
+                                    };
+                                  }).toList();
+
+                              // Guardar en Firestore
+                              await authRepository.saveUserAllergyItems(
+                                allergyItems,
                               );
 
-                              await authRepository.saveUserAllergies(
-                                allergyList, // Podría ser una lista vacía
-                              );
+                              // Marcar explícitamente como completado en Firestore
+                              await authRepository
+                                  .markInitialPreferencesCompleted();
 
-                              // Reset state to avoid keeping selections
-                              notifier.reset();
+                              // Refrescar datos de usuario
+                              await authController.refreshUserFromFirestore();
 
-                              // Continue to the cooking level selector screen
-                              if (context.mounted) {
-                                // Usar go en lugar de replace para transiciones más fluidas
-                                context.go(
-                                  CookingLevelSelectorScreen.routePath,
-                                );
-                              }
+                              // Continuamos al selector de nivel de cocina
+                              context.go(CookingLevelSelectorScreen.routePath);
                             } catch (e) {
-                              print("Error guardando alergias: $e");
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error: No se pudieron guardar las alergias: $e',
-                                    ),
-                                    backgroundColor: Colors.red,
+                              // Mostrar error si falla el guardado
+                              ScaffoldMessenger.of(
+                                context,
+                              ).hideCurrentSnackBar(); // Eliminar SnackBars previos
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Error al guardar alergias: $e',
                                   ),
-                                );
-                              }
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
                             }
                           }
                           : null,
@@ -273,7 +445,13 @@ class AllergySelectorScreen extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: const Text('Continuar'),
+                  child: Text(
+                    'Guardar',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/providers/splash_provider.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/viewmodels/splash_controller.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart';
 import 'dart:async';
 
 /// Splash screen
@@ -107,16 +109,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     });
 
-    // Delay before navigating - regular timeout
-    _failsafeTimer = Timer(const Duration(milliseconds: 3000), () {
-      print('⚠️ [SplashScreen] Failsafe timer triggered - normal timeout');
-      if (mounted && !_hasNavigated) {
-        _finishSplash();
-      }
+    // Wait for animations and then check auth state directly
+    Timer(const Duration(milliseconds: 2000), () {
+      _checkAuthAndNavigate();
     });
 
     // Hard timeout - in case navigation gets stuck
-    _hardTimeoutTimer = Timer(const Duration(milliseconds: 7000), () {
+    _hardTimeoutTimer = Timer(const Duration(milliseconds: 3000), () {
       print(
         '🚨 [SplashScreen] Hard timeout triggered! Navigation may be stuck.',
       );
@@ -124,13 +123,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         setState(() {
           _isTimeoutOccurred = true;
         });
-        // Force navigation to login as fallback
-        try {
-          context.go('/login');
-          _hasNavigated = true;
-        } catch (e) {
-          print('Error during hard timeout navigation: $e');
-        }
+        _forceNavigate();
       }
     });
   }
@@ -144,29 +137,58 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.dispose();
   }
 
-  // Método para finalizar la animación del splash
-  void _finishSplash() {
+  void _checkAuthAndNavigate() {
     if (_hasNavigated || !mounted) return;
 
-    print('🚀 [SplashScreen] Finalizing splash and navigating...');
+    print('🔍 [SplashScreen] Checking auth state to determine navigation...');
 
-    // Marcar que ya hemos navegado para evitar navegaciones múltiples
+    final authState = ref.read(authControllerProvider);
+    final splashController = ref.read(splashControllerProvider);
+
+    // Use a post-frame callback to ensure any state changes are processed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // First check if onboarding has been seen
+      if (!splashController.onboardingSeen) {
+        _navigateTo('/onboarding');
+        return;
+      }
+
+      // Then check auth state
+      if (authState.hasValue && authState.value != null) {
+        print(
+          '🔐 [SplashScreen] User authenticated, navigating to transition screen',
+        );
+        _navigateTo(AuthTransitionScreen.routePath);
+      } else {
+        print('🔓 [SplashScreen] User not authenticated, navigating to login');
+        _navigateTo('/login');
+      }
+    });
+  }
+
+  void _navigateTo(String route) {
+    if (_hasNavigated || !mounted) return;
+
     _hasNavigated = true;
+    print('🚀 [SplashScreen] Navigating to: $route');
 
     try {
-      // Dejar que el router decida adónde ir según el estado actual
-      // El router ya tiene toda la lógica necesaria para determinar la ruta correcta
-      context.go('/router-entry');
+      // Use replace instead of go to completely remove splash from history
+      context.replace(route);
     } catch (e) {
-      print('❌ [SplashScreen] Error during navigation: $e');
-      // En caso de error, intentar ir a login como fallback
-      if (mounted) {
-        try {
-          context.go('/login');
-        } catch (e2) {
-          print('❌ [SplashScreen] Error during fallback navigation: $e2');
-        }
-      }
+      print('❌ [SplashScreen] Navigation error: $e');
+      _forceNavigate();
+    }
+  }
+
+  void _forceNavigate() {
+    if (!mounted) return;
+
+    try {
+      // Always try to go to login as a fallback
+      context.replace('/login');
+    } catch (e) {
+      print('❌ [SplashScreen] Force navigation error: $e');
     }
   }
 
@@ -175,13 +197,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // Listen to splash state changes - only for onboarding status
-    ref.listen<SplashState>(splashControllerProvider, (previous, current) {
-      print('🔄 [SplashScreen] Splash state changed: ${current.status}');
-      if (current.status == SplashStatus.completed && !_hasNavigated) {
-        _finishSplash();
-      }
-    });
+    // Removed ref.listen for splash state to prevent multiple navigation triggers
 
     return Scaffold(
       backgroundColor: colorScheme.primary,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/presentation/screens/edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -18,10 +19,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Refrescar datos del usuario al construir la pantalla
-    Future.microtask(() {
-      ref.read(authControllerProvider.notifier).refreshUserFromFirestore();
+    // Forzar actualización completa de datos al construir la pantalla
+    _refreshUserDataFromFirestore();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Esto se llamará cuando la pantalla se active nuevamente después de navegar
+    _refreshUserDataFromFirestore();
+  }
+
+  /// Método auxiliar para forzar la actualización de datos desde Firestore
+  Future<void> _refreshUserDataFromFirestore() async {
+    if (!mounted) return;
+
+    setState(() {
+      // Mostrar un indicador de carga si es necesario
     });
+
+    try {
+      // Primero actualizamos desde Firestore usando el método mejorado
+      await ref
+          .read(authControllerProvider.notifier)
+          .refreshUserFromFirestore();
+
+      // Pequeña pausa para asegurar que los datos se procesen completamente
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (mounted) {
+        // Forzar actualización de la UI
+        setState(() {});
+
+        // Debug de los datos actualizados
+        final user = ref.read(authControllerProvider).value;
+        print('DATOS ACTUALIZADOS:');
+        print(' - cookingLevel: ${user?.cookingLevel}');
+        print(' - preferredFoodTypes: ${user?.preferredFoodTypes}');
+        print(' - allergies: ${user?.allergies}');
+        print(' - specialDiets: ${user?.specialDiets}');
+      }
+    } catch (e) {
+      print('Error al actualizar datos del usuario: $e');
+    }
   }
 
   @override
@@ -71,7 +111,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   icon: const Icon(Icons.edit, color: Colors.white),
                   onPressed: () {
                     // Navigate to the Edit Profile screen
-                    context.push('/edit-profile');
+                    context.goNamed(EditProfileScreen.routeName);
                   },
                   tooltip: 'Editar perfil',
                   iconSize: 20,
@@ -670,6 +710,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildSettingsCard(BuildContext context) {
+    final user = ref.watch(authControllerProvider).value;
+    // Get measurement unit to display
+    final String measurementUnitDisplay =
+        user?.measurementUnit == 'imperial' ? 'Imperiales' : 'Métricas';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -703,7 +748,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             context,
             icon: Icons.straighten_rounded,
             title: 'Unidades de medida',
-            subtitle: 'Métricas',
+            subtitle: measurementUnitDisplay,
             color: const Color(0xFF00BFA5),
             bgColor: const Color(0xFFE0F2F1),
             showChevron: true,

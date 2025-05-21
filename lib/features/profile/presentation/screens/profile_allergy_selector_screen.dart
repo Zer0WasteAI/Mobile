@@ -569,6 +569,10 @@ class _ProfileAllergySelectorScreenState
                                   allergyItems,
                                 );
 
+                                // Marcar explícitamente como completado en Firestore
+                                await authRepository
+                                    .markInitialPreferencesCompleted();
+
                                 // Refresh user data
                                 await authController.refreshUserFromFirestore();
 

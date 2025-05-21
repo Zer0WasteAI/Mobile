@@ -17,9 +17,6 @@ class RegisterState {
   /// Email
   final String email;
 
-  /// Phone number
-  final String phone;
-
   /// Password
   final String password;
 
@@ -31,9 +28,6 @@ class RegisterState {
 
   /// Email error message
   final String? emailError;
-
-  /// Phone error message
-  final String? phoneError;
 
   /// Password error message
   final String? passwordError;
@@ -47,7 +41,6 @@ class RegisterState {
   bool get isValid =>
       nameError == null &&
       emailError == null &&
-      phoneError == null &&
       passwordError == null &&
       confirmPasswordError == null &&
       name.isNotEmpty &&
@@ -59,12 +52,10 @@ class RegisterState {
   const RegisterState({
     this.name = '',
     this.email = '',
-    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.nameError,
     this.emailError,
-    this.phoneError,
     this.passwordError,
     this.confirmPasswordError,
     this.isLoading = false,
@@ -74,12 +65,10 @@ class RegisterState {
   RegisterState copyWith({
     String? name,
     String? email,
-    String? phone,
     String? password,
     String? confirmPassword,
     Object? nameError = const _NotPassed(),
     Object? emailError = const _NotPassed(),
-    Object? phoneError = const _NotPassed(),
     Object? passwordError = const _NotPassed(),
     Object? confirmPasswordError = const _NotPassed(),
     bool? isLoading,
@@ -87,15 +76,12 @@ class RegisterState {
     return RegisterState(
       name: name ?? this.name,
       email: email ?? this.email,
-      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       nameError:
           nameError is _NotPassed ? this.nameError : nameError as String?,
       emailError:
           emailError is _NotPassed ? this.emailError : emailError as String?,
-      phoneError:
-          phoneError is _NotPassed ? this.phoneError : phoneError as String?,
       passwordError:
           passwordError is _NotPassed
               ? this.passwordError
@@ -153,17 +139,6 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     ref.notifyListeners();
   }
 
-  /// Update phone
-  void updatePhone(String phone) {
-    final isValid = _controller.isValidPhone(phone);
-    _registerState = _registerState.copyWith(
-      phone: phone,
-      phoneError:
-          isValid ? null : 'Por favor, ingresa un número de teléfono válido',
-    );
-    ref.notifyListeners();
-  }
-
   /// Update password
   void updatePassword(String password) {
     final passwordError = _controller.validatePassword(password);
@@ -208,7 +183,6 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
         _registerState.name,
         _registerState.email,
         _registerState.password,
-        phone: _registerState.phone.isEmpty ? null : _registerState.phone,
       );
       _registerState = _registerState.copyWith(isLoading: false);
       return user;

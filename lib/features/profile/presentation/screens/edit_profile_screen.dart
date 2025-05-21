@@ -95,15 +95,60 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil actualizado correctamente')),
-        );
+        // Cerrar cualquier snackbar previo
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-        if (Navigator.canPop(context)) {
-          context.pop();
-        } else {
-          context.go('/profile');
-        }
+        // Mostrar diálogo de confirmación
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              title: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF00BFA5),
+                    size: 28,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Éxito',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                'Perfil actualizado correctamente',
+                style: GoogleFonts.inter(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Navegar de vuelta al perfil
+                    context.goNamed('profile');
+                  },
+                  child: Text(
+                    'Aceptar',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF00BFA5),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
       }
     } catch (e) {
       if (context.mounted) {
@@ -135,13 +180,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              context.pop();
-            } else {
-              context.go('/profile');
-            }
-          },
+          onPressed: () => context.goNamed('profile'),
         ),
       ),
       body: SafeArea(

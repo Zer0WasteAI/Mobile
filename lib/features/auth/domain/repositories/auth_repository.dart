@@ -97,4 +97,10 @@ abstract class AuthRepository {
   Future<void> saveUserPreferredFoodTypeItems(
     List<Map<String, dynamic>> foodTypeItems,
   );
+
+  /// Save user preferred language
+  Future<void> saveUserLanguage(String language);
+
+  /// Save user measurement unit preferences
+  Future<void> saveUserMeasurementUnit(String measurementUnit);
 }

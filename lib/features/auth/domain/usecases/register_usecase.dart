@@ -14,15 +14,11 @@ class RegisterParams {
   /// Password
   final String password;
 
-  /// Phone number (optional)
-  final String? phone;
-
   /// Constructor
   const RegisterParams({
     required this.name,
     required this.email,
     required this.password,
-    this.phone,
   });
 }
 
@@ -41,10 +37,6 @@ class RegisterUseCase implements UseCase<UserEntity, RegisterParams> {
       params.password,
       params.name,
     );
-
-    // Note: The phone number can't be updated directly with the current repository interface
-    // The interface only supports updating displayName and photoURL
-    // A more comprehensive solution would require modifying the repository interface
 
     return userModel.toEntity();
   }

@@ -339,6 +339,18 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> saveUserLanguage(String language) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveUserMeasurementUnit(String measurementUnit) {
+    // For mock purposes, do nothing
+    return Future.value();
+  }
+
+  @override
   Future<UserModel> updateUserAfterAppleSignIn(
     String displayName,
     String email,

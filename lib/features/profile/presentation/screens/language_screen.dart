@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 
 // Provider for the selected language
-final selectedLanguageProvider = StateProvider<String>((ref) => 'es');
+final selectedLanguageProvider = StateProvider<String>((ref) {
+  // Inicializar con el valor del usuario actual si existe
+  final user = ref.watch(authControllerProvider).value;
+  return user?.language ?? 'es';
+});
 
 class LanguageScreen extends ConsumerWidget {
   const LanguageScreen({super.key});
@@ -15,6 +21,7 @@ class LanguageScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLanguage = ref.watch(selectedLanguageProvider);
+    final authRepository = ref.watch(authRepositoryProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -71,9 +78,37 @@ class LanguageScreen extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Just go back since there's only one option
-                  context.pop();
+                onPressed: () async {
+                  // Guardar la selección en Firestore
+                  try {
+                    final language = ref.read(selectedLanguageProvider);
+                    await authRepository.saveUserLanguage(language);
+
+                    // Actualizar el controlador de autenticación para reflejar los cambios
+                    await ref
+                        .read(authControllerProvider.notifier)
+                        .refreshUserFromFirestore();
+
+                    // Mostrar mensaje de éxito y volver
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Idioma guardado correctamente'),
+                          backgroundColor: Color(0xFF00BFA5),
+                        ),
+                      );
+                      context.pop();
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al guardar: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00BFA5),

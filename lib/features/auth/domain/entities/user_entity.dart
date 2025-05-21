@@ -8,7 +8,6 @@ class UserEntity {
     required this.email,
     this.displayName,
     this.photoURL,
-    this.phoneNumber,
     this.emailVerified = false,
     this.favoriteRecipes = const [],
     this.allergies = const [],
@@ -34,9 +33,6 @@ class UserEntity {
 
   /// User photo URL
   final String? photoURL;
-
-  /// User phone number
-  final String? phoneNumber;
 
   /// Whether email is verified
   final bool emailVerified;
@@ -83,7 +79,6 @@ class UserEntity {
         other.email == email &&
         other.displayName == displayName &&
         other.photoURL == photoURL &&
-        other.phoneNumber == phoneNumber &&
         other.emailVerified == emailVerified &&
         listEquals(other.favoriteRecipes, favoriteRecipes) &&
         listEquals(other.allergies, allergies) &&
@@ -103,7 +98,6 @@ class UserEntity {
       email,
       displayName,
       photoURL,
-      phoneNumber,
       emailVerified,
       Object.hashAll(favoriteRecipes),
       Object.hashAll(allergies),
@@ -119,6 +113,6 @@ class UserEntity {
   /// String representation
   @override
   String toString() {
-    return 'UserEntity(id: $id, email: $email, displayName: $displayName, photoURL: $photoURL, phoneNumber: $phoneNumber, emailVerified: $emailVerified, favoriteRecipes: $favoriteRecipes, allergies: $allergies, specialDiets: $specialDiets, cookingLevel: $cookingLevel, preferredFoodTypes: $preferredFoodTypes, initialPreferencesCompleted: $initialPreferencesCompleted, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
+    return 'UserEntity(id: $id, email: $email, displayName: $displayName, photoURL: $photoURL, emailVerified: $emailVerified, favoriteRecipes: $favoriteRecipes, allergies: $allergies, specialDiets: $specialDiets, cookingLevel: $cookingLevel, preferredFoodTypes: $preferredFoodTypes, initialPreferencesCompleted: $initialPreferencesCompleted, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
   }
 }

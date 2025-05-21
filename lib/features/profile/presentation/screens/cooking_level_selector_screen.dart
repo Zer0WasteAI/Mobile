@@ -194,9 +194,20 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
 
                       print("Guardando nivel de cocina: $cookingLevelString");
 
-                      await ref
-                          .read(authRepositoryProvider)
-                          .saveUserCookingLevel(cookingLevelString);
+                      final authRepository = ref.read(authRepositoryProvider);
+                      final authController = ref.read(
+                        authControllerProvider.notifier,
+                      );
+
+                      await authRepository.saveUserCookingLevel(
+                        cookingLevelString,
+                      );
+
+                      // Marcar explícitamente como completado en Firestore
+                      await authRepository.markInitialPreferencesCompleted();
+
+                      // Refrescar datos de usuario
+                      await authController.refreshUserFromFirestore();
 
                       // Reset state to avoid keeping selections
                       notifier.reset();
@@ -209,6 +220,9 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                     } catch (e) {
                       print("Error guardando nivel de cocina: $e");
                       if (context.mounted) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).hideCurrentSnackBar(); // Eliminar SnackBars previos
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

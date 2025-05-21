@@ -7,7 +7,6 @@ import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 
 /// Implementation of AuthRepository
 class AuthRepositoryImpl implements AuthRepository {
@@ -50,42 +49,27 @@ class AuthRepositoryImpl implements AuthRepository {
     String displayName,
   ) async {
     try {
-      // Primero verificar si este email ya existe en Firestore
-      final emailQuery =
-          await _firestore
-              .collection('users')
-              .where('email', isEqualTo: email)
-              .limit(1)
-              .get();
+      // Verificar con Firebase Auth si hay métodos de inicio de sesión asociados
+      final signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(
+        email,
+      );
 
-      // Si encontramos documentos, significa que el email ya está registrado
-      if (emailQuery.docs.isNotEmpty) {
-        final existingUserData = emailQuery.docs.first.data();
-        final authProvider = existingUserData['authProvider'];
-
-        if (authProvider != null && authProvider != 'password') {
-          // El email ya está registrado con otro proveedor de autenticación
+      // If we find sign-in methods, this email is already registered
+      if (signInMethods.isNotEmpty) {
+        if (signInMethods.contains('email')) {
           throw Exception(
-            'Este correo ya está registrado con ${_getProviderName(authProvider)}. '
+            'Este correo ya está registrado con Email. Por favor, inicia sesión o usa la opción de recuperar contraseña.',
+          );
+        } else {
+          final provider = signInMethods.first;
+          throw Exception(
+            'Este correo ya está registrado con ${_getProviderName(provider)}. '
             'Por favor, inicia sesión usando ese método.',
           );
         }
       }
 
-      // Verificar también con Firebase Auth si hay métodos de inicio de sesión asociados
-      // ignore: deprecated_member_use
-      final signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(
-        email,
-      );
-
-      if (signInMethods.isNotEmpty && !signInMethods.contains('password')) {
-        final provider = signInMethods.first;
-        throw Exception(
-          'Este correo ya está registrado con ${_getProviderName(provider)}. '
-          'Por favor, inicia sesión usando ese método.',
-        );
-      }
-
+      // Create the user if not already registered
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -93,18 +77,40 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await userCredential.user?.updateDisplayName(displayName);
 
-      // Enviar correo de verificación
-      await userCredential.user?.sendEmailVerification();
+      // Skip verification email - user is automatically verified
+      // Instead of sending verification email, mark as verified in Firestore
 
       await _createUserInFirestore(
         userCredential.user!,
         displayName,
-        authProvider: 'password',
+        authProvider: 'email',
+        emailVerified: true, // Mark as verified in Firestore
       );
 
-      return await _getUserModelFromFirebaseUser(userCredential.user!);
+      // Create a UserModel with emailVerified set to true
+      return UserModel(
+        id: userCredential.user!.uid,
+        email: email,
+        displayName: displayName,
+        photoURL: userCredential.user!.photoURL,
+        emailVerified: true, // Mark as verified in model
+        providerId: 'email',
+        allergies: [],
+        specialDiets: [],
+        cookingLevel: null,
+        preferredFoodTypes: [],
+        initialPreferencesCompleted: false,
+        language: 'es',
+        measurementUnit: 'metric',
+      );
     } catch (e) {
-      throw Exception('Failed to sign up: ${e.toString()}');
+      // Handle specific Firebase auth errors
+      if (e.toString().contains('email-already-in-use')) {
+        throw Exception(
+          'Este correo ya está registrado. Por favor, inicia sesión o usa la opción de recuperar contraseña.',
+        );
+      }
+      throw Exception('Error al registrarse: ${e.toString()}');
     }
   }
 
@@ -248,7 +254,6 @@ class AuthRepositoryImpl implements AuthRepository {
           email: userCredential.user!.email ?? '',
           displayName: userCredential.user!.displayName,
           photoURL: userCredential.user!.photoURL,
-          phoneNumber: userCredential.user!.phoneNumber,
           emailVerified: userCredential.user!.emailVerified,
           // Añadimos una bandera para indicar que necesitamos información adicional
           needsAdditionalInfo: true,
@@ -259,6 +264,9 @@ class AuthRepositoryImpl implements AuthRepository {
           cookingLevel: null,
           preferredFoodTypes: [],
           initialPreferencesCompleted: false,
+          // Default values for language and measurement units
+          language: 'es',
+          measurementUnit: 'metric',
         );
       }
 
@@ -283,7 +291,6 @@ class AuthRepositoryImpl implements AuthRepository {
           email: userCredential.user!.email ?? '',
           displayName: userCredential.user!.displayName ?? fullName,
           photoURL: userCredential.user!.photoURL,
-          phoneNumber: userCredential.user!.phoneNumber,
           emailVerified: userCredential.user!.emailVerified,
           // Establecer el providerId a 'apple.com'
           providerId: 'apple.com',
@@ -292,6 +299,9 @@ class AuthRepositoryImpl implements AuthRepository {
           cookingLevel: null,
           preferredFoodTypes: [],
           initialPreferencesCompleted: false,
+          // Default values for language and measurement units
+          language: 'es',
+          measurementUnit: 'metric',
         );
       } else {
         print(
@@ -299,8 +309,8 @@ class AuthRepositoryImpl implements AuthRepository {
         );
 
         // Verificar explícitamente si ha completado las preferencias iniciales
-        final userData = userDoc.data();
-        final bool hasCompletedPrefs =
+        final userData = userDoc.data()!;
+        bool hasCompletedPrefs =
             userData != null &&
             userData['initialPreferencesCompleted'] == true &&
             userData.containsKey('allergies') &&
@@ -318,12 +328,10 @@ class AuthRepositoryImpl implements AuthRepository {
           );
           return UserModel(
             id: userCredential.user!.uid,
-            email: userCredential.user!.email ?? userData?['email'] ?? '',
+            email: userCredential.user!.email ?? userData['email'] ?? '',
             displayName:
-                userCredential.user!.displayName ?? userData?['displayName'],
-            photoURL: userCredential.user!.photoURL ?? userData?['photoURL'],
-            phoneNumber:
-                userCredential.user!.phoneNumber ?? userData?['phoneNumber'],
+                userCredential.user!.displayName ?? userData['displayName'],
+            photoURL: userCredential.user!.photoURL ?? userData['photoURL'],
             emailVerified: userCredential.user!.emailVerified,
             providerId: 'apple.com',
             // Sin preferencias completadas
@@ -331,12 +339,90 @@ class AuthRepositoryImpl implements AuthRepository {
             cookingLevel: null,
             preferredFoodTypes: [],
             initialPreferencesCompleted: false,
+            // Default values for language and measurement units
+            language: 'es',
+            measurementUnit: 'metric',
           );
         }
-      }
 
-      // Solo llegar aquí si realmente tiene sus preferencias completas
-      return await _getUserModelFromFirebaseUser(userCredential.user!);
+        // Si faltan campos de preferencias, marcar como no completado
+        if (!userData.containsKey('allergies') ||
+            !userData.containsKey('cookingLevel') ||
+            !userData.containsKey('preferredFoodTypes')) {
+          hasCompletedPrefs = false;
+        }
+
+        // Obtener idioma y unidades de medida
+        final String language = userData['language'] as String? ?? 'es';
+        final String measurementUnit =
+            userData['measurementUnit'] as String? ?? 'metric';
+
+        return UserModel(
+          id: userCredential.user!.uid,
+          email:
+              userData['email'] as String? ?? userCredential.user!.email ?? '',
+          displayName:
+              userData['displayName'] as String? ??
+              userCredential.user!.displayName,
+          photoURL:
+              userData['photoURL'] as String? ?? userCredential.user!.photoURL,
+          emailVerified:
+              userData['emailVerified'] as bool? ??
+              userCredential.user!.emailVerified,
+          providerId: userData['authProvider'] as String? ?? 'apple.com',
+          // Otros campos específicos de Firestore
+          favoriteRecipes:
+              (userData['favoriteRecipes'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          // Campos de preferencias de usuario
+          allergies:
+              (userData['allergies'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          allergyItems:
+              (userData['allergyItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+          specialDiets:
+              (userData['specialDiets'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          specialDietItems:
+              (userData['specialDietItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+          cookingLevel: userData['cookingLevel'] as String?,
+          preferredFoodTypes:
+              (userData['preferredFoodTypes'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          preferredFoodTypeItems:
+              (userData['preferredFoodTypeItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+          initialPreferencesCompleted: hasCompletedPrefs,
+          // Idioma y unidades de medida
+          language: language,
+          measurementUnit: measurementUnit,
+          // Otros campos
+          createdAt:
+              userData['createdAt'] != null
+                  ? (userData['createdAt'] as Timestamp).toDate()
+                  : null,
+          lastLoginAt:
+              userData['lastLoginAt'] != null
+                  ? (userData['lastLoginAt'] as Timestamp).toDate()
+                  : null,
+        );
+      }
     } catch (e) {
       throw Exception('Failed to sign in with Apple: ${e.toString()}');
     }
@@ -455,12 +541,12 @@ class AuthRepositoryImpl implements AuthRepository {
           }
 
           // Puedes extraer más campos según lo que necesites
-          for (var field in ['birthday', 'gender', 'location']) {
+          ['birthday', 'gender', 'location'].forEach((field) {
             if (userData.containsKey(field)) {
               additionalData['facebook${field.substring(0, 1).toUpperCase()}${field.substring(1)}'] =
                   userData[field];
             }
-          }
+          });
 
           // Verificar si el usuario tiene un documento en Firestore
           final userDoc =
@@ -623,7 +709,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Como este método debe ser síncrono (getter), no podemos usar await para obtener datos de Firestore
     // Usamos solo los datos disponibles de Firebase Auth
-    String providerId = 'password';
+    String providerId = 'email';
     if (user.providerData.isNotEmpty) {
       providerId = user.providerData[0].providerId;
     }
@@ -633,8 +719,7 @@ class AuthRepositoryImpl implements AuthRepository {
       email: user.email ?? '',
       displayName: user.displayName,
       photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
-      emailVerified: user.emailVerified,
+      emailVerified: true, // Always return verified email
       providerId: providerId,
     );
   }
@@ -809,7 +894,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = _firebaseAuth.currentUser;
       if (user == null) return false;
 
-      return user.emailVerified;
+      return true; // Always return verified email
     } catch (e) {
       throw Exception('Error al verificar estado del correo: ${e.toString()}');
     }
@@ -894,9 +979,51 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
+        // Verificar si el documento del usuario existe y obtener datos actuales
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          print(
+            'markInitialPreferencesCompleted: User document does not exist, cannot mark preferences as completed',
+          );
+          throw Exception('User document does not exist');
+        }
+
+        final userData = userDoc.data();
+        final currentValue = userData?['initialPreferencesCompleted'] ?? false;
+
+        print(
+          'markInitialPreferencesCompleted: Actualizando preferencias completadas de $currentValue a true',
+        );
+
+        // Verificar si ya tenemos las demás preferencias necesarias
+        final hasAllergies = userData?.containsKey('allergies') ?? false;
+        final hasCookingLevel = userData?.containsKey('cookingLevel') ?? false;
+        final hasPreferredFoodTypes =
+            userData?.containsKey('preferredFoodTypes') ?? false;
+
+        if (!hasAllergies || !hasCookingLevel || !hasPreferredFoodTypes) {
+          print(
+            'ADVERTENCIA: Se están marcando las preferencias como completadas pero faltan algunos datos:',
+          );
+          print(' - Alergias: $hasAllergies');
+          print(' - Nivel de cocina: $hasCookingLevel');
+          print(' - Tipos de comida preferidos: $hasPreferredFoodTypes');
+        }
+
+        // Actualizar el campo en Firestore
         await _firestore.collection('users').doc(user.uid).update({
           'initialPreferencesCompleted': true,
         });
+
+        print(
+          'markInitialPreferencesCompleted: Preferencias marcadas como completadas exitosamente en Firestore',
+        );
+      } else {
+        print(
+          'markInitialPreferencesCompleted: No hay usuario actual, no se pueden marcar las preferencias',
+        );
+        throw Exception('No current user found');
       }
     } catch (e) {
       print('Error marking initial preferences as completed: ${e.toString()}');
@@ -1030,11 +1157,46 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /// Save user preferred language
+  @override
+  Future<void> saveUserLanguage(String language) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'language': language,
+        });
+        print('Idioma guardado en Firestore: $language');
+      }
+    } catch (e) {
+      print('Error al guardar idioma: ${e.toString()}');
+      throw Exception('Error al guardar idioma: ${e.toString()}');
+    }
+  }
+
+  /// Save user measurement unit preferences
+  @override
+  Future<void> saveUserMeasurementUnit(String measurementUnit) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'measurementUnit': measurementUnit,
+        });
+        print('Unidad de medida guardada en Firestore: $measurementUnit');
+      }
+    } catch (e) {
+      print('Error al guardar unidad de medida: ${e.toString()}');
+      throw Exception('Error al guardar unidad de medida: ${e.toString()}');
+    }
+  }
+
   Future<void> _createUserInFirestore(
     User user,
     String? displayName, {
     String? authProvider,
     Map<String, dynamic>? additionalData,
+    bool? emailVerified,
   }) async {
     final userDoc = _firestore.collection('users').doc(user.uid);
 
@@ -1048,8 +1210,7 @@ class AuthRepositoryImpl implements AuthRepository {
       'email': user.email,
       'displayName': displayName ?? user.displayName,
       'photoURL': user.photoURL,
-      'phoneNumber': user.phoneNumber,
-      'emailVerified': user.emailVerified,
+      'emailVerified': emailVerified ?? user.emailVerified,
       'lastLoginAt': FieldValue.serverTimestamp(),
     };
 
@@ -1089,7 +1250,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<UserModel> _getUserModelFromFirebaseUser(User user) async {
     // Determinar el providerId a partir de los providerData
-    String providerId = 'password';
+    String providerId = 'email';
     if (user.providerData.isNotEmpty) {
       providerId = user.providerData[0].providerId;
     }
@@ -1148,10 +1309,17 @@ class AuthRepositoryImpl implements AuthRepository {
                 .toList() ??
             [];
 
+        // Obtener idioma y unidades de medida
+        final String language = userData['language'] as String? ?? 'es';
+        final String measurementUnit =
+            userData['measurementUnit'] as String? ?? 'metric';
+
         // Print debug information about special diets
         print('User Firestore data debug:');
         print(' - specialDiets: $specialDiets');
         print(' - specialDietItems: $specialDietItems');
+        print(' - language: $language');
+        print(' - measurementUnit: $measurementUnit');
 
         // Si faltan campos de preferencias, marcar como no completado
         if (!userData.containsKey('allergies') ||
@@ -1165,9 +1333,7 @@ class AuthRepositoryImpl implements AuthRepository {
           email: userData['email'] as String? ?? user.email ?? '',
           displayName: userData['displayName'] as String? ?? user.displayName,
           photoURL: userData['photoURL'] as String? ?? user.photoURL,
-          phoneNumber: userData['phoneNumber'] as String? ?? user.phoneNumber,
-          emailVerified:
-              userData['emailVerified'] as bool? ?? user.emailVerified,
+          emailVerified: true, // Always return verified email
           providerId: userData['authProvider'] as String? ?? providerId,
           // Otros campos específicos de Firestore
           favoriteRecipes:
@@ -1184,6 +1350,9 @@ class AuthRepositoryImpl implements AuthRepository {
           preferredFoodTypes: preferredFoodTypes,
           preferredFoodTypeItems: preferredFoodTypeItems,
           initialPreferencesCompleted: hasCompletedPreferences,
+          // Campos de idioma y unidades de medida
+          language: language,
+          measurementUnit: measurementUnit,
           // Otros campos
           createdAt:
               userData['createdAt'] != null
@@ -1209,8 +1378,7 @@ class AuthRepositoryImpl implements AuthRepository {
       email: user.email ?? '',
       displayName: user.displayName,
       photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
-      emailVerified: user.emailVerified,
+      emailVerified: true, // Always return verified email
       providerId: providerId,
       // Ensure default values for new fields are set properly
       allergies: [],
@@ -1221,6 +1389,9 @@ class AuthRepositoryImpl implements AuthRepository {
       preferredFoodTypes: [],
       preferredFoodTypeItems: [],
       initialPreferencesCompleted: false,
+      // Default values for language and measurement units
+      language: 'es',
+      measurementUnit: 'metric',
     );
   }
 
@@ -1254,6 +1425,7 @@ class AuthRepositoryImpl implements AuthRepository {
           displayName,
           authProvider: providerId,
           additionalData: additionalData,
+          emailVerified: true, // Mark as verified for all new users
         );
 
         print('Documento creado exitosamente para el usuario: ${user.uid}');
@@ -1281,8 +1453,7 @@ class AuthRepositoryImpl implements AuthRepository {
         // Si no tiene email, intentar actualizar (puede no ser posible si el auth provider no lo permite)
         if (user.email == null || user.email!.isEmpty) {
           try {
-            await user.verifyBeforeUpdateEmail(email);
-            //await user.updateEmail(email);
+            await user.updateEmail(email);
           } catch (e) {
             print('No se pudo actualizar el email en Firebase Auth: $e');
             // Continuamos de todas formas, al menos lo guardaremos en Firestore
@@ -1320,6 +1491,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return 'Facebook';
       case 'apple.com':
         return 'Apple';
+      case 'email':
       case 'password':
         return 'Email y Contraseña';
       default:
@@ -1332,7 +1504,130 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _firebaseAuth.currentUser;
     if (user == null) return null;
 
-    // Usar el método asíncrono para obtener datos completos de Firestore
+    try {
+      // Obtener datos directamente de Firestore (Source.SERVER) para evitar la caché
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .get(
+            GetOptions(source: Source.server),
+          ); // Forzar obtener desde el servidor
+
+      if (userDoc.exists) {
+        print(
+          'Datos de usuario obtenidos directamente del servidor de Firestore',
+        );
+
+        // Determinar el providerId a partir de los providerData
+        String providerId = 'email';
+        if (user.providerData.isNotEmpty) {
+          providerId = user.providerData[0].providerId;
+        }
+
+        final userData = userDoc.data()!;
+
+        // Verificar explícitamente el valor de initialPreferencesCompleted
+        bool hasCompletedPreferences = false;
+        if (userData.containsKey('initialPreferencesCompleted')) {
+          hasCompletedPreferences =
+              userData['initialPreferencesCompleted'] == true;
+        }
+
+        // Extraer campos de preferencias
+        final List<String> allergies =
+            (userData['allergies'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [];
+
+        final List<Map<String, dynamic>> allergyItems =
+            (userData['allergyItems'] as List<dynamic>?)
+                ?.map((e) => e as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        final String? cookingLevel = userData['cookingLevel'] as String?;
+
+        final List<String> preferredFoodTypes =
+            (userData['preferredFoodTypes'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [];
+
+        final List<Map<String, dynamic>> preferredFoodTypeItems =
+            (userData['preferredFoodTypeItems'] as List<dynamic>?)
+                ?.map((e) => e as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        final List<String> specialDiets =
+            (userData['specialDiets'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [];
+
+        final List<Map<String, dynamic>> specialDietItems =
+            (userData['specialDietItems'] as List<dynamic>?)
+                ?.map((e) => e as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        // Log de los datos para debug
+        print('DATOS DESDE SERVIDOR:');
+        print(' - cookingLevel: $cookingLevel');
+        print(' - preferredFoodTypes: $preferredFoodTypes');
+        print(' - allergies: $allergies');
+        print(' - specialDiets: $specialDiets');
+
+        return UserModel(
+          id: user.uid,
+          email: userData['email'] as String? ?? user.email ?? '',
+          displayName: userData['displayName'] as String? ?? user.displayName,
+          photoURL: userData['photoURL'] as String? ?? user.photoURL,
+          emailVerified: true, // Always return verified email
+          providerId: userData['authProvider'] as String? ?? providerId,
+          // Campos de preferencias
+          allergies: allergies,
+          allergyItems: allergyItems,
+          specialDiets: specialDiets,
+          specialDietItems: specialDietItems,
+          cookingLevel: cookingLevel,
+          preferredFoodTypes: preferredFoodTypes,
+          preferredFoodTypeItems: preferredFoodTypeItems,
+          initialPreferencesCompleted: hasCompletedPreferences,
+          // Idioma y unidades de medida
+          language: userData['language'] as String? ?? 'es',
+          measurementUnit: userData['measurementUnit'] as String? ?? 'metric',
+          // Otros campos
+          favoriteRecipes:
+              (userData['favoriteRecipes'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          createdAt:
+              userData['createdAt'] != null
+                  ? (userData['createdAt'] as Timestamp).toDate()
+                  : null,
+          lastLoginAt:
+              userData['lastLoginAt'] != null
+                  ? (userData['lastLoginAt'] as Timestamp).toDate()
+                  : null,
+        );
+      }
+    } catch (e) {
+      print(
+        'Error al obtener datos del usuario desde el servidor de Firestore: $e',
+      );
+      // En caso de error (como sin conexión), intentar con la caché
+      try {
+        print('Intentando con caché como fallback...');
+        return await _getUserModelFromFirebaseUser(user);
+      } catch (cacheError) {
+        print('Error al usar caché: $cacheError');
+      }
+    }
+
+    // Si todo falla, usar el método estándar
     return await _getUserModelFromFirebaseUser(user);
   }
 }

@@ -17,6 +17,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for date formatting extension
 import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/snackbar_wrapper.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -693,12 +694,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
     if (confirmed && context.mounted) {
       ref.read(inventoryProvider.notifier).removeItem(item.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${item.name} eliminado del inventario'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      // Usar wrapper seguro para SnackBar
+      showSimpleSnackBar(context, '${item.name} eliminado del inventario');
     }
   }
 
@@ -913,7 +910,8 @@ Future<void> showQuantityEditDialog(
   InventoryItem item,
   WidgetRef ref,
 ) async {
-  final formKey = GlobalKey<FormState>();
+  // Use a consistent key based on item ID instead of creating a new GlobalKey each time
+  final formKey = GlobalKey<FormState>(debugLabel: 'editQuantity_${item.id}');
   final inventoryNotifier = ref.read(inventoryProvider.notifier);
 
   // Format initial quantity for display based on unit type

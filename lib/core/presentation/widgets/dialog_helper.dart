@@ -101,7 +101,9 @@ class DialogHelper {
     String? Function(String?)? validator,
   }) async {
     final TextEditingController controller = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>(
+      debugLabel: 'inputDialog_${DateTime.now().millisecondsSinceEpoch}',
+    );
 
     return showDialog<String>(
       context: context,

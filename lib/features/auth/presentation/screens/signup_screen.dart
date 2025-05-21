@@ -5,6 +5,7 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -49,7 +50,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.listen<AsyncValue>(authControllerProvider, (_, state) {
       state.whenData((user) {
         if (user != null) {
-          context.go(AllergySelectorScreen.routePath);
+          context.go(AuthTransitionScreen.routePath);
         }
       });
 

@@ -2,25 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 
-/// Mostrar diálogo para verificación de correo
+/// Show dialog for email verification
 Future<void> showEmailVerificationDialog({
   required BuildContext context,
   required VoidCallback onConfirm,
 }) async {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
-  
+
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext dialogContext) {
       return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
         title: Text(
-          'Verificación necesaria',
+          'Verificación de email necesaria',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
             color: isDark ? AppColors.darkMainText : AppColors.lightMainText,
@@ -37,16 +35,35 @@ Future<void> showEmailVerificationDialog({
               ),
               const SizedBox(height: 16),
               Text(
-                'Debes verificar tu correo electrónico antes de iniciar sesión.',
+                'Tu cuenta no ha sido verificada',
                 style: GoogleFonts.inter(
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color:
+                      isDark ? AppColors.darkMainText : AppColors.lightMainText,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación.',
+                'Antes de iniciar sesión, debes verificar tu correo electrónico haciendo clic en el enlace que te enviamos.',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  color:
+                      isDark
+                          ? AppColors.darkSecondaryText
+                          : AppColors.lightSecondaryText,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Si no encuentras el correo, revisa tu carpeta de spam o solicita uno nuevo desde la pantalla de verificación.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color:
+                      isDark
+                          ? AppColors.darkSecondaryText
+                          : AppColors.lightSecondaryText,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ],
@@ -62,7 +79,7 @@ Future<void> showEmailVerificationDialog({
               Navigator.of(dialogContext).pop();
               onConfirm();
             },
-            child: const Text('Entendido'),
+            child: const Text('Ir a verificar'),
           ),
         ],
       );

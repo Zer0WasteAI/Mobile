@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 
 /// Estado de las preferencias del usuario
 class UserPreferencesState {
@@ -88,20 +89,9 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       final firestorePreferencesStatus =
           refreshedUser?.initialPreferencesCompleted ?? false;
 
-      // Verificar si ha completado las preferencias iniciales como respaldo
-      final hasCompletedPreferences =
-          await authController.hasCompletedInitialPreferences();
-
       print(
-        'UserPreferencesService: Firestore initialPreferencesCompleted = $firestorePreferencesStatus, Verificación API = $hasCompletedPreferences',
+        'UserPreferencesService: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
       );
-
-      // Si hay inconsistencia, registrarlo pero priorizar el valor de Firestore
-      if (firestorePreferencesStatus != hasCompletedPreferences) {
-        print(
-          '⚠️ UserPreferencesService: Inconsistencia entre valor de Firestore y verificación API',
-        );
-      }
 
       // Actualizar el estado con el resultado, priorizando el valor de Firestore
       state = state.copyWith(
@@ -115,11 +105,30 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
   }
 
   /// Marcar las preferencias como completadas
-  void markPreferencesAsCompleted() {
+  Future<void> markPreferencesAsCompleted() async {
     state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
     print(
       "UserPreferencesService: Preferencias marcadas como completadas en memoria",
     );
+
+    // Guardar el cambio en Firestore para mantener sincronización
+    try {
+      final authRepository = _ref.read(authRepositoryProvider);
+      await authRepository.markInitialPreferencesCompleted();
+      print(
+        "UserPreferencesService: Preferencias marcadas como completadas en Firestore",
+      );
+
+      // Refrescar los datos del usuario desde Firestore
+      final authController = _ref.read(authControllerProvider.notifier);
+      await authController.refreshUserFromFirestore();
+
+      print(
+        "UserPreferencesService: Datos de usuario actualizados desde Firestore",
+      );
+    } catch (e) {
+      print("ERROR al sincronizar preferencias con Firestore: $e");
+    }
   }
 
   /// Resetear el estado cuando el usuario cierra sesión

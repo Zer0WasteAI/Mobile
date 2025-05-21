@@ -1,18 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
-
-// TODO: Define route name if needed
-// No: Defined below
 
 class SpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const SpecialDietSelectorScreen({super.key});
@@ -93,8 +87,148 @@ class _SpecialDietSelectorScreenState
     const backgroundColor = Colors.white;
     final primaryColor = colorScheme.primary;
     final defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
-    final secondaryTextColorForDialog = colorScheme.onSurfaceVariant;
+    final defaultChipBorderColor = colorScheme.outline.withValues(alpha: 0.5);
+
+    final TextEditingController _dietController = TextEditingController();
+    final List<String> _commonEmojis = [
+      '🥗',
+      '🥦',
+      '🥑',
+      '🍖',
+      '🥩',
+      '🐟',
+      '🥛',
+      '🧀',
+      '🍽️',
+    ];
+    String _selectedEmoji = '🍽️';
+
+    void _showAddDietDialog() {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Añadir dieta personalizada',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _dietController,
+                        decoration: InputDecoration(
+                          labelText: 'Nombre de la dieta',
+                          hintText: 'Ej: Ayuno intermitente, Kosher, etc.',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Elige un emoji:',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children:
+                            _commonEmojis.map((emoji) {
+                              final isSelected = emoji == _selectedEmoji;
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedEmoji = emoji;
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(32),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withOpacity(0.1)
+                                            : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(32),
+                                    border: Border.all(
+                                      color:
+                                          isSelected
+                                              ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5),
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    emoji,
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: GoogleFonts.inter(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_dietController.text.trim().isNotEmpty) {
+                        // Add custom diet
+                        final customDiet = SpecialDiet(
+                          name: _dietController.text.trim(),
+                          emoji: _selectedEmoji,
+                          isCustom: true,
+                        );
+
+                        ref
+                            .read(specialDietsProviderWithPersistence.notifier)
+                            .addCustomDiet(customDiet);
+
+                        // Reset controller and close dialog
+                        _dietController.clear();
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    child: Text(
+                      'Añadir',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
 
     return predefinedDietsAsyncValue.when(
       data: (predefinedDiets) {
@@ -189,7 +323,7 @@ class _SpecialDietSelectorScreenState
                             defaultBorderColor: defaultChipBorderColor,
                           ),
                         ),
-                        // Add the "Add" button chip - Updated onTap
+                        //TODO: Add the "Add" button chip - Updated onTap
                         SelectableItemChip(
                           label: SpecialDietsNotifier.addDietName.replaceFirst(
                             'Agregar ',
@@ -198,27 +332,8 @@ class _SpecialDietSelectorScreenState
                           isSelected: false,
                           isAddButton: true,
                           onTap: () {
-                            // Call the reusable dialog function
-                            showAddItemDialog(
-                              context: context,
-                              title: 'Agregar Dieta Personalizada',
-                              fieldLabel: 'Nombre de la dieta:',
-                              hintText: 'Ej: Mediterránea, Vegana...',
-                              iconData: FontAwesomeIcons.solidPenToSquare,
-                              existingItemNames: existingDietNames,
-                              onAdd: (newItemName) {
-                                notifier.addCustomDiet(
-                                  SpecialDiet(
-                                    emoji: '🍴',
-                                    name: newItemName,
-                                    isCustom: true,
-                                  ),
-                                );
-                              },
-                              primaryColor: primaryColor,
-                              backgroundColor: backgroundColor,
-                              secondaryTextColor: secondaryTextColorForDialog,
-                            );
+                            // Mostrar diálogo consistente con el que se muestra en la imagen
+                            _showAddDietDialog();
                           },
                           selectedColor: primaryColor,
                           defaultBackgroundColor: backgroundColor,
@@ -236,6 +351,7 @@ class _SpecialDietSelectorScreenState
                     onPressed: () async {
                       // Mostrar indicador de carga
                       if (context.mounted) {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Row(
@@ -288,21 +404,10 @@ class _SpecialDietSelectorScreenState
                         await authController.refreshUserFromFirestore();
 
                         // 4. Mark preferences as completed in memory to avoid redirection loops
-                        ref
+                        await ref
                             .read(userPreferencesProvider.notifier)
                             .markPreferencesAsCompleted();
 
-                        // Forzar actualización del estado de userPreferences para el router
-                        final userPreferencesNotifier = ref.read(
-                          userPreferencesProvider.notifier,
-                        );
-                        await userPreferencesNotifier.loadUserPreferences();
-
-                        // Forzar actualización directa desde el estado del usuario (doble verificación)
-                        await userPreferencesNotifier
-                            .forceUpdateFromUserState();
-
-                        // Reset state to avoid keeping selections
                         notifier.reset();
 
                         print("Resetting special diet selections");
@@ -331,6 +436,7 @@ class _SpecialDietSelectorScreenState
                           ); // Using go instead of replace for smoother transition
 
                           // Show success message
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -343,6 +449,7 @@ class _SpecialDietSelectorScreenState
                       } catch (e) {
                         print("Error guardando preferencias: $e");
                         if (context.mounted) {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

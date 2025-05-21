@@ -7,6 +7,11 @@ class CustomLoadingScreen extends StatelessWidget {
   final String message;
   final String? subMessage;
 
+  // Evitar que Key se genere cada vez para prevenir conflictos
+  static const Key _containerKey1 = Key('loadingContainer1');
+  static const Key _containerKey2 = Key('loadingContainer2');
+  static const Key _containerKey3 = Key('loadingContainer3');
+
   const CustomLoadingScreen({
     super.key,
     this.message = 'Cargando...',
@@ -40,10 +45,11 @@ class CustomLoadingScreen extends StatelessWidget {
             top: -100,
             right: -50,
             child: Container(
+              key: _containerKey1,
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.1),
+                color: primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -53,10 +59,11 @@ class CustomLoadingScreen extends StatelessWidget {
             bottom: -80,
             left: -30,
             child: Container(
+              key: _containerKey2,
               width: 180,
               height: 180,
               decoration: BoxDecoration(
-                color: secondaryColor.withValues(alpha: 0.1),
+                color: secondaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -69,10 +76,11 @@ class CustomLoadingScreen extends StatelessWidget {
               children: [
                 // Animation container
                 Container(
+                  key: _containerKey3,
                   width: 240,
                   height: 240,
                   decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.05),
+                    color: primaryColor.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(120),
                   ),
                   child: Center(
@@ -121,7 +129,7 @@ class CustomLoadingScreen extends StatelessWidget {
                 SizedBox(
                   width: 60,
                   child: LinearProgressIndicator(
-                    backgroundColor: primaryColor.withValues(alpha: 0.2),
+                    backgroundColor: primaryColor.withOpacity(0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                   ),
                 ),

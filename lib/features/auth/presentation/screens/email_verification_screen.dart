@@ -13,15 +13,17 @@ class EmailVerificationScreen extends ConsumerStatefulWidget {
 
   /// Route name
   static const String routeName = 'email-verification';
-  
+
   /// Route path
   static const String routePath = '/email-verification';
 
   @override
-  ConsumerState<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
+  ConsumerState<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
 }
 
-class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScreen> {
+class _EmailVerificationScreenState
+    extends ConsumerState<EmailVerificationScreen> {
   bool _isResendingEmail = false;
   bool _isCheckingVerification = false;
 
@@ -38,7 +40,7 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
     try {
       final authController = ref.read(authControllerProvider.notifier);
       await authController.sendVerificationEmail();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -80,14 +82,14 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
       final authController = ref.read(authControllerProvider.notifier);
       await authController.reloadUser();
       final isVerified = await authController.isEmailVerified();
-      
+
       if (mounted) {
         if (isVerified) {
-          // Redirigir al usuario a la pantalla de login
+          // Redirect user to login with verification indicator
           await authController.signOut();
-          context.go('/login');
+          context.go('/login?from=verification');
         } else {
-          // Mostrar un mensaje indicando que el correo aún no está verificado
+          // Show message that email is not verified yet
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
@@ -125,9 +127,10 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -135,7 +138,7 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Animación de correo
+              // Email animation
               Lottie.asset(
                 'assets/animations/email_verification.json',
                 width: 200,
@@ -143,35 +146,40 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 32),
-              
-              // Título
+
+              // Title
               Text(
                 'Verifica tu correo electrónico',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkMainText : AppColors.lightMainText,
+                  color:
+                      isDark ? AppColors.darkMainText : AppColors.lightMainText,
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Mensaje
+
+              // Message with clearer instructions
               Text(
-                'Te enviamos un correo de verificación. Revisa tu bandeja de entrada y haz clic en el enlace antes de iniciar sesión.',
+                'Antes de continuar, debes verificar tu correo electrónico. Hemos enviado un enlace de verificación a tu bandeja de entrada.\n\nHaz clic en el enlace y luego presiona "Ya verifiqué mi correo" para continuar.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  color:
+                      isDark
+                          ? AppColors.darkSecondaryText
+                          : AppColors.lightSecondaryText,
                 ),
               ),
               const SizedBox(height: 40),
-              
-              // Botón de verificación
+
+              // Verification button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isCheckingVerification ? null : _checkVerification,
+                  onPressed:
+                      _isCheckingVerification ? null : _checkVerification,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
@@ -180,24 +188,26 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: _isCheckingVerification
-                      ? const CircularProgressIndicator.adaptive()
-                      : const Text(
-                          'Ya verifiqué mi correo',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  child:
+                      _isCheckingVerification
+                          ? const CircularProgressIndicator.adaptive()
+                          : const Text(
+                            'Ya verifiqué mi correo',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Botón para reenviar correo
+
+              // Resend email button
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: _isResendingEmail ? null : _resendVerificationEmail,
+                  onPressed:
+                      _isResendingEmail ? null : _resendVerificationEmail,
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -205,16 +215,17 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
                       side: BorderSide(color: colorScheme.primary),
                     ),
                   ),
-                  child: _isResendingEmail
-                      ? const CircularProgressIndicator.adaptive()
-                      : Text(
-                          'Reenviar correo de verificación',
-                          style: TextStyle(
-                            color: colorScheme.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  child:
+                      _isResendingEmail
+                          ? const CircularProgressIndicator.adaptive()
+                          : Text(
+                            'Reenviar correo de verificación',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
                 ),
               ),
             ],
