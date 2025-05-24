@@ -14,15 +14,12 @@ class RegisterScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch register state
-    final registerAsync = ref.watch(registerNotifierProvider);
-
     // Get theme data
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Handle register success
-    ref.listen<AsyncValue>(registerNotifierProvider, (_, state) {
+    // Handle register success using the new auth provider
+    ref.listen<AsyncValue>(registerAuthProvider, (_, state) {
       state.whenData((user) async {
         if (user != null) {
           final email = user.email;

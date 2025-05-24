@@ -68,8 +68,14 @@ class AppProviders {
   /// Login notifier provider
   static final loginNotifier = login.loginNotifierProvider;
 
-  /// Register notifier provider
-  static final registerNotifier = registerNotifierProvider;
+  /// Register provider (refactored - now using combined provider)
+  static final register = registerProvider;
+
+  /// Register form provider
+  static final registerForm = registerFormProvider;
+
+  /// Register auth provider
+  static final registerAuth = registerAuthProvider;
 
   /// Forgot password provider
   static final forgotPasswordNotifier = forgotPasswordProvider;

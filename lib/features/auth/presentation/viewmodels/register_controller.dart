@@ -63,9 +63,28 @@ class RegisterController {
   bool isValidEmail(String email) {
     if (email.isEmpty) return false;
 
-    // Simple email validation regex
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    return emailRegex.hasMatch(email);
+    // Mejorar la validación de email para ser compatible con Firebase
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+
+    // Verificaciones adicionales
+    if (!emailRegex.hasMatch(email)) return false;
+
+    // No permitir emails que empiecen o terminen con puntos
+    if (email.startsWith('.') || email.endsWith('.')) return false;
+
+    // No permitir puntos consecutivos
+    if (email.contains('..')) return false;
+
+    // Verificar que el dominio no empiece o termine con guión
+    final parts = email.split('@');
+    if (parts.length != 2) return false;
+
+    final domain = parts[1];
+    if (domain.startsWith('-') || domain.endsWith('-')) return false;
+
+    return true;
   }
 
   /// Validate password

@@ -35,21 +35,22 @@ final userPreferencesProvider = StateNotifierProvider<
 >((ref) {
   final notifier = UserPreferencesNotifier(ref);
 
-  // Configurar listener para recargar automáticamente cuando cambia el estado de autenticación
-  ref.listen(authStateProvider, (previous, next) {
-    if (next.hasValue) {
-      // Si hay un nuevo usuario o cambio en la autenticación, recargar preferencias
-      notifier.loadUserPreferences();
-    } else if (next.isLoading) {
-      // Si la autenticación está cargando, marcar como cargando
-      notifier.setLoading();
-    } else if (previous != null && previous.hasValue && !next.hasValue) {
-      // Si se cerró sesión, resetear estado
-      notifier.reset();
-    }
-  });
+  // SOLUCIÓN: NO usar listener automático que sobrescribe el estado en memoria
+  // El listener automático causa race conditions cuando marcamos preferencias en memoria
+  // ref.listen(authStateProvider, (previous, next) {
+  //   if (next.hasValue) {
+  //     // Si hay un nuevo usuario o cambio en la autenticación, recargar preferencias
+  //     notifier.loadUserPreferences();
+  //   } else if (next.isLoading) {
+  //     // Si la autenticación está cargando, marcar como cargando
+  //     notifier.setLoading();
+  //   } else if (previous != null && previous.hasValue && !next.hasValue) {
+  //     // Si se cerró sesión, resetear estado
+  //     notifier.reset();
+  //   }
+  // });
 
-  // Inicializar preferencias inmediatamente
+  // Inicializar preferencias inmediatamente solo una vez
   notifier.loadUserPreferences();
 
   return notifier;
@@ -67,6 +68,14 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
   /// Verifica y carga las preferencias del usuario actual
   Future<void> loadUserPreferences() async {
     try {
+      // SI YA ESTÁN MARCADAS COMO COMPLETADAS EN MEMORIA, NO SOBRESCRIBIR
+      if (state.hasCompletedPreferences) {
+        print(
+          '⚡ Preferencias ya marcadas como completadas en memoria - NO sobrescribir',
+        );
+        return;
+      }
+
       final authController = _ref.read(authControllerProvider.notifier);
       final user = _ref.read(authControllerProvider).value;
 
@@ -106,29 +115,17 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
 
   /// Marcar las preferencias como completadas
   Future<void> markPreferencesAsCompleted() async {
+    // Marcar inmediatamente en memoria para evitar redirecciones
     state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
     print(
       "UserPreferencesService: Preferencias marcadas como completadas en memoria",
     );
 
-    // Guardar el cambio en Firestore para mantener sincronización
-    try {
-      final authRepository = _ref.read(authRepositoryProvider);
-      await authRepository.markInitialPreferencesCompleted();
-      print(
-        "UserPreferencesService: Preferencias marcadas como completadas en Firestore",
-      );
-
-      // Refrescar los datos del usuario desde Firestore
-      final authController = _ref.read(authControllerProvider.notifier);
-      await authController.refreshUserFromFirestore();
-
-      print(
-        "UserPreferencesService: Datos de usuario actualizados desde Firestore",
-      );
-    } catch (e) {
-      print("ERROR al sincronizar preferencias con Firestore: $e");
-    }
+    // No intentar guardar en Firestore aquí para evitar duplicados
+    // El guardado en Firestore debe hacerse desde el screen que maneja la lógica de negocio
+    print(
+      "UserPreferencesService: No guardando en Firestore para evitar race conditions",
+    );
   }
 
   /// Resetear el estado cuando el usuario cierra sesión
@@ -162,6 +159,87 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       );
     } catch (e) {
       print('Error en forceUpdateFromUserState: $e');
+    }
+  }
+
+  /// Forzar sincronización inmediata con Firestore
+  Future<void> forceSyncWithFirestore() async {
+    try {
+      print('🔄 Forzando sincronización con Firestore...');
+
+      // Actualizar estado a cargando
+      state = state.copyWith(isLoading: true);
+
+      // Obtener datos frescos directamente desde Firestore
+      final authController = _ref.read(authControllerProvider.notifier);
+      await authController.refreshUserFromFirestore();
+
+      // Obtener el usuario actualizado
+      final updatedUser = _ref.read(authControllerProvider).value;
+
+      if (updatedUser != null) {
+        final firestoreValue = updatedUser.initialPreferencesCompleted;
+        print(
+          '✅ Sincronización completa - initialPreferencesCompleted: $firestoreValue',
+        );
+
+        // Actualizar estado con el valor de Firestore
+        state = state.copyWith(
+          isLoading: false,
+          hasCompletedPreferences: firestoreValue,
+        );
+      } else {
+        print('⚠️ No se pudo obtener usuario actualizado');
+        state = state.copyWith(isLoading: false);
+      }
+    } catch (e) {
+      print('❌ Error en forceSyncWithFirestore: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Método específico para INICIAR SESIÓN - siempre lee desde Firestore
+  Future<void> loadUserPreferencesFromFirestore() async {
+    try {
+      print('🔄 INICIO SESIÓN: Cargando preferencias desde Firestore...');
+
+      // Actualizar estado a cargando
+      state = state.copyWith(isLoading: true);
+
+      final authController = _ref.read(authControllerProvider.notifier);
+      final user = _ref.read(authControllerProvider).value;
+
+      // Si no hay usuario, resetear estado
+      if (user == null) {
+        state = state.copyWith(
+          isLoading: false,
+          hasCompletedPreferences: false,
+        );
+        return;
+      }
+
+      // SIEMPRE refrescar datos del usuario desde Firestore en login
+      await authController.refreshUserFromFirestore();
+
+      // Obtener el usuario actualizado después de refrescar
+      final refreshedUser = _ref.read(authControllerProvider).value;
+
+      // Usar el valor de Firestore directamente
+      final firestorePreferencesStatus =
+          refreshedUser?.initialPreferencesCompleted ?? false;
+
+      print(
+        '✅ INICIO SESIÓN: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
+      );
+
+      // Actualizar el estado con el resultado de Firestore
+      state = state.copyWith(
+        isLoading: false,
+        hasCompletedPreferences: firestorePreferencesStatus,
+      );
+    } catch (e) {
+      print('❌ Error al cargar preferencias desde Firestore: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 }

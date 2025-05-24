@@ -1019,6 +1019,13 @@ class AuthRepositoryImpl implements AuthRepository {
         print(
           'markInitialPreferencesCompleted: Preferencias marcadas como completadas exitosamente en Firestore',
         );
+
+        // SOLUCIÓN: Esperar un poco para que la escritura se propague y luego
+        // invalidar los providers usando una callback global si está disponible
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Llamar a callback global para invalidar providers si está definido
+        _triggerProviderRefresh();
       } else {
         print(
           'markInitialPreferencesCompleted: No hay usuario actual, no se pueden marcar las preferencias',
@@ -1029,6 +1036,30 @@ class AuthRepositoryImpl implements AuthRepository {
       print('Error marking initial preferences as completed: ${e.toString()}');
       throw Exception(
         'Failed to mark initial preferences as completed: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Callback global para invalidar providers - se puede setear desde la aplicación
+  static void Function()? _globalProviderRefreshCallback;
+
+  /// Getter para acceder al callback global desde otros archivos
+  static void Function()? get globalProviderRefreshCallback =>
+      _globalProviderRefreshCallback;
+
+  /// Establecer callback para refrescar providers
+  static void setProviderRefreshCallback(void Function() callback) {
+    _globalProviderRefreshCallback = callback;
+  }
+
+  /// Trigger provider refresh usando callback global
+  void _triggerProviderRefresh() {
+    if (_globalProviderRefreshCallback != null) {
+      print('🔄 Triggering global provider refresh after Firestore update');
+      _globalProviderRefreshCallback!();
+    } else {
+      print(
+        '⚠️ No global provider refresh callback set - providers will update on next read',
       );
     }
   }
@@ -1218,6 +1249,10 @@ class AuthRepositoryImpl implements AuthRepository {
     if (isFirstLogin) {
       userData['favoriteRecipes'] = <String>[];
       userData['createdAt'] = FieldValue.serverTimestamp();
+
+      // Add default language and measurement unit preferences
+      userData['language'] = 'es';
+      userData['measurementUnit'] = 'metric';
 
       // Add authentication provider information
       if (authProvider != null) {

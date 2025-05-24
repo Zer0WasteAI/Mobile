@@ -7,6 +7,7 @@ import 'package:zer0_waste_ai/features/profile/application/providers/special_die
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 
 class SpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const SpecialDietSelectorScreen({super.key});
@@ -349,113 +350,103 @@ class _SpecialDietSelectorScreenState
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Mostrar indicador de carga
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Row(
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 16),
-                                Text('Guardando preferencias...'),
-                              ],
-                            ),
-                            duration: Duration(seconds: 1),
-                            backgroundColor: Colors.black54,
-                          ),
-                        );
-                      }
-
                       try {
-                        // 1. Save special diets to Firestore
-                        final dietNames =
-                            selectedDiets.map((diet) => diet.name).toList();
-
-                        // Create diet items with metadata
-                        final dietItems =
-                            selectedDiets.map((diet) => diet.toJson()).toList();
-
+                        // 1. INMEDIATAMENTE marcar preferencias completadas en memoria
+                        // Esto permite que el router vea el estado correcto al instante
                         print(
-                          "Guardando dietas especiales en Firestore: $dietNames",
-                        );
-                        print(
-                          "Guardando dietas especiales con metadata: $dietItems",
+                          '⚡ Marcando preferencias completadas en memoria INMEDIATAMENTE',
                         );
 
-                        // Guardar las dietas con metadata
-                        await authRepository.saveUserSpecialDietItems(
-                          dietItems,
-                        );
-
-                        // 2. Mark initial preferences as completed
-                        await authRepository.markInitialPreferencesCompleted();
-
-                        // 3. Refresh user data from Firestore
-                        await authController.refreshUserFromFirestore();
-
-                        // 4. Mark preferences as completed in memory to avoid redirection loops
-                        await ref
+                        // Actualizar userPreferencesProvider
+                        ref
                             .read(userPreferencesProvider.notifier)
                             .markPreferencesAsCompleted();
 
-                        notifier.reset();
+                        // Actualizar authControllerProvider - marcar preferencias en el usuario actual
+                        final currentUser =
+                            ref.read(authControllerProvider).value;
+                        if (currentUser != null) {
+                          final updatedUser = currentUser.copyWith(
+                            initialPreferencesCompleted: true,
+                          );
+                          ref
+                              .read(authControllerProvider.notifier)
+                              .state = AsyncValue.data(updatedUser);
+                          print(
+                            '✅ AuthController actualizado con preferencias completadas',
+                          );
+                        }
 
-                        print("Resetting special diet selections");
+                        print(
+                          '✅ Estado en memoria actualizado - router puede navegar',
+                        );
 
-                        // Debug logs para diagnóstico
-                        print(
-                          '====== ESTADO DE PREFERENCIAS ANTES DE NAVEGACIÓN ======',
-                        );
-                        print(
-                          'userPreferencesProvider.hasCompletedPreferences = ${ref.read(userPreferencesProvider).hasCompletedPreferences}',
-                        );
-                        print(
-                          'userPreferencesProvider.isLoading = ${ref.read(userPreferencesProvider).isLoading}',
-                        );
-                        print(
-                          'authState.initialPreferencesCompleted = ${ref.read(authControllerProvider).value?.initialPreferencesCompleted}',
-                        );
-                        print('====== FIN ESTADO DE PREFERENCIAS ======');
-
-                        // 5. Navigate to home screen or dashboard
+                        // 2. Forzar navegación inmediata (el router a veces no detecta el cambio inmediato)
                         if (context.mounted) {
-                          // Navigate to home page with replaced stack
-                          print("Going to /home");
-                          context.go(
-                            '/home',
-                          ); // Using go instead of replace for smoother transition
+                          print('🚀 Forzando navegación inmediata a home');
+                          context.go('/home');
+                        }
 
-                          // Show success message
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        // 3. Mostrar mensaje de éxito inmediato
+                        if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(
-                                '¡Preferencias guardadas! Tus recomendaciones ahora serán personalizadas.',
+                                '¡Configuración completada! Bienvenido a Zero Waste AI.',
                               ),
                               backgroundColor: Colors.green,
+                              duration: Duration(seconds: 2),
                             ),
                           );
                         }
+
+                        // 4. En background: Guardar en Firestore (sin esperar)
+                        print('🔄 Guardando en Firestore en background...');
+
+                        // Guardar dietas especiales
+                        final dietNames =
+                            selectedDiets.map((diet) => diet.name).toList();
+                        final dietItems =
+                            selectedDiets.map((diet) => diet.toJson()).toList();
+
+                        authRepository
+                            .saveUserSpecialDietItems(dietItems)
+                            .then((_) {
+                              print(
+                                '✅ Dietas especiales guardadas en Firestore',
+                              );
+                            })
+                            .catchError((e) {
+                              print('❌ Error guardando dietas: $e');
+                            });
+
+                        // Marcar preferencias completadas en Firestore
+                        authRepository
+                            .markInitialPreferencesCompleted()
+                            .then((_) {
+                              print('✅ Preferencias marcadas en Firestore');
+                              // NO invalidar providers aquí - el widget ya está dispuesto
+                              // Los providers se actualizarán automáticamente cuando se lean de nuevo
+                            })
+                            .catchError((e) {
+                              print('❌ Error marcando preferencias: $e');
+                            });
+
+                        // 5. Reset local state
+                        notifier.reset();
+
+                        print(
+                          '🚀 Configuración completada - navegación inmediata disponible',
+                        );
                       } catch (e) {
-                        print("Error guardando preferencias: $e");
+                        print('❌ Error al finalizar configuración: $e');
+
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                'Error: No se pudieron guardar tus preferencias: $e',
-                              ),
+                              content: Text('Error: $e'),
                               backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 5),
                             ),
                           );
                         }

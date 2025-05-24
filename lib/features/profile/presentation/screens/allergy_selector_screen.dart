@@ -90,7 +90,7 @@ class AllergySelectorScreen extends ConsumerWidget {
 
     String _selectedEmoji = '⚠️';
 
-    void _showAddAllergyDialog() {
+    void _showAddAllergyDialog(SelectedAllergiesNotifier allergyNotifier) {
       showDialog(
         context: context,
         builder: (context) {
@@ -184,15 +184,10 @@ class AllergySelectorScreen extends ConsumerWidget {
                   ElevatedButton(
                     onPressed: () {
                       if (_allergyController.text.trim().isNotEmpty) {
-                        // Add custom allergy
-                        ref
-                            .read(
-                              selectedAllergiesProviderWithPersistence.notifier,
-                            )
-                            .addCustomAllergy(
-                              _allergyController.text.trim(),
-                              _selectedEmoji,
-                            );
+                        // Add custom allergy using the passed notifier
+                        allergyNotifier.addCustomAllergy(
+                          _allergyController.text.trim(),
+                        );
 
                         // Reset controller and close dialog
                         _allergyController.clear();
@@ -312,7 +307,7 @@ class AllergySelectorScreen extends ConsumerWidget {
                         isSelected: false,
                         isAddButton: true,
                         onTap: () {
-                          _showAddAllergyDialog();
+                          _showAddAllergyDialog(notifier);
                         },
                         selectedColor: primaryColor,
                         defaultBackgroundColor: backgroundColor,
@@ -400,33 +395,57 @@ class AllergySelectorScreen extends ConsumerWidget {
                                     };
                                   }).toList();
 
-                              // Guardar en Firestore
+                              print('Guardando allergyItems: $allergyItems');
+
+                              // 1. Guardar alergias en Firestore
                               await authRepository.saveUserAllergyItems(
                                 allergyItems,
                               );
+                              print('✅ Alergias guardadas en Firestore');
 
-                              // Marcar explícitamente como completado en Firestore
-                              await authRepository
-                                  .markInitialPreferencesCompleted();
+                              // 2. Esperar un momento para asegurar que la escritura se complete
+                              await Future.delayed(
+                                const Duration(milliseconds: 500),
+                              );
 
-                              // Refrescar datos de usuario
+                              // 3. Refrescar datos de usuario ANTES de marcar como completado
                               await authController.refreshUserFromFirestore();
+                              print(
+                                '✅ Datos de usuario refrescados desde Firestore',
+                              );
 
-                              // Continuamos al selector de nivel de cocina
-                              context.go(CookingLevelSelectorScreen.routePath);
+                              // 4. Verificar que las alergias se guardaron correctamente
+                              final refreshedUser =
+                                  ref.read(authControllerProvider).value;
+                              if (refreshedUser?.allergies.isEmpty ?? true) {
+                                print(
+                                  '⚠️ Las alergias no se reflejaron en el usuario refrescado',
+                                );
+                              }
+
+                              // 5. Navegación (NO marcar como completado aquí, se hace en el siguiente screen)
+                              if (context.mounted) {
+                                context.go(
+                                  CookingLevelSelectorScreen.routePath,
+                                );
+                              }
                             } catch (e) {
                               // Mostrar error si falla el guardado
-                              ScaffoldMessenger.of(
-                                context,
-                              ).hideCurrentSnackBar(); // Eliminar SnackBars previos
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Error al guardar alergias: $e',
+                              print('❌ Error al guardar alergias: $e');
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error al guardar alergias: $e',
+                                    ),
+                                    backgroundColor: Colors.red,
                                   ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
+                                );
+                              }
                             }
                           }
                           : null,
@@ -446,7 +465,7 @@ class AllergySelectorScreen extends ConsumerWidget {
                     ),
                   ),
                   child: Text(
-                    'Guardar',
+                    'Continuar',
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

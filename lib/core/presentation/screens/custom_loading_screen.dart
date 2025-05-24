@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
-class CustomLoadingScreen extends StatelessWidget {
+class CustomLoadingScreen extends ConsumerStatefulWidget {
   final String message;
   final String? subMessage;
-
-  // Evitar que Key se genere cada vez para prevenir conflictos
-  static const Key _containerKey1 = Key('loadingContainer1');
-  static const Key _containerKey2 = Key('loadingContainer2');
-  static const Key _containerKey3 = Key('loadingContainer3');
 
   const CustomLoadingScreen({
     super.key,
@@ -19,7 +18,100 @@ class CustomLoadingScreen extends StatelessWidget {
   });
 
   @override
+  ConsumerState<CustomLoadingScreen> createState() =>
+      _CustomLoadingScreenState();
+}
+
+class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
+  // Evitar que Key se genere cada vez para prevenir conflictos
+  static const Key _containerKey1 = Key('loadingContainer1');
+  static const Key _containerKey2 = Key('loadingContainer2');
+  static const Key _containerKey3 = Key('loadingContainer3');
+
+  bool _hasNavigated = false;
+
+  void _checkSyncronizationStatus() {
+    // Escuchar cambios en las preferencias de usuario
+    ref.listen<UserPreferencesState>(userPreferencesProvider, (previous, next) {
+      // Si ya no está cargando, verificar hacia dónde navegar
+      if (!next.isLoading) {
+        _navigateBasedOnSyncStatus(next);
+      }
+    });
+
+    // También verificar el estado inicial por si ya se completó la sincronización
+    final userPreferences = ref.read(userPreferencesProvider);
+    if (!userPreferences.isLoading) {
+      _navigateBasedOnSyncStatus(userPreferences);
+    }
+  }
+
+  void _navigateBasedOnSyncStatus(UserPreferencesState userPreferences) {
+    // Para evitar el flash de allergy-selector, verificar AMBOS estados
+    final authState = ref.read(authControllerProvider);
+    final user = authState.value;
+
+    if (_hasNavigated) return; // Evitar múltiples navegaciones
+
+    if (user != null) {
+      final firestoreCompleted = user.initialPreferencesCompleted;
+      final memoryCompleted = userPreferences.hasCompletedPreferences;
+
+      print('🔍 Loading: Verificando estado de sincronización');
+      print('  - Firestore: $firestoreCompleted');
+      print('  - Memoria: $memoryCompleted');
+
+      // Si Firestore dice que SÍ tiene preferencias, confiar en eso para usuarios existentes
+      if (firestoreCompleted) {
+        print(
+          '🚀 Loading: Usuario existente con preferencias - navegando a auth-transition',
+        );
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.go('/auth-transition?from=loading');
+          }
+        });
+      } else {
+        // Solo ir a allergy-selector si AMBOS estados confirman que no hay preferencias
+        print(
+          '🚀 Loading: Usuario sin preferencias - navegando a allergy-selector',
+        );
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.go('/allergy-selector?from=loading');
+          }
+        });
+      }
+    } else {
+      // Si no hay usuario, ir a login
+      print('🚀 Loading: No hay usuario - navegando a login');
+      _hasNavigated = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.go('/login?from=loading');
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final userPreferences = ref.watch(userPreferencesProvider);
+
+    // Escuchar cambios y navegar cuando la sincronización termine usando el nuevo método
+    ref.listen<UserPreferencesState>(userPreferencesProvider, (previous, next) {
+      if (!next.isLoading) {
+        _navigateBasedOnSyncStatus(next);
+      }
+    });
+
+    // También verificar el estado actual
+    if (!userPreferences.isLoading) {
+      _navigateBasedOnSyncStatus(userPreferences);
+    }
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -98,7 +190,7 @@ class CustomLoadingScreen extends StatelessWidget {
 
                 // Main message
                 Text(
-                  message,
+                  widget.message,
                   style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
@@ -110,11 +202,11 @@ class CustomLoadingScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Sub message if provided
-                if (subMessage != null)
+                if (widget.subMessage != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      subMessage!,
+                      widget.subMessage!,
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         color: secondaryTextColor,

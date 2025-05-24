@@ -1,17 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/register_usecase.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart';
+import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/register_controller.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
+/// Sentinel value for optional parameters
 class _NotPassed {
   const _NotPassed();
 }
 
 /// Register state
 class RegisterState {
-  /// Full name
+  /// Name
   final String name;
 
   /// Email
@@ -23,30 +24,20 @@ class RegisterState {
   /// Confirm password
   final String confirmPassword;
 
-  /// Name error message
+  /// Name error
   final String? nameError;
 
-  /// Email error message
+  /// Email error
   final String? emailError;
 
-  /// Password error message
+  /// Password error
   final String? passwordError;
 
-  /// Confirm password error message
+  /// Confirm password error
   final String? confirmPasswordError;
 
+  /// Is loading
   final bool isLoading;
-
-  /// Is form valid
-  bool get isValid =>
-      nameError == null &&
-      emailError == null &&
-      passwordError == null &&
-      confirmPasswordError == null &&
-      name.isNotEmpty &&
-      email.isNotEmpty &&
-      password.isNotEmpty &&
-      confirmPassword.isNotEmpty;
 
   /// Constructor
   const RegisterState({
@@ -60,6 +51,17 @@ class RegisterState {
     this.confirmPasswordError,
     this.isLoading = false,
   });
+
+  /// Is valid
+  bool get isValid =>
+      name.isNotEmpty &&
+      email.isNotEmpty &&
+      password.isNotEmpty &&
+      confirmPassword.isNotEmpty &&
+      nameError == null &&
+      emailError == null &&
+      passwordError == null &&
+      confirmPasswordError == null;
 
   /// Copy with
   RegisterState copyWith({
@@ -95,48 +97,32 @@ class RegisterState {
   }
 }
 
-/// Register notifier
-class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
-  /// Register controller
-  late final RegisterController _controller;
+/// Register form state notifier (solo para el estado del formulario)
+class RegisterFormNotifier extends StateNotifier<RegisterState> {
+  final RegisterController _controller;
 
-  /// Register state
-  RegisterState _registerState = const RegisterState();
-
-  /// Get register state
-  RegisterState get registerState => _registerState;
-
-  @override
-  Future<UserEntity?> build() async {
-    // Initialize controller
-    _controller = ref.watch(registerControllerProvider);
-
-    // Return null initially (no user registered)
-    return null;
-  }
+  RegisterFormNotifier(this._controller) : super(const RegisterState());
 
   /// Update name
   void updateName(String name) {
     final isValid = _controller.isValidName(name);
-    _registerState = _registerState.copyWith(
+    state = state.copyWith(
       name: name,
       nameError:
           isValid
               ? null
               : 'Por favor, ingresa tu nombre completo (nombre y apellido)',
     );
-    ref.notifyListeners();
   }
 
   /// Update email
   void updateEmail(String email) {
     final isValid = _controller.isValidEmail(email);
-    _registerState = _registerState.copyWith(
+    state = state.copyWith(
       email: email,
       emailError:
           isValid ? null : 'Por favor, ingresa un correo electrónico válido',
     );
-    ref.notifyListeners();
   }
 
   /// Update password
@@ -144,80 +130,130 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
     final passwordError = _controller.validatePassword(password);
     final doMatch = _controller.doPasswordsMatch(
       password,
-      _registerState.confirmPassword,
+      state.confirmPassword,
     );
 
-    _registerState = _registerState.copyWith(
+    state = state.copyWith(
       password: password,
       passwordError: passwordError,
       confirmPasswordError:
-          _registerState.confirmPassword.isEmpty
+          state.confirmPassword.isEmpty
               ? null
               : (doMatch ? null : 'Las contraseñas no coinciden'),
     );
-    ref.notifyListeners();
   }
 
   /// Update confirm password
   void updateConfirmPassword(String confirmPassword) {
     final doMatch = _controller.doPasswordsMatch(
-      _registerState.password,
+      state.password,
       confirmPassword,
     );
-    _registerState = _registerState.copyWith(
+    state = state.copyWith(
       confirmPassword: confirmPassword,
       confirmPasswordError: doMatch ? null : 'Las contraseñas no coinciden',
     );
-    ref.notifyListeners();
+  }
+
+  /// Set loading state
+  void setLoading(bool isLoading) {
+    state = state.copyWith(isLoading: isLoading);
+  }
+}
+
+/// Register authentication notifier (solo para el resultado de autenticación)
+class RegisterAuthNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
+  late final RegisterController _controller;
+
+  @override
+  Future<UserEntity?> build() async {
+    _controller = ref.watch(registerControllerProvider);
+    return null;
   }
 
   /// Register with email and password
-  Future<void> register() async {
-    if (!_registerState.isValid) return;
+  Future<void> register(String name, String email, String password) async {
+    try {
+      state = const AsyncValue.loading();
+    } catch (_) {
+      // Si el notifier fue disposed, no hacer nada
+      return;
+    }
 
-    state = const AsyncValue.loading();
-    _registerState = _registerState.copyWith(isLoading: true);
-
-    state = await AsyncValue.guard(() async {
-      final user = await _controller.register(
-        _registerState.name,
-        _registerState.email,
-        _registerState.password,
-      );
-      _registerState = _registerState.copyWith(isLoading: false);
-      return user;
-    });
-
-    if (state.hasError) {
-      _registerState = _registerState.copyWith(isLoading: false);
+    try {
+      final result = await _controller.register(name, email, password);
+      try {
+        state = AsyncValue.data(result);
+      } catch (_) {
+        // Si el notifier fue disposed, no hacer nada
+      }
+    } catch (error, stackTrace) {
+      try {
+        state = AsyncValue.error(error, stackTrace);
+      } catch (_) {
+        // Si el notifier fue disposed, no hacer nada
+      }
     }
   }
 
   /// Login with Google
   Future<void> loginWithGoogle() async {
-    state = const AsyncValue.loading();
+    try {
+      state = const AsyncValue.loading();
+    } catch (_) {
+      return;
+    }
 
-    state = await AsyncValue.guard(() async {
-      return await _controller.loginWithGoogle();
-    });
+    try {
+      final result = await _controller.loginWithGoogle();
+      try {
+        state = AsyncValue.data(result);
+      } catch (_) {}
+    } catch (error, stackTrace) {
+      try {
+        state = AsyncValue.error(error, stackTrace);
+      } catch (_) {}
+    }
   }
 
   /// Login with Facebook
   Future<void> loginWithFacebook() async {
-    state = const AsyncValue.loading();
+    try {
+      state = const AsyncValue.loading();
+    } catch (_) {
+      return;
+    }
 
-    state = await AsyncValue.guard(() async {
-      return await _controller.loginWithFacebook();
-    });
+    try {
+      final result = await _controller.loginWithFacebook();
+      try {
+        state = AsyncValue.data(result);
+      } catch (_) {}
+    } catch (error, stackTrace) {
+      try {
+        state = AsyncValue.error(error, stackTrace);
+      } catch (_) {}
+    }
   }
 
   /// Login with Apple
   Future<void> loginWithApple() async {
-    state = const AsyncValue.loading();
+    try {
+      state = const AsyncValue.loading();
+    } catch (_) {
+      return;
+    }
 
-    state = await AsyncValue.guard(() async {
-      return await _controller.loginWithApple();
-    });
+    try {
+      final result = await _controller.loginWithApple();
+      try {
+        state = AsyncValue.data(result);
+      } catch (_) {}
+    } catch (error, stackTrace) {
+      try {
+        state = AsyncValue.error(error, stackTrace);
+      } catch (_) {}
+    }
   }
 }
 
@@ -225,6 +261,24 @@ class RegisterNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
 final registerUseCaseProvider = Provider.autoDispose<RegisterUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return RegisterUseCase(repository);
+});
+
+/// Google login use case provider
+final googleLoginUseCaseProvider = Provider<GoogleLoginUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return GoogleLoginUseCase(repository);
+});
+
+/// Facebook login use case provider
+final facebookLoginUseCaseProvider = Provider<FacebookLoginUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return FacebookLoginUseCase(repository);
+});
+
+/// Apple login use case provider
+final appleLoginUseCaseProvider = Provider<AppleLoginUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return AppleLoginUseCase(repository);
 });
 
 /// Register controller provider
@@ -239,13 +293,57 @@ final registerControllerProvider = Provider.autoDispose<RegisterController>((
   );
 });
 
-/// Register notifier provider
-final registerNotifierProvider =
-    AsyncNotifierProvider.autoDispose<RegisterNotifier, UserEntity?>(() {
-      return RegisterNotifier();
+/// Register form state provider
+final registerFormProvider =
+    StateNotifierProvider.autoDispose<RegisterFormNotifier, RegisterState>((
+      ref,
+    ) {
+      final controller = ref.watch(registerControllerProvider);
+      return RegisterFormNotifier(controller);
     });
 
-/// Register state provider
-final registerStateProvider = Provider.autoDispose<RegisterState>((ref) {
-  return ref.watch(registerNotifierProvider.notifier).registerState;
+/// Register authentication provider
+final registerAuthProvider =
+    AsyncNotifierProvider.autoDispose<RegisterAuthNotifier, UserEntity?>(() {
+      return RegisterAuthNotifier();
+    });
+
+/// Combined register provider que coordina formulario y autenticación
+final registerProvider = Provider.autoDispose<RegisterProviderState>((ref) {
+  final formState = ref.watch(registerFormProvider);
+  final authState = ref.watch(registerAuthProvider);
+
+  return RegisterProviderState(formState: formState, authState: authState);
 });
+
+/// Estado combinado para el registro
+class RegisterProviderState {
+  final RegisterState formState;
+  final AsyncValue<UserEntity?> authState;
+
+  const RegisterProviderState({
+    required this.formState,
+    required this.authState,
+  });
+
+  bool get isLoading => formState.isLoading || authState.isLoading;
+  bool get hasError => authState.hasError;
+  Object? get error => authState.error;
+  StackTrace? get stackTrace => authState.stackTrace;
+  bool get hasValue => authState.hasValue;
+  UserEntity? get value => authState.value;
+}
+
+/*
+PROVIDERS DISPONIBLES:
+- `registerProvider`: Estado combinado (formulario + autenticación)
+- `registerFormProvider`: Solo el estado del formulario y validaciones
+- `registerAuthProvider`: Solo el estado de autenticación (loading, success, error)
+
+VENTAJAS DE LA NUEVA ARQUITECTURA:
+✅ Separación clara de responsabilidades
+✅ Testeo más fácil (cada provider por separado)
+✅ Mejor performance (providers más específicos)
+✅ Menos conflictos de estado en Riverpod
+✅ Código más mantenible y escalable
+*/

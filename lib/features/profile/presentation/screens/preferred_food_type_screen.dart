@@ -231,9 +231,8 @@ class _PreferredFoodTypeScreenState
                                             foodTypeNames, // Could be empty list
                                           );
 
-                                      // Marcar explícitamente como completado en Firestore
-                                      await authRepository
-                                          .markInitialPreferencesCompleted();
+                                      // NO marcar como completado aquí - solo en la pantalla final
+                                      // await authRepository.markInitialPreferencesCompleted();
 
                                       // Refrescar datos de usuario
                                       await ref

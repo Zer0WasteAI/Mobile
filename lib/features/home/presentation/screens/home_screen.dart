@@ -9,11 +9,12 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summa
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 /// The HomeScreen widget is the main entry point of the app.
 /// It displays a welcome message, a motivational card, inventory summary,
 /// recipe suggestions, impact summary, and other personalized content.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   // Common spacing values
   static const double _horizontalPadding = 16.0;
   static const double _sectionSpacing = 16.0;
@@ -21,7 +22,39 @@ class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh user data when home screen is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshUserData();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh user data when returning to home screen
+    _refreshUserData();
+  }
+
+  Future<void> _refreshUserData() async {
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .refreshUserFromFirestore();
+      print('🏠 Home: Datos de usuario refrescados automáticamente');
+    } catch (e) {
+      print('🏠 Home: Error al refrescar datos: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Get background color from theme
     final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
@@ -35,42 +68,54 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24), // Espacio superior
               // Welcome Header con padding horizontal
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: WelcomeHeader(),
               ),
 
               const SizedBox(height: 24), // Espacio después del header
               // Daily Planner Widget - Planificación de comidas del día (NUEVO)
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: DailyPlannerWidget(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Motivational Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: MotivationalCard(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Inventory Summary Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: InventorySummaryCard(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Recipe Suggestions
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: RecipeSuggestions(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Impact Summary Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: ImpactSummaryCard(),
               ),
               const SizedBox(height: 24), // Bottom spacing

@@ -20,8 +20,8 @@ class WelcomeHeader extends ConsumerWidget {
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
-    // Get user data
-    final authState = ref.watch(authStateProvider);
+    // Get user data from authControllerProvider for more complete data
+    final authState = ref.watch(authControllerProvider);
     final userName = authState.value?.displayName ?? 'Usuario';
 
     return Row(
@@ -90,7 +90,7 @@ class UserAvatar extends ConsumerWidget {
     final Color textColor = primaryColor;
 
     // Get user data from auth state
-    final authState = ref.watch(authStateProvider);
+    final authState = ref.watch(authControllerProvider);
     final user = authState.value;
     final hasPhoto = user?.photoURL != null && user!.photoURL!.isNotEmpty;
 

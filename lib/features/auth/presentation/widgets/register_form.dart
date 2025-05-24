@@ -35,16 +35,14 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
 
-    ref.listenManual(registerNotifierProvider, (previous, next) {
-      // Accede al estado síncrono a través del notifier
-      final currentState =
-          ref.read(registerNotifierProvider.notifier).registerState;
-      _updateControllerTextIfNeeded(_nameController, currentState.name);
-      _updateControllerTextIfNeeded(_emailController, currentState.email);
-      _updateControllerTextIfNeeded(_passwordController, currentState.password);
+    // Listen to form state changes using the new form provider
+    ref.listenManual(registerFormProvider, (previous, next) {
+      _updateControllerTextIfNeeded(_nameController, next.name);
+      _updateControllerTextIfNeeded(_emailController, next.email);
+      _updateControllerTextIfNeeded(_passwordController, next.password);
       _updateControllerTextIfNeeded(
         _confirmPasswordController,
-        currentState.confirmPassword,
+        next.confirmPassword,
       );
     }, fireImmediately: true);
   }
@@ -77,17 +75,17 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Get register state
-    final registerNotifier = ref.watch(registerNotifierProvider.notifier);
-    final registerState = registerNotifier.registerState;
-    final registerAsync = ref.watch(registerNotifierProvider);
+    // Get register state using the new providers
+    final registerState = ref.watch(registerProvider);
+    final formNotifier = ref.watch(registerFormProvider.notifier);
+    final authNotifier = ref.watch(registerAuthProvider.notifier);
 
     // Get theme data
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     // Check if loading
-    final isLoading = registerAsync.isLoading;
+    final isLoading = registerState.isLoading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -100,8 +98,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             label: 'Nombre Completo',
             hint: 'Ingresa tu nombre completo',
             icon: FontAwesomeIcons.solidUser,
-            errorText: registerState.nameError,
-            onChanged: (value) => registerNotifier.updateName(value),
+            errorText: registerState.formState.nameError,
+            onChanged: (value) => formNotifier.updateName(value),
           ),
           const SizedBox(height: 20),
 
@@ -111,8 +109,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             label: 'Correo Electrónico',
             hint: 'Ingresa tu correo electrónico',
             icon: FontAwesomeIcons.solidEnvelope,
-            errorText: registerState.emailError,
-            onChanged: (value) => registerNotifier.updateEmail(value),
+            errorText: registerState.formState.emailError,
+            onChanged: (value) => formNotifier.updateEmail(value),
           ),
           const SizedBox(height: 20),
 
@@ -124,8 +122,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             isPassword: true,
             isPasswordVisible: _isPasswordVisible,
             icon: FontAwesomeIcons.lock,
-            errorText: registerState.passwordError,
-            onChanged: (value) => registerNotifier.updatePassword(value),
+            errorText: registerState.formState.passwordError,
+            onChanged: (value) => formNotifier.updatePassword(value),
             onToggleVisibility: () {
               setState(() {
                 _isPasswordVisible = !_isPasswordVisible;
@@ -142,8 +140,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             isPassword: true,
             isPasswordVisible: _isConfirmPasswordVisible,
             icon: FontAwesomeIcons.lock,
-            errorText: registerState.confirmPasswordError,
-            onChanged: (value) => registerNotifier.updateConfirmPassword(value),
+            errorText: registerState.formState.confirmPasswordError,
+            onChanged: (value) => formNotifier.updateConfirmPassword(value),
             onToggleVisibility: () {
               setState(() {
                 _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
@@ -157,9 +155,13 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             height: 56,
             child: ElevatedButton(
               onPressed:
-                  isLoading || !registerState.isValid
+                  isLoading || !registerState.formState.isValid
                       ? null
-                      : () => registerNotifier.register(),
+                      : () => authNotifier.register(
+                        registerState.formState.name,
+                        registerState.formState.email,
+                        registerState.formState.password,
+                      ),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
                     isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
@@ -185,9 +187,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
 
           // Social login buttons
           SocialButtonsRow(
-            onGoogleTap: () => registerNotifier.loginWithGoogle(),
-            onFacebookTap: () => registerNotifier.loginWithFacebook(),
-            onAppleTap: () => registerNotifier.loginWithApple(),
+            onGoogleTap: () => authNotifier.loginWithGoogle(),
+            onFacebookTap: () => authNotifier.loginWithFacebook(),
+            onAppleTap: () => authNotifier.loginWithApple(),
           ),
           const SizedBox(height: 20),
 

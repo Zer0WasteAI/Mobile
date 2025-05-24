@@ -225,23 +225,54 @@ class AppRouter {
         // Check if coming from verification screen
         final isFromVerification =
             state.uri.queryParameters['from'] == 'verification';
+        final isFromLoading = state.uri.queryParameters['from'] == 'loading';
 
         // If on login screen and coming from verification, don't redirect
         if (state.matchedLocation == '/login' && isFromVerification) {
           return null;
         }
 
-        // Get initialPreferencesCompleted directly from Firestore
-        final firestorePreferencesCompleted =
-            isLoggedIn && authState.value != null
-                ? authState.value!.initialPreferencesCompleted
-                : false;
+        // For routing decisions, use ONLY in-memory state
+        bool firestorePreferencesCompleted = false;
 
-        // Log state for debugging
-        print('================== ROUTER REDIRECT INFO ==================');
-        print(
-          'Route: ${state.matchedLocation}, isLoggedIn: $isLoggedIn, isLoading: $isLoading, hasCompletedPreferences: $hasCompletedPreferences',
-        );
+        if (isLoggedIn && authState.value != null) {
+          firestorePreferencesCompleted =
+              authState.value!.initialPreferencesCompleted;
+          print('User: ${authState.value!.id}');
+          print(
+            'Firestore initialPreferencesCompleted: $firestorePreferencesCompleted',
+          );
+          print('In-memory hasCompletedPreferences: $hasCompletedPreferences');
+
+          // 🎯 MEJORA UX: Detectar desincronización temporal y mostrar loading
+          // PERO evitar si venimos del loading screen para prevenir loops
+          if (firestorePreferencesCompleted &&
+              !hasCompletedPreferences &&
+              !isFromLoading) {
+            // EVITAR loop infinito: No ir a loading si ya estamos ahí o venimos de auth
+            final isAlreadyInLoading = state.matchedLocation == '/loading';
+            final isFromAuth =
+                state.uri.queryParameters['from'] == 'auth' ||
+                state.uri.queryParameters['from'] == 'auth_transition';
+
+            if (!isAlreadyInLoading && !isFromAuth) {
+              print(
+                '🔄 Desincronización temporal detectada - mostrando loading para mejor UX',
+              );
+              print('   - Firestore: true, Memoria: false (sincronizando...)');
+              return '/loading';
+            } else {
+              print(
+                '⚠️ Desincronización detectada pero evitando loop - continuando navegación',
+              );
+            }
+          }
+
+          print(
+            '🎯 USANDO SOLO ESTADO EN MEMORIA para navegación: $hasCompletedPreferences',
+          );
+        }
+        print('========================================================');
 
         // Define special routes
         final isGoingToLogin = state.matchedLocation == '/login';
@@ -272,56 +303,6 @@ class AppRouter {
             state.matchedLocation == PreferredFoodTypeScreen.routePath ||
             state.matchedLocation == SpecialDietSelectorScreen.routePath;
 
-        // Handle Firestore vs in-memory preference status
-        if (isLoggedIn && authState.value != null) {
-          final firebaseValue = authState.value!.initialPreferencesCompleted;
-          final inMemoryValue = userPreferences.hasCompletedPreferences;
-          print('User: ${authState.value!.id}');
-          print('Firestore initialPreferencesCompleted: $firebaseValue');
-          print('In-memory hasCompletedPreferences: $inMemoryValue');
-
-          if (firebaseValue != inMemoryValue) {
-            print(
-              '⚠️ ALERTA: Inconsistencia entre valores de Firestore ($firebaseValue) y memoria ($inMemoryValue)',
-            );
-            // Actualizar el estado en memoria si está desincronizado con Firestore
-            if (firebaseValue && !inMemoryValue && !isLoading) {
-              print(
-                'Sincronizando estado en memoria con valor de Firestore...',
-              );
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref
-                    .read(userPreferencesProvider.notifier)
-                    .markPreferencesAsCompleted();
-              });
-            } else if (!firebaseValue && inMemoryValue) {
-              // Si Firestore dice que no está completo pero en memoria sí,
-              // actualizar Firestore para corregir la inconsistencia
-              if (!isGoingToUserPreferences &&
-                  state.matchedLocation != '/allergy-selector') {
-                print(
-                  'Sincronizando Firestore con valor en memoria (completo)...',
-                );
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  try {
-                    final authRepository = ref.read(authRepositoryProvider);
-                    await authRepository.markInitialPreferencesCompleted();
-                    await ref
-                        .read(authControllerProvider.notifier)
-                        .refreshUserFromFirestore();
-                    print('Firestore actualizado correctamente');
-                  } catch (e) {
-                    print('Error al actualizar Firestore: $e');
-                  }
-                });
-                // Permitir continuar a la ruta solicitada en lugar de redireccionar
-                return null;
-              }
-            }
-          }
-        }
-        print('========================================================');
-
         // If not logged in, handle public and protected routes
         if (!isLoggedIn) {
           // Allow access to auth screens
@@ -329,17 +310,11 @@ class AppRouter {
             return null;
           }
 
-          // Redirect to login for protected routes and add from=auth parameter instead of from=loading
+          // Redirect to login for protected routes
           return '/login?from=auth';
         }
 
         // User is logged in at this point
-
-        // If going to home and preferences completed, allow it
-        if (state.matchedLocation == '/home' &&
-            (hasCompletedPreferences || firestorePreferencesCompleted)) {
-          return null;
-        }
 
         // Don't redirect away from auth-transition or email-verification screens
         if (isGoingToAuthTransition || isGoingToEmailVerification) {
@@ -348,29 +323,21 @@ class AppRouter {
 
         // If trying to access auth screens while logged in
         if (isGoingToAuthScreen) {
-          // If preferences not completed, send to preferences
-          if (!firestorePreferencesCompleted) {
+          // SOLO usar estado en memoria - más simple y consistente
+          if (!hasCompletedPreferences) {
             return '${AllergySelectorScreen.routePath}?from=auth';
           }
 
-          // Otherwise go to auth transition screen en vez de directamente a home
+          // Otherwise go to auth transition screen
           return '${AuthTransitionScreen.routePath}?from=auth';
         }
 
-        // If preferences not completed and not going to preferences screens
-        if (!firestorePreferencesCompleted && !isGoingToUserPreferences) {
+        // SOLO usar estado en memoria - más simple y consistente
+        if (!hasCompletedPreferences && !isGoingToUserPreferences) {
           return '${AllergySelectorScreen.routePath}?from=auth';
         }
 
-        // Si estamos yendo al home manualmente y no desde auth transition screen,
-        // redirigir a auth transition screen primero para evitar conflictos
-        if (state.matchedLocation == '/home' &&
-            !isGoingToAuthTransition &&
-            !state.uri.queryParameters.containsKey('from')) {
-          return '${AuthTransitionScreen.routePath}?from=redirect';
-        }
-
-        // Allow all other paths
+        // Allow all other paths (including home)
         return null;
       },
       routes: [

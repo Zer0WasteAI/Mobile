@@ -102,6 +102,26 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
+              const SizedBox(height: 8),
+              // Indicador de campo obligatorio
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Selección obligatoria',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               // Cooking level cards
@@ -175,75 +195,84 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      // Mostrar indicador de carga
-                      if (context.mounted) {
-                        showLoadingSnackBar(
-                          context,
-                          message: 'Guardando nivel de cocina...',
-                        );
-                      }
+                  onPressed:
+                      selectedLevel != null
+                          ? () async {
+                            try {
+                              // Mostrar indicador de carga
+                              if (context.mounted) {
+                                showLoadingSnackBar(
+                                  context,
+                                  message: 'Guardando nivel de cocina...',
+                                );
+                              }
 
-                      // Save cooking level to Firestore - use a default if none selected
-                      final cookingLevelString =
-                          selectedLevel != null
-                              ? selectedLevel.toStorageString()
-                              : CookingLevel.beginner
-                                  .toStorageString(); // Default to beginner if none selected
+                              // Save cooking level to Firestore - now required selection
+                              final cookingLevelString =
+                                  selectedLevel!.toStorageString();
 
-                      print("Guardando nivel de cocina: $cookingLevelString");
+                              print(
+                                "Guardando nivel de cocina: $cookingLevelString",
+                              );
 
-                      final authRepository = ref.read(authRepositoryProvider);
-                      final authController = ref.read(
-                        authControllerProvider.notifier,
-                      );
+                              final authRepository = ref.read(
+                                authRepositoryProvider,
+                              );
+                              final authController = ref.read(
+                                authControllerProvider.notifier,
+                              );
 
-                      await authRepository.saveUserCookingLevel(
-                        cookingLevelString,
-                      );
+                              await authRepository.saveUserCookingLevel(
+                                cookingLevelString,
+                              );
 
-                      // Marcar explícitamente como completado en Firestore
-                      await authRepository.markInitialPreferencesCompleted();
+                              // Refrescar datos de usuario
+                              await authController.refreshUserFromFirestore();
 
-                      // Refrescar datos de usuario
-                      await authController.refreshUserFromFirestore();
+                              // Reset state to avoid keeping selections
+                              notifier.reset();
 
-                      // Reset state to avoid keeping selections
-                      notifier.reset();
-
-                      // Navigate to the cooking level selector screen
-                      if (context.mounted) {
-                        // Usar go en lugar de replace para transiciones más fluidas
-                        context.go(PreferredFoodTypeScreen.routePath);
-                      }
-                    } catch (e) {
-                      print("Error guardando nivel de cocina: $e");
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).hideCurrentSnackBar(); // Eliminar SnackBars previos
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Error: No se pudo guardar el nivel de cocina: $e',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                              // Navigate to the cooking level selector screen
+                              if (context.mounted) {
+                                // Usar go en lugar de replace para transiciones más fluidas
+                                context.go(PreferredFoodTypeScreen.routePath);
+                              }
+                            } catch (e) {
+                              print("Error guardando nivel de cocina: $e");
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentSnackBar(); // Eliminar SnackBars previos
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error: No se pudo guardar el nivel de cocina: $e',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                          : null, // Deshabilitar botón si no hay selección
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
+                    backgroundColor:
+                        selectedLevel != null
+                            ? colorScheme.primary
+                            : colorScheme.outline.withOpacity(0.3),
+                    foregroundColor:
+                        selectedLevel != null
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface.withOpacity(0.5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: Text(
-                    'Continuar',
+                    selectedLevel != null
+                        ? 'Continuar'
+                        : 'Selecciona tu nivel para continuar',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
