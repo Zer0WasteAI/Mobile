@@ -7,9 +7,13 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:zer0_waste_ai/injection_container.dart';
 import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env file
+  await dotenv.load(fileName: ".env");
 
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -18,16 +22,16 @@ void main() async {
   final container = await DependencyInjection.init();
 
   // Configurar callback global para invalidar providers después de actualizaciones de Firestore
-  AuthRepositoryImpl.setProviderRefreshCallback(() {
-    print(
-      '🔄 Callback global activado - refrescando preferencias desde Firestore para LOGIN',
-    );
+  // AuthRepositoryImpl.setProviderRefreshCallback(() {
+  //   print(
+  //     '🔄 Callback global activado - refrescando preferencias desde Firestore para LOGIN',
+  //   );
 
-    // Para LOGIN: usar el método específico que SIEMPRE lee desde Firestore
-    container
-        .read(userPreferencesProvider.notifier)
-        .loadUserPreferencesFromFirestore();
-  });
+  //   // Para LOGIN: usar el método específico que SIEMPRE lee desde Firestore
+  //   container
+  //       .read(userPreferencesProvider.notifier)
+  //       .loadUserPreferencesFromFirestore();
+  // });
 
   // Run app with ProviderScope
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));

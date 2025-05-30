@@ -7,7 +7,6 @@ import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/food_types_provider.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/selected_food_types_provider.dart';
-import 'package:zer0_waste_ai/features/profile/domain/models/food_type.dart';
 
 // Definir los tipos de comida disponibles
 enum FoodType {
@@ -146,8 +145,8 @@ class _ProfilePreferredFoodTypeScreenState
     final availableFoodTypes = ref.read(foodTypesProvider).value ?? [];
 
     // Get user's selected food types from profile
-    final userFoodTypes = user?.preferredFoodTypes ?? [];
-    final userFoodTypeItems = user?.preferredFoodTypeItems;
+    final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
+    final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
     print('Initializing food types selector with:');
     print('- Legacy food type names: $userFoodTypes');
@@ -403,6 +402,7 @@ class _ProfilePreferredFoodTypeScreenState
   }
 }
 
+// ignore: unused_element
 class _FoodTypeCard extends StatelessWidget {
   final FoodType foodType;
   final bool isSelected;

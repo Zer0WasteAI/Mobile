@@ -123,7 +123,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(authControllerProvider).value;
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final _ = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:zer0_waste_ai/features/auth/domain/entities/user_preferences_entity.dart';
 
 /// User entity
 class UserEntity {
@@ -8,15 +9,10 @@ class UserEntity {
     required this.email,
     this.displayName,
     this.photoURL,
+    this.phone,
     this.emailVerified = false,
     this.favoriteRecipes = const [],
-    this.allergies = const [],
-    this.allergyItems = const [],
-    this.specialDiets = const [],
-    this.specialDietItems = const [],
-    this.cookingLevel,
-    this.preferredFoodTypes = const [],
-    this.preferredFoodTypeItems = const [],
+    this.prefs = const UserPreferencesEntity(),
     this.initialPreferencesCompleted = false,
     this.createdAt,
     this.lastLoginAt,
@@ -34,32 +30,17 @@ class UserEntity {
   /// User photo URL
   final String? photoURL;
 
+  /// User phone number
+  final String? phone;
+
   /// Whether email is verified
   final bool emailVerified;
 
   /// User's favorite recipes
   final List<String> favoriteRecipes;
 
-  /// User's allergies (legacy)
-  final List<String> allergies;
-
-  /// User's allergies items with custom metadata
-  final List<Map<String, dynamic>> allergyItems;
-
-  /// User's special diets (legacy)
-  final List<String> specialDiets;
-
-  /// User's special diet items with custom metadata
-  final List<Map<String, dynamic>> specialDietItems;
-
-  /// User's cooking level
-  final String? cookingLevel;
-
-  /// User's preferred food types (legacy)
-  final List<String> preferredFoodTypes;
-
-  /// User's preferred food type items with custom metadata
-  final List<Map<String, dynamic>> preferredFoodTypeItems;
+  /// User preferences
+  final UserPreferencesEntity prefs;
 
   /// Whether initial preferences setup is completed
   final bool initialPreferencesCompleted;
@@ -79,12 +60,10 @@ class UserEntity {
         other.email == email &&
         other.displayName == displayName &&
         other.photoURL == photoURL &&
+        other.phone == phone &&
         other.emailVerified == emailVerified &&
         listEquals(other.favoriteRecipes, favoriteRecipes) &&
-        listEquals(other.allergies, allergies) &&
-        listEquals(other.specialDiets, specialDiets) &&
-        other.cookingLevel == cookingLevel &&
-        listEquals(other.preferredFoodTypes, preferredFoodTypes) &&
+        other.prefs == prefs &&
         other.initialPreferencesCompleted == initialPreferencesCompleted &&
         other.createdAt == createdAt &&
         other.lastLoginAt == lastLoginAt;
@@ -98,12 +77,10 @@ class UserEntity {
       email,
       displayName,
       photoURL,
+      phone,
       emailVerified,
       Object.hashAll(favoriteRecipes),
-      Object.hashAll(allergies),
-      Object.hashAll(specialDiets),
-      cookingLevel,
-      Object.hashAll(preferredFoodTypes),
+      prefs,
       initialPreferencesCompleted,
       createdAt,
       lastLoginAt,
@@ -113,6 +90,6 @@ class UserEntity {
   /// String representation
   @override
   String toString() {
-    return 'UserEntity(id: $id, email: $email, displayName: $displayName, photoURL: $photoURL, emailVerified: $emailVerified, favoriteRecipes: $favoriteRecipes, allergies: $allergies, specialDiets: $specialDiets, cookingLevel: $cookingLevel, preferredFoodTypes: $preferredFoodTypes, initialPreferencesCompleted: $initialPreferencesCompleted, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
+    return 'UserEntity(id: $id, email: $email, displayName: $displayName, photoURL: $photoURL, phone: $phone, emailVerified: $emailVerified, favoriteRecipes: $favoriteRecipes, prefs: $prefs, initialPreferencesCompleted: $initialPreferencesCompleted, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
   }
 }

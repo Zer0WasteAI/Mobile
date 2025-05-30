@@ -39,7 +39,7 @@ final selectedCookingLevelProvider =
     StateNotifierProvider<SelectedCookingLevelNotifier, CookingLevel?>((ref) {
       // Inicializar con el nivel del usuario, si está disponible
       final user = ref.read(authStateProvider).value;
-      final String? storedLevel = user?.cookingLevel;
+      final String? storedLevel = user?.prefs.cookingLevel;
       if (storedLevel != null) {
         return SelectedCookingLevelNotifier(
           CookingLevelExtension.fromStorageString(storedLevel),

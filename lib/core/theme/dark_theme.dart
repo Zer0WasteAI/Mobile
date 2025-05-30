@@ -62,8 +62,8 @@ class DarkTheme {
         backgroundColor: AppColors.darkLabel,
         labelStyle: TextStyle(color: AppColors.darkMainText),
       ),
-      cardTheme: CardTheme(color: AppColors.darkSurface),
-      dialogTheme: DialogTheme(
+      cardTheme: CardThemeData(color: AppColors.darkSurface),
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.darkSurface,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

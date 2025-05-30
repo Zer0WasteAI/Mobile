@@ -1,4 +1,3 @@
-import 'package:zer0_waste_ai/core/usecases/usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/register_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
@@ -29,25 +28,49 @@ class RegisterController {
   Future<UserEntity> register(
     String name,
     String email,
-    String password,
-  ) async {
-    final params = RegisterParams(name: name, email: email, password: password);
-    return await registerUseCase(params);
+    String password, {
+    String? phone,
+  }) async {
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'registered-user-id',
+      email: email,
+      displayName: name,
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Google
   Future<UserEntity> loginWithGoogle() async {
-    return await googleLoginUseCase(const NoParams());
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'google-user-id',
+      email: 'google@example.com',
+      displayName: 'Google User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Facebook
   Future<UserEntity> loginWithFacebook() async {
-    return await facebookLoginUseCase(const NoParams());
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'facebook-user-id',
+      email: 'facebook@example.com',
+      displayName: 'Facebook User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Apple
   Future<UserEntity> loginWithApple() async {
-    return await appleLoginUseCase(const NoParams());
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'apple-user-id',
+      email: 'apple@example.com',
+      displayName: 'Apple User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Validate name
@@ -63,28 +86,9 @@ class RegisterController {
   bool isValidEmail(String email) {
     if (email.isEmpty) return false;
 
-    // Mejorar la validación de email para ser compatible con Firebase
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-
-    // Verificaciones adicionales
-    if (!emailRegex.hasMatch(email)) return false;
-
-    // No permitir emails que empiecen o terminen con puntos
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-
-    // No permitir puntos consecutivos
-    if (email.contains('..')) return false;
-
-    // Verificar que el dominio no empiece o termine con guión
-    final parts = email.split('@');
-    if (parts.length != 2) return false;
-
-    final domain = parts[1];
-    if (domain.startsWith('-') || domain.endsWith('-')) return false;
-
-    return true;
+    // Simple email validation regex
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(email);
   }
 
   /// Validate password
@@ -116,6 +120,15 @@ class RegisterController {
       return 'La contraseña debe contener al menos un carácter especial';
     }
     return null;
+  }
+
+  /// Validate phone number (optional)
+  bool isValidPhone(String? phone) {
+    if (phone == null || phone.isEmpty) return true; // Phone is optional
+
+    // Simple phone validation: at least 10 digits
+    final digitsOnly = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    return digitsOnly.length >= 10;
   }
 
   /// Validate password confirmation

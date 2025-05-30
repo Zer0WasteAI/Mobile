@@ -1,0 +1,249 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
+import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/models/recognition_result.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/models/reference_image.dart';
+
+/// Implementation of RecognitionRepository using ZeroWasteAI backend
+class RecognitionRepositoryImpl implements RecognitionRepository {
+  final ApiService _apiService;
+
+  RecognitionRepositoryImpl({ApiService? apiService})
+    : _apiService = apiService ?? ApiService.instance;
+
+  @override
+  Future<RecognitionResultModel> recognizeFoods(List<String> imagePaths) async {
+    try {
+      final response = await _apiService.recognizeFoods(imagePaths);
+      return RecognitionResultModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Food recognition failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<RecognitionResultModel> recognizeIngredients(
+    List<String> imagePaths,
+  ) async {
+    try {
+      final response = await _apiService.recognizeIngredients(imagePaths);
+      return RecognitionResultModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Ingredient recognition failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<RecognitionResultModel> recognizeBatch(List<String> imagePaths) async {
+    try {
+      final response = await _apiService.recognizeBatch(imagePaths);
+      return RecognitionResultModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Batch recognition failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<ImageUploadResultModel> uploadImage({
+    required File imageFile,
+    required String itemName,
+    required String imageType,
+  }) async {
+    try {
+      final response = await _apiService.uploadImage(
+        imageFile: imageFile,
+        itemName: itemName,
+        imageType: imageType,
+      );
+      return ImageUploadResultModel.fromJson(response);
+    } catch (e) {
+      throw Exception('Image upload failed: ${_apiService.getErrorMessage(e)}');
+    }
+  }
+
+  @override
+  Future<List<SimilarImageModel>> searchSimilarImages(String itemName) async {
+    try {
+      final response = await _apiService.searchSimilarImages(itemName);
+      return response.map((data) => SimilarImageModel.fromJson(data)).toList();
+    } catch (e) {
+      throw Exception(
+        'Similar images search failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> assignImage(String itemName) async {
+    try {
+      return await _apiService.assignImage(itemName);
+    } catch (e) {
+      throw Exception(
+        'Image assignment failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  // Legacy methods - keeping for backward compatibility
+  @override
+  Future<RecognitionResult> recognizeFood(File imageFile) async {
+    try {
+      // Convert to the new format by uploading and then recognizing
+      final uploadResult = await uploadImage(
+        imageFile: imageFile,
+        itemName: 'uploaded_food',
+        imageType: 'food',
+      );
+
+      final recognitionResult = await recognizeFoods([
+        uploadResult.image.imagePath,
+      ]);
+
+      // Convert to legacy format
+      if (recognitionResult.recognizedItems.isNotEmpty) {
+        return RecognitionResult(
+          recognitionId: recognitionResult.recognitionId,
+          results:
+              recognitionResult.recognizedItems
+                  .map(
+                    (item) => FoodRecognitionItem(
+                      foodName: item.name,
+                      confidence: item.confidence,
+                    ),
+                  )
+                  .toList(),
+          processedImageUrl: uploadResult.image.imagePath,
+        );
+      } else {
+        throw Exception('No items recognized');
+      }
+    } catch (e) {
+      throw Exception('Food recognition failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<ReferenceImage> uploadReferenceImage(
+    File imageFile, {
+    String? label,
+    String? category,
+  }) async {
+    try {
+      // Create form data
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'reference_image.jpg',
+        ),
+        if (label != null) 'label': label,
+        if (category != null) 'category': category,
+      });
+
+      // Make API call
+      final response = await _apiService.uploadReferenceImage(formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ReferenceImage.fromJson(response.data);
+      }
+
+      throw Exception('Failed to upload reference image');
+    } catch (e) {
+      throw Exception(
+        'Error uploading reference image: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<List<ReferenceImage>> getReferenceImages({
+    String? category,
+    String? label,
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final response = await _apiService.getReferenceImages(
+        category,
+        label,
+        page,
+        perPage,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> items = response.data['items'];
+        return items.map((item) => ReferenceImage.fromJson(item)).toList();
+      }
+
+      throw Exception('Failed to get reference images');
+    } catch (e) {
+      throw Exception(
+        'Error getting reference images: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<ReferenceImage> getReferenceImage(String imageId) async {
+    try {
+      final response = await _apiService.getReferenceImage(imageId);
+
+      if (response.statusCode == 200) {
+        return ReferenceImage.fromJson(response.data);
+      }
+
+      throw Exception('Failed to get reference image');
+    } catch (e) {
+      throw Exception(
+        'Error getting reference image: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteReferenceImage(String imageId) async {
+    try {
+      final response = await _apiService.deleteReferenceImage(imageId);
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Failed to delete reference image');
+      }
+    } catch (e) {
+      throw Exception(
+        'Error deleting reference image: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<ReferenceImage> updateReferenceImage(
+    String imageId, {
+    String? label,
+    String? category,
+  }) async {
+    try {
+      final response = await _apiService.updateReferenceImage(
+        imageId,
+        label,
+        category,
+      );
+
+      if (response.statusCode == 200) {
+        return ReferenceImage.fromJson(response.data);
+      }
+
+      throw Exception('Failed to update reference image');
+    } catch (e) {
+      throw Exception(
+        'Error updating reference image: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+}

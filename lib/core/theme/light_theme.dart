@@ -62,8 +62,8 @@ class LightTheme {
         backgroundColor: AppColors.lightLabel,
         labelStyle: TextStyle(color: AppColors.lightMainText),
       ),
-      cardTheme: CardTheme(color: Colors.white),
-      dialogTheme: DialogTheme(
+      cardTheme: CardThemeData(color: Colors.white),
+      dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

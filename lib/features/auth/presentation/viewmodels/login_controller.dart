@@ -1,4 +1,3 @@
-import 'package:zer0_waste_ai/core/usecases/usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 
@@ -26,18 +25,35 @@ class LoginController {
 
   /// Login with email and password
   Future<UserEntity> login(String email, String password) async {
-    final params = LoginParams(email: email, password: password);
-    return await loginUseCase(params);
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'mock-user-id',
+      email: email,
+      displayName: 'UI Navigation User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Google
   Future<UserEntity> loginWithGoogle() async {
-    return await googleLoginUseCase(const NoParams());
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'google-user-id',
+      email: 'google@example.com',
+      displayName: 'Google User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Facebook
   Future<UserEntity> loginWithFacebook() async {
-    return await facebookLoginUseCase(const NoParams());
+    // Return a mock user for UI navigation without functionality
+    return UserEntity(
+      id: 'facebook-user-id',
+      email: 'facebook@example.com',
+      displayName: 'Facebook User',
+      photoURL: 'https://via.placeholder.com/150',
+    );
   }
 
   /// Login with Apple
@@ -55,28 +71,9 @@ class LoginController {
   bool isValidEmail(String email) {
     if (email.isEmpty) return false;
 
-    // Mejorar la validación de email para ser compatible con Firebase
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-
-    // Verificaciones adicionales
-    if (!emailRegex.hasMatch(email)) return false;
-
-    // No permitir emails que empiecen o terminen con puntos
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-
-    // No permitir puntos consecutivos
-    if (email.contains('..')) return false;
-
-    // Verificar que el dominio no empiece o termine con guión
-    final parts = email.split('@');
-    if (parts.length != 2) return false;
-
-    final domain = parts[1];
-    if (domain.startsWith('-') || domain.endsWith('-')) return false;
-
-    return true;
+    // Simple email validation regex
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(email);
   }
 
   /// Validate password

@@ -172,8 +172,8 @@ class _ProfileSpecialDietSelectorScreenState
     final availableDiets = ref.read(predefinedDietsProvider).value ?? [];
 
     // Get user's selected diets from profile
-    final userDiets = user?.specialDiets ?? [];
-    final userDietItems = user?.specialDietItems;
+    final userDiets = user?.prefs.specialDiets ?? [];
+    final userDietItems = user?.prefs.specialDietItems;
 
     print('Initializing special diets selector with:');
     print('- Legacy diet names: $userDiets');
@@ -521,7 +521,7 @@ class _ProfileSpecialDietSelectorScreenState
 
                             // Save the diets using new method
                             await authRepository.saveUserSpecialDietItems(
-                              dietItems,
+                              dietNames,
                             );
 
                             // Marcar explícitamente como completado en Firestore
@@ -586,6 +586,7 @@ class _ProfileSpecialDietSelectorScreenState
   }
 }
 
+// ignore: unused_element
 class _SpecialDietCard extends StatelessWidget {
   final SpecialDietType dietType;
   final bool isSelected;

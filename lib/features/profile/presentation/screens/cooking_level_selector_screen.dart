@@ -70,7 +70,7 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLevel = ref.watch(selectedCookingLevelProvider);
     final notifier = ref.read(selectedCookingLevelProvider.notifier);
-    final authController = ref.read(authControllerProvider.notifier);
+    final _ = ref.read(authControllerProvider.notifier);
 
     // Use Theme colors for consistent styling
     final theme = Theme.of(context);
@@ -209,7 +209,7 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
 
                               // Save cooking level to Firestore - now required selection
                               final cookingLevelString =
-                                  selectedLevel!.toStorageString();
+                                  selectedLevel.toStorageString();
 
                               print(
                                 "Guardando nivel de cocina: $cookingLevelString",

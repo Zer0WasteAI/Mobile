@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_preferences_model.dart';
 
 /// Authentication API interface
 abstract class AuthApi {
@@ -33,11 +35,13 @@ abstract class AuthApi {
   /// Send password reset email
   Future<void> sendPasswordResetEmail(String email);
 
+  /*
   /// Verify reset code
   Future<bool> verifyResetCode(String email, String code);
 
   /// Reset password with code
   Future<void> resetPassword(String email, String code, String newPassword);
+  */
 }
 
 /// Mock implementation of AuthApi
@@ -196,52 +200,59 @@ class MockAuthApi implements AuthApi {
     // Simulate network delay
     await Future.delayed(_delay);
 
-    // Validate email (simple validation for mock)
+    // Simple validation
     if (email.isEmpty || !email.contains('@')) {
-      throw Exception('Invalid email');
+      throw Exception('Invalid email for password reset');
     }
 
-    // Generate a 6-digit code
-    final code =
-        (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
+    // Generate a mock reset code (e.g., 6 digits)
+    final resetCode = List.generate(6, (_) => math.Random().nextInt(10)).join();
+    _resetCodes[email] = resetCode;
+    _verificationAttempts[email] = 0; // Reset attempts
 
-    // Store the code for this email
-    _resetCodes[email] = code;
-
-    // Reset verification attempts
-    _verificationAttempts[email] = 0;
-
-    // In a real implementation, this would send an email
-    debugPrint('Password reset code $code sent to $email');
+    // In a real scenario, an email would be sent here
+    if (kDebugMode) {
+      print(
+        'MockAuthApi: Password reset email sent to $email with code $resetCode',
+      );
+  }
   }
 
+  /*
   @override
   Future<bool> verifyResetCode(String email, String code) async {
     // Simulate network delay
     await Future.delayed(_delay);
 
-    // Validate email
-    if (email.isEmpty || !email.contains('@')) {
-      throw Exception('Invalid email');
+    // Check if email exists and attempts are not exhausted
+    if (!_resetCodes.containsKey(email) ||
+        (_verificationAttempts[email] ?? 0) >= 5) {
+      if (kDebugMode) {
+        print(
+          'MockAuthApi: No reset code for $email or too many attempts - attempts: ${_verificationAttempts[email]}',
+        );
+      }
+      throw Exception('Invalid or expired reset code, or too many attempts.');
     }
 
-    // Check if a reset code exists for this email
-    if (!_resetCodes.containsKey(email)) {
-      throw Exception('No reset code requested for this email');
+    // Validate code
+    if (_resetCodes[email] == code) {
+      if (kDebugMode) {
+        print('MockAuthApi: Reset code $code for $email verified successfully.');
+      }
+      _verificationAttempts[email] =
+          (_verificationAttempts[email] ?? 0) + 1; // Increment attempts
+      return true;
+    } else {
+      _verificationAttempts[email] =
+          (_verificationAttempts[email] ?? 0) + 1; // Increment attempts
+      if (kDebugMode) {
+        print(
+          'MockAuthApi: Invalid reset code $code for $email. Attempt ${_verificationAttempts[email]}',
+        );
     }
-
-    // Increment verification attempts
-    _verificationAttempts[email] = (_verificationAttempts[email] ?? 0) + 1;
-
-    // Check if too many attempts
-    if (_verificationAttempts[email]! > 3) {
-      // Clear the reset code after too many attempts
-      _resetCodes.remove(email);
-      throw Exception('Too many verification attempts');
+      return false;
     }
-
-    // Check if the code matches
-    return _resetCodes[email] == code;
   }
 
   @override
@@ -253,34 +264,28 @@ class MockAuthApi implements AuthApi {
     // Simulate network delay
     await Future.delayed(_delay);
 
-    // Validate email
-    if (email.isEmpty || !email.contains('@')) {
-      throw Exception('Invalid email');
-    }
-
-    // Validate new password
-    if (newPassword.length < 6) {
-      throw Exception('Password must be at least 6 characters');
-    }
-
-    // Check if a reset code exists for this email
-    if (!_resetCodes.containsKey(email)) {
-      throw Exception('No reset code requested for this email');
-    }
-
-    // Verify the code first
+    // Validate code (in a real scenario, this might involve a server check)
     final isCodeValid = await verifyResetCode(email, code);
     if (!isCodeValid) {
-      throw Exception('Invalid reset code');
+      throw Exception('Invalid or expired reset code for password reset.');
     }
 
-    // Reset successful, clear the reset code
+    // Validate new password (simple validation for mock)
+    if (newPassword.length < 6) {
+      throw Exception('New password must be at least 6 characters long.');
+    }
+
+    // In a real scenario, the password would be updated here
+    if (kDebugMode) {
+      print(
+        'MockAuthApi: Password for $email reset successfully with new password: $newPassword',
+      );
+    }
+    // Clear the reset code after successful reset
     _resetCodes.remove(email);
     _verificationAttempts.remove(email);
-
-    // In a real implementation, this would update the user's password
-    debugPrint('Password reset successful for $email');
   }
+  */
 }
 
 /// Extension methods for UserModel
@@ -291,22 +296,35 @@ extension UserModelExtension on UserModel {
     String? email,
     String? displayName,
     String? photoURL,
+    String? phone,
+    bool? emailVerified,
+    List<String>? favoriteRecipes,
+    UserPreferencesModel? prefs,
+    bool? initialPreferencesCompleted,
+    DateTime? createdAt,
+    DateTime? lastLoginAt,
+    bool? needsAdditionalInfo,
+    String? providerId,
+    String? accessToken,
+    String? refreshToken,
   }) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       photoURL: photoURL ?? this.photoURL,
-      emailVerified: emailVerified,
-      favoriteRecipes: favoriteRecipes,
-      allergies: allergies,
-      cookingLevel: cookingLevel,
-      preferredFoodTypes: preferredFoodTypes,
-      initialPreferencesCompleted: initialPreferencesCompleted,
-      createdAt: createdAt,
-      lastLoginAt: lastLoginAt,
-      needsAdditionalInfo: needsAdditionalInfo,
-      providerId: providerId,
+      phone: phone ?? this.phone,
+      emailVerified: emailVerified ?? this.emailVerified,
+      favoriteRecipes: favoriteRecipes ?? this.favoriteRecipes,
+      prefs: prefs ?? this.prefs,
+      initialPreferencesCompleted:
+          initialPreferencesCompleted ?? this.initialPreferencesCompleted,
+      createdAt: createdAt ?? this.createdAt,
+      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+      needsAdditionalInfo: needsAdditionalInfo ?? this.needsAdditionalInfo,
+      providerId: providerId ?? this.providerId,
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
     );
   }
 }

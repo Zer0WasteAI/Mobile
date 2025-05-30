@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:zer0_waste_ai/features/auth/data/mappers/user_mapper.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
+import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
-import 'dart:io' show Platform;
-import 'dart:math' as math;
 
 /// Implementation of AuthRepository
 class AuthRepositoryImpl implements AuthRepository {
@@ -36,7 +36,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-      return await _getUserModelFromFirebaseUser(userCredential.user!);
+      return _getUserModelFromFirebaseUser(userCredential.user!);
     } catch (e) {
       throw Exception('Failed to sign in: ${e.toString()}');
     }
@@ -49,68 +49,17 @@ class AuthRepositoryImpl implements AuthRepository {
     String displayName,
   ) async {
     try {
-      // Verificar con Firebase Auth si hay métodos de inicio de sesión asociados
-      final signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(
-        email,
-      );
-
-      // If we find sign-in methods, this email is already registered
-      if (signInMethods.isNotEmpty) {
-        if (signInMethods.contains('email')) {
-          throw Exception(
-            'Este correo ya está registrado con Email. Por favor, inicia sesión o usa la opción de recuperar contraseña.',
-          );
-        } else {
-          final provider = signInMethods.first;
-          throw Exception(
-            'Este correo ya está registrado con ${_getProviderName(provider)}. '
-            'Por favor, inicia sesión usando ese método.',
-          );
-        }
-      }
-
-      // Create the user if not already registered
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       await userCredential.user?.updateDisplayName(displayName);
+      await _createUserInFirestore(userCredential.user!, displayName);
 
-      // Skip verification email - user is automatically verified
-      // Instead of sending verification email, mark as verified in Firestore
-
-      await _createUserInFirestore(
-        userCredential.user!,
-        displayName,
-        authProvider: 'email',
-        emailVerified: true, // Mark as verified in Firestore
-      );
-
-      // Create a UserModel with emailVerified set to true
-      return UserModel(
-        id: userCredential.user!.uid,
-        email: email,
-        displayName: displayName,
-        photoURL: userCredential.user!.photoURL,
-        emailVerified: true, // Mark as verified in model
-        providerId: 'email',
-        allergies: [],
-        specialDiets: [],
-        cookingLevel: null,
-        preferredFoodTypes: [],
-        initialPreferencesCompleted: false,
-        language: 'es',
-        measurementUnit: 'metric',
-      );
+      return _getUserModelFromFirebaseUser(userCredential.user!);
     } catch (e) {
-      // Handle specific Firebase auth errors
-      if (e.toString().contains('email-already-in-use')) {
-        throw Exception(
-          'Este correo ya está registrado. Por favor, inicia sesión o usa la opción de recuperar contraseña.',
-        );
-      }
-      throw Exception('Error al registrarse: ${e.toString()}');
+      throw Exception('Failed to sign up: ${e.toString()}');
     }
   }
 
@@ -130,38 +79,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final userCredential = await _firebaseAuth.signInWithCredential(
         credential,
       );
-
-      // Extract additional data from Google account
-      final additionalData = {
-        'googleId': googleUser.id,
-        'googlePhotoUrl': googleUser.photoUrl,
-        'googleEmail': googleUser.email,
-        // Add any other relevant Google data you want to store
-      };
-
-      // Verificar si el usuario tiene un documento en Firestore
-      final userDoc =
-          await _firestore
-              .collection('users')
-              .doc(userCredential.user!.uid)
-              .get();
-
-      if (!userDoc.exists) {
-        print(
-          'Creando documento para usuario de Google: ${userCredential.user!.uid}',
-        );
-        await _createUserInFirestore(
-          userCredential.user!,
-          googleUser.displayName,
-          authProvider: 'google.com',
-          additionalData: additionalData,
-        );
-      } else {
-        print(
-          'Documento de usuario Google encontrado: ${userCredential.user!.uid}',
-        );
-      }
-      return await _getUserModelFromFirebaseUser(userCredential.user!);
+      await _createUserInFirestore(
+        userCredential.user!,
+        googleUser.displayName,
+      );
+      return _getUserModelFromFirebaseUser(userCredential.user!);
     } catch (e) {
       throw Exception('Failed to sign in with Google: ${e.toString()}');
     }
@@ -185,244 +107,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final userCredential = await _firebaseAuth.signInWithCredential(
         oauthCredential,
       );
-
-      // Construir el nombre completo si está disponible
-      String? fullName;
-      if (appleCredential.givenName != null ||
-          appleCredential.familyName != null) {
-        fullName = [
-          appleCredential.givenName,
-          appleCredential.familyName,
-        ].where((name) => name != null).join(' ');
-        fullName = fullName.isNotEmpty ? fullName : null;
-      }
-
-      // Extraer datos adicionales de Apple
-      final additionalData = <String, dynamic>{};
-      if (appleCredential.email != null) {
-        additionalData['appleEmail'] = appleCredential.email;
-      }
-      if (appleCredential.givenName != null) {
-        additionalData['appleGivenName'] = appleCredential.givenName;
-      }
-      if (appleCredential.familyName != null) {
-        additionalData['appleFamilyName'] = appleCredential.familyName;
-      }
-
-      // Verificar si necesitamos solicitar información adicional al usuario
-      // Apple puede ocultar nombre y email si el usuario selecciona "Hide My Email"
-      bool needsAdditionalInfo =
-          (fullName == null || fullName.isEmpty) ||
-          (appleCredential.email == null || appleCredential.email!.isEmpty);
-
-      // También verificar el usuario actual
-      if (userCredential.user?.displayName == null ||
-          userCredential.user?.email == null) {
-        needsAdditionalInfo = true;
-      }
-
-      // Verificar si el usuario tiene un documento en Firestore
-      final userDoc =
-          await _firestore
-              .collection('users')
-              .doc(userCredential.user!.uid)
-              .get();
-
-      // Si el usuario necesita información adicional, retornar con bandera
-      if (needsAdditionalInfo) {
-        // Si no existe documento en Firestore, lo creamos con datos parciales
-        if (!userDoc.exists) {
-          print(
-            'Creando documento parcial para usuario de Apple: ${userCredential.user!.uid}',
-          );
-          await _createUserInFirestore(
-            userCredential.user!,
-            fullName ?? appleCredential.givenName,
-            authProvider: 'apple.com',
-            additionalData: additionalData.isNotEmpty ? additionalData : null,
-          );
-        } else {
-          print(
-            'Documento de usuario Apple encontrado, pero necesita información adicional',
-          );
-        }
-
-        // Aquí agregamos una función de devolución de llamada que debe ser implementada por el caller
-        // Ya que no podemos mostrar un diálogo directamente desde el repositorio
-        return UserModel(
-          id: userCredential.user!.uid,
-          email: userCredential.user!.email ?? '',
-          displayName: userCredential.user!.displayName,
-          photoURL: userCredential.user!.photoURL,
-          emailVerified: userCredential.user!.emailVerified,
-          // Añadimos una bandera para indicar que necesitamos información adicional
-          needsAdditionalInfo: true,
-          // Establecer el providerId a 'apple.com'
-          providerId: 'apple.com',
-          // Default values for new fields
-          allergies: [],
-          cookingLevel: null,
-          preferredFoodTypes: [],
-          initialPreferencesCompleted: false,
-          // Default values for language and measurement units
-          language: 'es',
-          measurementUnit: 'metric',
-        );
-      }
-
-      // Si no existe el documento y no necesita información adicional, lo creamos
-      if (!userDoc.exists) {
-        print(
-          'Creando documento para usuario de Apple: ${userCredential.user!.uid}',
-        );
-        await _createUserInFirestore(
-          userCredential.user!,
-          fullName ?? appleCredential.givenName,
-          authProvider: 'apple.com',
-          additionalData: additionalData.isNotEmpty ? additionalData : null,
-        );
-
-        // Si es un nuevo usuario, marcamos explícitamente que no ha completado preferencias
-        print(
-          'Nuevo usuario de Apple - garantizando que sea dirigido al selector de preferencias',
-        );
-        return UserModel(
-          id: userCredential.user!.uid,
-          email: userCredential.user!.email ?? '',
-          displayName: userCredential.user!.displayName ?? fullName,
-          photoURL: userCredential.user!.photoURL,
-          emailVerified: userCredential.user!.emailVerified,
-          // Establecer el providerId a 'apple.com'
-          providerId: 'apple.com',
-          // Sin preferencias completadas
-          allergies: [],
-          cookingLevel: null,
-          preferredFoodTypes: [],
-          initialPreferencesCompleted: false,
-          // Default values for language and measurement units
-          language: 'es',
-          measurementUnit: 'metric',
-        );
-      } else {
-        print(
-          'Documento de usuario Apple encontrado: ${userCredential.user!.uid}',
-        );
-
-        // Verificar explícitamente si ha completado las preferencias iniciales
-        final userData = userDoc.data()!;
-        bool hasCompletedPrefs =
-            userData != null &&
-            userData['initialPreferencesCompleted'] == true &&
-            userData.containsKey('allergies') &&
-            userData.containsKey('cookingLevel') &&
-            userData.containsKey('preferredFoodTypes');
-
-        print(
-          'Usuario Apple existente - estado de preferencias: ${hasCompletedPrefs ? "COMPLETADO" : "NO COMPLETADO"}',
-        );
-
-        // Forzar verificación de Firestore, no confiar en los datos de Firebase Auth
-        if (!hasCompletedPrefs) {
-          print(
-            'Usuario Apple NO tiene preferencias completas - redirigiendo al flujo de preferencias',
-          );
-          return UserModel(
-            id: userCredential.user!.uid,
-            email: userCredential.user!.email ?? userData['email'] ?? '',
-            displayName:
-                userCredential.user!.displayName ?? userData['displayName'],
-            photoURL: userCredential.user!.photoURL ?? userData['photoURL'],
-            emailVerified: userCredential.user!.emailVerified,
-            providerId: 'apple.com',
-            // Sin preferencias completadas
-            allergies: [],
-            cookingLevel: null,
-            preferredFoodTypes: [],
-            initialPreferencesCompleted: false,
-            // Default values for language and measurement units
-            language: 'es',
-            measurementUnit: 'metric',
-          );
-        }
-
-        // Si faltan campos de preferencias, marcar como no completado
-        if (!userData.containsKey('allergies') ||
-            !userData.containsKey('cookingLevel') ||
-            !userData.containsKey('preferredFoodTypes')) {
-          hasCompletedPrefs = false;
-        }
-
-        // Obtener idioma y unidades de medida
-        final String language = userData['language'] as String? ?? 'es';
-        final String measurementUnit =
-            userData['measurementUnit'] as String? ?? 'metric';
-
-        return UserModel(
-          id: userCredential.user!.uid,
-          email:
-              userData['email'] as String? ?? userCredential.user!.email ?? '',
-          displayName:
-              userData['displayName'] as String? ??
-              userCredential.user!.displayName,
-          photoURL:
-              userData['photoURL'] as String? ?? userCredential.user!.photoURL,
-          emailVerified:
-              userData['emailVerified'] as bool? ??
-              userCredential.user!.emailVerified,
-          providerId: userData['authProvider'] as String? ?? 'apple.com',
-          // Otros campos específicos de Firestore
-          favoriteRecipes:
-              (userData['favoriteRecipes'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          // Campos de preferencias de usuario
-          allergies:
-              (userData['allergies'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          allergyItems:
-              (userData['allergyItems'] as List<dynamic>?)
-                  ?.map((e) => e as Map<String, dynamic>)
-                  .toList() ??
-              [],
-          specialDiets:
-              (userData['specialDiets'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          specialDietItems:
-              (userData['specialDietItems'] as List<dynamic>?)
-                  ?.map((e) => e as Map<String, dynamic>)
-                  .toList() ??
-              [],
-          cookingLevel: userData['cookingLevel'] as String?,
-          preferredFoodTypes:
-              (userData['preferredFoodTypes'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          preferredFoodTypeItems:
-              (userData['preferredFoodTypeItems'] as List<dynamic>?)
-                  ?.map((e) => e as Map<String, dynamic>)
-                  .toList() ??
-              [],
-          initialPreferencesCompleted: hasCompletedPrefs,
-          // Idioma y unidades de medida
-          language: language,
-          measurementUnit: measurementUnit,
-          // Otros campos
-          createdAt:
-              userData['createdAt'] != null
-                  ? (userData['createdAt'] as Timestamp).toDate()
-                  : null,
-          lastLoginAt:
-              userData['lastLoginAt'] != null
-                  ? (userData['lastLoginAt'] as Timestamp).toDate()
-                  : null,
-        );
-      }
+      await _createUserInFirestore(
+        userCredential.user!,
+        appleCredential.givenName,
+      );
+      return _getUserModelFromFirebaseUser(userCredential.user!);
     } catch (e) {
       throw Exception('Failed to sign in with Apple: ${e.toString()}');
     }
@@ -431,44 +120,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserModel> signInWithFacebook() async {
     try {
-      // Para iOS usaremos Limited Login que no requiere App Tracking Transparency
-      // Solo solicitamos el permiso si estamos en otro sistema operativo que lo necesite
-      if (Platform.isIOS) {
-        print('Configurando Limited Login para iOS...');
-      } else if (Platform.isAndroid) {
-        // En Android podríamos solicitar permisos específicos si fueran necesarios
-        print('Configurando login estándar para Android...');
-      }
-
       // Intento de login con Facebook
       print('Iniciando login con Facebook...');
-
-      // Generar un nonce aleatorio para la autenticación (requerido para Limited Login)
-      String generateNonce([int length = 32]) {
-        const charset =
-            '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
-        final random = math.Random.secure();
-        return List.generate(
-          length,
-          (_) => charset[random.nextInt(charset.length)],
-        ).join();
-      }
-
-      final nonce = generateNonce();
-
-      // Configuración para iniciar sesión con Facebook
       final LoginResult result = await _facebookAuth.login(
         permissions: ['email', 'public_profile'],
-        loginBehavior:
-            Platform.isIOS
-                ? LoginBehavior
-                    .dialogOnly // Usar dialogOnly para iOS
-                : LoginBehavior.nativeWithFallback,
-        // Usar LoginTracking.limited para iOS para cumplir con las restricciones de iOS
-        loginTracking:
-            Platform.isIOS ? LoginTracking.limited : LoginTracking.enabled,
-        // Pasar nonce para iOS (requerido para Limited Login)
-        nonce: nonce,
       );
 
       // Log del estado de resultado
@@ -493,176 +148,33 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       print('Login Facebook exitoso, token obtenido');
-      print('Tipo de token: ${result.accessToken!.type}');
-      print('Token string de tipo: ${result.accessToken.runtimeType}');
-
-      // Obtener info del usuario mientras tenemos token válido
-      final userData = await _facebookAuth.getUserData();
-      print('Datos de usuario Facebook obtenidos: ${userData['name']}');
+      print('Token string: ${result.accessToken!.tokenString}');
 
       // Get credential using the access token string
       try {
-        print('Token string: ${result.accessToken!.tokenString}');
-        print('Token type: ${result.accessToken!.type}');
-
-        // En caso de Limited Login, esto sería un AuthenticationToken en vez de AccessToken
         final OAuthCredential credential = FacebookAuthProvider.credential(
           result.accessToken!.tokenString,
         );
 
-        print('Credencial creada: $credential');
         print(
           'Credencial Facebook creada, intentando autenticación en Firebase...',
         );
+        final userCredential = await _firebaseAuth.signInWithCredential(
+          credential,
+        );
 
-        try {
-          final userCredential = await _firebaseAuth.signInWithCredential(
-            credential,
-          );
+        print('Autenticación Firebase exitosa, obteniendo datos de usuario...');
+        final userData = await _facebookAuth.getUserData();
+        print('Datos de usuario obtenidos: ${userData['name']}');
 
-          print(
-            'Autenticación Firebase exitosa, procesando datos de usuario...',
-          );
+        await _createUserInFirestore(
+          userCredential.user!,
+          userData['name'] as String,
+        );
 
-          // Extraer datos adicionales del usuario de Facebook
-          final additionalData = <String, dynamic>{};
-          if (userData.containsKey('id')) {
-            additionalData['facebookId'] = userData['id'];
-          }
-          if (userData.containsKey('email')) {
-            additionalData['facebookEmail'] = userData['email'];
-          }
-          if (userData.containsKey('picture') &&
-              userData['picture'] is Map &&
-              userData['picture']['data'] is Map &&
-              userData['picture']['data']['url'] is String) {
-            additionalData['facebookPictureUrl'] =
-                userData['picture']['data']['url'];
-          }
-
-          // Puedes extraer más campos según lo que necesites
-          ['birthday', 'gender', 'location'].forEach((field) {
-            if (userData.containsKey(field)) {
-              additionalData['facebook${field.substring(0, 1).toUpperCase()}${field.substring(1)}'] =
-                  userData[field];
-            }
-          });
-
-          // Verificar si el usuario tiene un documento en Firestore
-          final userDoc =
-              await _firestore
-                  .collection('users')
-                  .doc(userCredential.user!.uid)
-                  .get();
-
-          if (!userDoc.exists) {
-            print(
-              'Creando documento para usuario de Facebook: ${userCredential.user!.uid}',
-            );
-            await _createUserInFirestore(
-              userCredential.user!,
-              userData['name'] as String? ??
-                  userCredential.user!.displayName ??
-                  'Usuario de Facebook',
-              authProvider: 'facebook.com',
-              additionalData: additionalData.isNotEmpty ? additionalData : null,
-            );
-          } else {
-            print(
-              'Documento de usuario Facebook encontrado: ${userCredential.user!.uid}',
-            );
-          }
-          return await _getUserModelFromFirebaseUser(userCredential.user!);
-        } catch (firebaseError) {
-          print('Error de autenticación Firebase DETALLADO: $firebaseError');
-          print('Tipo de error: ${firebaseError.runtimeType}');
-
-          // Intentar una ruta alternativa de autenticación si el primer método falla
-          if (firebaseError.toString().contains('Bad signature') ||
-              firebaseError.toString().contains('invalid-credential')) {
-            try {
-              print('Intentando ruta alternativa de autenticación...');
-              // Obtener detalles del usuario de Facebook para crear un nuevo credential
-              final email = userData['email'];
-
-              if (email != null && email.toString().isNotEmpty) {
-                print(
-                  'Usando email de Facebook para autenticación alternativa: $email',
-                );
-
-                // Verificar si el usuario ya existe
-                try {
-                  final methods = await _firebaseAuth
-                      .fetchSignInMethodsForEmail(email.toString());
-                  print('Métodos de login disponibles: $methods');
-
-                  if (methods.contains('facebook.com')) {
-                    // El usuario ya existe, intentar login con otro método
-                    print(
-                      'Usuario ya existe con Facebook, reintentando conexión',
-                    );
-
-                    // Intentar autenticar por email si es que facebook.com está entre los métodos
-                    print('Intentando crear una sesión alternativa...');
-
-                    // Actualizar la credencial y reintentar
-                    final newCredential = FacebookAuthProvider.credential(
-                      result.accessToken!.tokenString,
-                    );
-
-                    // Intentar el inicio de sesión nuevamente
-                    final userCredential = await _firebaseAuth
-                        .signInWithCredential(newCredential);
-
-                    await _createUserInFirestore(
-                      userCredential.user!,
-                      userData['name'] as String? ?? 'Usuario de Facebook',
-                      authProvider: 'facebook.com',
-                      additionalData: {'facebookId': userData['id']},
-                    );
-
-                    return await _getUserModelFromFirebaseUser(
-                      userCredential.user!,
-                    );
-                  } else {
-                    // Si el email existe pero no con facebook, podría ser otro método
-                    print(
-                      'El email existe, pero no con Facebook. Métodos disponibles: $methods',
-                    );
-                  }
-                } catch (methodError) {
-                  print('Error al verificar métodos de inicio: $methodError');
-                }
-              } else {
-                print(
-                  'No se pudo obtener email del usuario de Facebook para autenticación alternativa',
-                );
-              }
-            } catch (alternativeError) {
-              print('Error en ruta alternativa: $alternativeError');
-            }
-
-            print('Detectado error de firma inválida o credencial inválida');
-
-            // Limpiar sesiones
-            await _facebookAuth.logOut();
-            try {
-              await _firebaseAuth.signOut();
-            } catch (e) {
-              // Ignorar error de logout
-            }
-
-            // Mostrar un mensaje más amigable
-            throw Exception(
-              'Error de autenticación con Facebook. Por favor, intenta con otro método de inicio de sesión o contacta a soporte.',
-            );
-          }
-
-          await _facebookAuth.logOut(); // Limpiar estado en caso de error
-          throw Exception('Error al autenticar con Firebase: $firebaseError');
-        }
+        return _getUserModelFromFirebaseUser(userCredential.user!);
       } catch (firebaseError) {
-        print('Error en el proceso de autenticación: $firebaseError');
+        print('Error de autenticación Firebase: $firebaseError');
         await _facebookAuth.logOut(); // Limpiar estado en caso de error
         throw Exception('Error al autenticar con Firebase: $firebaseError');
       }
@@ -679,17 +191,7 @@ class AuthRepositoryImpl implements AuthRepository {
         print('Error al hacer logout de Facebook: $logoutError');
       }
 
-      // Personalizar mensaje para el usuario final
-      if (e.toString().contains('Bad signature') ||
-          e.toString().contains('invalid-credential')) {
-        throw Exception(
-          'Error de autenticación con Facebook. Por favor, intenta con otro método de inicio de sesión o contacta a soporte.',
-        );
-      }
-
-      throw Exception(
-        'No se pudo iniciar sesión con Facebook: ${e.toString()}',
-      );
+      throw Exception('Failed to sign in with Facebook: ${e.toString()}');
     }
   }
 
@@ -705,31 +207,13 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   UserModel? get currentUser {
     final user = _firebaseAuth.currentUser;
-    if (user == null) return null;
-
-    // Como este método debe ser síncrono (getter), no podemos usar await para obtener datos de Firestore
-    // Usamos solo los datos disponibles de Firebase Auth
-    String providerId = 'email';
-    if (user.providerData.isNotEmpty) {
-      providerId = user.providerData[0].providerId;
-    }
-
-    return UserModel(
-      id: user.uid,
-      email: user.email ?? '',
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      emailVerified: true, // Always return verified email
-      providerId: providerId,
-    );
+    return user != null ? _getUserModelFromFirebaseUser(user) : null;
   }
 
   @override
   Stream<UserModel?> get authStateChanges {
-    return _firebaseAuth.authStateChanges().asyncMap((user) async {
-      if (user == null) return null;
-      // Usar asyncMap para poder usar await dentro del map
-      return await _getUserModelFromFirebaseUser(user);
+    return _firebaseAuth.authStateChanges().map((user) {
+      return user != null ? _getUserModelFromFirebaseUser(user) : null;
     });
   }
 
@@ -815,457 +299,19 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  /// Check if this is the user's first login
-  @override
-  Future<bool> isFirstTimeUser(String userId) async {
-    try {
-      print('Checking if user $userId is first time user...');
-
-      // Check if the user has completed initial preferences setup
-      final userDoc = await _firestore.collection('users').doc(userId).get();
-
-      if (!userDoc.exists) {
-        print('isFirstTimeUser: User document does not exist, is first time');
-        return true; // If user document doesn't exist, it's first login
-      }
-
-      // Check if the user has completed initial preferences
-      final userData = userDoc.data();
-      if (userData == null) {
-        print('isFirstTimeUser: User data is null, treating as first time');
-        return true;
-      }
-
-      // Check if initialPreferencesCompleted flag is explicitly set to true
-      final bool preferencesCompleted =
-          userData['initialPreferencesCompleted'] == true;
-
-      // Check if required preference fields exist
-      final bool hasAllFields =
-          userData.containsKey('allergies') &&
-          userData.containsKey('cookingLevel') &&
-          userData.containsKey('preferredFoodTypes');
-
-      print('isFirstTimeUser check:');
-      print(' - preferencesCompleted flag: $preferencesCompleted');
-      print(' - has all required fields: $hasAllFields');
-
-      // User is not first-time only if all conditions are met
-      final bool isFirstTime = !(preferencesCompleted && hasAllFields);
-      print('isFirstTimeUser result: $isFirstTime');
-
-      return isFirstTime;
-    } catch (e) {
-      // If there's an error, assume it's the first time to be safe
-      print('Error checking first time user: ${e.toString()}');
-      return true;
-    }
-  }
-
-  /// Mark user as having completed onboarding
-  @override
-  Future<void> markOnboardingCompleted(String userId) async {
-    try {
-      await _firestore.collection('users').doc(userId).update({
-        'completedOnboarding': true,
-      });
-    } catch (e) {
-      print('Error marking onboarding as completed: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> sendVerificationEmail() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null && !user.emailVerified) {
-        await user.sendEmailVerification();
-      }
-    } catch (e) {
-      throw Exception(
-        'Error al enviar correo de verificación: ${e.toString()}',
-      );
-    }
-  }
-
-  @override
-  Future<bool> isEmailVerified() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user == null) return false;
-
-      return true; // Always return verified email
-    } catch (e) {
-      throw Exception('Error al verificar estado del correo: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> reloadUser() async {
-    try {
-      await _firebaseAuth.currentUser?.reload();
-    } catch (e) {
-      print('Error reloading user: ${e.toString()}');
-    }
-  }
-
-  /// Save user allergies
-  @override
-  Future<void> saveUserAllergies(List<String> allergies) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'allergies': allergies,
-        });
-      }
-    } catch (e) {
-      print('Error saving allergies: ${e.toString()}');
-      throw Exception('Failed to save allergies: ${e.toString()}');
-    }
-  }
-
-  /// Save user special diets
-  @override
-  Future<void> saveUserSpecialDiets(List<String> specialDiets) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'specialDiets': specialDiets,
-        });
-      }
-    } catch (e) {
-      print('Error saving special diets: ${e.toString()}');
-      throw Exception('Failed to save special diets: ${e.toString()}');
-    }
-  }
-
-  /// Save user cooking level
-  @override
-  Future<void> saveUserCookingLevel(String cookingLevel) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'cookingLevel': cookingLevel,
-        });
-      }
-    } catch (e) {
-      print('Error saving cooking level: ${e.toString()}');
-      throw Exception('Failed to save cooking level: ${e.toString()}');
-    }
-  }
-
-  /// Save user preferred food types
-  @override
-  Future<void> saveUserPreferredFoodTypes(List<String> foodTypes) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'preferredFoodTypes': foodTypes,
-        });
-      }
-    } catch (e) {
-      print('Error saving preferred food types: ${e.toString()}');
-      throw Exception('Failed to save preferred food types: ${e.toString()}');
-    }
-  }
-
-  /// Mark user initial preferences as completed
-  @override
-  Future<void> markInitialPreferencesCompleted() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        // Verificar si el documento del usuario existe y obtener datos actuales
-        final userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
-        if (!userDoc.exists) {
-          print(
-            'markInitialPreferencesCompleted: User document does not exist, cannot mark preferences as completed',
-          );
-          throw Exception('User document does not exist');
-        }
-
-        final userData = userDoc.data();
-        final currentValue = userData?['initialPreferencesCompleted'] ?? false;
-
-        print(
-          'markInitialPreferencesCompleted: Actualizando preferencias completadas de $currentValue a true',
-        );
-
-        // Verificar si ya tenemos las demás preferencias necesarias
-        final hasAllergies = userData?.containsKey('allergies') ?? false;
-        final hasCookingLevel = userData?.containsKey('cookingLevel') ?? false;
-        final hasPreferredFoodTypes =
-            userData?.containsKey('preferredFoodTypes') ?? false;
-
-        if (!hasAllergies || !hasCookingLevel || !hasPreferredFoodTypes) {
-          print(
-            'ADVERTENCIA: Se están marcando las preferencias como completadas pero faltan algunos datos:',
-          );
-          print(' - Alergias: $hasAllergies');
-          print(' - Nivel de cocina: $hasCookingLevel');
-          print(' - Tipos de comida preferidos: $hasPreferredFoodTypes');
-        }
-
-        // Actualizar el campo en Firestore
-        await _firestore.collection('users').doc(user.uid).update({
-          'initialPreferencesCompleted': true,
-        });
-
-        print(
-          'markInitialPreferencesCompleted: Preferencias marcadas como completadas exitosamente en Firestore',
-        );
-
-        // SOLUCIÓN: Esperar un poco para que la escritura se propague y luego
-        // invalidar los providers usando una callback global si está disponible
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        // Llamar a callback global para invalidar providers si está definido
-        _triggerProviderRefresh();
-      } else {
-        print(
-          'markInitialPreferencesCompleted: No hay usuario actual, no se pueden marcar las preferencias',
-        );
-        throw Exception('No current user found');
-      }
-    } catch (e) {
-      print('Error marking initial preferences as completed: ${e.toString()}');
-      throw Exception(
-        'Failed to mark initial preferences as completed: ${e.toString()}',
-      );
-    }
-  }
-
-  /// Callback global para invalidar providers - se puede setear desde la aplicación
-  static void Function()? _globalProviderRefreshCallback;
-
-  /// Getter para acceder al callback global desde otros archivos
-  static void Function()? get globalProviderRefreshCallback =>
-      _globalProviderRefreshCallback;
-
-  /// Establecer callback para refrescar providers
-  static void setProviderRefreshCallback(void Function() callback) {
-    _globalProviderRefreshCallback = callback;
-  }
-
-  /// Trigger provider refresh usando callback global
-  void _triggerProviderRefresh() {
-    if (_globalProviderRefreshCallback != null) {
-      print('🔄 Triggering global provider refresh after Firestore update');
-      _globalProviderRefreshCallback!();
-    } else {
-      print(
-        '⚠️ No global provider refresh callback set - providers will update on next read',
-      );
-    }
-  }
-
-  /// Check if user has completed initial preferences
-  @override
-  Future<bool> hasCompletedInitialPreferences() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user == null) {
-        print('hasCompletedInitialPreferences: No current user found');
-        return false;
-      }
-
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-      if (!userDoc.exists) {
-        print('hasCompletedInitialPreferences: User document does not exist');
-        return false;
-      }
-
-      final userData = userDoc.data();
-      if (userData == null) {
-        print('hasCompletedInitialPreferences: User data is null');
-        return false;
-      }
-
-      // Check if the flag is explicitly set to true
-      final bool isMarkedComplete =
-          userData['initialPreferencesCompleted'] == true;
-
-      // Verify that all required preference fields exist
-      final hasAllergies = userData.containsKey('allergies');
-      final hasCookingLevel = userData.containsKey('cookingLevel');
-      final hasPreferredFoodTypes = userData.containsKey('preferredFoodTypes');
-
-      // For debugging, print the state of each field
-      print('hasCompletedInitialPreferences check:');
-      print(' - isMarkedComplete: $isMarkedComplete');
-      print(' - hasAllergies: $hasAllergies');
-      print(' - hasCookingLevel: $hasCookingLevel');
-      print(' - hasPreferredFoodTypes: $hasPreferredFoodTypes');
-
-      // If any required field is missing, consider preferences as incomplete
-      if (!isMarkedComplete ||
-          !hasAllergies ||
-          !hasCookingLevel ||
-          !hasPreferredFoodTypes) {
-        print(
-          'hasCompletedInitialPreferences: Some preference fields are missing or flag not set',
-        );
-        return false;
-      }
-
-      print(
-        'hasCompletedInitialPreferences: All preference fields exist and flag is set',
-      );
-      return true;
-    } catch (e) {
-      print('Error checking initial preferences completion: ${e.toString()}');
-      return false;
-    }
-  }
-
-  /// Save user allergies as objects with custom flag
-  @override
-  Future<void> saveUserAllergyItems(
-    List<Map<String, dynamic>> allergyItems,
-  ) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'allergyItems': allergyItems,
-          // Keep the legacy field updated too for backward compatibility
-          'allergies':
-              allergyItems.map((item) => item['name'] as String).toList(),
-        });
-      }
-    } catch (e) {
-      print('Error saving allergy items: ${e.toString()}');
-      throw Exception('Failed to save allergy items: ${e.toString()}');
-    }
-  }
-
-  /// Save user special diets as objects with custom flag
-  @override
-  Future<void> saveUserSpecialDietItems(
-    List<Map<String, dynamic>> dietItems,
-  ) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'specialDietItems': dietItems,
-          // Keep the legacy field updated too for backward compatibility
-          'specialDiets':
-              dietItems.map((item) => item['name'] as String).toList(),
-        });
-      }
-    } catch (e) {
-      print('Error saving special diet items: ${e.toString()}');
-      throw Exception('Failed to save special diet items: ${e.toString()}');
-    }
-  }
-
-  /// Save user preferred food types as objects with custom flag
-  @override
-  Future<void> saveUserPreferredFoodTypeItems(
-    List<Map<String, dynamic>> foodTypeItems,
-  ) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'preferredFoodTypeItems': foodTypeItems,
-          // Keep the legacy field updated too for backward compatibility
-          'preferredFoodTypes':
-              foodTypeItems.map((item) => item['name'] as String).toList(),
-        });
-      }
-    } catch (e) {
-      print('Error saving preferred food type items: ${e.toString()}');
-      throw Exception(
-        'Failed to save preferred food type items: ${e.toString()}',
-      );
-    }
-  }
-
-  /// Save user preferred language
-  @override
-  Future<void> saveUserLanguage(String language) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'language': language,
-        });
-        print('Idioma guardado en Firestore: $language');
-      }
-    } catch (e) {
-      print('Error al guardar idioma: ${e.toString()}');
-      throw Exception('Error al guardar idioma: ${e.toString()}');
-    }
-  }
-
-  /// Save user measurement unit preferences
-  @override
-  Future<void> saveUserMeasurementUnit(String measurementUnit) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'measurementUnit': measurementUnit,
-        });
-        print('Unidad de medida guardada en Firestore: $measurementUnit');
-      }
-    } catch (e) {
-      print('Error al guardar unidad de medida: ${e.toString()}');
-      throw Exception('Error al guardar unidad de medida: ${e.toString()}');
-    }
-  }
-
-  Future<void> _createUserInFirestore(
-    User user,
-    String? displayName, {
-    String? authProvider,
-    Map<String, dynamic>? additionalData,
-    bool? emailVerified,
-  }) async {
+  Future<void> _createUserInFirestore(User user, String? displayName) async {
     final userDoc = _firestore.collection('users').doc(user.uid);
-
-    // Check if this is the first login
-    final docSnapshot = await userDoc.get();
-    final isFirstLogin = !docSnapshot.exists;
-
-    // Base user data
     final userData = {
       'id': user.uid,
       'email': user.email,
       'displayName': displayName ?? user.displayName,
       'photoURL': user.photoURL,
-      'emailVerified': emailVerified ?? user.emailVerified,
+      'phone': user.phoneNumber,
+      'emailVerified': user.emailVerified,
+      'favoriteRecipes': <String>[],
+      'createdAt': FieldValue.serverTimestamp(),
       'lastLoginAt': FieldValue.serverTimestamp(),
     };
-
-    // For first time login, add these fields
-    if (isFirstLogin) {
-      userData['favoriteRecipes'] = <String>[];
-      userData['createdAt'] = FieldValue.serverTimestamp();
-
-      // Add default language and measurement unit preferences
-      userData['language'] = 'es';
-      userData['measurementUnit'] = 'metric';
-
-      // Add authentication provider information
-      if (authProvider != null) {
-        userData['authProvider'] = authProvider;
-      } else if (user.providerData.isNotEmpty) {
-        userData['authProvider'] = user.providerData[0].providerId;
-      }
-
-      // Add any additional data provided by the social login
-      if (additionalData != null && additionalData.isNotEmpty) {
-        userData.addAll(additionalData);
-      }
-    }
 
     await userDoc.set(userData, SetOptions(merge: true));
   }
@@ -1283,386 +329,150 @@ class AuthRepositoryImpl implements AuthRepository {
     await _firestore.collection('users').doc(uid).update(updates);
   }
 
-  Future<UserModel> _getUserModelFromFirebaseUser(User user) async {
-    // Determinar el providerId a partir de los providerData
-    String providerId = 'email';
-    if (user.providerData.isNotEmpty) {
-      providerId = user.providerData[0].providerId;
-    }
-
-    try {
-      // Intentar obtener los datos del usuario desde Firestore primero
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-
-      if (userDoc.exists) {
-        // Si el documento existe, usamos esos datos
-        final userData = userDoc.data()!;
-
-        // Verificar explícitamente el valor de initialPreferencesCompleted
-        bool hasCompletedPreferences = false;
-        if (userData.containsKey('initialPreferencesCompleted')) {
-          hasCompletedPreferences =
-              userData['initialPreferencesCompleted'] == true;
-        }
-
-        // Verificar que los campos de preferencias existan
-        final List<String> allergies =
-            (userData['allergies'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> allergyItems =
-            (userData['allergyItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        final String? cookingLevel = userData['cookingLevel'] as String?;
-
-        final List<String> preferredFoodTypes =
-            (userData['preferredFoodTypes'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> preferredFoodTypeItems =
-            (userData['preferredFoodTypeItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        final List<String> specialDiets =
-            (userData['specialDiets'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> specialDietItems =
-            (userData['specialDietItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        // Obtener idioma y unidades de medida
-        final String language = userData['language'] as String? ?? 'es';
-        final String measurementUnit =
-            userData['measurementUnit'] as String? ?? 'metric';
-
-        // Print debug information about special diets
-        print('User Firestore data debug:');
-        print(' - specialDiets: $specialDiets');
-        print(' - specialDietItems: $specialDietItems');
-        print(' - language: $language');
-        print(' - measurementUnit: $measurementUnit');
-
-        // Si faltan campos de preferencias, marcar como no completado
-        if (!userData.containsKey('allergies') ||
-            !userData.containsKey('cookingLevel') ||
-            !userData.containsKey('preferredFoodTypes')) {
-          hasCompletedPreferences = false;
-        }
-
-        return UserModel(
-          id: user.uid,
-          email: userData['email'] as String? ?? user.email ?? '',
-          displayName: userData['displayName'] as String? ?? user.displayName,
-          photoURL: userData['photoURL'] as String? ?? user.photoURL,
-          emailVerified: true, // Always return verified email
-          providerId: userData['authProvider'] as String? ?? providerId,
-          // Otros campos específicos de Firestore
-          favoriteRecipes:
-              (userData['favoriteRecipes'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          // Campos de preferencias de usuario
-          allergies: allergies,
-          allergyItems: allergyItems,
-          specialDiets: specialDiets,
-          specialDietItems: specialDietItems,
-          cookingLevel: cookingLevel,
-          preferredFoodTypes: preferredFoodTypes,
-          preferredFoodTypeItems: preferredFoodTypeItems,
-          initialPreferencesCompleted: hasCompletedPreferences,
-          // Campos de idioma y unidades de medida
-          language: language,
-          measurementUnit: measurementUnit,
-          // Otros campos
-          createdAt:
-              userData['createdAt'] != null
-                  ? (userData['createdAt'] as Timestamp).toDate()
-                  : null,
-          lastLoginAt:
-              userData['lastLoginAt'] != null
-                  ? (userData['lastLoginAt'] as Timestamp).toDate()
-                  : null,
-        );
-      }
-    } catch (e) {
-      print('Error al obtener datos del usuario desde Firestore: $e');
-      // Si hay un error, continuamos con los datos de Firebase Auth
-    }
-
-    // Si no hay documento en Firestore o hubo un error, usamos los datos de Firebase Auth
-    // También intentamos crear el documento en Firestore de forma asíncrona
-    _verifyUserDocumentExists(user, providerId);
-
+  UserModel _getUserModelFromFirebaseUser(User user) {
     return UserModel(
       id: user.uid,
       email: user.email ?? '',
       displayName: user.displayName,
       photoURL: user.photoURL,
-      emailVerified: true, // Always return verified email
-      providerId: providerId,
-      // Ensure default values for new fields are set properly
-      allergies: [],
-      allergyItems: [],
-      specialDiets: [],
-      specialDietItems: [],
-      cookingLevel: null,
-      preferredFoodTypes: [],
-      preferredFoodTypeItems: [],
-      initialPreferencesCompleted: false,
-      // Default values for language and measurement units
-      language: 'es',
-      measurementUnit: 'metric',
+      phone: user.phoneNumber,
+      emailVerified: user.emailVerified,
     );
   }
 
-  // Método para verificar y crear el documento del usuario si no existe
-  Future<void> _verifyUserDocumentExists(User user, String providerId) async {
-    try {
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-
-      // Si el documento no existe, crearlo
-      if (!userDoc.exists) {
-        print('Documento de usuario no encontrado. Creando uno nuevo...');
-
-        String? displayName = user.displayName;
-        // Para algunos proveedores, podríamos querer extraer más información
-        Map<String, dynamic>? additionalData;
-
-        if (providerId == 'google.com') {
-          additionalData = {'googleId': user.uid, 'googleEmail': user.email};
-        } else if (providerId == 'facebook.com') {
-          additionalData = {
-            'facebookId': user.uid,
-            'facebookEmail': user.email,
-          };
-        } else if (providerId == 'apple.com') {
-          additionalData = {'appleId': user.uid, 'appleEmail': user.email};
-        }
-
-        // Crear el documento del usuario
-        await _createUserInFirestore(
-          user,
-          displayName,
-          authProvider: providerId,
-          additionalData: additionalData,
-          emailVerified: true, // Mark as verified for all new users
-        );
-
-        print('Documento creado exitosamente para el usuario: ${user.uid}');
-      } else {
-        print('Documento del usuario encontrado: ${user.uid}');
-      }
-    } catch (e) {
-      print('Error al verificar/crear documento del usuario: $e');
-      // No lanzamos el error para que no interrumpa el flujo de autenticación
-    }
-  }
-
-  // Añadimos un método específico para actualizar la información del usuario después de sign-in con Apple
+  // User preference methods implementation
   @override
-  Future<UserModel> updateUserAfterAppleSignIn(
-    String displayName,
-    String email,
-  ) async {
+  Future<void> saveUserCookingLevel(String cookingLevel) async {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        // Actualizar perfil en Firebase Auth
-        await user.updateDisplayName(displayName);
-
-        // Si no tiene email, intentar actualizar (puede no ser posible si el auth provider no lo permite)
-        if (user.email == null || user.email!.isEmpty) {
-          try {
-            await user.updateEmail(email);
-          } catch (e) {
-            print('No se pudo actualizar el email en Firebase Auth: $e');
-            // Continuamos de todas formas, al menos lo guardaremos en Firestore
-          }
-        }
-
-        // Actualizar en Firestore con toda la información necesaria
-        await _firestore.collection('users').doc(user.uid).set({
-          'displayName': displayName,
-          'email': email,
-          'updatedAt': FieldValue.serverTimestamp(),
-          'needsAdditionalInfo':
-              false, // Importante: marcar que ya no necesita información adicional
-        }, SetOptions(merge: true));
-
-        // Recargar usuario para obtener cambios
-        await user.reload();
-        return await _getUserModelFromFirebaseUser(user);
-      } else {
-        throw Exception('No hay usuario autenticado para actualizar');
+        await _firestore.collection('users').doc(user.uid).update({
+          'cookingLevel': cookingLevel,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
       }
     } catch (e) {
-      throw Exception(
-        'Error al actualizar información de usuario: ${e.toString()}',
-      );
-    }
-  }
-
-  // Método auxiliar para obtener un nombre amigable del proveedor
-  String _getProviderName(String providerId) {
-    switch (providerId) {
-      case 'google.com':
-        return 'Google';
-      case 'facebook.com':
-        return 'Facebook';
-      case 'apple.com':
-        return 'Apple';
-      case 'email':
-      case 'password':
-        return 'Email y Contraseña';
-      default:
-        return 'otro método';
+      throw Exception('Failed to save cooking level: ${e.toString()}');
     }
   }
 
   @override
-  Future<UserModel?> getCurrentUserWithFirestore() async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) return null;
-
+  Future<void> saveUserLanguage(String language) async {
     try {
-      // Obtener datos directamente de Firestore (Source.SERVER) para evitar la caché
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .get(
-            GetOptions(source: Source.server),
-          ); // Forzar obtener desde el servidor
-
-      if (userDoc.exists) {
-        print(
-          'Datos de usuario obtenidos directamente del servidor de Firestore',
-        );
-
-        // Determinar el providerId a partir de los providerData
-        String providerId = 'email';
-        if (user.providerData.isNotEmpty) {
-          providerId = user.providerData[0].providerId;
-        }
-
-        final userData = userDoc.data()!;
-
-        // Verificar explícitamente el valor de initialPreferencesCompleted
-        bool hasCompletedPreferences = false;
-        if (userData.containsKey('initialPreferencesCompleted')) {
-          hasCompletedPreferences =
-              userData['initialPreferencesCompleted'] == true;
-        }
-
-        // Extraer campos de preferencias
-        final List<String> allergies =
-            (userData['allergies'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> allergyItems =
-            (userData['allergyItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        final String? cookingLevel = userData['cookingLevel'] as String?;
-
-        final List<String> preferredFoodTypes =
-            (userData['preferredFoodTypes'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> preferredFoodTypeItems =
-            (userData['preferredFoodTypeItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        final List<String> specialDiets =
-            (userData['specialDiets'] as List<dynamic>?)
-                ?.map((e) => e as String)
-                .toList() ??
-            [];
-
-        final List<Map<String, dynamic>> specialDietItems =
-            (userData['specialDietItems'] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
-            [];
-
-        // Log de los datos para debug
-        print('DATOS DESDE SERVIDOR:');
-        print(' - cookingLevel: $cookingLevel');
-        print(' - preferredFoodTypes: $preferredFoodTypes');
-        print(' - allergies: $allergies');
-        print(' - specialDiets: $specialDiets');
-
-        return UserModel(
-          id: user.uid,
-          email: userData['email'] as String? ?? user.email ?? '',
-          displayName: userData['displayName'] as String? ?? user.displayName,
-          photoURL: userData['photoURL'] as String? ?? user.photoURL,
-          emailVerified: true, // Always return verified email
-          providerId: userData['authProvider'] as String? ?? providerId,
-          // Campos de preferencias
-          allergies: allergies,
-          allergyItems: allergyItems,
-          specialDiets: specialDiets,
-          specialDietItems: specialDietItems,
-          cookingLevel: cookingLevel,
-          preferredFoodTypes: preferredFoodTypes,
-          preferredFoodTypeItems: preferredFoodTypeItems,
-          initialPreferencesCompleted: hasCompletedPreferences,
-          // Idioma y unidades de medida
-          language: userData['language'] as String? ?? 'es',
-          measurementUnit: userData['measurementUnit'] as String? ?? 'metric',
-          // Otros campos
-          favoriteRecipes:
-              (userData['favoriteRecipes'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
-          createdAt:
-              userData['createdAt'] != null
-                  ? (userData['createdAt'] as Timestamp).toDate()
-                  : null,
-          lastLoginAt:
-              userData['lastLoginAt'] != null
-                  ? (userData['lastLoginAt'] as Timestamp).toDate()
-                  : null,
-        );
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'language': language,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
       }
     } catch (e) {
-      print(
-        'Error al obtener datos del usuario desde el servidor de Firestore: $e',
-      );
-      // En caso de error (como sin conexión), intentar con la caché
-      try {
-        print('Intentando con caché como fallback...');
-        return await _getUserModelFromFirebaseUser(user);
-      } catch (cacheError) {
-        print('Error al usar caché: $cacheError');
-      }
+      throw Exception('Failed to save language: ${e.toString()}');
     }
+  }
 
-    // Si todo falla, usar el método estándar
-    return await _getUserModelFromFirebaseUser(user);
+  @override
+  Future<void> saveUserPreferredFoodTypes(List<String> foodTypes) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'preferredFoodTypes': foodTypes,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to save preferred food types: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveUserAllergyItems(List<String> allergyItems) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'allergyItems': allergyItems,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to save allergy items: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveUserSpecialDietItems(List<String> specialDietItems) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'specialDietItems': specialDietItems,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to save special diet items: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveUserMeasurementUnit(String measurementUnit) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'measurementUnit': measurementUnit,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to save measurement unit: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> markInitialPreferencesCompleted() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'initialPreferencesCompleted': true,
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to mark preferences completed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> refreshUserFromFirestore() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Force refresh the user data from Firestore
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          // The user data will be automatically updated through listeners
+          print('User data refreshed from Firestore');
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to refresh user from Firestore: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> refreshApplicationTokens() async {
+    try {
+      // This would implement token refresh logic with your backend
+      // For now, it's a placeholder implementation
+      print('Refreshing application tokens...');
+      // TODO: Implement actual token refresh logic
+    } catch (e) {
+      throw Exception('Failed to refresh tokens: ${e.toString()}');
+    }
   }
 }

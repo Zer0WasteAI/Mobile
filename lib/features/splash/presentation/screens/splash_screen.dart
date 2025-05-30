@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/providers/splash_provider.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/viewmodels/splash_controller.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart';
 import 'dart:async';
 
 /// Splash screen
@@ -18,8 +16,7 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   // Animation controllers
   late AnimationController _controller;
   late AnimationController _pulseController;
@@ -31,14 +28,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   // Animation flags
   bool _showText = false;
   bool _showLoading = false;
-
-  // Navigation flags
-  bool _hasNavigated = false;
-  bool _isTimeoutOccurred = false;
-
-  // Failsafe timer
-  Timer? _failsafeTimer;
-  Timer? _hardTimeoutTimer;
 
   @override
   void initState() {
@@ -82,7 +71,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     // Pulse animation (subtle scale effect)
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      CurvedAnimation(
+        parent: _pulseController,
+        curve: Curves.easeInOut,
+      ),
     );
 
     // Start main animation
@@ -108,88 +100,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         });
       }
     });
-
-    // Wait for animations and then check auth state directly
-    Timer(const Duration(milliseconds: 2000), () {
-      _checkAuthAndNavigate();
-    });
-
-    // Hard timeout - in case navigation gets stuck
-    _hardTimeoutTimer = Timer(const Duration(milliseconds: 3000), () {
-      print(
-        '🚨 [SplashScreen] Hard timeout triggered! Navigation may be stuck.',
-      );
-      if (mounted && !_hasNavigated) {
-        setState(() {
-          _isTimeoutOccurred = true;
-        });
-        _forceNavigate();
-      }
-    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _pulseController.dispose();
-    _failsafeTimer?.cancel();
-    _hardTimeoutTimer?.cancel();
     super.dispose();
-  }
-
-  void _checkAuthAndNavigate() {
-    if (_hasNavigated || !mounted) return;
-
-    print('🔍 [SplashScreen] Checking auth state to determine navigation...');
-
-    final authState = ref.read(authControllerProvider);
-    final splashController = ref.read(splashControllerProvider);
-
-    // Use a post-frame callback to ensure any state changes are processed
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // First check if onboarding has been seen
-      if (!splashController.onboardingSeen) {
-        _navigateTo('/onboarding');
-        return;
-      }
-
-      // Then check auth state
-      if (authState.hasValue && authState.value != null) {
-        print(
-          '🔐 [SplashScreen] User authenticated, navigating to transition screen',
-        );
-        _navigateTo(AuthTransitionScreen.routePath);
-      } else {
-        print('🔓 [SplashScreen] User not authenticated, navigating to login');
-        _navigateTo('/login');
-      }
-    });
-  }
-
-  void _navigateTo(String route) {
-    if (_hasNavigated || !mounted) return;
-
-    _hasNavigated = true;
-    print('🚀 [SplashScreen] Navigating to: $route');
-
-    try {
-      // Use replace instead of go to completely remove splash from history
-      context.replace(route);
-    } catch (e) {
-      print('❌ [SplashScreen] Navigation error: $e');
-      _forceNavigate();
-    }
-  }
-
-  void _forceNavigate() {
-    if (!mounted) return;
-
-    try {
-      // Always try to go to login as a fallback
-      context.replace('/login');
-    } catch (e) {
-      print('❌ [SplashScreen] Force navigation error: $e');
-    }
   }
 
   @override
@@ -197,7 +114,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // Removed ref.listen for splash state to prevent multiple navigation triggers
+    // Listen to splash state changes
+    ref.listen<SplashState>(
+      splashControllerProvider,
+      (previous, current) {
+        // Navigate based on onboarding status when splash is completed
+        if (current.status == SplashStatus.completed) {
+          if (current.onboardingSeen) {
+            // If onboarding has been seen, go to login
+            context.go('/login');
+          } else {
+            // If onboarding has not been seen, go to onboarding
+            context.go('/onboarding');
+          }
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: colorScheme.primary,
@@ -213,119 +145,84 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         ),
         child: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Animated logo with initial scale and continuous pulse
-                    AnimatedBuilder(
-                      animation: Listenable.merge([
-                        _controller,
-                        _pulseController,
-                      ]),
-                      builder: (context, child) {
-                        // Apply both the initial scale animation and the continuous pulse animation
-                        return Transform.scale(
-                          scale:
-                              _logoAnimation.value *
-                              (_showText ? _pulseAnimation.value : 1.0),
-                          child: child,
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Animated logo with initial scale and continuous pulse
+                AnimatedBuilder(
+                  animation: Listenable.merge([_controller, _pulseController]),
+                  builder: (context, child) {
+                    // Apply both the initial scale animation and the continuous pulse animation
+                    return Transform.scale(
+                      scale: _logoAnimation.value * (_showText ? _pulseAnimation.value : 1.0),
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
-                        child: Image.asset(
-                          'assets/images/splash/splash_image.png',
-                          width: 220,
-                          height: 220,
-                        ),
-                      ),
+                      ],
                     ),
-
-                    const SizedBox(height: 40),
-
-                    // Animated subtitle
-                    AnimatedOpacity(
-                      opacity: _showText ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 500),
-                      child: Text(
-                        'Smart food, zero waste',
-                        style: textTheme.headlineSmall?.copyWith(
-                          color: colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 5,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 60),
-
-                    // Animated loading spinner
-                    AnimatedOpacity(
-                      opacity: _showLoading ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 500),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            colorScheme.onPrimary,
-                          ),
-                          strokeWidth: 3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Mostrar mensaje de timeout si ocurre
-              if (_isTimeoutOccurred)
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Redirigiendo... Por favor espere',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
+                    child: Image.asset(
+                      'assets/images/splash/splash_image.png',
+                      width: 220,
+                      height: 220,
                     ),
                   ),
                 ),
-            ],
+
+                const SizedBox(height: 40),
+
+                // Animated subtitle
+                AnimatedOpacity(
+                  opacity: _showText ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 500),
+                  child: Text(
+                    'Smart food, zero waste',
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 60),
+
+                // Animated loading spinner
+                AnimatedOpacity(
+                  opacity: _showLoading ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 500),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

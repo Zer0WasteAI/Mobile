@@ -74,7 +74,7 @@ final selectedAllergiesProviderWithPersistence = StateNotifierProvider<
   List<Allergy>
 >((ref) {
   // Load allergies from auth state (will be empty initially)
-  final user = ref.read(authStateProvider).value;
+  final _ = ref.read(authStateProvider).value;
   final List<Allergy> initialAllergies = [];
 
   // We'll initialize with an empty list and update after loading allergies from provider
@@ -191,7 +191,7 @@ class _ProfileAllergySelectorScreenState
     final availableAllergies = ref.read(allergiesProvider).value ?? [];
 
     // Get user's selected allergies from profile
-    final userAllergies = user?.allergies ?? [];
+    final userAllergies = user?.prefs.allergies ?? [];
 
     // Initialize the selected allergies
     ref
@@ -566,7 +566,7 @@ class _ProfileAllergySelectorScreenState
 
                                 // Save to Firestore using new method
                                 await authRepository.saveUserAllergyItems(
-                                  allergyItems,
+                                  allergyNames,
                                 );
 
                                 // Marcar explícitamente como completado en Firestore

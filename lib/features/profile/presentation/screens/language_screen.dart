@@ -9,7 +9,7 @@ import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.
 final selectedLanguageProvider = StateProvider<String>((ref) {
   // Inicializar con el valor del usuario actual si existe
   final user = ref.watch(authControllerProvider).value;
-  return user?.language ?? 'es';
+  return user?.prefs.language ?? 'es';
 });
 
 class LanguageScreen extends ConsumerWidget {

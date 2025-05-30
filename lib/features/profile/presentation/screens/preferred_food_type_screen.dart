@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,10 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/food_types_provider.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/selected_food_types_provider.dart';
-import 'package:zer0_waste_ai/features/profile/domain/models/food_type.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // --- Screen Widget ---
@@ -54,8 +51,8 @@ class _PreferredFoodTypeScreenState
     final availableFoodTypes = ref.read(foodTypesProvider).value ?? [];
 
     // Get user's selected food types from profile
-    final userFoodTypes = user?.preferredFoodTypes ?? [];
-    final userFoodTypeItems = user?.preferredFoodTypeItems;
+    final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
+    final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
     print('Initializing food types selector with:');
     print('- Legacy food type names: $userFoodTypes');

@@ -12,7 +12,7 @@ enum MeasurementUnit { metric, imperial }
 final selectedUnitProvider = StateProvider<MeasurementUnit>((ref) {
   // Inicializar con el valor del usuario actual si existe
   final user = ref.watch(authControllerProvider).value;
-  final measurementUnit = user?.measurementUnit ?? 'metric';
+  final measurementUnit = user?.prefs.measurementUnit ?? 'metric';
 
   print('Loading measurement unit from user data: $measurementUnit');
 
@@ -36,7 +36,7 @@ class UnitsScreen extends ConsumerWidget {
 
     // Log the current user's measurement unit setting
     print(
-      'Current user measurement unit in Firestore: ${user?.measurementUnit}',
+      'Current user measurement unit in Firestore: ${user?.prefs.measurementUnit}',
     );
     print('Current selected unit in UI: $selectedUnit');
 
@@ -138,7 +138,7 @@ class UnitsScreen extends ConsumerWidget {
                     // Verify the user was updated
                     final updatedUser = ref.read(authControllerProvider).value;
                     print(
-                      'Updated user measurement unit: ${updatedUser?.measurementUnit}',
+                      'Updated user measurement unit: ${updatedUser?.prefs.measurementUnit}',
                     );
 
                     // Mostrar mensaje de éxito y volver
