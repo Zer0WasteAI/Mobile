@@ -3,9 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:zer0_waste_ai/features/auth/data/mappers/user_mapper.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
-import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 
 /// Implementation of AuthRepository

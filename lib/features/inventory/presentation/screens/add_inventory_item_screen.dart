@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:flutter/services.dart'; // Import for InputFormatters
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart'; // Importar para InventorySortCriteria
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
@@ -12,7 +11,6 @@ import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart'
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart'; // Importar ExpirationStatus
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 
 class AddInventoryItemScreen extends ConsumerStatefulWidget {
   const AddInventoryItemScreen({super.key});
@@ -153,6 +151,7 @@ class _AddInventoryItemScreenState
     final Color chipUnselectedTextColor = secondaryTextColor;
     final Color chipUnselectedBorderColor =
         isDark ? AppColors.darkOutline : Colors.grey.shade300;
+    // ignore: unused_local_variable
     final Color snackbarColor = primaryColor;
     // ------------------------- //
 

@@ -15,6 +15,7 @@ class RegisterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch register state
+    // ignore: unused_local_variable
     final registerAsync = ref.watch(registerNotifierProvider);
 
     // Get theme data

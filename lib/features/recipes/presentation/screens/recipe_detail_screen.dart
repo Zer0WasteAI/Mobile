@@ -6,7 +6,6 @@ import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooki
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_rating_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> recipe;
@@ -173,7 +172,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.arrow_back, color: Colors.white),
@@ -185,7 +184,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -309,7 +308,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }) {
     return Chip(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-      backgroundColor: color.withOpacity(0.1),
+      backgroundColor: color.withValues(alpha: 0.1),
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -338,7 +337,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       description,
       style: GoogleFonts.inter(
         fontSize: 16,
-        color: textColor.withOpacity(0.8),
+        color: textColor.withValues(alpha: 0.8),
         height: 1.5,
       ),
     );
@@ -398,7 +397,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -415,7 +414,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -454,8 +453,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                           decoration: BoxDecoration(
                             color:
                                 isAvailable
-                                    ? Colors.green.withOpacity(0.1)
-                                    : Colors.red.withOpacity(0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.red.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -491,7 +490,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -591,7 +590,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: secondaryColor.withOpacity(0.1),
+              color: secondaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -611,7 +610,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               step,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: textColor.withOpacity(0.8),
+                color: textColor.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),
@@ -661,7 +660,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     note,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: textColor.withOpacity(0.8),
+                      color: textColor.withValues(alpha: 0.8),
                       height: 1.4,
                     ),
                   ),
@@ -706,7 +705,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     'Ahorras 0.8 kg CO₂ y 150 L de agua usando tus ingredientes.',
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      color: textColor.withOpacity(0.7),
+                      color: textColor.withValues(alpha: 0.7),
                       height: 1.4,
                     ),
                   ),
@@ -724,6 +723,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     bool isDark,
     Color primaryColor,
   ) {
+    // ignore: unused_local_variable
     final bool usesExpiringItems = widget.recipe['usesExpiringItems'] ?? false;
 
     // Contar ingredientes disponibles
@@ -741,7 +741,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               offset: const Offset(0, -4),
               blurRadius: 8,
             ),

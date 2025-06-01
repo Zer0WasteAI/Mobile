@@ -6,11 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zer0_waste_ai/core/local_storage/hive_config.dart';
 import 'package:zer0_waste_ai/core/local_storage/shared_prefs_helper.dart';
 import 'package:zer0_waste_ai/core/navigation/app_router.dart';
-import 'package:zer0_waste_ai/core/networking/auth_interceptor.dart';
+import 'package:zer0_waste_ai/core/network/auth_interceptor.dart';
 import 'package:zer0_waste_ai/core/theme/theme.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/login_provider.dart'
     as login;
-import 'package:zer0_waste_ai/features/auth/presentation/providers/register_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/forgot_password_provider.dart';
 import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 import 'package:zer0_waste_ai/features/onboarding/presentation/viewmodels/onboarding_controller.dart';

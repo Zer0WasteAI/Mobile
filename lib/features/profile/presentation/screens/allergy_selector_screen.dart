@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart'; // Import the shared dialog
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart'; // Import the shared chip
 import 'package:zer0_waste_ai/features/profile/application/providers/allergies_provider.dart';
-import 'package:zer0_waste_ai/features/profile/domain/models/allergy.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
@@ -60,6 +59,7 @@ class AllergySelectorScreen extends ConsumerWidget {
     // Use Theme colors for consistency
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    // ignore: unused_local_variable
     final bool isDarkMode = theme.brightness == Brightness.dark;
 
     // Define colors based on theme (adjust as needed)

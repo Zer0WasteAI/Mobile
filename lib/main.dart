@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:zer0_waste_ai/core/theme/theme.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:zer0_waste_ai/injection_container.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
