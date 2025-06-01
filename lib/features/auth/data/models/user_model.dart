@@ -64,8 +64,8 @@ abstract class UserModel with _$UserModel {
       emailVerified:
           backendUser['email_verified'] as bool? ?? firebaseEmailVerified,
       providerId: firebaseProviderId ?? 'unknown',
-      accessToken: backendSignInResponse['accessToken'] as String?,
-      refreshToken: backendSignInResponse['refreshToken'] as String?,
+      accessToken: backendSignInResponse['access_token'] as String?,
+      refreshToken: backendSignInResponse['refresh_token'] as String?,
       prefs: const UserPreferencesModel(),
       createdAt:
           backendUser['createdAt'] != null

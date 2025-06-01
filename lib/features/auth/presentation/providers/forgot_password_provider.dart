@@ -132,7 +132,7 @@ class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
 
   Future<void> resendCode() async {
     if (state.resendTimer == 0) {
-      await sendResetCode();
+    await sendResetCode();
     }
   }
 

@@ -16,7 +16,10 @@ class ApiService {
   static const String _authFirebaseSignIn = '/auth/firebase-signin';
   static const String _authRefresh = '/auth/refresh';
   static const String _authLogout = '/auth/logout';
-  static const String _profileMe = '/profile/me';
+
+  // Updated profile endpoints to match real API
+  static const String _userProfile = '/user/profile';
+
   static const String _recognitionFoods = '/recognition/foods';
   static const String _recognitionIngredients = '/recognition/ingredients';
   static const String _recognitionBatch = '/recognition/batch';
@@ -31,6 +34,22 @@ class ApiService {
   static const String _referenceImageGet = '/reference-images';
   static const String _referenceImageDelete = '/reference-images';
   static const String _referenceImageUpdate = '/reference-images';
+
+  // NEW: Inventory Management endpoints
+  static const String _inventoryItems = '/inventory';
+  static const String _inventoryIngredients = '/inventory/ingredients';
+  static const String _inventoryExpiring = '/inventory/expiring';
+
+  // NEW: Recipe Management endpoints
+  static const String _recipesGenerateFromInventory =
+      '/recipes/generate-from-inventory';
+  static const String _recipesGenerateCustom = '/recipes/generate-custom';
+  static const String _recipesSave = '/recipes/save';
+  static const String _recipesSaved = '/recipes/saved';
+
+  // NEW: Admin endpoints
+  static const String _adminUsers = '/admin/users';
+  static const String _adminSyncImages = '/admin/sync_images';
 
   // Secure Storage Keys
   static const String _accessTokenKey = 'access_token';
@@ -215,7 +234,7 @@ class ApiService {
   // Profile Management
   Future<Map<String, dynamic>> getProfile() async {
     try {
-      final response = await _dio.get(_profileMe);
+      final response = await _dio.get(_userProfile);
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Get profile error: ${e.toString()}');
@@ -226,7 +245,7 @@ class ApiService {
     Map<String, dynamic> profileData,
   ) async {
     try {
-      final response = await _dio.put(_profileMe, data: profileData);
+      final response = await _dio.put(_userProfile, data: profileData);
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Update profile error: ${e.toString()}');
@@ -395,6 +414,149 @@ class ApiService {
       return response;
     } catch (e) {
       throw Exception('Reference image update error: ${e.toString()}');
+    }
+  }
+
+  // NEW: Inventory Management
+  /// Add ingredients to inventory
+  Future<Map<String, dynamic>> addIngredients(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _inventoryIngredients,
+        data: {'ingredients': ingredients},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Add ingredients error: ${e.toString()}');
+    }
+  }
+
+  /// Get full inventory
+  Future<Map<String, dynamic>> getInventory() async {
+    try {
+      final response = await _dio.get(_inventoryItems);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get inventory error: ${e.toString()}');
+    }
+  }
+
+  /// Update specific ingredient
+  Future<Map<String, dynamic>> updateIngredient(
+    String name,
+    String addedAt,
+    Map<String, dynamic> updateData,
+  ) async {
+    try {
+      final response = await _dio.put(
+        '$_inventoryIngredients/$name/$addedAt',
+        data: updateData,
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update ingredient error: ${e.toString()}');
+    }
+  }
+
+  /// Delete specific ingredient
+  Future<Map<String, dynamic>> deleteIngredient(
+    String name,
+    String addedAt,
+  ) async {
+    try {
+      final response = await _dio.delete(
+        '$_inventoryIngredients/$name/$addedAt',
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Delete ingredient error: ${e.toString()}');
+    }
+  }
+
+  /// Get items expiring in N days
+  Future<Map<String, dynamic>> getExpiringItems(int days) async {
+    try {
+      final response = await _dio.get('$_inventoryExpiring?days=$days');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get expiring items error: ${e.toString()}');
+    }
+  }
+
+  // NEW: Recipe Management
+  /// Generate recipes from current inventory
+  Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
+    try {
+      final response = await _dio.post(_recipesGenerateFromInventory, data: {});
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Generate recipes from inventory error: ${e.toString()}');
+    }
+  }
+
+  /// Generate custom recipes with specific ingredients
+  Future<List<Map<String, dynamic>>> generateCustomRecipes({
+    required List<String> ingredients,
+    List<String>? preferences,
+    int numRecipes = 2,
+  }) async {
+    try {
+      final response = await _dio.post(
+        _recipesGenerateCustom,
+        data: {
+          'ingredients': ingredients,
+          if (preferences != null) 'preferences': preferences,
+          'num_recipes': numRecipes,
+        },
+      );
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Generate custom recipes error: ${e.toString()}');
+    }
+  }
+
+  /// Save a recipe to favorites
+  Future<Map<String, dynamic>> saveRecipe(
+    Map<String, dynamic> recipeData,
+  ) async {
+    try {
+      final response = await _dio.post(_recipesSave, data: recipeData);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Save recipe error: ${e.toString()}');
+    }
+  }
+
+  /// Get all saved recipes
+  Future<Map<String, dynamic>> getSavedRecipes() async {
+    try {
+      final response = await _dio.get(_recipesSaved);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get saved recipes error: ${e.toString()}');
+    }
+  }
+
+  // NEW: Admin endpoints
+  /// Get all users (admin only)
+  Future<Map<String, dynamic>> getUsers() async {
+    try {
+      final response = await _dio.get(_adminUsers);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get users error: ${e.toString()}');
+    }
+  }
+
+  /// Sync reference images (admin only)
+  Future<Map<String, dynamic>> syncImages() async {
+    try {
+      final response = await _dio.post(_adminSyncImages);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Sync images error: ${e.toString()}');
     }
   }
 

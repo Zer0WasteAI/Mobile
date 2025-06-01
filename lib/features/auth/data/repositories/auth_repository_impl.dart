@@ -5,6 +5,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
+import 'package:zer0_waste_ai/core/services/secure_token_service.dart';
 
 /// Implementation of AuthRepository
 class AuthRepositoryImpl implements AuthRepository {
@@ -12,6 +14,8 @@ class AuthRepositoryImpl implements AuthRepository {
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
   final FacebookAuth _facebookAuth;
+  final ApiService _apiService;
+  final SecureTokenService _secureTokenService;
 
   /// Constructor
   AuthRepositoryImpl({
@@ -19,10 +23,14 @@ class AuthRepositoryImpl implements AuthRepository {
     FirebaseFirestore? firestore,
     GoogleSignIn? googleSignIn,
     FacebookAuth? facebookAuth,
+    ApiService? apiService,
+    SecureTokenService? secureTokenService,
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
        _firestore = firestore ?? FirebaseFirestore.instance,
        _googleSignIn = googleSignIn ?? GoogleSignIn(),
-       _facebookAuth = facebookAuth ?? FacebookAuth.instance;
+       _facebookAuth = facebookAuth ?? FacebookAuth.instance,
+       _apiService = apiService ?? ApiService.instance,
+       _secureTokenService = secureTokenService ?? SecureTokenService();
 
   @override
   Future<UserModel> signInWithEmailAndPassword(
@@ -30,11 +38,40 @@ class AuthRepositoryImpl implements AuthRepository {
     String password,
   ) async {
     try {
+      // 1. Authenticate with Firebase
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return _getUserModelFromFirebaseUser(userCredential.user!);
+
+      // 2. Get Firebase ID Token
+      final firebaseIdToken = await userCredential.user!.getIdToken();
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        throw Exception('Failed to get Firebase ID token');
+      }
+
+      // 3. Exchange Firebase token for backend JWT tokens
+      final backendResponse = await _apiService.firebaseSignIn(
+        firebaseIdToken!,
+      );
+
+      // 4. Create UserModel with tokens
+      final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
+        backendResponse,
+        firebaseUid: userCredential.user!.uid,
+        firebaseEmail: userCredential.user!.email ?? '',
+        firebaseEmailVerified: userCredential.user!.emailVerified,
+        firebaseProviderId: 'email',
+      );
+
+      // 5. Store tokens securely
+      await _secureTokenService.storeTokens(
+        accessToken: backendResponse['access_token'] as String,
+        refreshToken: backendResponse['refresh_token'] as String,
+        expiresIn: backendResponse['expires_in'] as int?,
+      );
+
+      return userModel;
     } catch (e) {
       throw Exception('Failed to sign in: ${e.toString()}');
     }
@@ -47,15 +84,43 @@ class AuthRepositoryImpl implements AuthRepository {
     String displayName,
   ) async {
     try {
+      // 1. Create Firebase user
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
+      // 2. Update Firebase display name
       await userCredential.user?.updateDisplayName(displayName);
+
+      // 3. Create user in Firestore
       await _createUserInFirestore(userCredential.user!, displayName);
 
-      return _getUserModelFromFirebaseUser(userCredential.user!);
+      // 4. Get Firebase ID Token
+      final firebaseIdToken = await userCredential.user!.getIdToken();
+
+      // 5. Exchange Firebase token for backend JWT tokens
+      final backendResponse = await _apiService.firebaseSignIn(
+        firebaseIdToken!,
+      );
+
+      // 6. Create UserModel with tokens
+      final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
+        backendResponse,
+        firebaseUid: userCredential.user!.uid,
+        firebaseEmail: userCredential.user!.email ?? '',
+        firebaseEmailVerified: userCredential.user!.emailVerified,
+        firebaseProviderId: 'email',
+      );
+
+      // 7. Store tokens securely
+      await _secureTokenService.storeTokens(
+        accessToken: backendResponse['access_token'] as String,
+        refreshToken: backendResponse['refresh_token'] as String,
+        expiresIn: backendResponse['expires_in'] as int?,
+      );
+
+      return userModel;
     } catch (e) {
       throw Exception('Failed to sign up: ${e.toString()}');
     }
@@ -64,6 +129,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
+      // 1. Authenticate with Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) throw Exception('Google sign in aborted');
 
@@ -74,14 +140,42 @@ class AuthRepositoryImpl implements AuthRepository {
         idToken: googleAuth.idToken,
       );
 
+      // 2. Sign in with Firebase
       final userCredential = await _firebaseAuth.signInWithCredential(
         credential,
       );
+
+      // 3. Create/update user in Firestore
       await _createUserInFirestore(
         userCredential.user!,
         googleUser.displayName,
       );
-      return _getUserModelFromFirebaseUser(userCredential.user!);
+
+      // 4. Get Firebase ID Token
+      final firebaseIdToken = await userCredential.user!.getIdToken();
+
+      // 5. Exchange Firebase token for backend JWT tokens
+      final backendResponse = await _apiService.firebaseSignIn(
+        firebaseIdToken!,
+      );
+
+      // 6. Create UserModel with tokens
+      final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
+        backendResponse,
+        firebaseUid: userCredential.user!.uid,
+        firebaseEmail: userCredential.user!.email ?? '',
+        firebaseEmailVerified: userCredential.user!.emailVerified,
+        firebaseProviderId: 'google',
+      );
+
+      // 7. Store tokens securely
+      await _secureTokenService.storeTokens(
+        accessToken: backendResponse['access_token'] as String,
+        refreshToken: backendResponse['refresh_token'] as String,
+        expiresIn: backendResponse['expires_in'] as int?,
+      );
+
+      return userModel;
     } catch (e) {
       throw Exception('Failed to sign in with Google: ${e.toString()}');
     }
@@ -90,6 +184,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserModel> signInWithApple() async {
     try {
+      // 1. Authenticate with Apple
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
@@ -102,14 +197,42 @@ class AuthRepositoryImpl implements AuthRepository {
         accessToken: appleCredential.authorizationCode,
       );
 
+      // 2. Sign in with Firebase
       final userCredential = await _firebaseAuth.signInWithCredential(
         oauthCredential,
       );
+
+      // 3. Create/update user in Firestore
       await _createUserInFirestore(
         userCredential.user!,
         appleCredential.givenName,
       );
-      return _getUserModelFromFirebaseUser(userCredential.user!);
+
+      // 4. Get Firebase ID Token
+      final firebaseIdToken = await userCredential.user!.getIdToken();
+
+      // 5. Exchange Firebase token for backend JWT tokens
+      final backendResponse = await _apiService.firebaseSignIn(
+        firebaseIdToken!,
+      );
+
+      // 6. Create UserModel with tokens
+      final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
+        backendResponse,
+        firebaseUid: userCredential.user!.uid,
+        firebaseEmail: userCredential.user!.email ?? '',
+        firebaseEmailVerified: userCredential.user!.emailVerified,
+        firebaseProviderId: 'apple',
+      );
+
+      // 7. Store tokens securely
+      await _secureTokenService.storeTokens(
+        accessToken: backendResponse['access_token'] as String,
+        refreshToken: backendResponse['refresh_token'] as String,
+        expiresIn: backendResponse['expires_in'] as int?,
+      );
+
+      return userModel;
     } catch (e) {
       throw Exception('Failed to sign in with Apple: ${e.toString()}');
     }
@@ -118,13 +241,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserModel> signInWithFacebook() async {
     try {
-      // Intento de login con Facebook
+      // 1. Attempt Facebook login
       print('Iniciando login con Facebook...');
       final LoginResult result = await _facebookAuth.login(
         permissions: ['email', 'public_profile'],
       );
 
-      // Log del estado de resultado
       print('Estado de login Facebook: ${result.status}');
 
       if (result.status == LoginStatus.cancelled) {
@@ -146,10 +268,9 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       print('Login Facebook exitoso, token obtenido');
-      print('Token string: ${result.accessToken!.tokenString}');
 
-      // Get credential using the access token string
       try {
+        // 2. Get Firebase credential
         final OAuthCredential credential = FacebookAuthProvider.credential(
           result.accessToken!.tokenString,
         );
@@ -157,23 +278,55 @@ class AuthRepositoryImpl implements AuthRepository {
         print(
           'Credencial Facebook creada, intentando autenticación en Firebase...',
         );
+
+        // 3. Sign in with Firebase
         final userCredential = await _firebaseAuth.signInWithCredential(
           credential,
         );
 
         print('Autenticación Firebase exitosa, obteniendo datos de usuario...');
+
+        // 4. Get Facebook user data
         final userData = await _facebookAuth.getUserData();
         print('Datos de usuario obtenidos: ${userData['name']}');
 
+        // 5. Create/update user in Firestore
         await _createUserInFirestore(
           userCredential.user!,
           userData['name'] as String,
         );
 
-        return _getUserModelFromFirebaseUser(userCredential.user!);
+        // 6. Get Firebase ID Token
+        final firebaseIdToken = await userCredential.user!.getIdToken();
+        if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+          throw Exception('Failed to get Firebase ID token');
+        }
+
+        // 7. Exchange Firebase token for backend JWT tokens
+        final backendResponse = await _apiService.firebaseSignIn(
+          firebaseIdToken!,
+        );
+
+        // 8. Create UserModel with tokens
+        final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
+          backendResponse,
+          firebaseUid: userCredential.user!.uid,
+          firebaseEmail: userCredential.user!.email ?? '',
+          firebaseEmailVerified: userCredential.user!.emailVerified,
+          firebaseProviderId: 'facebook',
+        );
+
+        // 9. Store tokens securely
+        await _secureTokenService.storeTokens(
+          accessToken: backendResponse['access_token'] as String,
+          refreshToken: backendResponse['refresh_token'] as String,
+          expiresIn: backendResponse['expires_in'] as int?,
+        );
+
+        return userModel;
       } catch (firebaseError) {
         print('Error de autenticación Firebase: $firebaseError');
-        await _facebookAuth.logOut(); // Limpiar estado en caso de error
+        await _facebookAuth.logOut();
         throw Exception('Error al autenticar con Firebase: $firebaseError');
       }
     } catch (e, stackTrace) {
@@ -182,7 +335,6 @@ class AuthRepositoryImpl implements AuthRepository {
       print('Stack trace: $stackTrace');
       print('=============================');
 
-      // Intentar limpiar estado en caso de error
       try {
         await _facebookAuth.logOut();
       } catch (logoutError) {
@@ -195,11 +347,29 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await Future.wait([
-      _firebaseAuth.signOut(),
-      _googleSignIn.signOut(),
-      _facebookAuth.logOut(),
-    ]);
+    try {
+      // 1. Logout from backend
+      await _apiService.logout();
+
+      // 2. Clear secure tokens
+      await _secureTokenService.clearTokens();
+
+      // 3. Sign out from all providers
+      await Future.wait([
+        _firebaseAuth.signOut(),
+        _googleSignIn.signOut(),
+        _facebookAuth.logOut(),
+      ]);
+    } catch (e) {
+      // Even if backend logout fails, still clear local tokens and sign out
+      await _secureTokenService.clearTokens();
+      await Future.wait([
+        _firebaseAuth.signOut(),
+        _googleSignIn.signOut(),
+        _facebookAuth.logOut(),
+      ]);
+      print('Warning: Logout may not have completed fully: ${e.toString()}');
+    }
   }
 
   @override
@@ -229,10 +399,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       // Firebase doesn't have a built-in way to verify reset codes
       // This would typically be implemented with a custom backend
-
-      // In a real implementation, you would verify the code against your backend
-      // or use Firebase custom auth tokens
-
       throw UnimplementedError(
         'Verification code validation requires a custom backend implementation',
       );
@@ -249,16 +415,6 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       // Firebase doesn't directly support code-based password reset
-      // In a real implementation, you would use a custom auth solution or Firebase Admin SDK
-      // This is a simplified implementation for demonstration purposes
-
-      // Verify the code (would be handled by your backend)
-      // ...
-
-      // Reset the password
-      // For Firebase, you might need to implement this on your backend
-      // as client SDKs don't support code-based verification directly
-
       throw UnimplementedError(
         'Password reset with code verification requires a custom backend implementation',
       );
@@ -275,9 +431,23 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
+        // 1. Update Firebase profile
         await user.updateDisplayName(displayName);
         await user.updatePhotoURL(photoURL);
+
+        // 2. Update Firestore
         await _updateUserInFirestore(user.uid, displayName, photoURL);
+
+        // 3. Update backend profile
+        try {
+          await _apiService.updateProfile({
+            if (displayName != null) 'name': displayName,
+            if (photoURL != null) 'photo_url': photoURL,
+          });
+        } catch (e) {
+          print('Warning: Backend profile update failed: $e');
+          // Continue even if backend update fails
+        }
       }
     } catch (e) {
       throw Exception('Failed to update profile: ${e.toString()}');
@@ -289,7 +459,13 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
+        // 1. Clear tokens
+        await _secureTokenService.clearTokens();
+
+        // 2. Delete from Firestore
         await _firestore.collection('users').doc(user.uid).delete();
+
+        // 3. Delete Firebase user
         await user.delete();
       }
     } catch (e) {
@@ -465,10 +641,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> refreshApplicationTokens() async {
     try {
-      // This would implement token refresh logic with your backend
-      // For now, it's a placeholder implementation
-      print('Refreshing application tokens...');
-      // TODO: Implement actual token refresh logic
+      // Use the ApiService to refresh tokens
+      final newAccessToken = await _apiService.refreshTokens();
+      if (newAccessToken == null) {
+        throw Exception(
+          'Failed to refresh tokens - no new access token received',
+        );
+      }
+      print('Application tokens refreshed successfully');
     } catch (e) {
       throw Exception('Failed to refresh tokens: ${e.toString()}');
     }
