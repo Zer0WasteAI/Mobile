@@ -1,21 +1,30 @@
-/// Repository interface for inventory management
+/// INFO: Repository interface for inventory management operations
+/// ADVICE: This defines the contract for all inventory-related operations
+/// USAGE: Implement this interface to create different inventory data sources
 abstract class InventoryRepository {
-  /// Add ingredients to the inventory
+  /// INFO: Add multiple ingredients to the user's inventory
+  /// USAGE: Pass array of ingredient maps with name, quantity, expiry_date, etc.
   Future<void> addIngredients(List<Map<String, dynamic>> ingredients);
 
-  /// Get the complete inventory
+  /// INFO: Get the complete user inventory with all stored items
+  /// RETURNS: Map containing inventory data structure from backend
   Future<Map<String, dynamic>> getInventory();
 
-  /// Update a specific ingredient
+  /// INFO: Update a specific ingredient using composite key
+  /// ADVICE: Use name + addedAt to uniquely identify the ingredient
+  /// USAGE: updateData should contain fields to update (quantity, expiry_date, etc.)
   Future<void> updateIngredient(
     String name,
     String addedAt,
     Map<String, dynamic> updateData,
   );
 
-  /// Delete a specific ingredient
+  /// INFO: Delete a specific ingredient from inventory
+  /// ADVICE: Use name + addedAt as composite key for unique identification
   Future<void> deleteIngredient(String name, String addedAt);
 
-  /// Get items that are expiring within the specified number of days
+  /// INFO: Get items that will expire within the specified number of days
+  /// USAGE: Use days=7 to get items expiring this week
+  /// RETURNS: List of ingredient names that are expiring soon
   Future<List<String>> getExpiringItems(int days);
 }

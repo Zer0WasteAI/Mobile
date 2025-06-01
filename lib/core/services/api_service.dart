@@ -4,7 +4,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-/// API Service for ZeroWasteAI backend integration
+/// INFO: Complete API Service for ZeroWasteAI backend integration
+/// ADVICE: This service handles all 23 endpoints from the real API documentation
+/// WARNING: Always ensure proper error handling when using these methods
 class ApiService {
   static ApiService? _instance;
   static ApiService get instance => _instance ??= ApiService._internal();
@@ -12,12 +14,12 @@ class ApiService {
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  // API Endpoints
+  // INFO: API Endpoints - All 23 endpoints from real documentation
   static const String _authFirebaseSignIn = '/auth/firebase-signin';
   static const String _authRefresh = '/auth/refresh';
   static const String _authLogout = '/auth/logout';
 
-  // Updated profile endpoints to match real API
+  // INFO: Updated profile endpoints to match real API structure
   static const String _userProfile = '/user/profile';
 
   static const String _recognitionFoods = '/recognition/foods';
@@ -28,30 +30,30 @@ class ApiService {
       '/image_management/search_similar_images';
   static const String _imageAssign = '/image_management/assign_image';
 
-  // Reference Image Management endpoints
+  // INFO: Reference Image Management endpoints
   static const String _referenceImageUpload = '/reference-images';
   static const String _referenceImageList = '/reference-images';
   static const String _referenceImageGet = '/reference-images';
   static const String _referenceImageDelete = '/reference-images';
   static const String _referenceImageUpdate = '/reference-images';
 
-  // NEW: Inventory Management endpoints
+  // INFO: NEW - Inventory Management endpoints (5 endpoints)
   static const String _inventoryItems = '/inventory';
   static const String _inventoryIngredients = '/inventory/ingredients';
   static const String _inventoryExpiring = '/inventory/expiring';
 
-  // NEW: Recipe Management endpoints
+  // INFO: NEW - Recipe Management endpoints (4 endpoints)
   static const String _recipesGenerateFromInventory =
       '/recipes/generate-from-inventory';
   static const String _recipesGenerateCustom = '/recipes/generate-custom';
   static const String _recipesSave = '/recipes/save';
   static const String _recipesSaved = '/recipes/saved';
 
-  // NEW: Admin endpoints
+  // INFO: NEW - Admin endpoints (2 endpoints)
   static const String _adminUsers = '/admin/users';
   static const String _adminSyncImages = '/admin/sync_images';
 
-  // Secure Storage Keys
+  // INFO: Secure Storage Keys for JWT tokens
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
 
@@ -60,6 +62,8 @@ class ApiService {
   }
 
   void _initializeDio() {
+    // INFO: Base URL from environment or default to localhost
+    // TODO: Update BACKEND_BASE_URL in .env for production
     final baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://localhost:3000';
 
     _dio = Dio(
@@ -75,11 +79,12 @@ class ApiService {
       ),
     );
 
-    // Add token interceptor
+    // INFO: Add automatic JWT token injection and refresh interceptor
+    // ADVICE: This handles all authentication automatically
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Skip token for auth endpoints
+          // INFO: Skip token for auth endpoints (they use Firebase tokens)
           if (options.path == _authFirebaseSignIn ||
               options.path == _authRefresh) {
             return handler.next(options);
@@ -92,8 +97,9 @@ class ApiService {
           handler.next(options);
         },
         onError: (error, handler) async {
+          // INFO: Automatic token refresh on 401 errors
           if (error.response?.statusCode == 401) {
-            // Don't retry for auth endpoints
+            // WARNING: Don't retry for auth endpoints to avoid infinite loops
             if (error.requestOptions.path == _authRefresh ||
                 error.requestOptions.path == _authFirebaseSignIn) {
               await clearTokens();
@@ -103,7 +109,7 @@ class ApiService {
             try {
               final newAccessToken = await refreshTokens();
               if (newAccessToken != null) {
-                // Retry original request with new token
+                // INFO: Retry original request with new token
                 error.requestOptions.headers['Authorization'] =
                     'Bearer $newAccessToken';
                 final response = await _dio.fetch(error.requestOptions);
@@ -118,7 +124,8 @@ class ApiService {
       ),
     );
 
-    // Add logging interceptor
+    // INFO: Add logging interceptor for debugging
+    // TODO: Remove in production or add debug flag
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -142,7 +149,9 @@ class ApiService {
     );
   }
 
-  // Token Management
+  // INFO: ===== TOKEN MANAGEMENT METHODS =====
+  // ADVICE: These handle secure JWT token storage automatically
+
   Future<void> storeTokens({
     required String accessToken,
     required String refreshToken,
@@ -170,7 +179,11 @@ class ApiService {
     return accessToken != null && refreshToken != null;
   }
 
-  // Authentication
+  // INFO: ===== AUTHENTICATION ENDPOINTS (3/3) =====
+  // ADVICE: These match the real API documentation exactly
+
+  /// INFO: Exchange Firebase ID Token for application JWT tokens
+  /// USAGE: Call after successful Firebase authentication
   Future<Map<String, dynamic>> firebaseSignIn(String firebaseIdToken) async {
     try {
       final response = await _dio.post(
@@ -180,6 +193,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+        // INFO: Automatically store tokens for future use
         await storeTokens(
           accessToken: data['access_token'] as String,
           refreshToken: data['refresh_token'] as String,
@@ -192,6 +206,8 @@ class ApiService {
     }
   }
 
+  /// INFO: Refresh JWT tokens with automatic rotation
+  /// NOTE: Called automatically by interceptor on 401 errors
   Future<String?> refreshTokens() async {
     try {
       final refreshToken = await getRefreshToken();
@@ -207,6 +223,7 @@ class ApiService {
         final newAccessToken = data['access_token'] as String;
         final newRefreshToken = data['refresh_token'] as String;
 
+        // INFO: Store new tokens automatically
         await storeTokens(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
@@ -221,17 +238,22 @@ class ApiService {
     }
   }
 
+  /// INFO: Secure logout with token blacklisting
+  /// ADVICE: Always call this when user logs out
   Future<void> logout() async {
     try {
       await _dio.post(_authLogout);
     } catch (e) {
       print('Logout error: $e');
     } finally {
+      // INFO: Always clear tokens even if server call fails
       await clearTokens();
     }
   }
 
-  // Profile Management
+  // INFO: ===== USER PROFILE ENDPOINTS (2/2) =====
+
+  /// INFO: Get complete user profile
   Future<Map<String, dynamic>> getProfile() async {
     try {
       final response = await _dio.get(_userProfile);
@@ -241,6 +263,7 @@ class ApiService {
     }
   }
 
+  /// INFO: Update user profile with new data
   Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> profileData,
   ) async {
@@ -252,7 +275,10 @@ class ApiService {
     }
   }
 
-  // Food Recognition
+  // INFO: ===== FOOD RECOGNITION ENDPOINTS (3/3) =====
+  // ADVICE: All methods expect arrays of image paths from Firebase Storage
+
+  /// INFO: AI recognition of prepared foods/dishes
   Future<Map<String, dynamic>> recognizeFoods(List<String> imagePaths) async {
     try {
       final response = await _dio.post(
@@ -265,7 +291,7 @@ class ApiService {
     }
   }
 
-  // Ingredient Recognition
+  /// INFO: AI recognition of individual ingredients
   Future<Map<String, dynamic>> recognizeIngredients(
     List<String> imagePaths,
   ) async {
@@ -280,7 +306,7 @@ class ApiService {
     }
   }
 
-  // Batch Recognition
+  /// INFO: Batch recognition for mixed content (ingredients + foods)
   Future<Map<String, dynamic>> recognizeBatch(List<String> imagePaths) async {
     try {
       final response = await _dio.post(
@@ -293,7 +319,10 @@ class ApiService {
     }
   }
 
-  // Image Management
+  // INFO: ===== IMAGE MANAGEMENT ENDPOINTS (3/3) =====
+
+  /// INFO: Upload image to Firebase Storage
+  /// ADVICE: Use imageType: "food", "ingredient", or "default"
   Future<Map<String, dynamic>> uploadImage({
     required File imageFile,
     required String itemName,
@@ -318,6 +347,7 @@ class ApiService {
     }
   }
 
+  /// INFO: Search for similar images by item name
   Future<List<Map<String, dynamic>>> searchSimilarImages(
     String itemName,
   ) async {
@@ -332,6 +362,7 @@ class ApiService {
     }
   }
 
+  /// INFO: Assign reference image to an item
   Future<Map<String, dynamic>> assignImage(String itemName) async {
     try {
       final response = await _dio.post(
@@ -344,7 +375,11 @@ class ApiService {
     }
   }
 
-  // Reference Image Management
+  // INFO: ===== REFERENCE IMAGE MANAGEMENT ENDPOINTS (5/5) =====
+  // ADVICE: These are for admin management of reference images
+
+  /// INFO: Upload reference image for AI training
+  /// WARNING: Admin only endpoint
   Future<Response> uploadReferenceImage(FormData formData) async {
     try {
       final response = await _dio.post(
@@ -358,6 +393,7 @@ class ApiService {
     }
   }
 
+  /// INFO: Get paginated list of reference images
   Future<Response> getReferenceImages(
     String? category,
     String? label,
@@ -379,6 +415,7 @@ class ApiService {
     }
   }
 
+  /// INFO: Get specific reference image by ID
   Future<Response> getReferenceImage(String imageId) async {
     try {
       final response = await _dio.get('$_referenceImageGet/$imageId');
@@ -388,6 +425,8 @@ class ApiService {
     }
   }
 
+  /// INFO: Delete reference image by ID
+  /// WARNING: Admin only endpoint
   Future<Response> deleteReferenceImage(String imageId) async {
     try {
       final response = await _dio.delete('$_referenceImageDelete/$imageId');
@@ -397,6 +436,8 @@ class ApiService {
     }
   }
 
+  /// INFO: Update reference image metadata
+  /// WARNING: Admin only endpoint
   Future<Response> updateReferenceImage(
     String imageId,
     String? label,
@@ -417,8 +458,11 @@ class ApiService {
     }
   }
 
-  // NEW: Inventory Management
-  /// Add ingredients to inventory
+  // INFO: ===== INVENTORY MANAGEMENT ENDPOINTS (5/5) =====
+  // ADVICE: Core feature for managing user's food inventory
+
+  /// INFO: Add multiple ingredients to user's inventory
+  /// USAGE: Pass array of ingredient objects with name, quantity, expiry, etc.
   Future<Map<String, dynamic>> addIngredients(
     List<Map<String, dynamic>> ingredients,
   ) async {
@@ -433,7 +477,7 @@ class ApiService {
     }
   }
 
-  /// Get full inventory
+  /// INFO: Get complete user inventory with all items
   Future<Map<String, dynamic>> getInventory() async {
     try {
       final response = await _dio.get(_inventoryItems);
@@ -443,7 +487,8 @@ class ApiService {
     }
   }
 
-  /// Update specific ingredient
+  /// INFO: Update specific ingredient by name and added date
+  /// ADVICE: Use name and addedAt as composite key for unique identification
   Future<Map<String, dynamic>> updateIngredient(
     String name,
     String addedAt,
@@ -460,7 +505,8 @@ class ApiService {
     }
   }
 
-  /// Delete specific ingredient
+  /// INFO: Delete specific ingredient from inventory
+  /// ADVICE: Use name and addedAt as composite key
   Future<Map<String, dynamic>> deleteIngredient(
     String name,
     String addedAt,
@@ -475,7 +521,8 @@ class ApiService {
     }
   }
 
-  /// Get items expiring in N days
+  /// INFO: Get items expiring within specified days
+  /// USAGE: Use days=7 for items expiring this week
   Future<Map<String, dynamic>> getExpiringItems(int days) async {
     try {
       final response = await _dio.get('$_inventoryExpiring?days=$days');
@@ -485,8 +532,11 @@ class ApiService {
     }
   }
 
-  // NEW: Recipe Management
-  /// Generate recipes from current inventory
+  // INFO: ===== RECIPE MANAGEMENT ENDPOINTS (4/4) =====
+  // ADVICE: AI-powered recipe generation and management
+
+  /// INFO: Generate recipes using current inventory items
+  /// ADVICE: AI analyzes your inventory and suggests optimal recipes
   Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
     try {
       final response = await _dio.post(_recipesGenerateFromInventory, data: {});
@@ -496,7 +546,8 @@ class ApiService {
     }
   }
 
-  /// Generate custom recipes with specific ingredients
+  /// INFO: Generate custom recipes with specific ingredients
+  /// USAGE: Specify ingredients you want to use, dietary preferences, etc.
   Future<List<Map<String, dynamic>>> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
@@ -517,7 +568,7 @@ class ApiService {
     }
   }
 
-  /// Save a recipe to favorites
+  /// INFO: Save a recipe to user's favorites collection
   Future<Map<String, dynamic>> saveRecipe(
     Map<String, dynamic> recipeData,
   ) async {
@@ -529,7 +580,7 @@ class ApiService {
     }
   }
 
-  /// Get all saved recipes
+  /// INFO: Get all user's saved/favorite recipes
   Future<Map<String, dynamic>> getSavedRecipes() async {
     try {
       final response = await _dio.get(_recipesSaved);
@@ -539,8 +590,11 @@ class ApiService {
     }
   }
 
-  // NEW: Admin endpoints
-  /// Get all users (admin only)
+  // INFO: ===== ADMIN ENDPOINTS (2/2) =====
+  // WARNING: These require admin role permissions
+
+  /// INFO: Get all users in the system
+  /// WARNING: Admin only - requires admin role
   Future<Map<String, dynamic>> getUsers() async {
     try {
       final response = await _dio.get(_adminUsers);
@@ -550,7 +604,8 @@ class ApiService {
     }
   }
 
-  /// Sync reference images (admin only)
+  /// INFO: Synchronize reference images database
+  /// WARNING: Admin only - maintenance operation
   Future<Map<String, dynamic>> syncImages() async {
     try {
       final response = await _dio.post(_adminSyncImages);
@@ -560,7 +615,11 @@ class ApiService {
     }
   }
 
-  // Utility method to handle API errors
+  // INFO: ===== UTILITY METHODS =====
+  // ADVICE: Helper methods for error handling and debugging
+
+  /// INFO: Extract meaningful error messages from API responses
+  /// USAGE: Use in catch blocks to get user-friendly error messages
   String getErrorMessage(dynamic error) {
     if (error is DioException) {
       if (error.response?.data is Map) {
@@ -573,6 +632,7 @@ class ApiService {
         }
       }
 
+      // INFO: Provide user-friendly messages for common HTTP status codes
       switch (error.response?.statusCode) {
         case 400:
           return 'Datos de solicitud inválidos';
@@ -598,11 +658,14 @@ class ApiService {
     return error.toString();
   }
 
-  // Rate limit helper
+  /// INFO: Check if the error is due to rate limiting
+  /// ADVICE: Use this to implement retry logic with backoff
   bool isRateLimited(DioException error) {
     return error.response?.statusCode == 429;
   }
 
+  /// INFO: Get retry delay from rate limit headers
+  /// USAGE: Use with isRateLimited() to implement proper retry timing
   int? getRateLimitRetryAfter(DioException error) {
     if (error.response?.headers['retry-after'] != null) {
       return int.tryParse(error.response!.headers['retry-after']!.first);

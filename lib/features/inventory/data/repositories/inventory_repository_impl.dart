@@ -2,7 +2,9 @@ import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 
-/// Implementation of InventoryRepository using ZeroWasteAI backend
+/// INFO: Implementation of InventoryRepository using ZeroWasteAI backend
+/// ADVICE: This repository bridges the domain layer with the API service
+/// USAGE: Use this through the inventoryRepositoryProvider
 class InventoryRepositoryImpl implements InventoryRepository {
   final ApiService _apiService;
 
@@ -14,6 +16,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     try {
       await _apiService.addIngredients(ingredients);
     } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to add ingredients: ${_apiService.getErrorMessage(e)}',
       );
@@ -25,6 +28,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     try {
       return await _apiService.getInventory();
     } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to get inventory: ${_apiService.getErrorMessage(e)}',
       );
@@ -38,8 +42,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
     Map<String, dynamic> updateData,
   ) async {
     try {
+      // ADVICE: Use name + addedAt as composite key for unique identification
       await _apiService.updateIngredient(name, addedAt, updateData);
     } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to update ingredient: ${_apiService.getErrorMessage(e)}',
       );
@@ -49,8 +55,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<void> deleteIngredient(String name, String addedAt) async {
     try {
+      // ADVICE: Use name + addedAt as composite key for unique identification
       await _apiService.deleteIngredient(name, addedAt);
     } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to delete ingredient: ${_apiService.getErrorMessage(e)}',
       );
@@ -60,9 +68,11 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<List<String>> getExpiringItems(int days) async {
     try {
+      // INFO: API returns expiring_items array in response
       final response = await _apiService.getExpiringItems(days);
       return List<String>.from(response['expiring_items'] ?? []);
     } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to get expiring items: ${_apiService.getErrorMessage(e)}',
       );

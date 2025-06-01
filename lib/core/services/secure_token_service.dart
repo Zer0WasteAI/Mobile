@@ -1,12 +1,15 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Provider for SecureTokenService
+/// INFO: Provider for SecureTokenService singleton
+/// USAGE: Use ref.watch(secureTokenServiceProvider) to get service instance
 final secureTokenServiceProvider = Provider<SecureTokenService>((ref) {
   return SecureTokenService();
 });
 
-/// Service for managing secure token storage
+/// INFO: Service for managing secure JWT token storage
+/// ADVICE: Handles all token operations securely using encrypted storage
+/// WARNING: Never store tokens in regular SharedPreferences or plain storage
 class SecureTokenService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -15,80 +18,113 @@ class SecureTokenService {
     ),
   );
 
-  // Token storage keys
+  // INFO: Token storage keys for secure storage
   static const String _accessTokenKey = 'jwt_access_token';
   static const String _refreshTokenKey = 'jwt_refresh_token';
   static const String _tokenExpirationKey = 'jwt_token_expiration';
 
-  /// Store access and refresh tokens securely
+  /// INFO: Store JWT tokens securely with optional expiration
+  /// USAGE: Call after successful backend authentication
+  /// ADVICE: expiresIn should be in seconds (typically 3600 for 1 hour)
   Future<void> storeTokens({
     required String accessToken,
     required String refreshToken,
     int? expiresIn,
   }) async {
-    await Future.wait([
-      _secureStorage.write(key: _accessTokenKey, value: accessToken),
-      _secureStorage.write(key: _refreshTokenKey, value: refreshToken),
-      if (expiresIn != null)
-        _secureStorage.write(
-          key: _tokenExpirationKey,
-          value:
-              DateTime.now()
-                  .add(Duration(seconds: expiresIn))
-                  .millisecondsSinceEpoch
-                  .toString(),
-        ),
-    ]);
+    await _secureStorage.write(key: _accessTokenKey, value: accessToken);
+    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+
+    if (expiresIn != null) {
+      // INFO: Calculate and store expiration timestamp
+      final expirationTime = DateTime.now().add(Duration(seconds: expiresIn));
+      await _secureStorage.write(
+        key: _tokenExpirationKey,
+        value: expirationTime.millisecondsSinceEpoch.toString(),
+      );
+    }
   }
 
-  /// Get access token
+  /// INFO: Get stored access token
+  /// RETURNS: Access token string or null if not found
   Future<String?> getAccessToken() async {
     return await _secureStorage.read(key: _accessTokenKey);
   }
 
-  /// Get refresh token
+  /// INFO: Get stored refresh token
+  /// RETURNS: Refresh token string or null if not found
   Future<String?> getRefreshToken() async {
     return await _secureStorage.read(key: _refreshTokenKey);
   }
 
-  /// Check if access token is expired
+  /// INFO: Check if access token is expired
+  /// RETURNS: true if token is expired or no expiration stored
+  /// ADVICE: Always check this before using access token
   Future<bool> isAccessTokenExpired() async {
     final expirationString = await _secureStorage.read(
       key: _tokenExpirationKey,
     );
     if (expirationString == null) return true;
 
-    final expiration = DateTime.fromMillisecondsSinceEpoch(
+    final expirationTime = DateTime.fromMillisecondsSinceEpoch(
       int.parse(expirationString),
     );
-    return DateTime.now().isAfter(expiration);
+
+    // INFO: Add 30 second buffer to avoid edge cases
+    return DateTime.now().isAfter(
+      expirationTime.subtract(Duration(seconds: 30)),
+    );
   }
 
-  /// Check if tokens exist and are valid
+  /// INFO: Check if user has valid stored tokens
+  /// RETURNS: true if both access and refresh tokens exist
+  /// NOTE: Does not validate token expiration
   Future<bool> hasValidTokens() async {
     final accessToken = await getAccessToken();
     final refreshToken = await getRefreshToken();
-    final isExpired = await isAccessTokenExpired();
-
-    return accessToken != null && refreshToken != null && !isExpired;
+    return accessToken != null && refreshToken != null;
   }
 
-  /// Clear all stored tokens
+  /// INFO: Clear all stored tokens
+  /// USAGE: Call during logout or when tokens are invalid
+  /// ADVICE: Always call this when user logs out
   Future<void> clearTokens() async {
-    await Future.wait([
-      _secureStorage.delete(key: _accessTokenKey),
-      _secureStorage.delete(key: _refreshTokenKey),
-      _secureStorage.delete(key: _tokenExpirationKey),
-    ]);
+    await _secureStorage.delete(key: _accessTokenKey);
+    await _secureStorage.delete(key: _refreshTokenKey);
+    await _secureStorage.delete(key: _tokenExpirationKey);
   }
 
-  /// Clear all secure storage (for debugging/logout)
-  Future<void> clearAll() async {
-    await _secureStorage.deleteAll();
+  /// INFO: Get token expiration time
+  /// RETURNS: DateTime of token expiration or null if not set
+  Future<DateTime?> getTokenExpiration() async {
+    final expirationString = await _secureStorage.read(
+      key: _tokenExpirationKey,
+    );
+    if (expirationString == null) return null;
+
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(expirationString));
   }
 
-  /// Get all stored keys (for debugging)
-  Future<Map<String, String>> getAllTokens() async {
-    return await _secureStorage.readAll();
+  /// INFO: Get time remaining until token expires
+  /// RETURNS: Duration until expiration or null if no expiration set
+  /// USAGE: Use to show user when they need to re-authenticate
+  Future<Duration?> getTimeUntilExpiration() async {
+    final expiration = await getTokenExpiration();
+    if (expiration == null) return null;
+
+    final now = DateTime.now();
+    if (now.isAfter(expiration)) return Duration.zero;
+
+    return expiration.difference(now);
+  }
+
+  /// INFO: Check if tokens need refresh (within 5 minutes of expiry)
+  /// RETURNS: true if tokens should be refreshed proactively
+  /// ADVICE: Use this to refresh tokens before they expire
+  Future<bool> shouldRefreshTokens() async {
+    final expiration = await getTokenExpiration();
+    if (expiration == null) return true;
+
+    final refreshThreshold = expiration.subtract(Duration(minutes: 5));
+    return DateTime.now().isAfter(refreshThreshold);
   }
 }

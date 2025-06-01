@@ -3,34 +3,41 @@ import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:zer0_waste_ai/features/inventory/data/repositories/inventory_repository_impl.dart';
 
-/// Provider for the inventory repository
+/// INFO: Provider for the inventory repository implementation
+/// USAGE: Use ref.watch(inventoryRepositoryProvider) to get repository instance
 final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
   return InventoryRepositoryImpl();
 });
 
-/// Provider for inventory backend operations
+/// INFO: Provider for inventory backend operations notifier
+/// USAGE: Use ref.watch(inventoryBackendProvider) to get notifier instance
 final inventoryBackendProvider = Provider<InventoryBackendNotifier>((ref) {
   final repository = ref.watch(inventoryRepositoryProvider);
   return InventoryBackendNotifier(repository);
 });
 
-/// Notifier for inventory backend operations
+/// INFO: Notifier class for inventory backend operations
+/// ADVICE: This provides a clean interface for UI to interact with inventory
+/// USAGE: Access through inventoryBackendProvider to perform inventory operations
 class InventoryBackendNotifier {
   final InventoryRepository _repository;
 
   InventoryBackendNotifier(this._repository);
 
-  /// Add ingredients to the backend inventory
+  /// INFO: Add multiple ingredients to the backend inventory
+  /// USAGE: Pass ingredient objects with name, quantity, expiry_date, etc.
   Future<void> addIngredients(List<Map<String, dynamic>> ingredients) async {
     await _repository.addIngredients(ingredients);
   }
 
-  /// Get full inventory from backend
+  /// INFO: Get complete inventory from backend
+  /// RETURNS: Map containing full inventory structure
   Future<Map<String, dynamic>> getInventory() async {
     return await _repository.getInventory();
   }
 
-  /// Update ingredient in backend
+  /// INFO: Update specific ingredient in backend inventory
+  /// ADVICE: Use name + addedAt as composite key for identification
   Future<void> updateIngredient(
     String name,
     String addedAt,
@@ -39,12 +46,15 @@ class InventoryBackendNotifier {
     await _repository.updateIngredient(name, addedAt, updateData);
   }
 
-  /// Delete ingredient from backend
+  /// INFO: Delete specific ingredient from backend inventory
+  /// ADVICE: Use name + addedAt as composite key for identification
   Future<void> deleteIngredient(String name, String addedAt) async {
     await _repository.deleteIngredient(name, addedAt);
   }
 
-  /// Get expiring items from backend
+  /// INFO: Get ingredients expiring within specified days from backend
+  /// USAGE: Call with days=7 to get items expiring this week
+  /// RETURNS: List of ingredient names that are expiring soon
   Future<List<String>> getExpiringItems(int days) async {
     return await _repository.getExpiringItems(days);
   }
