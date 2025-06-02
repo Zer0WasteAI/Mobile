@@ -54,8 +54,8 @@ class InventoryBackendNotifier {
 
   /// INFO: Get ingredients expiring within specified days from backend
   /// USAGE: Call with days=7 to get items expiring this week
-  /// RETURNS: List of ingredient names that are expiring soon
-  Future<List<String>> getExpiringItems(int days) async {
+  /// RETURNS: Complete response object with expiring_items array and metadata
+  Future<Map<String, dynamic>> getExpiringItems(int days) async {
     return await _repository.getExpiringItems(days);
   }
 }

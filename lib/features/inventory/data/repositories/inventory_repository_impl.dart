@@ -66,11 +66,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   @override
-  Future<List<String>> getExpiringItems(int days) async {
+  Future<Map<String, dynamic>> getExpiringItems(int days) async {
     try {
-      // INFO: API returns expiring_items array in response
-      final response = await _apiService.getExpiringItems(days);
-      return List<String>.from(response['expiring_items'] ?? []);
+      // INFO: API returns complete response with expiring_items array and metadata
+      return await _apiService.getExpiringItems(days);
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(

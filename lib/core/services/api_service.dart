@@ -63,8 +63,7 @@ class ApiService {
 
   void _initializeDio() {
     // INFO: Base URL from environment or default to localhost
-    // TODO: Update BACKEND_BASE_URL in .env for production
-    final baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://localhost:3000';
+    final baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://127.0.0.1:3000';
 
     _dio = Dio(
       BaseOptions(

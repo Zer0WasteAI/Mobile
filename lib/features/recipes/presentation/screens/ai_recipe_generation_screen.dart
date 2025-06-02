@@ -3,12 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'
@@ -31,11 +26,7 @@ class _AIRecipeGenerationScreenState
   final _cuisineController = TextEditingController();
   final _dietaryController = TextEditingController();
   final _timeController = TextEditingController();
-  bool _isGenerating = true;
-  List<Recipe> _generatedRecipes = [];
   late AnimationController _animationController;
-  final CarouselController _carouselController = CarouselController();
-  int _currentRecipeIndex = 0;
 
   @override
   void initState() {
@@ -45,22 +36,9 @@ class _AIRecipeGenerationScreenState
       duration: const Duration(seconds: 1),
     )..repeat();
 
-    // Simular la generación de recetas con un delay
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        // Verificar y gastar EcoCoins antes de generar
-        if (_checkAndSpendEcoCoins()) {
-          setState(() {
-            _generatedRecipes = _generateRecipes();
-            _isGenerating = false;
-          });
-        } else {
-          // Si no hay suficientes EcoCoins, cancelar la generación
-          setState(() {
-            _isGenerating = false;
-          });
-        }
-      }
+    // Auto-generate recipes from inventory after a short delay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _generateFromInventory();
     });
   }
 
@@ -91,6 +69,52 @@ class _AIRecipeGenerationScreenState
     // Hay suficientes monedas, cobrar
     ecoCoinsNotifier.spendCoins(_ecoCoinsRequired);
     return true;
+  }
+
+  // Generar recetas desde inventario
+  Future<void> _generateFromInventory() async {
+    if (!_checkAndSpendEcoCoins()) return;
+
+    // Call the real backend API
+    ref.read(aiRecipeProvider.notifier).generateRecipesFromInventory();
+  }
+
+  // Generar recetas personalizadas
+  Future<void> _generateCustomRecipes() async {
+    if (!_checkAndSpendEcoCoins()) return;
+
+    final ingredients =
+        _ingredientsController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+
+    if (ingredients.isEmpty) {
+      _showSnackBar(
+        'Por favor, ingresa al menos un ingrediente',
+        isError: true,
+      );
+      return;
+    }
+
+    // Build preferences list
+    final preferences = <String>[];
+    if (_dietaryController.text.isNotEmpty) {
+      preferences.add(_dietaryController.text.trim());
+    }
+    if (_cuisineController.text.isNotEmpty) {
+      preferences.add(_cuisineController.text.trim());
+    }
+
+    // Call the real backend API
+    ref
+        .read(aiRecipeProvider.notifier)
+        .generateCustomRecipes(
+          ingredients: ingredients,
+          preferences: preferences.isNotEmpty ? preferences : null,
+          numRecipes: 3,
+        );
   }
 
   // Diálogo para mostrar cuando no hay suficientes EcoCoins
@@ -131,8 +155,9 @@ class _AIRecipeGenerationScreenState
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Opcionalmente, llevar al usuario al panel de impacto
-                    context.push('/impact');
+                    if (mounted) {
+                      context.push('/impact');
+                    }
                   },
                   child: Text(
                     'Ver Panel de Impacto',
@@ -149,57 +174,15 @@ class _AIRecipeGenerationScreenState
     }
   }
 
-  // Método existente para generar recetas de ejemplo
-  List<Recipe> _generateRecipes() {
-    final recipes = [
-      Recipe(
-        id: '1',
-        name: 'Pasta al pomodoro con albahaca',
-        description:
-            'Una pasta clásica italiana con salsa de tomate fresco y albahaca',
-        emoji: '🍝',
-        ingredients: [
-          'Pasta spaghetti (400g)',
-          'Tomates maduros (500g)',
-          'Albahaca fresca (un manojo)',
-          '2 dientes de ajo',
-          '2 cucharadas de aceite de oliva',
-          'Sal y pimienta al gusto',
-        ],
-        requiredIngredientsCount: 6,
-        availableIngredientsCount: 6,
-        usesExpiringItems: true,
-        cookingTime: 25,
-        difficulty: 'Fácil',
-        dietType: 'Vegetariana',
-        categories: ['Italiana', 'Pasta', 'Vegetariana'],
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      Recipe(
-        id: '2',
-        name: 'Revuelto de verduras con huevo',
-        description:
-            'Un plato rápido y nutritivo aprovechando las verduras de temporada',
-        emoji: '🍳',
-        ingredients: [
-          '4 huevos',
-          '1 pimiento rojo',
-          '1 cebolla',
-          '2 zanahorias',
-          '100g de champiñones',
-          '2 cucharadas de aceite de oliva',
-          'Sal y pimienta al gusto',
-        ],
-        requiredIngredientsCount: 7,
-        availableIngredientsCount: 7,
-        usesExpiringItems: true,
-        cookingTime: 15,
-        difficulty: 'Fácil',
-        dietType: 'Omnívora',
-        categories: ['Rápido', 'Saludable', 'Huevos'],
-      ),
-    ];
-
-    return recipes;
+    );
   }
 
   @override
@@ -212,7 +195,8 @@ class _AIRecipeGenerationScreenState
     final secondaryTextColor =
         isDark ? AppColors.darkSecondaryText : Colors.black54;
 
-    // Observar los EcoCoins actuales
+    // Watch the AI recipe state
+    final aiRecipeState = ref.watch(aiRecipeProvider);
     final currentEcoCoins = ref.watch(home.ecoCoinsProvider);
 
     return Scaffold(
@@ -258,149 +242,319 @@ class _AIRecipeGenerationScreenState
         ],
       ),
       body:
-          _isGenerating
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RotationTransition(
-                      turns: _animationController,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.green.shade300,
-                              Colors.green.shade700,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Generando recetas inteligentes...',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        'Nuestro algoritmo está analizando tus ingredientes disponibles y preferencias para crear recetas personalizadas.',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Indicador de costo
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 32),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            color: Colors.green,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              'Generando con $_ecoCoinsRequired EcoCoins',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: Colors.green.shade800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+          aiRecipeState.isGenerating
+              ? _buildLoadingView(textColor, secondaryTextColor)
+              : aiRecipeState.error != null
+              ? _buildErrorView(
+                aiRecipeState.error!,
+                textColor,
+                secondaryTextColor,
               )
-              : _generatedRecipes.isEmpty
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.sentiment_dissatisfied,
-                      size: 60,
-                      color: secondaryTextColor,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No se pudieron generar recetas',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        'Necesitas EcoCoins para generar recetas con IA. Gana más reduciendo el desperdicio de alimentos.',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        context.push('/impact');
-                      },
-                      icon: const Icon(Icons.eco),
-                      label: const Text('Ver Panel de Impacto'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                  ],
+              : aiRecipeState.recipes.isEmpty && aiRecipeState.hasGenerated
+              ? _buildEmptyView(textColor, secondaryTextColor)
+              : aiRecipeState.recipes.isNotEmpty
+              ? _buildRecipesView(aiRecipeState.recipes)
+              : _buildCustomGenerationView(textColor, secondaryTextColor),
+    );
+  }
+
+  Widget _buildLoadingView(Color textColor, Color secondaryTextColor) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RotationTransition(
+            turns: _animationController,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Colors.green.shade300, Colors.green.shade700],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              )
-              : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _generatedRecipes.length,
-                itemBuilder: (context, index) {
-                  final recipe = _generatedRecipes[index];
-                  return _buildRecipeCard(context, recipe);
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: Colors.white,
+                size: 30,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Generando recetas inteligentes...',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Nuestro algoritmo de IA está analizando tus ingredientes disponibles y preferencias para crear recetas personalizadas.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.green, size: 16),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Generando con $_ecoCoinsRequired EcoCoins',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(
+    String error,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 60, color: Colors.red.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'Error al generar recetas',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  onPressed:
+                      () => ref.read(aiRecipeProvider.notifier).clearError(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Reintentar'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => _generateFromInventory(),
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Generar Nuevamente'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyView(Color textColor, Color secondaryTextColor) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.sentiment_dissatisfied,
+            size: 60,
+            color: secondaryTextColor,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No se pudieron generar recetas',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Intenta agregar más ingredientes a tu inventario o verifica tu conexión a internet.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _generateFromInventory(),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Intentar de Nuevo'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecipesView(List<Recipe> recipes) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: recipes.length + 1, // +1 for the custom generation option
+      itemBuilder: (context, index) {
+        if (index == recipes.length) {
+          return _buildCustomGenerationCard();
+        }
+        final recipe = recipes[index];
+        return _buildRecipeCard(context, recipe);
+      },
+    );
+  }
+
+  Widget _buildCustomGenerationView(Color textColor, Color secondaryTextColor) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Generar Recetas Personalizadas',
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildCustomGenerationCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomGenerationCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.green.shade600),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Crear Recetas Personalizadas',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _ingredientsController,
+                decoration: const InputDecoration(
+                  labelText: 'Ingredientes (separados por comas)',
+                  hintText: 'ej: tomate, cebolla, pollo, arroz',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor, ingresa al menos un ingrediente';
+                  }
+                  return null;
                 },
               ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cuisineController,
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de Cocina (opcional)',
+                        hintText: 'ej: italiana, mexicana, asiática',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _dietaryController,
+                      decoration: const InputDecoration(
+                        labelText: 'Dieta (opcional)',
+                        hintText: 'ej: vegetariana, vegana',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _generateCustomRecipes,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: Text(
+                    'Generar Recetas ($_ecoCoinsRequired EcoCoins)',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -580,10 +734,10 @@ class _AIRecipeGenerationScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: (color ?? Colors.grey.shade600).withOpacity(0.1),
+        color: (color ?? Colors.grey.shade600).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (color ?? Colors.grey.shade600).withOpacity(0.3),
+          color: (color ?? Colors.grey.shade600).withValues(alpha: 0.3),
         ),
       ),
       child: Row(

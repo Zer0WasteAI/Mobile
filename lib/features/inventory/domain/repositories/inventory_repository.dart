@@ -25,6 +25,6 @@ abstract class InventoryRepository {
 
   /// INFO: Get items that will expire within the specified number of days
   /// USAGE: Use days=7 to get items expiring this week
-  /// RETURNS: List of ingredient names that are expiring soon
-  Future<List<String>> getExpiringItems(int days);
+  /// RETURNS: Complete response object with expiring_items array and metadata
+  Future<Map<String, dynamic>> getExpiringItems(int days);
 }
