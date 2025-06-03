@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
@@ -45,7 +46,7 @@ class StorageService {
 
       return downloadUrl;
     } catch (e) {
-      print('Error uploading profile image: $e');
+      log('Error uploading profile image: $e');
       throw Exception('Failed to upload profile image: ${e.toString()}');
     }
   }
@@ -57,7 +58,7 @@ class StorageService {
       final ref = _storage.refFromURL(downloadUrl);
       await ref.delete();
     } catch (e) {
-      print('Error deleting file: $e');
+      log('Error deleting file: $e');
       throw Exception('Failed to delete file: ${e.toString()}');
     }
   }

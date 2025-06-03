@@ -250,6 +250,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
+  // ignore: strict_top_level_inference
   Widget _buildProfileImage(user) {
     // If there's a new image selected, show that
     if (_imageFile != null) {

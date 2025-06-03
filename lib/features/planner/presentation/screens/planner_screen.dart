@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,8 +9,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_library_screen.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/screens/create_recipe_screen.dart';
-import 'package:uuid/uuid.dart';
 
 // Extensión para capitalizar strings (con nombre único para evitar conflicto)
 extension StringExtensionPlanner on String {
@@ -133,7 +133,7 @@ class MealPlan {
     DateTime? lastUsed,
   }) {
     return MealPlan(
-      id: this.id,
+      id: id,
       name: name ?? this.name,
       imageUrl: imageUrl ?? this.imageUrl,
       type: type ?? this.type,
@@ -285,6 +285,7 @@ class PlannerScreen extends ConsumerWidget {
 
       // Asegurarse que el mapa del proveedor existe
       final mealPlans = ref.read(mealPlansProvider);
+      // ignore: unnecessary_null_comparison
       if (mealPlans != null) {
         // Obtener las comidas planificadas para la fecha
         final mealsForDate = mealPlans[dateKey] ?? [];
@@ -429,7 +430,7 @@ class PlannerScreen extends ConsumerWidget {
                     width: 50,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -498,7 +499,7 @@ class PlannerScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color:
-            isCurrentWeek ? primaryColor.withOpacity(0.08) : Colors.transparent,
+            isCurrentWeek ? primaryColor.withValues(alpha: 0.08) : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -760,7 +761,7 @@ class PlannerScreen extends ConsumerWidget {
                         ),
                         color:
                             isCurrentWeek
-                                ? const Color(0xFF00BFA5).withOpacity(0.1)
+                                ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
                                 : isPastWeek
                                 ? Colors.grey.shade100
                                 : Colors.white,
@@ -786,7 +787,7 @@ class PlannerScreen extends ConsumerWidget {
                                         isCurrentWeek
                                             ? const Color(
                                               0xFF00BFA5,
-                                            ).withOpacity(0.2)
+                                            ).withValues(alpha: 0.2)
                                             : isPastWeek
                                             ? Colors.grey.shade200
                                             : Colors.blue.shade50,
@@ -857,7 +858,7 @@ class PlannerScreen extends ConsumerWidget {
                                     decoration: BoxDecoration(
                                       color: const Color(
                                         0xFF00BFA5,
-                                      ).withOpacity(0.1),
+                                      ).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -910,7 +911,7 @@ class PlannerScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -972,7 +973,7 @@ class PlannerScreen extends ConsumerWidget {
                           color:
                               isSelected
                                   ? const Color(0xFF00BFA5)
-                                  : textColor.withOpacity(isToday ? 1.0 : 0.7),
+                                  : textColor.withValues(alpha: isToday ? 1.0 : 0.7),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -986,7 +987,7 @@ class PlannerScreen extends ConsumerWidget {
                               isSelected
                                   ? const Color(0xFF00BFA5)
                                   : isToday
-                                  ? const Color(0xFF00BFA5).withOpacity(0.2)
+                                  ? const Color(0xFF00BFA5).withValues(alpha: 0.2)
                                   : Colors.transparent,
                           border:
                               isToday && !isSelected
@@ -1087,7 +1088,7 @@ class PlannerScreen extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1184,7 +1185,7 @@ class PlannerScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // Pestañas de tipos de comida
-          Container(
+          SizedBox(
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -1210,13 +1211,13 @@ class PlannerScreen extends ConsumerWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: type.color.withOpacity(0.1),
+                      color: type.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color:
                             hasTypeScheduled
                                 ? type.color
-                                : type.color.withOpacity(0.3),
+                                : type.color.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -1358,7 +1359,7 @@ class PlannerScreen extends ConsumerWidget {
                                     dateKey,
                                   ),
                                 )
-                                .toList(),
+                                ,
                             const SizedBox(height: 16),
                           ],
                         );
@@ -1425,7 +1426,7 @@ class PlannerScreen extends ConsumerWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: const Color(0xFF00BFA5).withOpacity(0.1),
+                color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -1458,7 +1459,7 @@ class PlannerScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: textColor.withOpacity(0.7),
+                color: textColor.withValues(alpha: 0.7),
               ),
             ),
 
@@ -1469,10 +1470,10 @@ class PlannerScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF00BFA5).withOpacity(0.05),
+                color: const Color(0xFF00BFA5).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF00BFA5).withOpacity(0.2),
+                  color: const Color(0xFF00BFA5).withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -1514,7 +1515,7 @@ class PlannerScreen extends ConsumerWidget {
                               suggestion,
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: textColor.withOpacity(0.8),
+                                color: textColor.withValues(alpha: 0.8),
                               ),
                             ),
                           ),
@@ -1588,7 +1589,7 @@ class PlannerScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: type.color.withOpacity(0.1),
+                  color: type.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -1610,10 +1611,10 @@ class PlannerScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                color: type.color.withOpacity(0.05),
+                color: type.color.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: type.color.withOpacity(0.2),
+                  color: type.color.withValues(alpha: 0.2),
                   width: 1,
                   style: BorderStyle.solid, // Cambiado de dashed a solid
                 ),
@@ -1623,7 +1624,7 @@ class PlannerScreen extends ConsumerWidget {
                 children: [
                   Icon(
                     Icons.add_circle_outline,
-                    color: type.color.withOpacity(0.7),
+                    color: type.color.withValues(alpha: 0.7),
                     size: 16,
                   ),
                   const SizedBox(width: 8),
@@ -1662,7 +1663,7 @@ class PlannerScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1705,7 +1706,7 @@ class PlannerScreen extends ConsumerWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: meal.type.color.withOpacity(0.1),
+                              color: meal.type.color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -1727,7 +1728,7 @@ class PlannerScreen extends ConsumerWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -2011,7 +2012,7 @@ class PlannerScreen extends ConsumerWidget {
                     // Filtro por tipo de comida
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
+                      child: SizedBox(
                         height: 40,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -2025,7 +2026,7 @@ class PlannerScreen extends ConsumerWidget {
                                 label: Text(type.name),
                                 selected: isSelected,
                                 backgroundColor: Colors.grey.shade100,
-                                selectedColor: type.color.withOpacity(0.2),
+                                selectedColor: type.color.withValues(alpha: 0.2),
                                 onSelected: (selected) {
                                   setState(() {
                                     initialType = selected ? type : null;
@@ -2133,7 +2134,7 @@ class PlannerScreen extends ConsumerWidget {
                                             isSelected
                                                 ? const Color(
                                                   0xFF00BFA5,
-                                                ).withOpacity(0.05)
+                                                ).withValues(alpha: 0.05)
                                                 : Colors.white,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
@@ -2168,7 +2169,7 @@ class PlannerScreen extends ConsumerWidget {
                                                       )
                                                       : Container(
                                                         color: recipe.type.color
-                                                            .withOpacity(0.2),
+                                                            .withValues(alpha: 0.2),
                                                         child: Icon(
                                                           recipe.type.icon,
                                                           color:
@@ -2195,7 +2196,7 @@ class PlannerScreen extends ConsumerWidget {
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: recipe.type.color
-                                                          .withOpacity(0.1),
+                                                          .withValues(alpha: 0.1),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             4,
@@ -2532,7 +2533,7 @@ class PlannerScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color:
                   isSelected
-                      ? const Color(0xFF00BFA5).withOpacity(0.1)
+                      ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
                       : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -2542,7 +2543,7 @@ class PlannerScreen extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -2579,7 +2580,7 @@ class PlannerScreen extends ConsumerWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: recipe.type.color.withOpacity(0.1),
+                          color: recipe.type.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -2842,7 +2843,7 @@ class PlannerScreen extends ConsumerWidget {
                                 backgroundColor: Colors.grey.shade100,
                                 selectedColor: const Color(
                                   0xFF00BFA5,
-                                ).withOpacity(0.2),
+                                ).withValues(alpha: 0.2),
                                 checkmarkColor: const Color(0xFF00BFA5),
                                 onSelected: (selected) {
                                   setState(() {
@@ -2980,8 +2981,8 @@ class PlannerScreen extends ConsumerWidget {
                                                               color: suggestion
                                                                   .type
                                                                   .color
-                                                                  .withOpacity(
-                                                                    0.1,
+                                                                  .withValues(
+                                                                    alpha: 0.1,
                                                                   ),
                                                               borderRadius:
                                                                   BorderRadius.circular(
@@ -3057,7 +3058,6 @@ class PlannerScreen extends ConsumerWidget {
                                                   onSelect(suggestion);
                                                   Navigator.pop(context);
                                                 },
-                                                child: Text('Usar esta receta'),
                                                 style: OutlinedButton.styleFrom(
                                                   foregroundColor: const Color(
                                                     0xFF00BFA5,
@@ -3078,6 +3078,7 @@ class PlannerScreen extends ConsumerWidget {
                                                     44,
                                                   ),
                                                 ),
+                                                child: Text('Usar esta receta'),
                                               ),
                                             ],
                                           );
@@ -3618,7 +3619,7 @@ class PlannerScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -3714,7 +3715,7 @@ class PlannerScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
+                      SizedBox(
                         height: 250,
                         child: ListView.builder(
                           itemCount: dates.length,
@@ -3895,7 +3896,7 @@ class PlannerScreen extends ConsumerWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, -5),
                     ),
@@ -3922,7 +3923,7 @@ class PlannerScreen extends ConsumerWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 5,
                             offset: const Offset(0, 3),
                           ),
@@ -4008,7 +4009,7 @@ class PlannerScreen extends ConsumerWidget {
                                             ),
                                             decoration: BoxDecoration(
                                               color: meal.type.color
-                                                  .withOpacity(0.1),
+                                                  .withValues(alpha: 0.1),
                                               borderRadius:
                                                   BorderRadius.circular(6),
                                             ),
@@ -4063,7 +4064,7 @@ class PlannerScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF00BFA5).withOpacity(0.07),
+                              color: const Color(0xFF00BFA5).withValues(alpha: 0.07),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
@@ -4117,7 +4118,7 @@ class PlannerScreen extends ConsumerWidget {
                                             timePickerTheme: TimePickerThemeData(
                                               dialBackgroundColor: const Color(
                                                 0xFF00BFA5,
-                                              ).withOpacity(0.1),
+                                              ).withValues(alpha: 0.1),
                                               hourMinuteTextStyle:
                                                   GoogleFonts.inter(
                                                     fontSize: 24,
@@ -4178,11 +4179,11 @@ class PlannerScreen extends ConsumerWidget {
                                       border: Border.all(
                                         color: const Color(
                                           0xFF00BFA5,
-                                        ).withOpacity(0.3),
+                                        ).withValues(alpha: 0.3),
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.03),
+                                          color: Colors.black.withValues(alpha: 0.03),
                                           blurRadius: 6,
                                           offset: const Offset(0, 2),
                                         ),
@@ -4359,8 +4360,8 @@ class PlannerScreen extends ConsumerWidget {
                                             width: 45,
                                             height: 45,
                                             decoration: BoxDecoration(
-                                              color: reminderColor.withOpacity(
-                                                0.1,
+                                              color: reminderColor.withValues(
+                                                alpha: 0.1,
                                               ),
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -4581,7 +4582,7 @@ class PlannerScreen extends ConsumerWidget {
                                         isSelected
                                             ? (option['color'] as Color? ??
                                                     Colors.blue.shade700)
-                                                .withOpacity(0.1)
+                                                .withValues(alpha: 0.1)
                                             : Colors.grey.shade50,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
@@ -4608,7 +4609,7 @@ class PlannerScreen extends ConsumerWidget {
                                               color: (option['color']
                                                           as Color? ??
                                                       Colors.blue.shade700)
-                                                  .withOpacity(0.1),
+                                                  .withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -4662,7 +4663,7 @@ class PlannerScreen extends ConsumerWidget {
                                         decoration: BoxDecoration(
                                           color: (option['color'] as Color? ??
                                                   Colors.blue.shade700)
-                                              .withOpacity(0.07),
+                                              .withValues(alpha: 0.07),
                                           borderRadius: BorderRadius.circular(
                                             4,
                                           ),
@@ -4698,7 +4699,7 @@ class PlannerScreen extends ConsumerWidget {
                                 : Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, -5),
                           ),
@@ -4710,12 +4711,6 @@ class PlannerScreen extends ConsumerWidget {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  'Cancelar',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.grey.shade700,
                                   side: BorderSide(color: Colors.grey.shade300),
@@ -4724,6 +4719,12 @@ class PlannerScreen extends ConsumerWidget {
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancelar',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -5273,7 +5274,7 @@ class PlannerScreen extends ConsumerWidget {
                                     color:
                                         isSelected
                                             ? (item['color'] as Color)
-                                                .withOpacity(0.1)
+                                                .withValues(alpha: 0.1)
                                             : Colors.transparent,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
@@ -5336,17 +5337,17 @@ class PlannerScreen extends ConsumerWidget {
                           children: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
                               child: Text(
                                 'Cancelar',
                                 style: GoogleFonts.inter(
                                   color: Colors.grey.shade700,
                                   fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
                                 ),
                               ),
                             ),
@@ -5714,7 +5715,7 @@ class PlannerScreen extends ConsumerWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
@@ -5729,7 +5730,7 @@ class PlannerScreen extends ConsumerWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: meal.type.color.withOpacity(0.8),
+                          color: meal.type.color.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -6245,7 +6246,7 @@ class PlannerScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Container(
+                child: SizedBox(
                   height: 400,
                   child: Column(
                     children: [
@@ -6272,7 +6273,7 @@ class PlannerScreen extends ConsumerWidget {
                                     height: 77,
                                     decoration: BoxDecoration(
                                       color: (step['color'] as Color)
-                                          .withOpacity(0.1),
+                                          .withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -6446,7 +6447,7 @@ class PlannerScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -6569,7 +6570,6 @@ class PlannerScreen extends ConsumerWidget {
                   },
                 ),
                 ElevatedButton(
-                  child: Text('Entendido'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00BFA5),
                     foregroundColor: Colors.white,
@@ -6578,6 +6578,7 @@ class PlannerScreen extends ConsumerWidget {
                     ref.read(hasShownIconGuideProvider.notifier).state = true;
                     Navigator.of(context).pop();
                   },
+                  child: Text('Entendido'),
                 ),
               ],
             ),
@@ -6592,7 +6593,7 @@ class PlannerScreen extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF00BFA5).withOpacity(0.1),
+            color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFF00BFA5), size: 20),

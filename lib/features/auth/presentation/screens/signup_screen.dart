@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
-import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/auth_transition_screen.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -53,19 +54,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           context.go(AuthTransitionScreen.routePath);
         }
       });
-
-      if (state.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error al registrarse: ${state.error}',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor:
-                isDark ? AppColors.darkError : AppColors.lightError,
-          ),
-        );
-      }
     });
 
     return Scaffold(
@@ -212,6 +200,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                       .signInWithGoogle(),
                       icon: const Icon(Icons.g_mobiledata),
                     ),
+                    if (Platform.isIOS)
                     IconButton(
                       onPressed:
                           authState.isLoading

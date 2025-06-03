@@ -10,7 +10,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> recipe;
 
-  const RecipeDetailScreen({required this.recipe, Key? key}) : super(key: key);
+  const RecipeDetailScreen({required this.recipe, super.key});
 
   @override
   ConsumerState<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
@@ -634,7 +634,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: secondaryColor.withOpacity(0.3), width: 1),
+        side: BorderSide(color: secondaryColor.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -796,7 +796,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               'Ingredientes faltantes',
               style: GoogleFonts.inter(fontWeight: FontWeight.bold),
             ),
-            content: Container(
+            content: SizedBox(
               width: double.maxFinite,
               child: Column(
                 mainAxisSize: MainAxisSize.min,

@@ -55,10 +55,10 @@ abstract class AuthRepository {
   /// Save user preferred food types
   Future<void> saveUserPreferredFoodTypes(List<String> foodTypes);
 
-  /// Save user allergy items
+  /// Save user allergy items (simple list)
   Future<void> saveUserAllergyItems(List<String> allergyItems);
 
-  /// Save user special diet items
+  /// Save user special diet items (simple list)
   Future<void> saveUserSpecialDietItems(List<String> specialDietItems);
 
   /// Save user measurement unit
@@ -72,4 +72,20 @@ abstract class AuthRepository {
 
   /// Refresh application tokens
   Future<void> refreshApplicationTokens();
+
+  // Complex preference methods with emoji and metadata
+  /// Save user allergy items with emoji and isCustom flag
+  Future<void> saveUserAllergyItemsWithMetadata(
+    List<Map<String, dynamic>> allergyItems,
+  );
+
+  /// Save user special diet items with emoji and isCustom flag
+  Future<void> saveUserSpecialDietItemsWithMetadata(
+    List<Map<String, dynamic>> specialDietItems,
+  );
+
+  /// Save user preferred food type items with emoji and isCustom flag
+  Future<void> saveUserPreferredFoodTypeItemsWithMetadata(
+    List<Map<String, dynamic>> foodTypeItems,
+  );
 }

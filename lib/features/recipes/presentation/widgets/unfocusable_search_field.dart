@@ -13,14 +13,14 @@ class UnfocusableSearchField extends HookConsumerWidget {
   final Color hintTextColor;
 
   const UnfocusableSearchField({
-    Key? key,
+    super.key,
     required this.onChanged,
     required this.hintText,
     required this.iconColor,
     required this.backgroundColor,
     required this.textColor,
     required this.hintTextColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,8 +35,8 @@ class UnfocusableSearchField extends HookConsumerWidget {
           BoxShadow(
             color:
                 Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withOpacity(0.25)
-                    : Colors.grey.withOpacity(0.15),
+                    ? Colors.black.withValues(alpha: 0.25)
+                    : Colors.grey.withValues(alpha: 0.15),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),

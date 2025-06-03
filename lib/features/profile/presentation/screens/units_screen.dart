@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +15,7 @@ final selectedUnitProvider = StateProvider<MeasurementUnit>((ref) {
   final user = ref.watch(authControllerProvider).value;
   final measurementUnit = user?.prefs.measurementUnit ?? 'metric';
 
-  print('Loading measurement unit from user data: $measurementUnit');
+  log('Loading measurement unit from user data: $measurementUnit');
 
   if (measurementUnit == 'imperial') {
     return MeasurementUnit.imperial;
@@ -34,10 +36,10 @@ class UnitsScreen extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).value;
 
     // Log the current user's measurement unit setting
-    print(
+    log(
       'Current user measurement unit in Firestore: ${user?.prefs.measurementUnit}',
     );
-    print('Current selected unit in UI: $selectedUnit');
+    log('Current selected unit in UI: $selectedUnit');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -122,12 +124,12 @@ class UnitsScreen extends ConsumerWidget {
                           ? 'metric'
                           : 'imperial';
 
-                  print('Saving measurement unit: $unitValue');
+                  log('Saving measurement unit: $unitValue');
 
                   // Guardar la selección en Firestore
                   try {
                     await authRepository.saveUserMeasurementUnit(unitValue);
-                    print('Successfully saved measurement unit to Firestore');
+                    log('Successfully saved measurement unit to Firestore');
 
                     // Actualizar el controlador de autenticación para reflejar los cambios
                     await ref
@@ -136,7 +138,7 @@ class UnitsScreen extends ConsumerWidget {
 
                     // Verify the user was updated
                     final updatedUser = ref.read(authControllerProvider).value;
-                    print(
+                    log(
                       'Updated user measurement unit: ${updatedUser?.prefs.measurementUnit}',
                     );
 
@@ -151,7 +153,7 @@ class UnitsScreen extends ConsumerWidget {
                       context.pop();
                     }
                   } catch (e) {
-                    print('Error saving measurement unit: $e');
+                    log('Error saving measurement unit: $e');
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

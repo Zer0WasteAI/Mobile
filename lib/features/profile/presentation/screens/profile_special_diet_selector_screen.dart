@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -175,9 +177,9 @@ class _ProfileSpecialDietSelectorScreenState
     final userDiets = user?.prefs.specialDiets ?? [];
     final userDietItems = user?.prefs.specialDietItems;
 
-    print('Initializing special diets selector with:');
-    print('- Legacy diet names: $userDiets');
-    print('- Special diet items: $userDietItems');
+    log('Initializing special diets selector with:');
+    log('- Legacy diet names: $userDiets');
+    log('- Special diet items: $userDietItems');
 
     List<String> dietNamesToInitialize = userDiets;
 
@@ -253,9 +255,10 @@ class _ProfileSpecialDietSelectorScreenState
                                 decoration: BoxDecoration(
                                   color:
                                       isSelected
-                                          ? Theme.of(
-                                            context,
-                                          ).colorScheme.primary.withOpacity(0.1)
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withValues(alpha: 0.1)
                                           : Colors.transparent,
                                   borderRadius: BorderRadius.circular(32),
                                   border: Border.all(
@@ -267,7 +270,7 @@ class _ProfileSpecialDietSelectorScreenState
                                             : Theme.of(context)
                                                 .colorScheme
                                                 .outline
-                                                .withOpacity(0.5),
+                                                .withValues(alpha: 0.5),
                                     width: isSelected ? 2 : 1,
                                   ),
                                 ),
@@ -343,7 +346,7 @@ class _ProfileSpecialDietSelectorScreenState
     final backgroundColor = colorScheme.surface;
     final primaryColor = colorScheme.primary;
     final defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final defaultChipBorderColor = colorScheme.outline.withValues(alpha: 0.5);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -426,10 +429,12 @@ class _ProfileSpecialDietSelectorScreenState
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant.withOpacity(0.4),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: colorScheme.outline.withOpacity(0.5),
+                    color: colorScheme.outline.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -516,17 +521,13 @@ class _ProfileSpecialDietSelectorScreenState
                                     .map((diet) => diet.toJson())
                                     .toList();
 
-                            print("Guardando dietas especiales: $dietNames");
-                            print("Guardando diet items: $dietItems");
+                            log("Guardando dietas especiales: $dietNames");
+                            log("Guardando diet items: $dietItems");
 
                             // Save the diets using new method
                             await authRepository.saveUserSpecialDietItems(
                               dietNames,
                             );
-
-                            // Marcar explícitamente como completado en Firestore
-                            await authRepository
-                                .markInitialPreferencesCompleted();
 
                             // Refresh user data
                             await authController.refreshUserFromFirestore();
@@ -616,11 +617,11 @@ class _SpecialDietCard extends StatelessWidget {
           color:
               isSelected
                   ? primaryColor
-                  : colorScheme.outlineVariant.withOpacity(0.5),
+                  : colorScheme.outlineVariant.withValues(alpha: 0.5),
           width: isSelected ? 2 : 1,
         ),
       ),
-      color: isSelected ? primaryColor.withOpacity(0.1) : surfaceColor,
+      color: isSelected ? primaryColor.withValues(alpha: 0.1) : surfaceColor,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -634,8 +635,10 @@ class _SpecialDietCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       isSelected
-                          ? primaryColor.withOpacity(0.2)
-                          : colorScheme.surfaceVariant.withOpacity(0.3),
+                          ? primaryColor.withValues(alpha: 0.2)
+                          : colorScheme.surfaceContainerHighest.withValues(
+                            alpha: 0.3,
+                          ),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

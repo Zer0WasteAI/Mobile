@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -126,7 +128,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -146,7 +148,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -165,7 +167,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -197,15 +199,11 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                               // Guardar en Firestore
                               final levelString =
                                   selectedLevel.toStorageString();
-                              print('Guardando nivel de cocina: $levelString');
+                              log('Guardando nivel de cocina: $levelString');
 
                               await authRepository.saveUserCookingLevel(
                                 levelString,
                               );
-
-                              // Marcar explícitamente como completado en Firestore
-                              await authRepository
-                                  .markInitialPreferencesCompleted();
 
                               // Actualizar datos del usuario en memoria
                               await authController.refreshUserFromFirestore();
@@ -237,11 +235,11 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
-                    disabledBackgroundColor: colorScheme.primary.withOpacity(
-                      0.5,
+                    disabledBackgroundColor: colorScheme.primary.withValues(
+                      alpha: 0.5,
                     ),
-                    disabledForegroundColor: colorScheme.onPrimary.withOpacity(
-                      0.7,
+                    disabledForegroundColor: colorScheme.onPrimary.withValues(
+                      alpha: 0.7,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -322,7 +320,7 @@ class _CookingLevelCard extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: selectedColor.withOpacity(0.1),
+                  color: selectedColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ClipRRect(

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/repositories/recipe_repository.dart';
 import 'package:zer0_waste_ai/features/recipes/data/repositories/recipe_repository_impl.dart';
 
@@ -31,6 +30,27 @@ class RecipeBackendNotifier {
     return await _repository.generateRecipesFromInventory();
   }
 
+  /// 🆕 NUEVO: Generate recipes from inventory with complete response info
+  /// RETURNS: Complete response with personalization_info según CAMBIOS_ENDPOINTS.md
+  Future<Map<String, dynamic>> generateRecipesFromInventoryComplete() async {
+    // Por ahora devolvemos el formato antiguo hasta que el backend implemente el nuevo
+    final recipes = await _repository.generateRecipesFromInventory();
+    return {
+      'generated_recipes': recipes,
+      'total_recipes': recipes.length,
+      'inventory_usage': '75%', // Mock value
+      'personalization_info': <String, dynamic>{
+        'language': 'es',
+        'measurement_system': 'metric',
+        'cooking_level': 'intermediate',
+        'preferences_applied': <String>[],
+        'allergies_filtered': <String>[],
+        'dietary_restrictions': <String>[],
+        'preferred_food_types': <String>[],
+      },
+    };
+  }
+
   /// INFO: Generate custom recipes with specific ingredients using AI
   /// USAGE: Specify ingredients you want to use and dietary preferences
   /// ADVICE: Use preferences like ["vegetarian", "gluten-free", "low-calorie"]
@@ -45,6 +65,35 @@ class RecipeBackendNotifier {
       preferences: preferences,
       numRecipes: numRecipes,
     );
+  }
+
+  /// 🆕 NUEVO: Generate custom recipes with complete response info
+  /// RETURNS: Complete response with personalization_info según CAMBIOS_ENDPOINTS.md
+  Future<Map<String, dynamic>> generateCustomRecipesComplete({
+    required List<String> ingredients,
+    List<String>? preferences,
+    int numRecipes = 2,
+  }) async {
+    // Por ahora devolvemos el formato antiguo hasta que el backend implemente el nuevo
+    final recipes = await _repository.generateCustomRecipes(
+      ingredients: ingredients,
+      preferences: preferences,
+      numRecipes: numRecipes,
+    );
+    return {
+      'generated_recipes': recipes,
+      'total_recipes': recipes.length,
+      'inventory_usage': '100%', // Mock value
+      'personalization_info': <String, dynamic>{
+        'language': 'es',
+        'measurement_system': 'metric',
+        'cooking_level': 'intermediate',
+        'preferences_applied': preferences ?? <String>[],
+        'allergies_filtered': <String>[],
+        'dietary_restrictions': <String>[],
+        'preferred_food_types': <String>[],
+      },
+    };
   }
 
   /// INFO: Save a recipe to user's favorites collection

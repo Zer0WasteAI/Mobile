@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_preferences_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/core/services/secure_token_service.dart';
@@ -38,24 +41,48 @@ class AuthRepositoryImpl implements AuthRepository {
     String password,
   ) async {
     try {
+      log(
+        '🔐 AuthRepository: Starting email/password authentication for: $email',
+      );
+
       // 1. Authenticate with Firebase
+      log('🔍 Step 1: Authenticating with Firebase...');
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      log('✅ Firebase authentication successful');
 
       // 2. Get Firebase ID Token
-      final firebaseIdToken = await userCredential.user!.getIdToken();
+      log('🔍 Step 2: Getting Firebase ID token...');
+      final firebaseIdToken = await userCredential.user?.getIdToken();
       if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
         throw Exception('Failed to get Firebase ID token');
       }
 
-      // 3. Exchange Firebase token for backend JWT tokens
-      final backendResponse = await _apiService.firebaseSignIn(
-        firebaseIdToken!,
+      // INFO: Debug token structure (without exposing the actual token)
+      log('✅ Firebase ID token obtained');
+      log('🔧 Token length: ${firebaseIdToken.length} characters');
+      log(
+        '🔧 Token structure: ${firebaseIdToken.split('.').length} parts (should be 3)',
       );
+      log('🔧 User UID: ${userCredential.user!.uid}');
+      log('🔧 User email: ${userCredential.user!.email}');
+      log('🔧 Email verified: ${userCredential.user!.emailVerified}');
+
+      // INFO: Additional Firebase token validation
+      if (firebaseIdToken.split('.').length != 3) {
+        log('❌ Invalid Firebase token structure! Not a valid JWT.');
+        throw Exception('Invalid Firebase ID token structure');
+      }
+
+      // 3. Exchange Firebase token for backend JWT tokens
+      log('🔍 Step 3: Exchanging Firebase token for backend JWT tokens...');
+      final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
+      log('✅ Backend JWT tokens obtained successfully');
 
       // 4. Create UserModel with tokens
+      log('🔍 Step 4: Creating user model...');
       final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
         backendResponse,
         firebaseUid: userCredential.user!.uid,
@@ -65,14 +92,17 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // 5. Store tokens securely
+      log('🔍 Step 5: Storing tokens securely...');
       await _secureTokenService.storeTokens(
         accessToken: backendResponse['access_token'] as String,
         refreshToken: backendResponse['refresh_token'] as String,
         expiresIn: backendResponse['expires_in'] as int?,
       );
 
+      log('🎉 Email/password authentication completed successfully!');
       return userModel;
     } catch (e) {
+      log('❌ Email/password authentication failed: ${e.toString()}');
       throw Exception('Failed to sign in: ${e.toString()}');
     }
   }
@@ -97,12 +127,13 @@ class AuthRepositoryImpl implements AuthRepository {
       await _createUserInFirestore(userCredential.user!, displayName);
 
       // 4. Get Firebase ID Token
-      final firebaseIdToken = await userCredential.user!.getIdToken();
+      final firebaseIdToken = await userCredential.user?.getIdToken();
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        throw Exception('Failed to get Firebase ID token');
+      }
 
       // 5. Exchange Firebase token for backend JWT tokens
-      final backendResponse = await _apiService.firebaseSignIn(
-        firebaseIdToken!,
-      );
+      final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
 
       // 6. Create UserModel with tokens
       final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
@@ -152,12 +183,13 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // 4. Get Firebase ID Token
-      final firebaseIdToken = await userCredential.user!.getIdToken();
+      final firebaseIdToken = await userCredential.user?.getIdToken();
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        throw Exception('Failed to get Firebase ID token');
+      }
 
       // 5. Exchange Firebase token for backend JWT tokens
-      final backendResponse = await _apiService.firebaseSignIn(
-        firebaseIdToken!,
-      );
+      final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
 
       // 6. Create UserModel with tokens
       final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
@@ -209,12 +241,13 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // 4. Get Firebase ID Token
-      final firebaseIdToken = await userCredential.user!.getIdToken();
+      final firebaseIdToken = await userCredential.user?.getIdToken();
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        throw Exception('Failed to get Firebase ID token');
+      }
 
       // 5. Exchange Firebase token for backend JWT tokens
-      final backendResponse = await _apiService.firebaseSignIn(
-        firebaseIdToken!,
-      );
+      final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
 
       // 6. Create UserModel with tokens
       final userModel = UserModel.fromFirebaseAuthAndBackendSignInResponse(
@@ -242,32 +275,32 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserModel> signInWithFacebook() async {
     try {
       // 1. Attempt Facebook login
-      print('Iniciando login con Facebook...');
+      log('Iniciando login con Facebook...');
       final LoginResult result = await _facebookAuth.login(
         permissions: ['email', 'public_profile'],
       );
 
-      print('Estado de login Facebook: ${result.status}');
+      log('Estado de login Facebook: ${result.status}');
 
       if (result.status == LoginStatus.cancelled) {
-        print('Login cancelado por el usuario');
+        log('Login cancelado por el usuario');
         throw Exception('Login de Facebook cancelado por el usuario');
       } else if (result.status == LoginStatus.failed) {
-        print('Error de login Facebook: ${result.message}');
+        log('Error de login Facebook: ${result.message}');
         throw Exception('Login de Facebook falló: ${result.message}');
       } else if (result.status != LoginStatus.success) {
-        print('Estado de login inesperado: ${result.status}');
+        log('Estado de login inesperado: ${result.status}');
         throw Exception(
           'Estado de login de Facebook inesperado: ${result.status}',
         );
       }
 
       if (result.accessToken == null) {
-        print('Access token de Facebook es nulo');
+        log('Access token de Facebook es nulo');
         throw Exception('Token de acceso de Facebook es nulo');
       }
 
-      print('Login Facebook exitoso, token obtenido');
+      log('Login Facebook exitoso, token obtenido');
 
       try {
         // 2. Get Firebase credential
@@ -275,7 +308,7 @@ class AuthRepositoryImpl implements AuthRepository {
           result.accessToken!.tokenString,
         );
 
-        print(
+        log(
           'Credencial Facebook creada, intentando autenticación en Firebase...',
         );
 
@@ -284,11 +317,11 @@ class AuthRepositoryImpl implements AuthRepository {
           credential,
         );
 
-        print('Autenticación Firebase exitosa, obteniendo datos de usuario...');
+        log('Autenticación Firebase exitosa, obteniendo datos de usuario...');
 
         // 4. Get Facebook user data
         final userData = await _facebookAuth.getUserData();
-        print('Datos de usuario obtenidos: ${userData['name']}');
+        log('Datos de usuario obtenidos: ${userData['name']}');
 
         // 5. Create/update user in Firestore
         await _createUserInFirestore(
@@ -297,14 +330,14 @@ class AuthRepositoryImpl implements AuthRepository {
         );
 
         // 6. Get Firebase ID Token
-        final firebaseIdToken = await userCredential.user!.getIdToken();
+        final firebaseIdToken = await userCredential.user?.getIdToken();
         if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
           throw Exception('Failed to get Firebase ID token');
         }
 
         // 7. Exchange Firebase token for backend JWT tokens
         final backendResponse = await _apiService.firebaseSignIn(
-          firebaseIdToken!,
+          firebaseIdToken,
         );
 
         // 8. Create UserModel with tokens
@@ -325,20 +358,20 @@ class AuthRepositoryImpl implements AuthRepository {
 
         return userModel;
       } catch (firebaseError) {
-        print('Error de autenticación Firebase: $firebaseError');
+        log('Error de autenticación Firebase: $firebaseError');
         await _facebookAuth.logOut();
         throw Exception('Error al autenticar con Firebase: $firebaseError');
       }
     } catch (e, stackTrace) {
-      print('=== ERROR DE LOGIN FACEBOOK ===');
-      print('Error detallado: $e');
-      print('Stack trace: $stackTrace');
-      print('=============================');
+      log('=== ERROR DE LOGIN FACEBOOK ===');
+      log('Error detallado: $e');
+      log('Stack trace: $stackTrace');
+      log('=============================');
 
       try {
         await _facebookAuth.logOut();
       } catch (logoutError) {
-        print('Error al hacer logout de Facebook: $logoutError');
+        log('Error al hacer logout de Facebook: $logoutError');
       }
 
       throw Exception('Failed to sign in with Facebook: ${e.toString()}');
@@ -368,7 +401,7 @@ class AuthRepositoryImpl implements AuthRepository {
         _googleSignIn.signOut(),
         _facebookAuth.logOut(),
       ]);
-      print('Warning: Logout may not have completed fully: ${e.toString()}');
+      log('Warning: Logout may not have completed fully: ${e.toString()}');
     }
   }
 
@@ -380,8 +413,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<UserModel?> get authStateChanges {
-    return _firebaseAuth.authStateChanges().map((user) {
-      return user != null ? _getUserModelFromFirebaseUser(user) : null;
+    return _firebaseAuth.authStateChanges().asyncMap((user) async {
+      return user != null
+          ? await _getUserModelFromFirebaseUserWithFirestore(user)
+          : null;
     });
   }
 
@@ -435,19 +470,11 @@ class AuthRepositoryImpl implements AuthRepository {
         await user.updateDisplayName(displayName);
         await user.updatePhotoURL(photoURL);
 
-        // 2. Update Firestore
+        // 2. Update Firestore (profile data stays in Firestore only)
         await _updateUserInFirestore(user.uid, displayName, photoURL);
 
-        // 3. Update backend profile
-        try {
-          await _apiService.updateProfile({
-            if (displayName != null) 'name': displayName,
-            if (photoURL != null) 'photo_url': photoURL,
-          });
-        } catch (e) {
-          print('Warning: Backend profile update failed: $e');
-          // Continue even if backend update fails
-        }
+        // NOTE: Profile updates are Firestore-only, no backend calls needed
+        log('✅ Profile updated successfully in Firebase & Firestore');
       }
     } catch (e) {
       throw Exception('Failed to update profile: ${e.toString()}');
@@ -504,6 +531,110 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   UserModel _getUserModelFromFirebaseUser(User user) {
+    return UserModel(
+      id: user.uid,
+      email: user.email ?? '',
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      phone: user.phoneNumber,
+      emailVerified: user.emailVerified,
+    );
+  }
+
+  Future<UserModel> _getUserModelFromFirebaseUserWithFirestore(
+    User user,
+  ) async {
+    try {
+      log('🔍 Loading user data from Firestore for UID: ${user.uid}');
+
+      // Try to get user data from Firestore first
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        log('✅ User document found in Firestore');
+        log('🔧 Firestore data keys: ${userData.keys.toList()}');
+
+        // Log the preference data specifically
+        log('🔧 cookingLevel: ${userData['cookingLevel']}');
+        log('🔧 allergies: ${userData['allergies']}');
+        log('🔧 specialDiets: ${userData['specialDiets']}');
+        log('🔧 preferredFoodTypes: ${userData['preferredFoodTypes']}');
+
+        // Build UserPreferencesModel from Firestore data
+        final prefs = UserPreferencesModel(
+          language: userData['language'] as String? ?? 'es',
+          measurementUnit: userData['measurementUnit'] as String? ?? 'metric',
+          cookingLevel: userData['cookingLevel'] as String?,
+          allergies:
+              (userData['allergies'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          allergyItems:
+              (userData['allergyItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+          specialDiets:
+              (userData['specialDiets'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          specialDietItems:
+              (userData['specialDietItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+          preferredFoodTypes:
+              (userData['preferredFoodTypes'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          preferredFoodTypeItems:
+              (userData['preferredFoodTypeItems'] as List<dynamic>?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList() ??
+              [],
+        );
+
+        log(
+          '🔧 Built UserPreferencesModel - cookingLevel: ${prefs.cookingLevel}',
+        );
+
+        return UserModel(
+          id: user.uid,
+          email: userData['email'] as String? ?? user.email ?? '',
+          displayName: userData['displayName'] as String? ?? user.displayName,
+          photoURL: userData['photoURL'] as String? ?? user.photoURL,
+          phone: user.phoneNumber,
+          emailVerified: user.emailVerified,
+          favoriteRecipes:
+              (userData['favoriteRecipes'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
+          prefs: prefs,
+          initialPreferencesCompleted:
+              userData['initialPreferencesCompleted'] as bool? ?? false,
+          createdAt:
+              userData['createdAt'] != null
+                  ? (userData['createdAt'] as Timestamp).toDate()
+                  : null,
+          lastLoginAt:
+              userData['lastLoginAt'] != null
+                  ? (userData['lastLoginAt'] as Timestamp).toDate()
+                  : null,
+        );
+      } else {
+        log('❌ User document NOT found in Firestore');
+      }
+    } catch (e) {
+      log('❌ Error loading user data from Firestore: $e');
+    }
+
+    // Fallback to Firebase Auth data only
+    log('⚠️ Fallback: Using Firebase Auth data only (no Firestore data)');
     return UserModel(
       id: user.uid,
       email: user.email ?? '',
@@ -630,7 +761,7 @@ class AuthRepositoryImpl implements AuthRepository {
             await _firestore.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
           // The user data will be automatically updated through listeners
-          print('User data refreshed from Firestore');
+          log('User data refreshed from Firestore');
         }
       }
     } catch (e) {
@@ -641,16 +772,96 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> refreshApplicationTokens() async {
     try {
+      log('🔄 AuthRepository: Starting token refresh process...');
+
       // Use the ApiService to refresh tokens
       final newAccessToken = await _apiService.refreshTokens();
       if (newAccessToken == null) {
+        log('❌ Token refresh failed - no new access token received');
         throw Exception(
           'Failed to refresh tokens - no new access token received',
         );
       }
-      print('Application tokens refreshed successfully');
+      log('🎉 AuthRepository: Application tokens refreshed successfully!');
     } catch (e) {
+      log('❌ AuthRepository: Token refresh failed - ${e.toString()}');
       throw Exception('Failed to refresh tokens: ${e.toString()}');
+    }
+  }
+
+  // Complex preference methods with emoji and metadata
+  @override
+  Future<void> saveUserAllergyItemsWithMetadata(
+    List<Map<String, dynamic>> allergyItems,
+  ) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Extract simple names for legacy field
+        final List<String> simpleAllergies =
+            allergyItems.map((item) => item['name'] as String).toList();
+
+        await _firestore.collection('users').doc(user.uid).update({
+          'allergyItems':
+              allergyItems, // Complex structure with emoji, isCustom
+          'allergies': simpleAllergies, // Legacy simple list
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception(
+        'Failed to save allergy items with metadata: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> saveUserSpecialDietItemsWithMetadata(
+    List<Map<String, dynamic>> specialDietItems,
+  ) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Extract simple names for legacy field
+        final List<String> simpleSpecialDiets =
+            specialDietItems.map((item) => item['name'] as String).toList();
+
+        await _firestore.collection('users').doc(user.uid).update({
+          'specialDietItems':
+              specialDietItems, // Complex structure with emoji, isCustom
+          'specialDiets': simpleSpecialDiets, // Legacy simple list
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception(
+        'Failed to save special diet items with metadata: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> saveUserPreferredFoodTypeItemsWithMetadata(
+    List<Map<String, dynamic>> foodTypeItems,
+  ) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Extract simple names for legacy field
+        final List<String> simpleFoodTypes =
+            foodTypeItems.map((item) => item['name'] as String).toList();
+
+        await _firestore.collection('users').doc(user.uid).update({
+          'preferredFoodTypeItems':
+              foodTypeItems, // Complex structure with emoji, isCustom
+          'preferredFoodTypes': simpleFoodTypes, // Legacy simple list
+          'lastUpdatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      throw Exception(
+        'Failed to save preferred food type items with metadata: ${e.toString()}',
+      );
     }
   }
 }

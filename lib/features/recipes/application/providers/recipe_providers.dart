@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/recipes/application/states/recipe_state.dart'
     as state_lib;
@@ -20,7 +21,7 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
   }
 
   Future<void> _loadRecipes() async {
-    this.state = this.state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       // Simulate network delay (reducido para mejor experiencia)
       await Future.delayed(const Duration(milliseconds: 300));
@@ -51,7 +52,7 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
               )
               .toList();
 
-      this.state = this.state.copyWith(
+      state = state.copyWith(
         isLoading: false,
         recipes: stateRecipes,
         // Example: Set based on actual logic
@@ -59,7 +60,7 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
             _mode == RecipeMode.smartFromInventory ? 3 : null,
       );
     } catch (e) {
-      this.state = this.state.copyWith(
+      state = state.copyWith(
         isLoading: false,
         errorMessage: 'Failed to load recipes: ${e.toString()}',
       );
@@ -135,17 +136,17 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
   }
 
   void setSearchQuery(String query) {
-    this.state = this.state.copyWith(searchQuery: query);
+    state = state.copyWith(searchQuery: query);
     _applyFiltersAndSearch();
   }
 
   void toggleShowOnlyWithMyIngredients(bool value) {
-    this.state = this.state.copyWith(showOnlyWithMyIngredients: value);
+    state = state.copyWith(showOnlyWithMyIngredients: value);
     _applyFiltersAndSearch();
   }
 
   void applyFilters(Map<String, Set<String>> filters) {
-    this.state = this.state.copyWith(selectedFilters: filters);
+    state = state.copyWith(selectedFilters: filters);
     _applyFiltersAndSearch();
   }
 
@@ -153,13 +154,13 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
   void _applyFiltersAndSearch() {
     // This would filter the recipes based on selected filters and search query
     // For now, we'll just update the loading state
-    this.state = this.state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true);
 
     // In a real implementation, you'd filter the recipes here
 
     // For demo, simulate a delay
     Future.delayed(const Duration(milliseconds: 500), () {
-      this.state = this.state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false);
     });
   }
 
@@ -246,7 +247,7 @@ final recipeFiltersProvider = FutureProvider<List<FilterCategory>>((ref) async {
     return categories;
   } catch (e) {
     // Handle potential errors during loading or parsing
-    print('Error loading recipe filters: $e');
+    log('Error loading recipe filters: $e');
     throw Exception('Failed to load recipe filters: $e');
   }
 }, name: 'recipeFilters');

@@ -74,8 +74,8 @@ class RecipeCard extends StatelessWidget {
         isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
     final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final Color easyBadgeBackgroundColor = primaryColor.withOpacity(0.2);
-    final Color hardBadgeBackgroundColor = accentColor.withOpacity(0.2);
+    final Color easyBadgeBackgroundColor = primaryColor.withValues(alpha: 0.2);
+    final Color hardBadgeBackgroundColor = accentColor.withValues(alpha: 0.2);
     final Color easyBadgeTextColor = primaryColor;
     final Color hardBadgeTextColor = accentColor;
     final Color placeholderColor = Colors.grey.shade200;
@@ -93,7 +93,7 @@ class RecipeCard extends StatelessWidget {
       width: 160, // Fixed width for horizontal scroll items
       child: Card(
         elevation: isDark ? 1 : 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         clipBehavior: Clip.antiAlias, // Clip the image to the card shape
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),

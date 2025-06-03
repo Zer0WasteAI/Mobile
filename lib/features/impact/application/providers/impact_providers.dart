@@ -314,6 +314,7 @@ class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
     );
 
     // Actualizar métricas según el tipo de objetivo
+    // ignore: unused_local_variable
     final metricsNotifier = _ref.read(impactMetricsProvider.notifier);
     final metrics = _ref.read(impactMetricsProvider);
 
@@ -323,6 +324,7 @@ class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
     }
 
     // Añadir el logro a las métricas
+    // ignore: unused_local_variable
     final newAchievements = [...metrics.achievements, achievement];
     _ref.read(impactMetricsProvider.notifier).syncWithEcoCoins();
   }

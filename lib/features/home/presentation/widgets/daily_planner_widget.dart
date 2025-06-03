@@ -41,6 +41,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     // Obtener las comidas planificadas para hoy con manejo de nulo
     final mealPlans = ref.watch(mealPlansProvider);
     final todayMeals =
+        // ignore: unnecessary_null_comparison
         mealPlans != null ? (mealPlans[dateKey] ?? <MealPlan>[]) : <MealPlan>[];
 
     // Organizar las comidas por tipo

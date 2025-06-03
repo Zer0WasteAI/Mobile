@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -5,8 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 // TODO: Define route name if needed
 // No: Defined below
@@ -32,7 +36,9 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
     final Color mainTextColor = colorScheme.onSurface;
     final Color secondaryTextColor = colorScheme.onSurfaceVariant;
     final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final Color defaultChipBorderColor = colorScheme.outline.withValues(
+      alpha: 0.5,
+    );
     final Color secondaryTextColorForDialog = colorScheme.onSurfaceVariant;
 
     return predefinedDietsAsyncValue.when(
@@ -179,17 +185,59 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 2, // Subtle shadow
-                      shadowColor: primaryColor.withOpacity(0.3),
+                      shadowColor: primaryColor.withValues(alpha: 0.3),
                       foregroundColor:
                           colorScheme.onPrimary, // Use theme color for text
                     ),
-                    onPressed: () {
-                      // Navigate to HomeScreen
-                      // TODO: Ensure '/home' is the correct route path for HomeScreen
-                      print("Selected Diets on Continue: $selectedDiets");
-                      context.go(
-                        '/home',
-                      ); // Navigate to home (changed from '/')
+                    onPressed: () async {
+                      // Mostrar indicador de carga
+                      if (context.mounted) {
+                        showLoadingSnackBar(
+                          context,
+                          message: 'Guardando dietas especiales...',
+                        );
+                      }
+
+                      // Save special diets to Firestore before navigating
+                      try {
+                        final authRepository = ref.read(authRepositoryProvider);
+
+                        // Create special diet items with metadata (emoji, isCustom)
+                        final List<Map<String, dynamic>> specialDietItems =
+                            selectedDiets
+                                .map(
+                                  (diet) => {
+                                    'name': diet.name,
+                                    'emoji': diet.emoji,
+                                    'isCustom': diet.isCustom,
+                                  },
+                                )
+                                .toList();
+
+                        // Save both simple list and complex structure
+                        await authRepository
+                            .saveUserSpecialDietItemsWithMetadata(
+                              specialDietItems,
+                            );
+
+                        // IMPORTANT: Mark initial preferences as completed since this is the last onboarding screen
+                        await authRepository.markInitialPreferencesCompleted();
+
+                        log('✅ Special diets saved to Firestore successfully');
+                        log('✅ Initial preferences marked as completed');
+                      log("Selected Diets on Continue: $selectedDiets");
+
+                        // Navigate to home
+                        if (context.mounted) {
+                          context.go('/home');
+                        }
+                      } catch (e) {
+                        log('❌ Error saving special diets: $e');
+                        // Still navigate even if save fails
+                        if (context.mounted) {
+                          context.go('/home');
+                        }
+                      }
                     },
                     child: Text(
                       'Continuar',

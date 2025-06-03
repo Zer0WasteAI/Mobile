@@ -78,7 +78,7 @@ class RecipeFilterBottomSheet extends HookWidget {
               width: 40,
               height: 5,
               decoration: BoxDecoration(
-                color: secondaryTextColor.withOpacity(0.3),
+                color: secondaryTextColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.5),
               ),
             ),
@@ -222,7 +222,7 @@ class RecipeFilterBottomSheet extends HookWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -291,7 +291,7 @@ class RecipeFilterBottomSheet extends HookWidget {
                     checkmarkColor: primaryColor,
                     backgroundColor:
                         isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                    selectedColor: primaryColor.withOpacity(0.15),
+                    selectedColor: primaryColor.withValues(alpha: 0.15),
                     labelStyle: GoogleFonts.inter(
                       fontSize: 13,
                       color: isSelected ? primaryColor : secondaryTextColor,

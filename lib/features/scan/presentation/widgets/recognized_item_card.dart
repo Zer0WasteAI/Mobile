@@ -38,50 +38,94 @@ class RecognizedItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: outlineColor, width: 0.5),
+        side: BorderSide(
+          color:
+              item.allergyAlert
+                  ? colorScheme.error.withValues(alpha: 0.5)
+                  : outlineColor,
+          width: item.allergyAlert ? 1.5 : 0.5,
+        ),
       ),
-      color: cardBackgroundColor,
+      color:
+          item.allergyAlert
+              ? colorScheme.errorContainer.withValues(alpha: 0.1)
+              : cardBackgroundColor,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: SizedBox(
-                width: 60,
-                height: 60,
-                child:
-                    item.imageUrl != null && item.imageUrl!.isNotEmpty
-                        ? Image.network(
-                          item.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) => const Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.grey,
-                              ),
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                              ),
-                            );
-                          },
-                        )
-                        : Icon(
-                          Icons.fastfood,
-                          color: outlineColor,
-                          size: 30,
-                        ), // Placeholder icon
-              ),
+            // Image with optional allergy overlay
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child:
+                        item.imageUrl != null && item.imageUrl!.isNotEmpty
+                            ? Image.network(
+                              item.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (context, error, stackTrace) => const Icon(
+                                    Icons.broken_image_outlined,
+                                    color: Colors.grey,
+                                  ),
+                              loadingBuilder: (
+                                context,
+                                child,
+                                loadingProgress,
+                              ) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    value:
+                                        loadingProgress.expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                  ),
+                                );
+                              },
+                            )
+                            : Icon(
+                              Icons.fastfood,
+                              color: outlineColor,
+                              size: 30,
+                            ), // Placeholder icon
+                  ),
+                ),
+                // Allergy alert indicator
+                if (item.allergyAlert)
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.warning,
+                        color: colorScheme.onError,
+                        size: 12,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 12),
 
@@ -100,18 +144,66 @@ class RecognizedItemCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  // Optional: Display Expiry Date
+                  // Allergy warning text
+                  if (item.allergyAlert && item.allergens.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 14,
+                            color: colorScheme.error,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Contiene: ${item.allergens.join(', ')}',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: colorScheme.error,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  // Display Expiry Date with additional information
                   if (item.expiryDate != null && item.expiryDate!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        'Caduca: ${item.expiryDate}', // TODO: Format date properly
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color:
-                              colorScheme
-                                  .secondary, // Use secondary color for expiry
-                          fontStyle: FontStyle.italic,
+                      child: RichText(
+                        text: TextSpan(
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: colorScheme.secondary,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          children: [
+                            const TextSpan(text: 'Caduca: '),
+                            TextSpan(
+                              text: item.expiryDate!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            // Add expiration time and time unit in parentheses
+                            if (item.expirationTime != null &&
+                                item.timeUnit != null)
+                              TextSpan(
+                                text:
+                                    ' (${item.expirationTime} ${item.timeUnit})',
+                                style: TextStyle(
+                                  color: colorScheme.secondary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
@@ -120,6 +212,7 @@ class RecognizedItemCard extends StatelessWidget {
                     quantity: item.quantity,
                     onIncrement: onIncrement,
                     onDecrement: onDecrement,
+                    unit: item.typeUnit,
                   ),
                 ],
               ),

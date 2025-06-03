@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 
@@ -72,7 +74,7 @@ class SplashController extends StateNotifier<SplashState> {
         onboardingSeen = ref.read(onboardingSeenProvider);
       } catch (e) {
         // Si hay error al leer el onboarding, asumimos que no se ha visto
-        print('Error al leer estado de onboarding: $e');
+        log('Error al leer estado de onboarding: $e');
         onboardingSeen = false;
       }
 
@@ -92,7 +94,7 @@ class SplashController extends StateNotifier<SplashState> {
         }
       });
     } catch (e) {
-      print('Error en splash controller: $e');
+      log('Error en splash controller: $e');
       // Si hay un error, intentamos manejarlo y continuar con la navegación
       state = state.copyWith(
         status:

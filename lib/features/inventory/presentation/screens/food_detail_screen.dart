@@ -1,8 +1,9 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
@@ -10,7 +11,6 @@ import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.da
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/nutrition_info_chip.dart'; // Assuming this widget exists or will be created
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // For batch dialog
-import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // For date formatting
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_consumed_screen.dart'; // Nueva pantalla que crearemos
 
 // TODO: Define route name constant if needed elsewhere
@@ -449,7 +449,7 @@ class FoodDetailScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 5,
                             offset: const Offset(0, 2),
                           ),
@@ -582,7 +582,7 @@ class FoodDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -703,7 +703,7 @@ class FoodDetailScreen extends ConsumerWidget {
                                   color: cardBackgroundColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: Colors.grey.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -742,7 +742,7 @@ class FoodDetailScreen extends ConsumerWidget {
                                   color: cardBackgroundColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: Colors.grey.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(

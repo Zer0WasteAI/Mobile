@@ -17,13 +17,46 @@ class WelcomeHeader extends ConsumerWidget {
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
     final Color secondaryTextColor =
         isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    // ignore: unused_local_variable
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
     // Get user data from authControllerProvider for more complete data
     final authState = ref.watch(authControllerProvider);
-    final userName = authState.value?.displayName ?? 'Usuario';
 
+    // Handle auth state - errors are handled globally by AuthErrorHandler
+    return authState.when(
+      data: (user) {
+        final userName = user?.displayName ?? 'Usuario';
+        return _buildWelcomeContent(
+          context,
+          userName,
+          mainTextColor,
+          secondaryTextColor,
+        );
+      },
+      loading:
+          () =>
+              _buildLoadingContent(context, mainTextColor, secondaryTextColor),
+      error: (error, stackTrace) {
+        // Return a fallback UI instead of showing the raw error
+        // The error dialog is handled globally by AuthErrorHandler
+        return _buildWelcomeContent(
+          context,
+          'Usuario',
+          mainTextColor,
+          secondaryTextColor,
+        );
+      },
+    );
+  }
+
+  Widget _buildWelcomeContent(
+    BuildContext context,
+    String userName,
+    Color mainTextColor,
+    Color secondaryTextColor,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,6 +107,77 @@ class WelcomeHeader extends ConsumerWidget {
       ],
     );
   }
+
+  Widget _buildLoadingContent(
+    BuildContext context,
+    Color mainTextColor,
+    Color secondaryTextColor,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              // Loading avatar
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: mainTextColor.withValues(alpha: 0.1),
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Loading text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 20,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: mainTextColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 14,
+                      width: 200,
+                      decoration: BoxDecoration(
+                        color: secondaryTextColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Loading EcoCoins
+        Container(
+          width: 80,
+          height: 32,
+          decoration: BoxDecoration(
+            color: mainTextColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class UserAvatar extends ConsumerWidget {
@@ -86,7 +190,7 @@ class UserAvatar extends ConsumerWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color backgroundColor = primaryColor.withOpacity(0.15);
+    final Color backgroundColor = primaryColor.withValues(alpha: 0.15);
     final Color textColor = primaryColor;
 
     // Get user data from auth state
@@ -116,7 +220,7 @@ class UserAvatar extends ConsumerWidget {
               border: Border.all(color: primaryColor, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -127,7 +231,7 @@ class UserAvatar extends ConsumerWidget {
               child:
                   hasPhoto
                       ? CircleAvatar(
-                        backgroundImage: NetworkImage(user!.photoURL!),
+                        backgroundImage: NetworkImage(user.photoURL!),
                         backgroundColor: backgroundColor,
                       )
                       : CircleAvatar(
@@ -176,6 +280,7 @@ class EcoCoinBadge extends ConsumerWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    // ignore: unused_local_variable
     final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
 
@@ -189,9 +294,12 @@ class EcoCoinBadge extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: primaryColor.withOpacity(0.15),
+          color: primaryColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
+          border: Border.all(
+            color: primaryColor.withValues(alpha: 0.3),
+            width: 1,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RecognitionResult {
 
- String get recognitionId; List<FoodRecognitionItem> get results; String? get processedImageUrl;
+ String get recognitionId; List<FoodRecognitionItem> get results; String? get processedImageUrl; List<AllergyAlert> get allergyAlerts; bool get hasAllergens;
 /// Create a copy of RecognitionResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $RecognitionResultCopyWith<RecognitionResult> get copyWith => _$RecognitionResul
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecognitionResult&&(identical(other.recognitionId, recognitionId) || other.recognitionId == recognitionId)&&const DeepCollectionEquality().equals(other.results, results)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecognitionResult&&(identical(other.recognitionId, recognitionId) || other.recognitionId == recognitionId)&&const DeepCollectionEquality().equals(other.results, results)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl)&&const DeepCollectionEquality().equals(other.allergyAlerts, allergyAlerts)&&(identical(other.hasAllergens, hasAllergens) || other.hasAllergens == hasAllergens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,recognitionId,const DeepCollectionEquality().hash(results),processedImageUrl);
+int get hashCode => Object.hash(runtimeType,recognitionId,const DeepCollectionEquality().hash(results),processedImageUrl,const DeepCollectionEquality().hash(allergyAlerts),hasAllergens);
 
 @override
 String toString() {
-  return 'RecognitionResult(recognitionId: $recognitionId, results: $results, processedImageUrl: $processedImageUrl)';
+  return 'RecognitionResult(recognitionId: $recognitionId, results: $results, processedImageUrl: $processedImageUrl, allergyAlerts: $allergyAlerts, hasAllergens: $hasAllergens)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $RecognitionResultCopyWith<$Res>  {
   factory $RecognitionResultCopyWith(RecognitionResult value, $Res Function(RecognitionResult) _then) = _$RecognitionResultCopyWithImpl;
 @useResult
 $Res call({
- String recognitionId, List<FoodRecognitionItem> results, String? processedImageUrl
+ String recognitionId, List<FoodRecognitionItem> results, String? processedImageUrl, List<AllergyAlert> allergyAlerts, bool hasAllergens
 });
 
 
@@ -66,12 +66,14 @@ class _$RecognitionResultCopyWithImpl<$Res>
 
 /// Create a copy of RecognitionResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? recognitionId = null,Object? results = null,Object? processedImageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? recognitionId = null,Object? results = null,Object? processedImageUrl = freezed,Object? allergyAlerts = null,Object? hasAllergens = null,}) {
   return _then(_self.copyWith(
 recognitionId: null == recognitionId ? _self.recognitionId : recognitionId // ignore: cast_nullable_to_non_nullable
 as String,results: null == results ? _self.results : results // ignore: cast_nullable_to_non_nullable
 as List<FoodRecognitionItem>,processedImageUrl: freezed == processedImageUrl ? _self.processedImageUrl : processedImageUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,allergyAlerts: null == allergyAlerts ? _self.allergyAlerts : allergyAlerts // ignore: cast_nullable_to_non_nullable
+as List<AllergyAlert>,hasAllergens: null == hasAllergens ? _self.hasAllergens : hasAllergens // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -82,7 +84,7 @@ as String?,
 @JsonSerializable()
 
 class _RecognitionResult implements RecognitionResult {
-  const _RecognitionResult({required this.recognitionId, required final  List<FoodRecognitionItem> results, this.processedImageUrl}): _results = results;
+  const _RecognitionResult({required this.recognitionId, required final  List<FoodRecognitionItem> results, this.processedImageUrl, final  List<AllergyAlert> allergyAlerts = const [], this.hasAllergens = false}): _results = results,_allergyAlerts = allergyAlerts;
   factory _RecognitionResult.fromJson(Map<String, dynamic> json) => _$RecognitionResultFromJson(json);
 
 @override final  String recognitionId;
@@ -94,6 +96,14 @@ class _RecognitionResult implements RecognitionResult {
 }
 
 @override final  String? processedImageUrl;
+ final  List<AllergyAlert> _allergyAlerts;
+@override@JsonKey() List<AllergyAlert> get allergyAlerts {
+  if (_allergyAlerts is EqualUnmodifiableListView) return _allergyAlerts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allergyAlerts);
+}
+
+@override@JsonKey() final  bool hasAllergens;
 
 /// Create a copy of RecognitionResult
 /// with the given fields replaced by the non-null parameter values.
@@ -108,16 +118,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecognitionResult&&(identical(other.recognitionId, recognitionId) || other.recognitionId == recognitionId)&&const DeepCollectionEquality().equals(other._results, _results)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecognitionResult&&(identical(other.recognitionId, recognitionId) || other.recognitionId == recognitionId)&&const DeepCollectionEquality().equals(other._results, _results)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl)&&const DeepCollectionEquality().equals(other._allergyAlerts, _allergyAlerts)&&(identical(other.hasAllergens, hasAllergens) || other.hasAllergens == hasAllergens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,recognitionId,const DeepCollectionEquality().hash(_results),processedImageUrl);
+int get hashCode => Object.hash(runtimeType,recognitionId,const DeepCollectionEquality().hash(_results),processedImageUrl,const DeepCollectionEquality().hash(_allergyAlerts),hasAllergens);
 
 @override
 String toString() {
-  return 'RecognitionResult(recognitionId: $recognitionId, results: $results, processedImageUrl: $processedImageUrl)';
+  return 'RecognitionResult(recognitionId: $recognitionId, results: $results, processedImageUrl: $processedImageUrl, allergyAlerts: $allergyAlerts, hasAllergens: $hasAllergens)';
 }
 
 
@@ -128,7 +138,7 @@ abstract mixin class _$RecognitionResultCopyWith<$Res> implements $RecognitionRe
   factory _$RecognitionResultCopyWith(_RecognitionResult value, $Res Function(_RecognitionResult) _then) = __$RecognitionResultCopyWithImpl;
 @override @useResult
 $Res call({
- String recognitionId, List<FoodRecognitionItem> results, String? processedImageUrl
+ String recognitionId, List<FoodRecognitionItem> results, String? processedImageUrl, List<AllergyAlert> allergyAlerts, bool hasAllergens
 });
 
 
@@ -145,12 +155,14 @@ class __$RecognitionResultCopyWithImpl<$Res>
 
 /// Create a copy of RecognitionResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? recognitionId = null,Object? results = null,Object? processedImageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? recognitionId = null,Object? results = null,Object? processedImageUrl = freezed,Object? allergyAlerts = null,Object? hasAllergens = null,}) {
   return _then(_RecognitionResult(
 recognitionId: null == recognitionId ? _self.recognitionId : recognitionId // ignore: cast_nullable_to_non_nullable
 as String,results: null == results ? _self._results : results // ignore: cast_nullable_to_non_nullable
 as List<FoodRecognitionItem>,processedImageUrl: freezed == processedImageUrl ? _self.processedImageUrl : processedImageUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,allergyAlerts: null == allergyAlerts ? _self._allergyAlerts : allergyAlerts // ignore: cast_nullable_to_non_nullable
+as List<AllergyAlert>,hasAllergens: null == hasAllergens ? _self.hasAllergens : hasAllergens // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -161,7 +173,7 @@ as String?,
 /// @nodoc
 mixin _$FoodRecognitionItem {
 
- String get foodName; double get confidence; BoundingBox? get boundingBox; NutritionalInfo? get nutritionalInfo;
+ String get foodName; double get confidence; BoundingBox? get boundingBox; NutritionalInfo? get nutritionalInfo; bool get allergyAlert; List<String> get allergens;
 /// Create a copy of FoodRecognitionItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -174,16 +186,16 @@ $FoodRecognitionItemCopyWith<FoodRecognitionItem> get copyWith => _$FoodRecognit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FoodRecognitionItem&&(identical(other.foodName, foodName) || other.foodName == foodName)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.boundingBox, boundingBox) || other.boundingBox == boundingBox)&&(identical(other.nutritionalInfo, nutritionalInfo) || other.nutritionalInfo == nutritionalInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FoodRecognitionItem&&(identical(other.foodName, foodName) || other.foodName == foodName)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.boundingBox, boundingBox) || other.boundingBox == boundingBox)&&(identical(other.nutritionalInfo, nutritionalInfo) || other.nutritionalInfo == nutritionalInfo)&&(identical(other.allergyAlert, allergyAlert) || other.allergyAlert == allergyAlert)&&const DeepCollectionEquality().equals(other.allergens, allergens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,foodName,confidence,boundingBox,nutritionalInfo);
+int get hashCode => Object.hash(runtimeType,foodName,confidence,boundingBox,nutritionalInfo,allergyAlert,const DeepCollectionEquality().hash(allergens));
 
 @override
 String toString() {
-  return 'FoodRecognitionItem(foodName: $foodName, confidence: $confidence, boundingBox: $boundingBox, nutritionalInfo: $nutritionalInfo)';
+  return 'FoodRecognitionItem(foodName: $foodName, confidence: $confidence, boundingBox: $boundingBox, nutritionalInfo: $nutritionalInfo, allergyAlert: $allergyAlert, allergens: $allergens)';
 }
 
 
@@ -194,7 +206,7 @@ abstract mixin class $FoodRecognitionItemCopyWith<$Res>  {
   factory $FoodRecognitionItemCopyWith(FoodRecognitionItem value, $Res Function(FoodRecognitionItem) _then) = _$FoodRecognitionItemCopyWithImpl;
 @useResult
 $Res call({
- String foodName, double confidence, BoundingBox? boundingBox, NutritionalInfo? nutritionalInfo
+ String foodName, double confidence, BoundingBox? boundingBox, NutritionalInfo? nutritionalInfo, bool allergyAlert, List<String> allergens
 });
 
 
@@ -211,13 +223,15 @@ class _$FoodRecognitionItemCopyWithImpl<$Res>
 
 /// Create a copy of FoodRecognitionItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? foodName = null,Object? confidence = null,Object? boundingBox = freezed,Object? nutritionalInfo = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? foodName = null,Object? confidence = null,Object? boundingBox = freezed,Object? nutritionalInfo = freezed,Object? allergyAlert = null,Object? allergens = null,}) {
   return _then(_self.copyWith(
 foodName: null == foodName ? _self.foodName : foodName // ignore: cast_nullable_to_non_nullable
 as String,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,boundingBox: freezed == boundingBox ? _self.boundingBox : boundingBox // ignore: cast_nullable_to_non_nullable
 as BoundingBox?,nutritionalInfo: freezed == nutritionalInfo ? _self.nutritionalInfo : nutritionalInfo // ignore: cast_nullable_to_non_nullable
-as NutritionalInfo?,
+as NutritionalInfo?,allergyAlert: null == allergyAlert ? _self.allergyAlert : allergyAlert // ignore: cast_nullable_to_non_nullable
+as bool,allergens: null == allergens ? _self.allergens : allergens // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 /// Create a copy of FoodRecognitionItem
@@ -252,13 +266,21 @@ $NutritionalInfoCopyWith<$Res>? get nutritionalInfo {
 @JsonSerializable()
 
 class _FoodRecognitionItem implements FoodRecognitionItem {
-  const _FoodRecognitionItem({required this.foodName, required this.confidence, this.boundingBox, this.nutritionalInfo});
+  const _FoodRecognitionItem({required this.foodName, required this.confidence, this.boundingBox, this.nutritionalInfo, this.allergyAlert = false, final  List<String> allergens = const []}): _allergens = allergens;
   factory _FoodRecognitionItem.fromJson(Map<String, dynamic> json) => _$FoodRecognitionItemFromJson(json);
 
 @override final  String foodName;
 @override final  double confidence;
 @override final  BoundingBox? boundingBox;
 @override final  NutritionalInfo? nutritionalInfo;
+@override@JsonKey() final  bool allergyAlert;
+ final  List<String> _allergens;
+@override@JsonKey() List<String> get allergens {
+  if (_allergens is EqualUnmodifiableListView) return _allergens;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allergens);
+}
+
 
 /// Create a copy of FoodRecognitionItem
 /// with the given fields replaced by the non-null parameter values.
@@ -273,16 +295,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FoodRecognitionItem&&(identical(other.foodName, foodName) || other.foodName == foodName)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.boundingBox, boundingBox) || other.boundingBox == boundingBox)&&(identical(other.nutritionalInfo, nutritionalInfo) || other.nutritionalInfo == nutritionalInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FoodRecognitionItem&&(identical(other.foodName, foodName) || other.foodName == foodName)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.boundingBox, boundingBox) || other.boundingBox == boundingBox)&&(identical(other.nutritionalInfo, nutritionalInfo) || other.nutritionalInfo == nutritionalInfo)&&(identical(other.allergyAlert, allergyAlert) || other.allergyAlert == allergyAlert)&&const DeepCollectionEquality().equals(other._allergens, _allergens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,foodName,confidence,boundingBox,nutritionalInfo);
+int get hashCode => Object.hash(runtimeType,foodName,confidence,boundingBox,nutritionalInfo,allergyAlert,const DeepCollectionEquality().hash(_allergens));
 
 @override
 String toString() {
-  return 'FoodRecognitionItem(foodName: $foodName, confidence: $confidence, boundingBox: $boundingBox, nutritionalInfo: $nutritionalInfo)';
+  return 'FoodRecognitionItem(foodName: $foodName, confidence: $confidence, boundingBox: $boundingBox, nutritionalInfo: $nutritionalInfo, allergyAlert: $allergyAlert, allergens: $allergens)';
 }
 
 
@@ -293,7 +315,7 @@ abstract mixin class _$FoodRecognitionItemCopyWith<$Res> implements $FoodRecogni
   factory _$FoodRecognitionItemCopyWith(_FoodRecognitionItem value, $Res Function(_FoodRecognitionItem) _then) = __$FoodRecognitionItemCopyWithImpl;
 @override @useResult
 $Res call({
- String foodName, double confidence, BoundingBox? boundingBox, NutritionalInfo? nutritionalInfo
+ String foodName, double confidence, BoundingBox? boundingBox, NutritionalInfo? nutritionalInfo, bool allergyAlert, List<String> allergens
 });
 
 
@@ -310,13 +332,15 @@ class __$FoodRecognitionItemCopyWithImpl<$Res>
 
 /// Create a copy of FoodRecognitionItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? foodName = null,Object? confidence = null,Object? boundingBox = freezed,Object? nutritionalInfo = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? foodName = null,Object? confidence = null,Object? boundingBox = freezed,Object? nutritionalInfo = freezed,Object? allergyAlert = null,Object? allergens = null,}) {
   return _then(_FoodRecognitionItem(
 foodName: null == foodName ? _self.foodName : foodName // ignore: cast_nullable_to_non_nullable
 as String,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,boundingBox: freezed == boundingBox ? _self.boundingBox : boundingBox // ignore: cast_nullable_to_non_nullable
 as BoundingBox?,nutritionalInfo: freezed == nutritionalInfo ? _self.nutritionalInfo : nutritionalInfo // ignore: cast_nullable_to_non_nullable
-as NutritionalInfo?,
+as NutritionalInfo?,allergyAlert: null == allergyAlert ? _self.allergyAlert : allergyAlert // ignore: cast_nullable_to_non_nullable
+as bool,allergens: null == allergens ? _self._allergens : allergens // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -634,6 +658,154 @@ as double?,fiberG: freezed == fiberG ? _self.fiberG : fiberG // ignore: cast_nul
 as double?,sugarG: freezed == sugarG ? _self.sugarG : sugarG // ignore: cast_nullable_to_non_nullable
 as double?,sodiumMg: freezed == sodiumMg ? _self.sodiumMg : sodiumMg // ignore: cast_nullable_to_non_nullable
 as double?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$AllergyAlert {
+
+ String get item; List<String> get allergens; String get message; double get confidence;
+/// Create a copy of AllergyAlert
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AllergyAlertCopyWith<AllergyAlert> get copyWith => _$AllergyAlertCopyWithImpl<AllergyAlert>(this as AllergyAlert, _$identity);
+
+  /// Serializes this AllergyAlert to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AllergyAlert&&(identical(other.item, item) || other.item == item)&&const DeepCollectionEquality().equals(other.allergens, allergens)&&(identical(other.message, message) || other.message == message)&&(identical(other.confidence, confidence) || other.confidence == confidence));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,item,const DeepCollectionEquality().hash(allergens),message,confidence);
+
+@override
+String toString() {
+  return 'AllergyAlert(item: $item, allergens: $allergens, message: $message, confidence: $confidence)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AllergyAlertCopyWith<$Res>  {
+  factory $AllergyAlertCopyWith(AllergyAlert value, $Res Function(AllergyAlert) _then) = _$AllergyAlertCopyWithImpl;
+@useResult
+$Res call({
+ String item, List<String> allergens, String message, double confidence
+});
+
+
+
+
+}
+/// @nodoc
+class _$AllergyAlertCopyWithImpl<$Res>
+    implements $AllergyAlertCopyWith<$Res> {
+  _$AllergyAlertCopyWithImpl(this._self, this._then);
+
+  final AllergyAlert _self;
+  final $Res Function(AllergyAlert) _then;
+
+/// Create a copy of AllergyAlert
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? item = null,Object? allergens = null,Object? message = null,Object? confidence = null,}) {
+  return _then(_self.copyWith(
+item: null == item ? _self.item : item // ignore: cast_nullable_to_non_nullable
+as String,allergens: null == allergens ? _self.allergens : allergens // ignore: cast_nullable_to_non_nullable
+as List<String>,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+}
+
+
+/// @nodoc
+@JsonSerializable()
+
+class _AllergyAlert implements AllergyAlert {
+  const _AllergyAlert({required this.item, required final  List<String> allergens, required this.message, required this.confidence}): _allergens = allergens;
+  factory _AllergyAlert.fromJson(Map<String, dynamic> json) => _$AllergyAlertFromJson(json);
+
+@override final  String item;
+ final  List<String> _allergens;
+@override List<String> get allergens {
+  if (_allergens is EqualUnmodifiableListView) return _allergens;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allergens);
+}
+
+@override final  String message;
+@override final  double confidence;
+
+/// Create a copy of AllergyAlert
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AllergyAlertCopyWith<_AllergyAlert> get copyWith => __$AllergyAlertCopyWithImpl<_AllergyAlert>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AllergyAlertToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AllergyAlert&&(identical(other.item, item) || other.item == item)&&const DeepCollectionEquality().equals(other._allergens, _allergens)&&(identical(other.message, message) || other.message == message)&&(identical(other.confidence, confidence) || other.confidence == confidence));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,item,const DeepCollectionEquality().hash(_allergens),message,confidence);
+
+@override
+String toString() {
+  return 'AllergyAlert(item: $item, allergens: $allergens, message: $message, confidence: $confidence)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AllergyAlertCopyWith<$Res> implements $AllergyAlertCopyWith<$Res> {
+  factory _$AllergyAlertCopyWith(_AllergyAlert value, $Res Function(_AllergyAlert) _then) = __$AllergyAlertCopyWithImpl;
+@override @useResult
+$Res call({
+ String item, List<String> allergens, String message, double confidence
+});
+
+
+
+
+}
+/// @nodoc
+class __$AllergyAlertCopyWithImpl<$Res>
+    implements _$AllergyAlertCopyWith<$Res> {
+  __$AllergyAlertCopyWithImpl(this._self, this._then);
+
+  final _AllergyAlert _self;
+  final $Res Function(_AllergyAlert) _then;
+
+/// Create a copy of AllergyAlert
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? item = null,Object? allergens = null,Object? message = null,Object? confidence = null,}) {
+  return _then(_AllergyAlert(
+item: null == item ? _self.item : item // ignore: cast_nullable_to_non_nullable
+as String,allergens: null == allergens ? _self._allergens : allergens // ignore: cast_nullable_to_non_nullable
+as List<String>,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

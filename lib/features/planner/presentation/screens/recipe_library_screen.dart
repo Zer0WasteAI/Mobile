@@ -1,3 +1,5 @@
+// ignore_for_file: sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,11 +15,11 @@ class RecipeLibraryScreen extends ConsumerStatefulWidget {
   final Function(MealPlan)? onRecipeSelected;
 
   const RecipeLibraryScreen({
-    Key? key,
+    super.key,
     this.selectionMode = false,
     this.initialMealType,
     this.onRecipeSelected,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<RecipeLibraryScreen> createState() =>
@@ -205,7 +207,6 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                   RecipeFilters();
                               _searchController.clear();
                             },
-                            child: Text('Limpiar todos'),
                             style: TextButton.styleFrom(
                               backgroundColor: Colors.grey.shade100,
                               padding: EdgeInsets.symmetric(
@@ -216,6 +217,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
+                            child: Text('Limpiar todos'),
                           ),
                       ],
                     ),
@@ -242,7 +244,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                   filters.copyWith(dietaryTags: currentTags);
                             },
                             backgroundColor: Colors.grey.shade100,
-                            selectedColor: primaryColor.withOpacity(0.2),
+                            selectedColor: primaryColor.withValues(alpha: 0.2),
                             checkmarkColor: primaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -452,10 +454,10 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
           }
         },
         backgroundColor: primaryColor,
+        tooltip: widget.selectionMode ? 'Volver' : 'Generar con IA',
         child: Icon(
           widget.selectionMode ? Icons.arrow_back : Icons.auto_awesome,
         ),
-        tooltip: widget.selectionMode ? 'Volver' : 'Generar con IA',
       ),
     );
   }
@@ -502,7 +504,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -519,7 +521,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                 Container(
                   height: 90,
                   decoration: BoxDecoration(
-                    color: recipe.type.color.withOpacity(0.2),
+                    color: recipe.type.color.withValues(alpha: 0.2),
                   ),
                   child: Stack(
                     children: [
@@ -541,7 +543,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: recipe.type.color.withOpacity(0.8),
+                            color: recipe.type.color.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -568,7 +570,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             child: Container(
                               padding: EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -592,7 +594,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                           child: Container(
                             padding: EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -661,7 +663,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
 
                         // Etiquetas dietéticas (máximo 1 línea, máximo 2 etiquetas)
                         if (recipe.dietaryTags.isNotEmpty)
-                          Container(
+                          SizedBox(
                             height: 22,
                             child: ListView(
                               scrollDirection: Axis.horizontal,
@@ -711,12 +713,12 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF00BFA5).withOpacity(0.1),
+                                color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: const Color(
                                     0xFF00BFA5,
-                                  ).withOpacity(0.3),
+                                  ).withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -788,7 +790,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: recipe.type.color.withOpacity(0.2),
+                              color: recipe.type.color.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -818,7 +820,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: recipe.type.color.withOpacity(0.1),
+                                    color: recipe.type.color.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -865,7 +867,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                           decoration: BoxDecoration(
                             color:
                                 selectedDate.day == today.day
-                                    ? const Color(0xFF00BFA5).withOpacity(0.1)
+                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -924,7 +926,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             color:
                                 selectedDate.day ==
                                         today.add(Duration(days: 1)).day
-                                    ? const Color(0xFF00BFA5).withOpacity(0.1)
+                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -997,7 +999,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                 selectedDate.day != today.day &&
                                         selectedDate.day !=
                                             today.add(Duration(days: 1)).day
-                                    ? const Color(0xFF00BFA5).withOpacity(0.1)
+                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -1315,22 +1317,6 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
       case MealType.snack:
         return Icons.cookie;
     }
-
-    // Si queremos personalizar aún más según el nombre o ingredientes
-    if (recipe.name.toLowerCase().contains('ensalada')) {
-      return Icons.spa;
-    } else if (recipe.name.toLowerCase().contains('pasta')) {
-      return Icons.ramen_dining;
-    } else if (recipe.name.toLowerCase().contains('sopa')) {
-      return Icons.soup_kitchen;
-    } else if (recipe.ingredients.any(
-      (i) => i.toLowerCase().contains('fruta'),
-    )) {
-      return Icons.apple;
-    }
-
-    // Icono predeterminado si no hay coincidencias específicas
-    return Icons.restaurant;
   }
 
   // Estado vacío
@@ -1487,7 +1473,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                   }
                                 },
                                 backgroundColor: Colors.grey.shade100,
-                                selectedColor: type.color.withOpacity(0.2),
+                                selectedColor: type.color.withValues(alpha: 0.2),
                                 labelStyle: GoogleFonts.inter(
                                   color:
                                       isSelected
@@ -1663,7 +1649,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                 Container(
                   height: 120,
                   decoration: BoxDecoration(
-                    color: recipe.type.color.withOpacity(0.3),
+                    color: recipe.type.color.withValues(alpha: 0.3),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -1698,7 +1684,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: recipe.type.color.withOpacity(0.8),
+                            color: recipe.type.color.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
@@ -1866,7 +1852,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                               ],
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -1910,6 +1896,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                               // Podemos agregar lógica para usar la receta aquí
                               // Por ejemplo, ir al planificador con esta receta
                               final today = DateTime.now();
+                              // ignore: unused_local_variable
                               final dateKey = DateFormat(
                                 'yyyy-MM-dd',
                               ).format(today);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/food_type.dart';
 
@@ -22,12 +24,12 @@ class SelectedFoodTypesNotifier extends StateNotifier<Set<FoodType>> {
       newState.add(foodType);
     }
     state = newState;
-    print("Selected food types: ${state.map((f) => f.name).toList()}");
+    log("Selected food types: ${state.map((f) => f.name).toList()}");
   }
 
   void reset() {
     state = {};
-    print("Resetting food type selections");
+    log("Resetting food type selections");
   }
 }
 

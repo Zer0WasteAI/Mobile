@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'dart:math' as math;
 
 class FoodConsumedScreen extends ConsumerStatefulWidget {
   final String foodName;
@@ -13,13 +11,13 @@ class FoodConsumedScreen extends ConsumerStatefulWidget {
   final int coinsEarned;
 
   const FoodConsumedScreen({
-    Key? key,
+    super.key,
     required this.foodName,
     required this.foodEmoji,
     required this.co2Saved,
     required this.waterSaved,
     required this.coinsEarned,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<FoodConsumedScreen> createState() => _FoodConsumedScreenState();
@@ -155,7 +153,7 @@ class _FoodConsumedScreenState extends ConsumerState<FoodConsumedScreen>
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -252,7 +250,7 @@ class _FoodConsumedScreenState extends ConsumerState<FoodConsumedScreen>
                               vertical: 12,
                             ),
                             decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.2),
+                              color: primaryColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Row(

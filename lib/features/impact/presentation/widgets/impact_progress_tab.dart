@@ -56,7 +56,7 @@ class ImpactProgressTab extends ConsumerWidget {
           _buildComparisonCard(
             context: context,
             title: 'Duchas completas',
-            value: '${(metrics.waterSavedLiters / 50).toStringAsFixed(0)}',
+            value: (metrics.waterSavedLiters / 50).toStringAsFixed(0),
             description: 'Agua ahorrada',
             icon: Icons.shower,
             color: Colors.lightBlue,
@@ -64,7 +64,7 @@ class ImpactProgressTab extends ConsumerWidget {
           _buildComparisonCard(
             context: context,
             title: 'Comidas completas',
-            value: '${(metrics.foodSavedKg * 2).toStringAsFixed(0)}',
+            value: (metrics.foodSavedKg * 2).toStringAsFixed(0),
             description: 'Alimentos salvados',
             icon: Icons.restaurant,
             color: Colors.green,
@@ -190,7 +190,7 @@ class ImpactProgressTab extends ConsumerWidget {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: color.withOpacity(0.3), width: 1),
+          side: BorderSide(color: color.withValues(alpha: 0.3), width: 1),
         ),
         color: cardColor,
         child: Padding(
@@ -200,7 +200,7 @@ class ImpactProgressTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -223,7 +223,7 @@ class ImpactProgressTab extends ConsumerWidget {
                       description,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: textColor.withOpacity(0.7),
+                        color: textColor.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -271,7 +271,7 @@ class ImpactProgressTab extends ConsumerWidget {
               '${currentValue.toStringAsFixed(1)}$suffix / ${targetValue.toStringAsFixed(1)}$suffix',
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: textColor.withOpacity(0.7),
+                color: textColor.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -280,7 +280,7 @@ class ImpactProgressTab extends ConsumerWidget {
         LinearPercentIndicator(
           lineHeight: 10.0,
           percent: percent,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           progressColor: color,
           barRadius: const Radius.circular(5),
           animation: true,
@@ -306,7 +306,7 @@ class ImpactProgressTab extends ConsumerWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

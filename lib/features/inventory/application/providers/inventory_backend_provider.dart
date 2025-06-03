@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:zer0_waste_ai/features/inventory/data/repositories/inventory_repository_impl.dart';
 

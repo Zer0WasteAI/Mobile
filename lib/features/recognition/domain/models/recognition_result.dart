@@ -9,6 +9,8 @@ abstract class RecognitionResult with _$RecognitionResult {
     required String recognitionId,
     required List<FoodRecognitionItem> results,
     String? processedImageUrl,
+    @Default([]) List<AllergyAlert> allergyAlerts,
+    @Default(false) bool hasAllergens,
   }) = _RecognitionResult;
 
   factory RecognitionResult.fromJson(Map<String, dynamic> json) =>
@@ -22,6 +24,8 @@ abstract class FoodRecognitionItem with _$FoodRecognitionItem {
     required double confidence,
     BoundingBox? boundingBox,
     NutritionalInfo? nutritionalInfo,
+    @Default(false) bool allergyAlert,
+    @Default([]) List<String> allergens,
   }) = _FoodRecognitionItem;
 
   factory FoodRecognitionItem.fromJson(Map<String, dynamic> json) =>
@@ -56,5 +60,18 @@ abstract class NutritionalInfo with _$NutritionalInfo {
 
   factory NutritionalInfo.fromJson(Map<String, dynamic> json) =>
       _$NutritionalInfoFromJson(json);
+}
+
+@freezed
+abstract class AllergyAlert with _$AllergyAlert {
+  const factory AllergyAlert({
+    required String item,
+    required List<String> allergens,
+    required String message,
+    required double confidence,
+  }) = _AllergyAlert;
+
+  factory AllergyAlert.fromJson(Map<String, dynamic> json) =>
+      _$AllergyAlertFromJson(json);
 }
  

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +32,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
 
   bool _hasNavigated = false;
 
+  // ignore: unused_element
   void _checkSyncronizationStatus() {
     // Escuchar cambios en las preferencias de usuario
     ref.listen<UserPreferencesState>(userPreferencesProvider, (previous, next) {
@@ -57,13 +60,13 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
       final firestoreCompleted = user.initialPreferencesCompleted;
       final memoryCompleted = userPreferences.hasCompletedPreferences;
 
-      print('🔍 Loading: Verificando estado de sincronización');
-      print('  - Firestore: $firestoreCompleted');
-      print('  - Memoria: $memoryCompleted');
+      log('🔍 Loading: Verificando estado de sincronización');
+      log('  - Firestore: $firestoreCompleted');
+      log('  - Memoria: $memoryCompleted');
 
       // Si Firestore dice que SÍ tiene preferencias, confiar en eso para usuarios existentes
       if (firestoreCompleted) {
-        print(
+        log(
           '🚀 Loading: Usuario existente con preferencias - navegando a auth-transition',
         );
         _hasNavigated = true;
@@ -74,7 +77,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
         });
       } else {
         // Solo ir a allergy-selector si AMBOS estados confirman que no hay preferencias
-        print(
+        log(
           '🚀 Loading: Usuario sin preferencias - navegando a allergy-selector',
         );
         _hasNavigated = true;
@@ -86,7 +89,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
       }
     } else {
       // Si no hay usuario, ir a login
-      print('🚀 Loading: No hay usuario - navegando a login');
+      log('🚀 Loading: No hay usuario - navegando a login');
       _hasNavigated = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -113,6 +116,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
     }
 
     final theme = Theme.of(context);
+    // ignore: unused_local_variable
     final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
 
@@ -141,7 +145,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -155,7 +159,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
               width: 180,
               height: 180,
               decoration: BoxDecoration(
-                color: secondaryColor.withOpacity(0.1),
+                color: secondaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -172,7 +176,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
                   width: 240,
                   height: 240,
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.05),
+                    color: primaryColor.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(120),
                   ),
                   child: Center(
@@ -221,7 +225,7 @@ class _CustomLoadingScreenState extends ConsumerState<CustomLoadingScreen> {
                 SizedBox(
                   width: 60,
                   child: LinearProgressIndicator(
-                    backgroundColor: primaryColor.withOpacity(0.2),
+                    backgroundColor: primaryColor.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                   ),
                 ),

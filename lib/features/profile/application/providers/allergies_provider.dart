@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/allergy.dart';
@@ -15,7 +16,7 @@ final allergiesProvider = FutureProvider<List<Allergy>>((ref) async {
         .toList();
   } catch (e) {
     // Handle potential errors during file loading or parsing
-    print("Error loading allergies from JSON: $e");
+    log("Error loading allergies from JSON: $e");
     // Return an empty list or throw an error, depending on desired behavior
     return [];
   }

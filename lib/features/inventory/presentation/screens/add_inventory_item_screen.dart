@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -157,7 +159,7 @@ class _AddInventoryItemScreenState
 
     // --- Define Consistent Hint Style --- //
     final TextStyle hintTextStyle = GoogleFonts.inter(
-      color: secondaryTextColor.withOpacity(0.8),
+      color: secondaryTextColor.withValues(alpha: 0.8),
       fontSize:
           textTheme.bodyMedium?.fontSize ??
           14, // Use theme body size or fallback
@@ -569,8 +571,8 @@ class _AddInventoryItemScreenState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: onPrimaryColor,
-                  disabledBackgroundColor: primaryColor.withOpacity(0.5),
-                  disabledForegroundColor: onPrimaryColor.withOpacity(0.7),
+                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.5),
+                  disabledForegroundColor: onPrimaryColor.withValues(alpha: 0.7),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24.0),
@@ -644,7 +646,7 @@ class _AddInventoryItemScreenState
                               border: Border.all(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.outline.withOpacity(0.3),
+                                ).colorScheme.outline.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Center(
@@ -757,7 +759,7 @@ class _AddInventoryItemScreenState
 
       // Salir de la pantalla y volver al inventario
       if (mounted) {
-        print('Elemento añadido con ID: $newItemId');
+        log('Elemento añadido con ID: $newItemId');
         Navigator.of(context).pop();
       }
     }
@@ -820,7 +822,7 @@ class _AddInventoryItemScreenState
 
     if (confirmed) {
       // TODO: Implementar generación de emoji/icono con IA
-      print(
+      log(
         'AI Generation triggered! Esta funcionalidad está pendiente de implementación.',
       );
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,7 +41,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
   // Para controlar la edición de ingredientes
   final _ingredientNameController = TextEditingController();
   final _ingredientQuantityController = TextEditingController();
-  TextEditingController _ingredientUnitController = TextEditingController();
+  final TextEditingController _ingredientUnitController = TextEditingController();
 
   // Datos para selectores
   final Map<String, String> _recipeTypes = {
@@ -205,7 +207,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
     };
 
     // TODO: Guardar la receta en la base de datos o enviar a API
-    print('Receta a guardar: $recipe');
+    log('Receta a guardar: $recipe');
 
     // Mostrar confirmación y volver a la pantalla anterior
     ScaffoldMessenger.of(context).showSnackBar(
@@ -288,7 +290,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child:
@@ -346,7 +348,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                               decoration: BoxDecoration(
                                 color:
                                     _selectedEmoji == emoji
-                                        ? primaryColor.withOpacity(0.2)
+                                        ? primaryColor.withValues(alpha: 0.2)
                                         : Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -654,7 +656,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                         Icon(
                           Icons.shopping_basket_outlined,
                           size: 48,
-                          color: secondaryTextColor.withOpacity(0.5),
+                          color: secondaryTextColor.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -779,7 +781,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                             decoration: InputDecoration(
                               hintText: 'Describe el paso ${index + 1}',
                               hintStyle: GoogleFonts.inter(
-                                color: secondaryTextColor.withOpacity(0.7),
+                                color: secondaryTextColor.withValues(alpha: 0.7),
                               ),
                               filled: true,
                               fillColor: fieldBackgroundColor,
@@ -849,7 +851,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                           });
                         },
                         backgroundColor: fieldBackgroundColor,
-                        selectedColor: primaryColor.withOpacity(0.2),
+                        selectedColor: primaryColor.withValues(alpha: 0.2),
                         checkmarkColor: primaryColor,
                         labelStyle: GoogleFonts.inter(
                           color: isSelected ? primaryColor : secondaryTextColor,
@@ -893,7 +895,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                           });
                         },
                         backgroundColor: fieldBackgroundColor,
-                        selectedColor: Colors.green.withOpacity(0.2),
+                        selectedColor: Colors.green.withValues(alpha: 0.2),
                         checkmarkColor: Colors.green,
                         labelStyle: GoogleFonts.inter(
                           color: isSelected ? Colors.green : secondaryTextColor,
@@ -922,7 +924,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                 decoration: InputDecoration(
                   hintText: 'Consejos, variaciones, etc. (opcional)',
                   hintStyle: GoogleFonts.inter(
-                    color: secondaryTextColor.withOpacity(0.7),
+                    color: secondaryTextColor.withValues(alpha: 0.7),
                   ),
                   filled: true,
                   fillColor: fieldBackgroundColor,

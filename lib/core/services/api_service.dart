@@ -1,8 +1,14 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:convert' as convert;
+import 'dart:convert' show utf8;
+import 'dart:convert' show base64Url;
 
 /// INFO: Complete API Service for ZeroWasteAI backend integration
 /// ADVICE: This service handles all 23 endpoints from the real API documentation
@@ -92,6 +98,20 @@ class ApiService {
           final accessToken = await getAccessToken();
           if (accessToken != null) {
             options.headers['Authorization'] = 'Bearer $accessToken';
+            log('🔑 ApiService: JWT token injected for ${options.path}');
+          } else {
+            log('⚠️ ApiService: No access token found for ${options.path}');
+            // Try auto-relogin before making the request
+            final reloginSuccess = await _performAutoRelogin();
+            if (reloginSuccess) {
+              final newToken = await getAccessToken();
+              if (newToken != null) {
+                options.headers['Authorization'] = 'Bearer $newToken';
+                log(
+                  '🔑 ApiService: Auto-relogin successful, JWT token injected',
+                );
+              }
+            }
           }
           handler.next(options);
         },
@@ -105,18 +125,47 @@ class ApiService {
               return handler.reject(error);
             }
 
+            log(
+              '🔄 ApiService: 401 detected for ${error.requestOptions.path} - initiating token recovery...',
+            );
+
             try {
+              // Step 1: Try normal token refresh first
+              log('🔄 Step 1: Attempting normal token refresh...');
               final newAccessToken = await refreshTokens();
               if (newAccessToken != null) {
-                // INFO: Retry original request with new token
-                error.requestOptions.headers['Authorization'] =
-                    'Bearer $newAccessToken';
-                final response = await _dio.fetch(error.requestOptions);
+                // INFO: Recreate request options to avoid FormData finalization issue
+                final newOptions = _recreateRequestOptions(
+                  error.requestOptions,
+                );
+                newOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+                final response = await _dio.fetch(newOptions);
+                log('✅ ApiService: Token refresh successful - request retried');
                 return handler.resolve(response);
               }
-            } catch (e) {
-              await clearTokens();
+            } catch (refreshError) {
+              log('❌ ApiService: Token refresh failed: $refreshError');
             }
+
+            // Step 2: Try auto-relogin if refresh failed
+            log('🔄 Step 2: Attempting auto-relogin...');
+            final reloginSuccess = await _performAutoRelogin();
+            if (reloginSuccess) {
+              final newToken = await getAccessToken();
+              if (newToken != null) {
+                // INFO: Recreate request options to avoid FormData finalization issue
+                final newOptions = _recreateRequestOptions(
+                  error.requestOptions,
+                );
+                newOptions.headers['Authorization'] = 'Bearer $newToken';
+                final response = await _dio.fetch(newOptions);
+                log('✅ ApiService: Auto-relogin successful - request retried');
+                return handler.resolve(response);
+              }
+            }
+
+            log('❌ ApiService: Both refresh and auto-relogin failed');
+            await clearTokens();
           }
           handler.next(error);
         },
@@ -128,20 +177,20 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          print('API Request: ${options.method} ${options.path}');
+          log('API Request: ${options.method} ${options.path}');
           handler.next(options);
         },
         onResponse: (response, handler) {
-          print(
+          log(
             'API Response: ${response.statusCode} ${response.requestOptions.path}',
           );
           handler.next(response);
         },
         onError: (error, handler) {
-          print(
+          log(
             'API Error: ${error.response?.statusCode} ${error.requestOptions.path}',
           );
-          print('Error Data: ${error.response?.data}');
+          log('Error Data: ${error.response?.data}');
           handler.next(error);
         },
       ),
@@ -155,21 +204,37 @@ class ApiService {
     required String accessToken,
     required String refreshToken,
   }) async {
+    log('🔐 Storing JWT tokens securely...');
     await _secureStorage.write(key: _accessTokenKey, value: accessToken);
     await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    log('✅ JWT tokens stored successfully in secure storage');
   }
 
   Future<String?> getAccessToken() async {
-    return await _secureStorage.read(key: _accessTokenKey);
+    final token = await _secureStorage.read(key: _accessTokenKey);
+    if (token != null) {
+      log('🔑 Access token retrieved from secure storage');
+    } else {
+      log('⚠️ No access token found in secure storage');
+    }
+    return token;
   }
 
   Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: _refreshTokenKey);
+    final token = await _secureStorage.read(key: _refreshTokenKey);
+    if (token != null) {
+      log('🔄 Refresh token retrieved from secure storage');
+    } else {
+      log('⚠️ No refresh token found in secure storage');
+    }
+    return token;
   }
 
   Future<void> clearTokens() async {
+    log('🗑️ Clearing stored JWT tokens...');
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
+    log('✅ JWT tokens cleared from secure storage');
   }
 
   Future<bool> hasValidTokens() async {
@@ -185,6 +250,64 @@ class ApiService {
   /// USAGE: Call after successful Firebase authentication
   Future<Map<String, dynamic>> firebaseSignIn(String firebaseIdToken) async {
     try {
+      log('🔍 Initiating Firebase token exchange with backend...');
+
+      // INFO: Debug Firebase token structure (without exposing the token)
+      final tokenParts = firebaseIdToken.split('.');
+      log(
+        '🔧 Firebase token has ${tokenParts.length} parts (should be 3 for JWT)',
+      );
+      log('🔧 Token length: ${firebaseIdToken.length} characters');
+      log(
+        '🔧 Token starts with: ${firebaseIdToken.substring(0, math.min(20, firebaseIdToken.length))}...',
+      );
+
+      // INFO: Validate basic JWT structure
+      if (tokenParts.length != 3) {
+        log('❌ Invalid Firebase token structure - not a valid JWT!');
+        throw Exception('Invalid Firebase token structure');
+      }
+
+      try {
+        // INFO: Try to decode the header to verify it's a valid JWT
+        final header = tokenParts[0];
+        final headerBytes = base64Url.decode(
+          header + '=' * (4 - header.length % 4),
+        );
+        final headerJson = utf8.decode(headerBytes);
+        log('🔧 JWT Header: $headerJson');
+
+        // INFO: Try to decode the payload to see project info
+        final payload = tokenParts[1];
+        final payloadBytes = base64Url.decode(
+          payload + '=' * (4 - payload.length % 4),
+        );
+        final payloadJson = utf8.decode(payloadBytes);
+        final payloadData =
+            convert.jsonDecode(payloadJson) as Map<String, dynamic>;
+
+        log('🔧 JWT Payload key info:');
+        log('   - iss (issuer): ${payloadData['iss']}');
+        log('   - aud (audience): ${payloadData['aud']}');
+        log('   - sub (user ID): ${payloadData['sub']}');
+        log(
+          '   - exp (expires): ${payloadData['exp']} (${DateTime.fromMillisecondsSinceEpoch((payloadData['exp'] as int) * 1000)})',
+        );
+        log(
+          '   - iat (issued at): ${payloadData['iat']} (${DateTime.fromMillisecondsSinceEpoch((payloadData['iat'] as int) * 1000)})',
+        );
+        if (payloadData.containsKey('firebase')) {
+          log('   - firebase: ${payloadData['firebase']}');
+        }
+      } catch (e) {
+        log('⚠️ Could not decode JWT header/payload: $e');
+      }
+
+      log('🌐 Sending request to: $_authFirebaseSignIn');
+      log(
+        '🔑 Authorization header: Bearer [FIREBASE_TOKEN_${firebaseIdToken.length}_CHARS]',
+      );
+
       final response = await _dio.post(
         _authFirebaseSignIn,
         options: Options(headers: {'Authorization': 'Bearer $firebaseIdToken'}),
@@ -192,15 +315,36 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+        log('✅ Backend response received with JWT tokens');
+        log('📊 Token expires in: ${data['expires_in']} seconds');
+
         // INFO: Automatically store tokens for future use
         await storeTokens(
           accessToken: data['access_token'] as String,
           refreshToken: data['refresh_token'] as String,
         );
+        log('🎉 Firebase token exchange completed successfully');
         return data;
       }
-      throw Exception('Firebase sign in failed');
+      log('❌ Unexpected response code: ${response.statusCode}');
+      throw Exception(
+        'Firebase sign in failed with status: ${response.statusCode}',
+      );
     } catch (e) {
+      log('❌ Firebase token exchange failed: ${e.toString()}');
+
+      // INFO: If it's a DioException, log more details
+      if (e is DioException) {
+        log('🔍 Request URL: ${e.requestOptions.uri}');
+        log('🔍 Request method: ${e.requestOptions.method}');
+        log('🔍 Request headers: ${e.requestOptions.headers}');
+        if (e.response != null) {
+          log('🔍 Response status: ${e.response!.statusCode}');
+          log('🔍 Response data: ${e.response!.data}');
+          log('🔍 Response headers: ${e.response!.headers}');
+        }
+      }
+
       throw Exception('Firebase sign in error: ${e.toString()}');
     }
   }
@@ -209,9 +353,14 @@ class ApiService {
   /// NOTE: Called automatically by interceptor on 401 errors
   Future<String?> refreshTokens() async {
     try {
+      log('🔄 Initiating token refresh...');
       final refreshToken = await getRefreshToken();
-      if (refreshToken == null) return null;
+      if (refreshToken == null) {
+        log('❌ No refresh token available for refresh');
+        return null;
+      }
 
+      log('🔍 Sending refresh request to backend...');
       final response = await _dio.post(
         _authRefresh,
         options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
@@ -222,17 +371,24 @@ class ApiService {
         final newAccessToken = data['access_token'] as String;
         final newRefreshToken = data['refresh_token'] as String;
 
+        log('✅ New tokens received from backend');
+        log('📊 New token expires in: ${data['expires_in']} seconds');
+
         // INFO: Store new tokens automatically
         await storeTokens(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
         );
 
+        log('🎉 Token refresh completed successfully');
         return newAccessToken;
       }
+      log(
+        '❌ Token refresh failed - invalid response code: ${response.statusCode}',
+      );
       return null;
     } catch (e) {
-      print('Token refresh error: $e');
+      log('❌ Token refresh error: $e');
       return null;
     }
   }
@@ -243,7 +399,7 @@ class ApiService {
     try {
       await _dio.post(_authLogout);
     } catch (e) {
-      print('Logout error: $e');
+      log('Logout error: $e');
     } finally {
       // INFO: Always clear tokens even if server call fails
       await clearTokens();
@@ -670,5 +826,86 @@ class ApiService {
       return int.tryParse(error.response!.headers['retry-after']!.first);
     }
     return null;
+  }
+
+  Future<bool> _performAutoRelogin() async {
+    try {
+      log('🔄 ApiService: Starting auto-relogin process...');
+
+      // Check if Firebase user is still signed in
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser == null) {
+        log('❌ ApiService: No Firebase user found - cannot auto-relogin');
+        return false;
+      }
+
+      log('👤 ApiService: Firebase user found: ${firebaseUser.email}');
+
+      // Get fresh Firebase ID token
+      log('🔍 Getting fresh Firebase ID token...');
+      final firebaseIdToken = await firebaseUser.getIdToken(
+        true,
+      ); // force refresh
+
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        log('❌ ApiService: Failed to get Firebase ID token');
+        return false;
+      }
+
+      // Exchange Firebase token for backend JWT tokens using the same method
+      log('🔄 Exchanging Firebase token for backend tokens...');
+      final backendResponse = await firebaseSignIn(firebaseIdToken);
+
+      log('✅ ApiService: Auto-relogin successful! New tokens obtained');
+      return true;
+    } catch (e) {
+      log('❌ ApiService: Auto-relogin failed: $e');
+      return false;
+    }
+  }
+
+  // ===== HELPER METHODS =====
+
+  /// Recreates FormData for retry requests to avoid "FormData already finalized" error
+  RequestOptions _recreateRequestOptions(RequestOptions options) {
+    final newOptions = RequestOptions(
+      path: options.path,
+      method: options.method,
+      baseUrl: options.baseUrl,
+      queryParameters: options.queryParameters,
+      headers: Map<String, dynamic>.from(options.headers),
+      extra: options.extra,
+      responseType: options.responseType,
+      contentType: options.contentType,
+      validateStatus: options.validateStatus,
+      receiveDataWhenStatusError: options.receiveDataWhenStatusError,
+      followRedirects: options.followRedirects,
+      maxRedirects: options.maxRedirects,
+      requestEncoder: options.requestEncoder,
+      responseDecoder: options.responseDecoder,
+      listFormat: options.listFormat,
+    );
+
+    // If the original request had FormData, we need to recreate it
+    if (options.data is FormData) {
+      final originalFormData = options.data as FormData;
+      final newFormData = FormData();
+
+      // Copy all fields and files from original FormData
+      for (final field in originalFormData.fields) {
+        newFormData.fields.add(field);
+      }
+
+      for (final file in originalFormData.files) {
+        newFormData.files.add(file);
+      }
+
+      newOptions.data = newFormData;
+      log('🔧 FormData recreated for retry request');
+    } else {
+      newOptions.data = options.data;
+    }
+
+    return newOptions;
   }
 }

@@ -1,20 +1,28 @@
+// ignore_for_file: unused_element, avoid_unnecessary_containers
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_providers.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/states/recipe_state.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/filter_models.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_card.dart';
+import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart'
+    // ignore: library_prefixes
+    as RecipeModel;
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_filter_bottom_sheet.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'dart:convert';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/create_recipe_screen.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/favorite_recipes_screen.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/unfocus_detector.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart'; // Importar el provider de recetas IA
+// Importar el provider de recetas IA
 
 // Mapa con datos de preparación e ingredientes para las recetas más comunes
 final Map<String, Map<String, dynamic>> recipeDetailsMap = {
@@ -500,8 +508,8 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     final Color errorColor = AppColors.error;
     final Color successBannerColor =
         isDark
-            ? AppColors.darkPrimary.withOpacity(0.2)
-            : AppColors.lightPrimary.withOpacity(0.15);
+            ? AppColors.darkPrimary.withValues(alpha: 0.2)
+            : AppColors.lightPrimary.withValues(alpha: 0.15);
     final Color successBannerTextColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     final Color searchBarIconColor = secondaryTextColor;
@@ -793,7 +801,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
               borderRadius: BorderRadius.circular(16.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -819,7 +827,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        color: primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Center(
@@ -867,7 +875,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
                                   vertical: 2.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: difficultyColor.withOpacity(0.1),
+                                  color: difficultyColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: Text(
@@ -899,7 +907,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: secondaryTextColor.withOpacity(0.7),
+                      color: secondaryTextColor.withValues(alpha: 0.7),
                     ),
                   ],
                 ),
@@ -989,19 +997,93 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     Color mainTextColor,
     Color secondaryTextColor,
   ) {
-    final favorites = ref.watch(favoritesProvider);
-    final bool isEmpty = favorites.isEmpty;
+    final favoritesState = ref.watch(favoriteRecipesProvider);
+    final favoriteRecipes = favoritesState.favoriteRecipes;
 
-    print('Favoritos actuales: $favorites');
-
-    if (isEmpty) {
+    // Loading state
+    if (favoritesState.isLoading) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.favorite_border, size: 60, color: Colors.grey),
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(Color(0xFF00BFA5)),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Cargando recetas favoritas...',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: secondaryTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Error state
+    if (favoritesState.error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 60, color: Colors.red.shade400),
+              const SizedBox(height: 20),
+              Text(
+                'Error al cargar favoritas',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: mainTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                favoritesState.error!,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: secondaryTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  await ref.read(favoriteRecipesProvider.notifier).refresh();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00BFA5),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Intentar de nuevo'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Empty state
+    if (favoriteRecipes.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.favorite_border,
+                size: 80,
+                color: Colors.grey.shade300,
+              ),
               const SizedBox(height: 20),
               Text(
                 'No tienes recetas favoritas',
@@ -1014,53 +1096,155 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Guarda tus recetas favoritas tocando el corazón en las recetas que te gusten.',
+                'Explora recetas y guarda las que más te gusten tocando el corazón.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: secondaryTextColor,
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // Navigate to explore recipes
+                      // This would switch to the explore tab
+                    },
+                    icon: const Icon(Icons.explore),
+                    label: const Text('Explorar recetas'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00BFA5),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Navigate to dedicated favorites screen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const FavoriteRecipesScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.favorite),
+                    label: const Text('Ver todas'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF00BFA5),
+                      side: const BorderSide(color: Color(0xFF00BFA5)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       );
-    } else {
-      // Encontrar todas las recetas favoritas en todas las categorías
-      final List<Map<String, dynamic>> favoriteRecipes = [];
+    }
 
-      // Obtener todas las categorías mediante el método auxiliar
-      final allCategories = _getAllRecipeCategories();
+    // Show favorites with header
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with count and view all button
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Mis Favoritas',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: mainTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '${favoriteRecipes.length} recetas guardadas',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Sync indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              favoritesState.isBackendSynced
+                                  ? Colors.green.shade50
+                                  : Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          favoritesState.isBackendSynced
+                              ? 'Sincronizado'
+                              : 'Solo local',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color:
+                                favoritesState.isBackendSynced
+                                    ? Colors.green.shade700
+                                    : Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const FavoriteRecipesScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.arrow_forward, size: 16),
+                label: const Text('Ver todas'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF00BFA5),
+                ),
+              ),
+            ],
+          ),
+        ),
 
-      // Recorrer todas las categorías y recetas para encontrar favoritos
-      for (final category in allCategories) {
-        for (final recipe in category['recipes']) {
-          final recipeId = recipe['id'];
-          if (favorites.contains(recipeId)) {
-            // Añadir la receta a la lista de favoritos
-            favoriteRecipes.add({...recipe, 'category': category['name']});
-            print('Receta favorita encontrada: $recipeId - ${recipe['name']}');
-          }
-        }
-      }
-
-      print(
-        'Total de recetas favoritas encontradas: ${favoriteRecipes.length}',
-      );
-
-      // Mostrar las recetas favoritas
-      return CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverGrid(
+        // Favorites grid (showing first 4-6 items)
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 16.0,
                 crossAxisSpacing: 16.0,
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.75,
               ),
-              delegate: SliverChildBuilderDelegate((context, index) {
+              itemCount:
+                  favoriteRecipes.length > 6 ? 6 : favoriteRecipes.length,
+              itemBuilder: (context, index) {
                 final recipe = favoriteRecipes[index];
                 return _buildFavoriteRecipeCard(
                   context,
@@ -1070,12 +1254,12 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
                   secondaryTextColor,
                   ref,
                 );
-              }, childCount: favoriteRecipes.length),
+              },
             ),
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 
   // Método auxiliar para obtener todas las categorías de recetas
@@ -1394,95 +1578,73 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
   // Método para construir tarjetas de recetas favoritas
   Widget _buildFavoriteRecipeCard(
     BuildContext context,
-    Map<String, dynamic> recipe,
+    RecipeModel.Recipe recipe,
     bool isDark,
     Color mainTextColor,
     Color secondaryTextColor,
     WidgetRef ref,
   ) {
-    final String categoryName = recipe['category'] ?? '';
-    final favorites = ref.watch(favoritesProvider);
-    final recipeId = recipe['id'] ?? recipe['name'];
-    final isFavorite = favorites.contains(recipeId);
     final primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
     final Color difficultyColor =
-        recipe['difficulty'] == 'Fácil'
+        recipe.difficulty == 'Fácil'
             ? Colors.green
-            : recipe['difficulty'] == 'Medio'
+            : recipe.difficulty == 'Medio'
             ? Colors.orange
             : Colors.red;
 
-    // Determinar el tipo de receta basado en el nombre o categoría
-    String? recipeType;
+    // Determinar el tipo de receta basado en el nombre o emoji
+    String recipeType = 'fondo'; // Valor por defecto
 
-    // Determinar tipo basado en categoría si es una categoría clara
-    if (categoryName == 'Postres') {
+    final String nameLC = recipe.name.toLowerCase();
+    final String emoji = recipe.emoji;
+
+    if (nameLC.contains('ensalada') ||
+        nameLC.contains('sopa') ||
+        nameLC.contains('crema') ||
+        nameLC.contains('ceviche') ||
+        emoji == '🥗' ||
+        emoji == '🥣') {
+      recipeType = 'entrada';
+    } else if (nameLC.contains('pasta') ||
+        nameLC.contains('arroz') ||
+        nameLC.contains('hamburguesa') ||
+        nameLC.contains('pollo') ||
+        emoji == '🍝' ||
+        emoji == '🍗' ||
+        emoji == '🍖' ||
+        emoji == '🍔' ||
+        emoji == '🌮' ||
+        emoji == '🥘') {
+      recipeType = 'fondo';
+    } else if (nameLC.contains('pastel') ||
+        nameLC.contains('tarta') ||
+        nameLC.contains('helado') ||
+        nameLC.contains('brownie') ||
+        nameLC.contains('galleta') ||
+        emoji == '🍰' ||
+        emoji == '🧁' ||
+        emoji == '🍮' ||
+        emoji == '🍦' ||
+        emoji == '🍨' ||
+        emoji == '🍪') {
       recipeType = 'postre';
-    } else if (categoryName == 'Vegetarianas') {
-      // Las categorías no corresponden directamente a tipo de receta
-    }
-
-    // Determinar tipo basado en el contenido del nombre o emoji
-    final String nameLC = recipe['name'].toString().toLowerCase();
-    final String emoji = recipe['emoji'].toString();
-
-    if (recipeType == null) {
-      if (nameLC.contains('ensalada') ||
-          nameLC.contains('salad') ||
-          nameLC.contains('sopa') ||
-          nameLC.contains('crema') ||
-          nameLC.contains('ceviche') ||
-          nameLC.contains('cóctel') ||
-          emoji == '🥗' ||
-          emoji == '🥣') {
-        recipeType = 'entrada';
-      } else if (nameLC.contains('pasta') ||
-          nameLC.contains('arroz') ||
-          nameLC.contains('hamburguesa') ||
-          nameLC.contains('pollo') ||
-          emoji == '🍝' ||
-          emoji == '🍗' ||
-          emoji == '🍖' ||
-          emoji == '🍔' ||
-          emoji == '🌮' ||
-          emoji == '🥘') {
-        recipeType = 'fondo';
-      } else if (nameLC.contains('pastel') ||
-          nameLC.contains('tarta') ||
-          nameLC.contains('helado') ||
-          nameLC.contains('brownie') ||
-          nameLC.contains('galleta') ||
-          nameLC.contains('pudín') ||
-          emoji == '🍰' ||
-          emoji == '🧁' ||
-          emoji == '🍮' ||
-          emoji == '🍦' ||
-          emoji == '🍨' ||
-          emoji == '🍪') {
-        recipeType = 'postre';
-      } else if (nameLC.contains('batido') ||
-          nameLC.contains('café') ||
-          nameLC.contains('té') ||
-          nameLC.contains('jugo') ||
-          nameLC.contains('bebida') ||
-          nameLC.contains('limonada') ||
-          emoji == '🥤' ||
-          emoji == '🧃' ||
-          emoji == '☕' ||
-          emoji == '🍹' ||
-          emoji == '🍵') {
-        recipeType = 'bebida';
-      } else if (nameLC.contains('snack') ||
-          nameLC.contains('bocadito') ||
-          nameLC.contains('tostada') ||
-          nameLC.contains('chips') ||
-          emoji == '🥨' ||
-          emoji == '🥯' ||
-          emoji == '🥪') {
-        recipeType = 'snack';
-      }
+    } else if (nameLC.contains('batido') ||
+        nameLC.contains('café') ||
+        nameLC.contains('jugo') ||
+        nameLC.contains('bebida') ||
+        emoji == '🥤' ||
+        emoji == '☕' ||
+        emoji == '🍹') {
+      recipeType = 'bebida';
+    } else if (nameLC.contains('snack') ||
+        nameLC.contains('tostada') ||
+        nameLC.contains('chips') ||
+        emoji == '🥨' ||
+        emoji == '🥯' ||
+        emoji == '🥪') {
+      recipeType = 'snack';
     }
 
     // Colores para el tag de tipo de receta
@@ -1503,11 +1665,8 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
       'snack': 'Snack',
     };
 
-    // Obtener color y label para el tipo de receta
-    final String recipeTypeValue =
-        recipeType ?? 'fondo'; // Valor por defecto si es null
-    final Color typeColor = typeColors[recipeTypeValue] ?? primaryColor;
-    final String typeLabel = typeLabels[recipeTypeValue] ?? 'Plato principal';
+    final Color typeColor = typeColors[recipeType] ?? primaryColor;
+    final String typeLabel = typeLabels[recipeType] ?? 'Plato principal';
 
     return Container(
       decoration: BoxDecoration(
@@ -1515,159 +1674,184 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
         borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Recipe image/emoji container with favorite button
-          Stack(
-            children: [
-              Container(
-                height: 120,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    recipe['emoji'],
-                    style: const TextStyle(fontSize: 60),
-                  ),
-                ),
-              ),
-
-              // Tag de tipo de receta
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: typeColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    typeLabel,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: typeColor,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Botón de favoritos
-              Positioned(
-                top: 8,
-                right: 8,
-                child: InkWell(
-                  onTap: () {
-                    // Quitar de favoritos
-                    final notifier = ref.read(favoritesProvider.notifier);
-                    notifier.state = {...favorites}..remove(recipeId);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.black38 : Colors.white38,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // Recipe info
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16.0),
+        onTap: () {
+          // Navigate to recipe detail (if available)
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (context) => RecipeDetailScreen(recipe: recipe),
+          //   ),
+          // );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Recipe image/emoji container with favorite button
+            Stack(
               children: [
-                // Recipe name
-                Text(
-                  recipe['name'],
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: mainTextColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-
-                // Category
-                Text(
-                  categoryName,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: secondaryTextColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-
-                // Time and difficulty
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: secondaryTextColor,
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      recipe['time'],
+                  ),
+                  child: Center(
+                    child: Text(
+                      recipe.emoji,
+                      style: const TextStyle(fontSize: 60),
+                    ),
+                  ),
+                ),
+
+                // Tag de tipo de receta
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: typeColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      typeLabel,
                       style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: secondaryTextColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: typeColor,
                       ),
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6.0,
-                        vertical: 2.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: difficultyColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Text(
-                        recipe['difficulty'],
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: difficultyColor,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+
+                // Botón de favoritos usando nuestro widget
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CompactFavoriteButton(recipe: recipe),
                 ),
               ],
             ),
-          ),
-        ],
+
+            // Recipe info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Recipe name
+                    Text(
+                      recipe.name,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: mainTextColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Recipe stats
+                    Row(
+                      children: [
+                        // Time
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            recipe.formattedCookingTime,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        // Difficulty
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: difficultyColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            recipe.difficulty,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: difficultyColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Ingredients availability
+                    Row(
+                      children: [
+                        Icon(
+                          recipe.availableIngredientsCount ==
+                                  recipe.requiredIngredientsCount
+                              ? Icons.check_circle
+                              : Icons.info,
+                          size: 12,
+                          color:
+                              recipe.availableIngredientsCount ==
+                                      recipe.requiredIngredientsCount
+                                  ? Colors.green
+                                  : Colors.orange,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${recipe.availableIngredientsCount}/${recipe.requiredIngredientsCount} ingredientes',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color:
+                                  recipe.availableIngredientsCount ==
+                                          recipe.requiredIngredientsCount
+                                      ? Colors.green.shade700
+                                      : Colors.orange.shade700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1712,6 +1896,7 @@ class ExploreTabWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ignore: unused_local_variable
     final RecipeMode mode = RecipeMode.explore;
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
@@ -2254,8 +2439,8 @@ class ExploreTabWidget extends HookConsumerWidget {
                           BoxShadow(
                             color:
                                 isDark
-                                    ? Colors.black.withOpacity(0.25)
-                                    : Colors.grey.withOpacity(0.15),
+                                    ? Colors.black.withValues(alpha: 0.25)
+                                    : Colors.grey.withValues(alpha: 0.15),
                             spreadRadius: 1,
                             blurRadius: 5,
                             offset: const Offset(0, 3),
@@ -2612,7 +2797,7 @@ class ExploreTabWidget extends HookConsumerWidget {
                           Icon(
                             Icons.filter_list_off,
                             size: 64,
-                            color: secondaryTextColor.withOpacity(0.5),
+                            color: secondaryTextColor.withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 20),
                           Text(
@@ -2811,7 +2996,7 @@ class ExploreTabWidget extends HookConsumerWidget {
           }
         },
         backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-        selectedColor: primaryColor.withOpacity(0.2),
+        selectedColor: primaryColor.withValues(alpha: 0.2),
         checkmarkColor: primaryColor,
         avatar: Text(emoji, style: const TextStyle(fontSize: 16)),
         label: Text(
@@ -3180,7 +3365,7 @@ class ExploreTabWidget extends HookConsumerWidget {
           borderRadius: BorderRadius.circular(16.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -3197,7 +3382,7 @@ class ExploreTabWidget extends HookConsumerWidget {
                       90, // Reducir ligeramente la altura del contenedor de emoji
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -3221,7 +3406,7 @@ class ExploreTabWidget extends HookConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.2),
+                      color: typeColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -3246,11 +3431,11 @@ class ExploreTabWidget extends HookConsumerWidget {
                         if (isFavorite) {
                           // Quitar de favoritos
                           notifier.state = {...favorites}..remove(recipeId);
-                          print('Receta eliminada de favoritos: $recipeId');
+                          log('Receta eliminada de favoritos: $recipeId');
                         } else {
                           // Añadir a favoritos
                           notifier.state = {...favorites, recipeId};
-                          print('Receta añadida a favoritos: $recipeId');
+                          log('Receta añadida a favoritos: $recipeId');
                         }
                       }
                     },
@@ -3318,7 +3503,7 @@ class ExploreTabWidget extends HookConsumerWidget {
                             vertical: 2.0,
                           ),
                           decoration: BoxDecoration(
-                            color: difficultyColor.withOpacity(0.1),
+                            color: difficultyColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -3342,7 +3527,7 @@ class ExploreTabWidget extends HookConsumerWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -3444,7 +3629,7 @@ class CategoryDetailScreen extends StatelessWidget {
                     Icon(
                       Icons.no_food,
                       size: 64,
-                      color: secondaryTextColor.withOpacity(0.5),
+                      color: secondaryTextColor.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -3494,7 +3679,7 @@ class CategoryDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -3537,7 +3722,7 @@ class CategoryDetailScreen extends StatelessWidget {
                               width: 60,
                               height: 60,
                               decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.1),
+                                color: primaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                               child: Center(
@@ -3585,8 +3770,8 @@ class CategoryDetailScreen extends StatelessWidget {
                                           vertical: 2.0,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: difficultyColor.withOpacity(
-                                            0.1,
+                                          color: difficultyColor.withValues(
+                                            alpha: 0.1,
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             8.0,
@@ -3614,7 +3799,7 @@ class CategoryDetailScreen extends StatelessWidget {
                                         vertical: 3.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withOpacity(0.1),
+                                        color: primaryColor.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(
                                           8.0,
                                         ),
@@ -3642,7 +3827,7 @@ class CategoryDetailScreen extends StatelessWidget {
                             Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: secondaryTextColor.withOpacity(0.7),
+                              color: secondaryTextColor.withValues(alpha: 0.7),
                             ),
                           ],
                         ),

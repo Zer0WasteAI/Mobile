@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,7 +43,7 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_co
 import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/screens/signup_screen.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -93,76 +95,6 @@ const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
 const String aboutAppRouteName = AboutAppScreen.routeName;
 const String supportRouteName = SupportScreen.routeName;
 
-/// Router provider
-final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-
-  return GoRouter(
-    initialLocation: '/',
-    debugLogDiagnostics: true,
-    redirect: (context, state) {
-      final isLoggedIn = authState.value != null;
-      final isGoingToLogin = state.matchedLocation == '/login';
-      final isGoingToSignup = state.matchedLocation == '/signup';
-      final isGoingToForgotPassword =
-          state.matchedLocation == '/forgot-password';
-      final isGoingToOnboarding = state.matchedLocation == '/onboarding';
-      final isGoingToSplash = state.matchedLocation == '/';
-
-      // If not logged in and not going to login, signup, forgot password, onboarding or splash, redirect to login
-      if (!isLoggedIn &&
-          !isGoingToLogin &&
-          !isGoingToSignup &&
-          !isGoingToForgotPassword &&
-          !isGoingToOnboarding &&
-          !isGoingToSplash) {
-        return '/login';
-      }
-
-      // If logged in and trying to go to login, signup, forgot password, onboarding or splash, redirect to home
-      if (isLoggedIn &&
-          (isGoingToLogin ||
-              isGoingToSignup ||
-              isGoingToForgotPassword ||
-              isGoingToOnboarding ||
-              isGoingToSplash)) {
-        return '/home';
-      }
-
-      return null;
-    },
-    routes: [
-      // Splash route
-      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-
-      // Onboarding route
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-
-      // Auth routes
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignUpScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
-
-      // Main app routes
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-      GoRoute(
-        path: '/allergies',
-        name: AllergySelectorScreen.routeName,
-        builder: (context, state) => const AllergySelectorScreen(),
-      ),
-    ],
-  );
-});
-
 /// App router configuration
 class AppRouter {
   /// GoRouter instance factory
@@ -170,12 +102,80 @@ class AppRouter {
     // Create the HeroController
     final heroController = HeroController();
 
+    // Watch auth state for redirect logic
+    final authState = ref.watch(authStateProvider);
+
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/splash',
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
+      redirect: (context, state) {
+        final isLoggedIn = authState.value != null;
+        final user = authState.value;
+
+        // Get user profile state to check preferences completion
+        final userProfileState = ref.watch(userProfileProvider);
+        final hasCompletedPreferences =
+            userProfileState.user?.initialPreferencesCompleted ?? false;
+
+        final isGoingToLogin = state.matchedLocation == '/login';
+        final isGoingToRegister = state.matchedLocation == '/register';
+        final isGoingToForgotPassword =
+            state.matchedLocation == '/forgot-password';
+        final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+        final isGoingToSplash = state.matchedLocation == '/splash';
+        final isGoingToAuthFlow =
+            state.matchedLocation.startsWith('/allergy-selector') ||
+            state.matchedLocation.startsWith('/cooking-level-selector') ||
+            state.matchedLocation.startsWith('/preferred-food-type') ||
+            state.matchedLocation.startsWith('/special-diet-selector');
+
+        log(
+          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, location: ${state.matchedLocation}',
+        );
+
+        // If not logged in and not going to auth/onboarding screens, redirect to login
+        if (!isLoggedIn &&
+            !isGoingToLogin &&
+            !isGoingToRegister &&
+            !isGoingToForgotPassword &&
+            !isGoingToOnboarding &&
+            !isGoingToSplash &&
+            !isGoingToAuthFlow) {
+          log('🔄 Redirecting to login - user not authenticated');
+          return '/login';
+        }
+
+        // If logged in, check preferences completion
+        if (isLoggedIn && user != null) {
+          // If user has completed preferences but trying to go to auth/onboarding screens, redirect to home
+          if (hasCompletedPreferences &&
+              (isGoingToLogin ||
+                  isGoingToRegister ||
+                  isGoingToForgotPassword ||
+                  isGoingToOnboarding ||
+                  isGoingToSplash ||
+                  isGoingToAuthFlow)) {
+            log('🔄 Redirecting to home - user has completed preferences');
+            return '/home';
+          }
+
+          // If user has NOT completed preferences and trying to go to protected screens, redirect to onboarding
+          if (!hasCompletedPreferences &&
+              !isGoingToAuthFlow &&
+              !isGoingToSplash &&
+              state.matchedLocation != '/allergy-selector') {
+            log(
+              '🔄 Redirecting to onboarding - user needs to complete preferences',
+            );
+            return '/allergy-selector';
+          }
+        }
+
+        return null; // No redirect needed
+      },
       routes: [
         GoRoute(
           path: '/splash',
@@ -239,7 +239,7 @@ class AppRouter {
 
             // Validate the extracted data
             if (images == null || images.isEmpty || originType == null) {
-              print(
+              log(
                 "Error: ScanConfirmScreen missing images or originType. Redirecting.",
               );
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -456,7 +456,7 @@ class AppRouter {
                 } else if (itemTypeString == 'food') {
                   itemType = ScanItemType.food;
                 } else {
-                  print(
+                  log(
                     'Invalid itemType in route: $itemTypeString, defaulting to ingredient',
                   );
                   itemType =

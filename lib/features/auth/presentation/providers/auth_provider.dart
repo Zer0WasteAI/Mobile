@@ -1,9 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
+import 'package:zer0_waste_ai/core/services/secure_token_service.dart';
 
+// INFO: Provider for the real auth repository implementation
+// USAGE: Connects Firebase Auth with ZeroWasteAI backend API
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  throw UnimplementedError('AuthRepository not initialized');
+  final apiService = ApiService.instance;
+  final secureTokenService = ref.watch(secureTokenServiceProvider);
+
+  return AuthRepositoryImpl(
+    apiService: apiService,
+    secureTokenService: secureTokenService,
+  );
 });
 
 final authStateProvider = StreamProvider<UserModel?>((ref) {

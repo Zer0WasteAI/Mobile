@@ -804,6 +804,7 @@ class _CreateGoalDialogState extends ConsumerState<_CreateGoalDialog> {
 
     // Agregar el nuevo objetivo a la lista
     final currentGoals = ref.read(impactGoalsProvider);
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
     ref.read(impactGoalsProvider.notifier).state = [...currentGoals, newGoal];
 
     // Establecer como objetivo activo

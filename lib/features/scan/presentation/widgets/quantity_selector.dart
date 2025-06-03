@@ -7,12 +7,14 @@ class QuantitySelector extends StatelessWidget {
   final int quantity;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+  final String? unit; // Add unit parameter
 
   const QuantitySelector({
     super.key,
     required this.quantity,
     required this.onIncrement,
     required this.onDecrement,
+    this.unit, // Optional unit (e.g., 'gramos', 'unidades')
   });
 
   // Define button style constants
@@ -55,23 +57,41 @@ class QuantitySelector extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: buttonBackgroundColor,
               shape: RoundedRectangleBorder(borderRadius: _borderRadius),
-              disabledBackgroundColor: buttonBackgroundColor.withOpacity(0.7),
+              disabledBackgroundColor: buttonBackgroundColor.withValues(
+                alpha: 0.7,
+              ),
             ),
             // Disable onPressed if quantity is 1 or less
             onPressed: quantity > 1 ? onDecrement : null,
           ),
         ),
 
-        // Quantity Text
+        // Quantity Text with Unit
         Container(
-          width: 40, // Fixed width for the number display
+          constraints: const BoxConstraints(
+            minWidth: 60,
+          ), // Dynamic width for text + unit
           alignment: Alignment.center,
-          child: Text(
-            quantity.toString(),
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: quantityTextColor,
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: RichText(
+            text: TextSpan(
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: quantityTextColor,
+              ),
+              children: [
+                TextSpan(text: quantity.toString()),
+                if (unit != null && unit!.isNotEmpty)
+                  TextSpan(
+                    text: ' $unit',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: quantityTextColor.withValues(alpha: 0.7),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

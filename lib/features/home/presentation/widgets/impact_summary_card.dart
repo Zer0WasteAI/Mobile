@@ -18,8 +18,8 @@ class ImpactSummaryCard extends ConsumerWidget {
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final Color progressBackgroundColor = primaryColor.withOpacity(0.25);
-    final Color cardBorderColor = primaryColor.withOpacity(0.3);
+    final Color progressBackgroundColor = primaryColor.withValues(alpha: 0.25);
+    final Color cardBorderColor = primaryColor.withValues(alpha: 0.3);
 
     final impact = ref.watch(impactSummaryProvider);
 
@@ -40,7 +40,7 @@ class ImpactSummaryCard extends ConsumerWidget {
       borderRadius: BorderRadius.circular(16.0),
       child: Card(
         elevation: isDark ? 1 : 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           side: BorderSide(
             color: cardBorderColor,

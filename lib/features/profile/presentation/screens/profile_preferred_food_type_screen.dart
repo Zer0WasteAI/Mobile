@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +22,7 @@ enum FoodType {
   thai,
   french,
   spanish,
+  // ignore: constant_identifier_names
   middle_eastern,
   greek,
 }
@@ -148,9 +151,9 @@ class _ProfilePreferredFoodTypeScreenState
     final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
     final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
-    print('Initializing food types selector with:');
-    print('- Legacy food type names: $userFoodTypes');
-    print('- Food type items: $userFoodTypeItems');
+    log('Initializing food types selector with:');
+    log('- Legacy food type names: $userFoodTypes');
+    log('- Food type items: $userFoodTypeItems');
 
     List<String> foodTypeNamesToInitialize = userFoodTypes;
 
@@ -171,7 +174,7 @@ class _ProfilePreferredFoodTypeScreenState
           if (availableFoodType.name.toLowerCase() ==
               foodTypeName.toLowerCase()) {
             notifier.toggleFoodType(availableFoodType);
-            print('Added food type to selection: ${availableFoodType.name}');
+            log('Added food type to selection: ${availableFoodType.name}');
             break;
           }
         }
@@ -201,7 +204,9 @@ class _ProfilePreferredFoodTypeScreenState
     final Color primaryColor = colorScheme.primary;
     final Color backgroundColor = colorScheme.surface;
     final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final Color defaultChipBorderColor = colorScheme.outline.withValues(
+      alpha: 0.5,
+    );
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -328,7 +333,7 @@ class _ProfilePreferredFoodTypeScreenState
                                                 )
                                                 .toList();
 
-                                        print(
+                                        log(
                                           "Guardando tipos de comida en Firestore: $foodTypeNames",
                                         );
 
@@ -336,10 +341,6 @@ class _ProfilePreferredFoodTypeScreenState
                                             .saveUserPreferredFoodTypes(
                                               foodTypeNames, // Could be empty list
                                             );
-
-                                        // Marcar explícitamente como completado en Firestore
-                                        await authRepository
-                                            .markInitialPreferencesCompleted();
 
                                         // Actualizar datos del usuario en memoria
                                         await authController
@@ -428,7 +429,8 @@ class _FoodTypeCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.15) : surfaceColor,
+          color:
+              isSelected ? primaryColor.withValues(alpha: 0.15) : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : colorScheme.outlineVariant,
@@ -443,8 +445,10 @@ class _FoodTypeCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     isSelected
-                        ? primaryColor.withOpacity(0.2)
-                        : colorScheme.surfaceVariant.withOpacity(0.3),
+                        ? primaryColor.withValues(alpha: 0.2)
+                        : colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.3,
+                        ),
                 shape: BoxShape.circle,
               ),
               child: Icon(

@@ -76,6 +76,7 @@ class EcoCoinsNotifier extends StateNotifier<int> {
 
     // Calcular progreso basado en EcoCoins dentro del nivel actual
     final coinsForCurrentLevel = (currentLevel - 1) * 100;
+    // ignore: unused_local_variable
     final coinsForNextLevel = currentLevel * 100;
     final coinsInCurrentLevel = state - coinsForCurrentLevel;
 

@@ -1,7 +1,10 @@
+// ignore_for_file: unused_local_variable
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
@@ -11,7 +14,6 @@ import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_item_card.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_filter_bottom_sheet.dart';
-import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_inventory_item_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for date formatting extension
@@ -64,7 +66,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     // Verificar si hay elementos destacados al iniciar la pantalla
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final recentlyAddedIds = ref.read(inventoryProvider).recentlyAddedIds;
-      print(
+      log(
         'initState: IDs destacados encontrados: ${recentlyAddedIds.length}',
       );
 
@@ -74,7 +76,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       } else {
         // Si hay elementos destacados, guardarlos y hacer scroll al último elemento
         _previousRecentlyAddedIds = Set<String>.from(recentlyAddedIds);
-        print('initState: Haciendo scroll al último elemento de la lista');
+        log('initState: Haciendo scroll al último elemento de la lista');
 
         // Esperar un poco más para garantizar que la UI está lista
         Future.delayed(Duration(milliseconds: 300), () {
@@ -91,10 +93,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     // Obtener los IDs actuales de elementos destacados
     final currentRecentlyAddedIds =
         ref.read(inventoryProvider).recentlyAddedIds;
-    print(
+    log(
       'didUpdateWidget: Elementos destacados detectados: ${currentRecentlyAddedIds.length}',
     );
-    print(
+    log(
       'didUpdateWidget: Elementos previos: ${_previousRecentlyAddedIds.length}',
     );
 
@@ -106,12 +108,12 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
               .where((id) => !_previousRecentlyAddedIds.contains(id))
               .toList();
 
-      print('didUpdateWidget: Nuevos elementos destacados: ${newIds.length}');
+      log('didUpdateWidget: Nuevos elementos destacados: ${newIds.length}');
 
       // Si hay nuevos elementos destacados
       if (newIds.isNotEmpty) {
         // Hacer scroll al último elemento de la lista en lugar de al elemento destacado
-        print(
+        log(
           'didUpdateWidget: Haciendo scroll al último elemento de la lista',
         );
 
@@ -124,7 +126,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       } else if (_previousRecentlyAddedIds.isEmpty &&
           currentRecentlyAddedIds.isNotEmpty) {
         // Si no hay nuevos elementos específicos pero pasamos de ninguno a algunos
-        print(
+        log(
           'didUpdateWidget: Haciendo scroll al último elemento de la lista',
         );
 
@@ -271,8 +273,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                           BoxShadow(
                             color:
                                 isDark
-                                    ? Colors.black.withOpacity(0.25)
-                                    : Colors.grey.withOpacity(0.15),
+                                    ? Colors.black.withValues(alpha: 0.25)
+                                    : Colors.grey.withValues(alpha: 0.15),
                             spreadRadius: 1,
                             blurRadius: 5,
                             offset: const Offset(0, 3),
@@ -460,8 +462,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         );
                         final expiredCount = ref.watch(expiredCountProvider);
                         final totalCount = ref.watch(totalItemCountProvider);
-                        if (!_isSummaryExpanded || totalCount == 0)
+                        if (!_isSummaryExpanded || totalCount == 0) {
                           return const SizedBox.shrink();
+                        }
                         final Color warningTextColor =
                             isDark
                                 ? AppColors.warningTextDark
@@ -482,8 +485,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                   child: RichText(
                                     text: TextSpan(
                                       style: textTheme.labelMedium?.copyWith(
-                                        color: warningTextColor.withOpacity(
-                                          0.9,
+                                        color: warningTextColor.withValues(
+                                          alpha: 0.9,
                                         ),
                                       ),
                                       children: [
@@ -508,7 +511,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                   child: RichText(
                                     text: TextSpan(
                                       style: textTheme.labelMedium?.copyWith(
-                                        color: errorColor.withOpacity(0.9),
+                                        color: errorColor.withValues(alpha: 0.9),
                                       ),
                                       children: [
                                         TextSpan(
@@ -554,7 +557,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             fontWeight: FontWeight.w600,
                           ),
                           elevation: 2,
-                          shadowColor: Colors.grey.withOpacity(0.2),
+                          shadowColor: Colors.grey.withValues(alpha: 0.2),
                         ),
                       ),
                     ),
@@ -742,11 +745,11 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       final filteredItems = ref.read(filteredSortedInventoryProvider);
 
       if (filteredItems.isEmpty) {
-        print('La lista está vacía, no se puede hacer scroll');
+        log('La lista está vacía, no se puede hacer scroll');
         return;
       }
 
-      print(
+      log(
         'Intentando hacer scroll al final de ${filteredItems.length} elementos',
       );
 
@@ -754,7 +757,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         // MÉTODO 1: Intentar usar maxScrollExtent para ir al final de la lista
         // Este es el método más confiable para hacer scroll al final de la lista
         if (_scrollController.hasClients) {
-          print(
+          log(
             'Usando maxScrollExtent para scroll: ${_scrollController.position.maxScrollExtent}',
           );
 
@@ -769,7 +772,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           return;
         }
       } catch (e) {
-        print('Error usando maxScrollExtent: $e');
+        log('Error usando maxScrollExtent: $e');
       }
 
       // MÉTODO 2: Cálculo basado en índices (respaldo)
@@ -785,7 +788,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         final double scrollPosition =
             searchBarHeight + tabBarHeight + (lastIndex * itemHeight) + 100;
 
-        print('Usando cálculo de posición: $scrollPosition');
+        log('Usando cálculo de posición: $scrollPosition');
 
         // Hacer scroll a la posición calculada
         _scrollController.animateTo(
@@ -794,18 +797,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           curve: Curves.easeOutQuart,
         );
       } catch (e) {
-        print('Error en cálculo de posición: $e');
+        log('Error en cálculo de posición: $e');
 
         // MÉTODO 3: Último intento usando un valor arbitrario grande
         try {
-          print('Intento final con valor fijo grande');
+          log('Intento final con valor fijo grande');
           _scrollController.animateTo(
             10000.0, // Valor grande para intentar llegar al final
             duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutQuart,
           );
         } catch (e) {
-          print('Error en intento final: $e');
+          log('Error en intento final: $e');
         }
       }
     });
@@ -821,15 +824,15 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       // Obtener los elementos filtrados más actualizados
       final filteredItems = ref.read(filteredSortedInventoryProvider);
 
-      print('Intentando hacer scroll al ítem: $itemId');
-      print('Total de ítems en la lista: ${filteredItems.length}');
+      log('Intentando hacer scroll al ítem: $itemId');
+      log('Total de ítems en la lista: ${filteredItems.length}');
 
       // Buscar el índice del ítem destacado
       int highlightedIndex = -1;
       for (int i = 0; i < filteredItems.length; i++) {
         if (filteredItems[i].displayBatch.id == itemId) {
           highlightedIndex = i;
-          print('Ítem encontrado en el índice: $i');
+          log('Ítem encontrado en el índice: $i');
           break;
         }
       }
@@ -848,7 +851,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             (highlightedIndex * itemHeight) -
             40;
 
-        print('Haciendo scroll a la posición: $scrollPosition');
+        log('Haciendo scroll a la posición: $scrollPosition');
 
         // Intentar hacer scroll con una duración más larga para mayor suavidad
         try {
@@ -858,7 +861,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             curve: Curves.easeOutQuint,
           );
         } catch (e) {
-          print('Error haciendo scroll: $e');
+          log('Error haciendo scroll: $e');
           // Intento alternativo con posición fija si falla el cálculo
           if (highlightedIndex > 0) {
             _scrollController.animateTo(
@@ -869,7 +872,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           }
         }
       } else {
-        print('Ítem con ID: $itemId no encontrado en la lista filtrada');
+        log('Ítem con ID: $itemId no encontrado en la lista filtrada');
         // Si no se encuentra el ítem específico, hacer scroll al último elemento
         scrollToLastItem();
       }
@@ -958,7 +961,7 @@ Future<void> showQuantityEditDialog(
                       color: inputFillColor,
                       borderRadius: BorderRadius.circular(16.0),
                       border: Border.all(
-                        color: colorScheme.primary.withOpacity(0.2),
+                        color: colorScheme.primary.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -1008,7 +1011,7 @@ Future<void> showQuantityEditDialog(
                         Container(
                           height: 30,
                           width: 1,
-                          color: colorScheme.primary.withOpacity(0.2),
+                          color: colorScheme.primary.withValues(alpha: 0.2),
                         ),
 
                         // Text field
@@ -1063,7 +1066,7 @@ Future<void> showQuantityEditDialog(
                         Container(
                           height: 30,
                           width: 1,
-                          color: colorScheme.primary.withOpacity(0.2),
+                          color: colorScheme.primary.withValues(alpha: 0.2),
                         ),
 
                         // Increment button
@@ -1202,7 +1205,7 @@ Future<void> showBatchSelectorDialog(
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.3),
+                        color: primaryColor.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1263,7 +1266,7 @@ Future<void> showBatchSelectorDialog(
                               decoration: BoxDecoration(
                                 color:
                                     isCurrentlySelected
-                                        ? primaryColor.withOpacity(0.1)
+                                        ? primaryColor.withValues(alpha: 0.1)
                                         : isDark
                                         ? Colors.grey.shade800
                                         : Colors.grey.shade100,
@@ -1279,8 +1282,8 @@ Future<void> showBatchSelectorDialog(
                                     isCurrentlySelected
                                         ? [
                                           BoxShadow(
-                                            color: primaryColor.withOpacity(
-                                              0.1,
+                                            color: primaryColor.withValues(
+                                              alpha: 0.1,
                                             ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
@@ -1298,7 +1301,9 @@ Future<void> showBatchSelectorDialog(
                                       color:
                                           isCurrentlySelected
                                               ? primaryColor
-                                              : statusColor.withOpacity(0.6),
+                                              : statusColor.withValues(
+                                                  alpha: 0.6,
+                                                ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),

@@ -60,7 +60,7 @@ class _RecipeRatingDialogState extends State<RecipeRatingDialog> {
               'Has completado la receta:',
               style: GoogleFonts.inter(
                 fontSize: 16,
-                color: textColor.withOpacity(0.8),
+                color: textColor.withValues(alpha: 0.8),
               ),
               textAlign: TextAlign.center,
             ),
@@ -115,7 +115,9 @@ class _RecipeRatingDialogState extends State<RecipeRatingDialog> {
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: '¿Algún comentario? (opcional)',
-                hintStyle: GoogleFonts.inter(color: textColor.withOpacity(0.5)),
+                hintStyle: GoogleFonts.inter(
+                  color: textColor.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: isDark ? Colors.black12 : Colors.grey.shade100,
                 border: OutlineInputBorder(

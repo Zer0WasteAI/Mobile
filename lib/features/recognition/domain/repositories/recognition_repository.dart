@@ -3,15 +3,20 @@ import 'package:zer0_waste_ai/features/recognition/data/models/recognition_resul
 import 'package:zer0_waste_ai/features/recognition/domain/models/recognition_result.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/models/reference_image.dart';
 
-/// Repository interface for food and ingredient recognition
+/// Repository for AI-powered food and ingredient recognition
 abstract class RecognitionRepository {
-  /// Recognize foods from image paths
-  Future<RecognitionResultModel> recognizeFoods(List<String> imagePaths);
+  /// Recognize foods/dishes from image paths
+  /// Returns FoodRecognitionResultModel with detailed food information including allergen alerts
+  Future<FoodRecognitionResultModel> recognizeFoods(List<String> imagePaths);
 
-  /// Recognize ingredients from image paths
-  Future<RecognitionResultModel> recognizeIngredients(List<String> imagePaths);
+  /// Recognize individual ingredients from image paths
+  /// Returns IngredientRecognitionResultModel with detailed ingredient information including allergen alerts
+  Future<IngredientRecognitionResultModel> recognizeIngredients(
+    List<String> imagePaths,
+  );
 
-  /// Batch recognition for multiple images
+  /// Batch recognition for mixed content (ingredients + foods)
+  /// Returns general RecognitionResultModel for backward compatibility
   Future<RecognitionResultModel> recognizeBatch(List<String> imagePaths);
 
   /// Upload an image to the backend
@@ -58,4 +63,3 @@ abstract class RecognitionRepository {
     String? category,
   });
 }
- 

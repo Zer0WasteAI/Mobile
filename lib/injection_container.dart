@@ -1,5 +1,7 @@
 // ignore_for_file: unused_local_variable
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,9 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
 
 // Provider for FlutterSecureStorage
 final flutterSecureStorageProvider = Provider<FlutterSecureStorage>((ref) {
@@ -30,7 +35,7 @@ final dioProvider = Provider<Dio>((ref) {
       dotenv.env['BACKEND_BASE_URL'] ?? 'YOUR_FALLBACK_URL_IN_DIO_PROVIDER';
   if (baseUrl == 'YOUR_FALLBACK_URL_IN_DIO_PROVIDER') {
     // Consider logging a warning or throwing an error if the URL is critical
-    print(
+    log(
       "WARNING: BACKEND_BASE_URL not found in .env, using fallback in dioProvider.",
     );
   }
@@ -73,6 +78,10 @@ final dioProvider = Provider<Dio>((ref) {
   // that tries to read this dioProvider. We resolved AuthRepositoryImpl manually in init.
   // final authRepository = ref.watch(authRepositoryProvider);
   // dio.interceptors.add(AuthInterceptor(secureStorage, authRepository, dio));
+
+  // The interceptor must be added *after* the container setup in init is complete
+  // or the AuthRepository needs to be passed differently.
+  // For now, the interceptor will be added in init after AuthRepository is created.
 
   // The interceptor must be added *after* the container setup in init is complete
   // or the AuthRepository needs to be passed differently.
@@ -130,6 +139,8 @@ class DependencyInjection {
       secureStorage,
       authRepository,
       baseDio,
+      FirebaseAuth.instance,
+      ApiService.instance,
     );
     baseDio.interceptors.add(authInterceptor);
 
@@ -151,8 +162,10 @@ class DependencyInjection {
 
 /// Global providers
 class AppProviders {
-  /// Router provider
-  static final router = routerProvider;
+  /// Router provider - using the complete router configuration with all routes
+  static final router = Provider<GoRouter>(
+    (ref) => AppRouter.createRouter(ref),
+  );
 
   /// Theme provider
   static final theme = themeProvider;

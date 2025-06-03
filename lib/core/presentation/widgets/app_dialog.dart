@@ -55,7 +55,7 @@ class AppDialog extends StatelessWidget {
     // Colores configurados según el tema
     final backgroundColor =
         isDark
-            ? colorScheme.surfaceContainerHigh ?? colorScheme.surface
+            ? colorScheme.surfaceContainerHigh
             : Colors.white;
     final textColor = colorScheme.onSurface;
     final secondaryTextColor = colorScheme.onSurfaceVariant;

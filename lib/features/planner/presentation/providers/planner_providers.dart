@@ -163,7 +163,7 @@ class MealPlanValidator {
       // Para snacks, mantener como advertencia (permitir continuar)
       return MealPlanValidation.warning(
         'Ya tienes ${mealsOfSameType.length} ${newMeal.type.name.toLowerCase()}(s) planificado(s). '
-        'Se recomienda no exceder los ${limit} snacks por día.',
+        'Se recomienda no exceder los $limit snacks por día.',
       );
     }
 
@@ -292,7 +292,7 @@ class MealPlanValidator {
     if (existingMeals.length >= maxMealsPerDay) {
       return MealPlanValidation.warning(
         'Ya tienes ${existingMeals.length} comidas planificadas para este día. '
-        'Se recomienda no exceder las ${maxMealsPerDay} comidas diarias.',
+        'Se recomienda no exceder las $maxMealsPerDay comidas diarias.',
       );
     }
 

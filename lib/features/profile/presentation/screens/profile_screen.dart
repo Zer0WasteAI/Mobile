@@ -1,9 +1,12 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: unused_local_variable, no_leading_underscores_for_local_identifiers
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_preferences_model.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -16,6 +19,14 @@ class ProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final screenSize = MediaQuery.of(context).size;
+
+    // Watch the user profile provider for backend data
+    final profileState = ref.watch(userProfileProvider);
+    final user = profileState.user;
+    final isLoading = profileState.isLoading;
+    final isBackendSynced = profileState.isBackendSynced;
+
+    final userPrefs = ref.watch(userPreferencesProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -73,12 +84,26 @@ class ProfileScreen extends ConsumerWidget {
                           color: Colors.white,
                           border: Border.all(color: Colors.white, width: 4),
                         ),
-                        child: Center(
-                          child: Icon(
-                            Icons.person,
-                            size: 50,
-                            color: const Color(0xFF00BFA5),
-                          ),
+                        child: ClipOval(
+                          child:
+                              user?.photoURL != null &&
+                                      user!.photoURL!.isNotEmpty
+                                  ? Image.network(
+                                    user.photoURL!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: const Color(0xFF00BFA5),
+                                      );
+                                    },
+                                  )
+                                  : Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: const Color(0xFF00BFA5),
+                                  ),
                         ),
                       ),
                     ),
@@ -107,7 +132,7 @@ class ProfileScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.07),
+                            color: Colors.black.withValues(alpha: 0.07),
                             blurRadius: 15,
                             offset: const Offset(0, 4),
                           ),
@@ -115,52 +140,73 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            'Usuario',
-                            style: GoogleFonts.inter(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                          // Loading state
+                          if (isLoading)
+                            const Column(
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation(
+                                    Color(0xFF00BFA5),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text('Cargando perfil...'),
+                              ],
+                            )
+                          else ...[
+                            // User name and email
+                            Text(
+                              user?.displayName ?? 'Usuario',
+                              style: GoogleFonts.inter(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'usuario@ejemplo.com',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: Colors.black54,
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  user?.email ?? 'usuario@ejemplo.com',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildProfileStat(
-                                context,
-                                icon: Icons.star_rounded,
-                                value: '3',
-                                label: 'Logros',
-                                color: const Color(0xFFFFC107),
-                                bgColor: const Color(0xFFFFF8E1),
-                              ),
-                              _buildProfileStat(
-                                context,
-                                icon: Icons.local_fire_department_rounded,
-                                value: '5',
-                                label: 'Racha',
-                                color: const Color(0xFFFF5722),
-                                bgColor: const Color(0xFFFFF3F0),
-                              ),
-                              _buildProfileStat(
-                                context,
-                                icon: Icons.restaurant_rounded,
-                                value: '12',
-                                label: 'Recetas',
-                                color: const Color(0xFF4CAF50),
-                                bgColor: const Color(0xFFE8F5E9),
-                              ),
-                            ],
-                          ),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildProfileStat(
+                                  context,
+                                  icon: Icons.star_rounded,
+                                  value: '3',
+                                  label: 'Logros',
+                                  color: const Color(0xFFFFC107),
+                                  bgColor: const Color(0xFFFFF8E1),
+                                ),
+                                _buildProfileStat(
+                                  context,
+                                  icon: Icons.local_fire_department_rounded,
+                                  value: '5',
+                                  label: 'Racha',
+                                  color: const Color(0xFFFF5722),
+                                  bgColor: const Color(0xFFFFF3F0),
+                                ),
+                                _buildProfileStat(
+                                  context,
+                                  icon: Icons.restaurant_rounded,
+                                  value: '${user?.favoriteRecipes.length ?? 0}',
+                                  label: 'Recetas',
+                                  color: const Color(0xFF4CAF50),
+                                  bgColor: const Color(0xFFE8F5E9),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -169,7 +215,7 @@ class ProfileScreen extends ConsumerWidget {
 
                     _buildSectionHeader(context, 'Preferencias culinarias'),
                     const SizedBox(height: 8),
-                    _buildPreferencesGrid(context),
+                    _buildPreferencesGrid(context, ref),
 
                     const SizedBox(height: 24),
 
@@ -192,6 +238,155 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     _buildLogoutButton(context),
+                    const SizedBox(height: 20),
+
+                    // DEBUG: Botón para leer directamente de Firestore
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            final profileState = ref.read(userProfileProvider);
+                            final user = profileState.user;
+
+                            print('🔧 CURRENT USER MODEL DEBUG:');
+                            print('  User exists: ${user != null}');
+                            if (user != null) {
+                              print('  User ID: ${user.id}');
+                              print('  Display Name: ${user.displayName}');
+                              print('  Email: ${user.email}');
+                              print(
+                                '  🎯 INITIAL PREFERENCES COMPLETED: ${user.initialPreferencesCompleted}',
+                              );
+                              print('  Prefs exists: ${user.prefs != null}');
+
+                              final prefs = user.prefs;
+                              print(
+                                '  Prefs cookingLevel: ${prefs.cookingLevel}',
+                              );
+                              print('  Prefs allergies: ${prefs.allergies}');
+                              print(
+                                '  Prefs allergyItems: ${prefs.allergyItems}',
+                              );
+                              print(
+                                '  Prefs specialDiets: ${prefs.specialDiets}',
+                              );
+                              print(
+                                '  Prefs specialDietItems: ${prefs.specialDietItems}',
+                              );
+                              print(
+                                '  Prefs preferredFoodTypes: ${prefs.preferredFoodTypes}',
+                              );
+
+                              // También forzar un refresh
+                              print('🔧 Forcing auth state refresh...');
+                              ref.invalidate(authStateProvider);
+                              await Future.delayed(
+                                Duration(milliseconds: 1000),
+                              );
+                              ref.invalidate(userProfileProvider);
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Debug completado - revisa logs'),
+                                backgroundColor: Colors.blue,
+                              ),
+                            );
+                          } catch (e) {
+                            print('❌ Error en debug: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.info),
+                        label: Text(
+                          'DEBUG: Ver datos actuales',
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // DEBUG: Botón para marcar preferencias como completadas manualmente
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            final authRepository = ref.read(
+                              authRepositoryProvider,
+                            );
+                            final authController = ref.read(
+                              authControllerProvider.notifier,
+                            );
+
+                            print(
+                              '🔧 MANUAL: Marcando preferencias como completadas...',
+                            );
+
+                            await authRepository
+                                .markInitialPreferencesCompleted();
+
+                            print(
+                              '✅ MANUAL: Preferencias marcadas correctamente',
+                            );
+
+                            // Refresh data
+                            await authController.refreshUserFromFirestore();
+                            ref.invalidate(userProfileProvider);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Preferencias marcadas como completadas',
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } catch (e) {
+                            print('❌ Error marcando preferencias: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.check_circle),
+                        label: Text(
+                          'DEBUG: Marcar como completado',
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -264,7 +459,11 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreferencesGrid(BuildContext context) {
+  Widget _buildPreferencesGrid(BuildContext context, WidgetRef ref) {
+    // Get user preferences from the provider in build method scope
+    final profileState = ref.watch(userProfileProvider);
+    final userPrefs = profileState.user?.prefs ?? const UserPreferencesModel();
+
     // Define colors for each preference item
     final List<Color> iconColors = [
       const Color(0xFFFF9800), // Cooking level (orange)
@@ -280,6 +479,84 @@ class ProfileScreen extends ConsumerWidget {
       const Color(0xFFF3E5F5), // Light purple
     ];
 
+    // Helper function to get cooking level display text
+    String getCookingLevelText() {
+      switch (userPrefs.cookingLevel) {
+        case 'beginner':
+          return 'Principiante';
+        case 'intermediate':
+          return 'Intermedio';
+        case 'advanced':
+          return 'Avanzado';
+        default:
+          return 'No definido';
+      }
+    }
+
+    // Helper function to get food types summary
+    String getFoodTypesText() {
+      final count = userPrefs.preferredFoodTypes.length;
+      if (count == 0) return 'No definido';
+      if (count == 1) return userPrefs.preferredFoodTypes.first;
+      return '$count seleccionad...';
+    }
+
+    // Helper function to get allergies summary
+    String getAllergiesText() {
+      // DEBUG: Mostrar qué datos tenemos
+      print('🔧 DEBUG allergies:');
+      print('  allergies (simple): ${userPrefs.allergies}');
+      print('  allergyItems (complex): ${userPrefs.allergyItems}');
+
+      // Priorizar allergyItems (datos complejos), luego allergies (datos simples)
+      List<String> allergyNames = [];
+
+      if (userPrefs.allergyItems.isNotEmpty) {
+        // Usar datos complejos si están disponibles
+        allergyNames =
+            userPrefs.allergyItems
+                .map((item) => item['name'] as String? ?? '')
+                .where((name) => name.isNotEmpty)
+                .toList();
+      } else if (userPrefs.allergies.isNotEmpty) {
+        // Fallback a datos simples
+        allergyNames = userPrefs.allergies;
+      }
+
+      final count = allergyNames.length;
+      if (count == 0) return 'Ninguna';
+      if (count == 1) return allergyNames.first;
+      return '$count seleccionad...';
+    }
+
+    // Helper function to get diets summary
+    String getDietsText() {
+      // DEBUG: Mostrar qué datos tenemos
+      print('🔧 DEBUG special diets:');
+      print('  specialDiets (simple): ${userPrefs.specialDiets}');
+      print('  specialDietItems (complex): ${userPrefs.specialDietItems}');
+
+      // Priorizar specialDietItems (datos complejos), luego specialDiets (datos simples)
+      List<String> dietNames = [];
+
+      if (userPrefs.specialDietItems.isNotEmpty) {
+        // Usar datos complejos si están disponibles
+        dietNames =
+            userPrefs.specialDietItems
+                .map((item) => item['name'] as String? ?? '')
+                .where((name) => name.isNotEmpty)
+                .toList();
+      } else if (userPrefs.specialDiets.isNotEmpty) {
+        // Fallback a datos simples
+        dietNames = userPrefs.specialDiets;
+      }
+
+      final count = dietNames.length;
+      if (count == 0) return 'Ninguna';
+      if (count == 1) return dietNames.first;
+      return '$count seleccionad...';
+    }
+
     return GridView.count(
       crossAxisCount: 2,
       mainAxisSpacing: 12,
@@ -293,7 +570,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.restaurant_rounded,
           title: 'Nivel de co...',
-          value: 'Intermedio',
+          value: getCookingLevelText(),
           iconColor: iconColors[0],
           bgColor: bgColors[0],
           onTap: () => context.push('/profile/cooking-level-selector'),
@@ -302,7 +579,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.restaurant_menu_rounded,
           title: 'Tipos de co...',
-          value: '4 seleccionad...',
+          value: getFoodTypesText(),
           iconColor: iconColors[1],
           bgColor: bgColors[1],
           onTap: () => context.push('/profile/preferred-food-type'),
@@ -311,7 +588,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.no_food_rounded,
           title: 'Alergias',
-          value: '2 seleccionad...',
+          value: getAllergiesText(),
           iconColor: iconColors[2],
           bgColor: bgColors[2],
           onTap: () => context.push('/profile/allergy-selector'),
@@ -320,7 +597,7 @@ class ProfileScreen extends ConsumerWidget {
           context,
           icon: Icons.spa_rounded,
           title: 'Dietas esp...',
-          value: 'Vegetariana',
+          value: getDietsText(),
           iconColor: iconColors[3],
           bgColor: bgColors[3],
           onTap: () => context.push('/profile/special-diet-selector'),
@@ -896,8 +1173,9 @@ class ProfileScreen extends ConsumerWidget {
         if (password.length >= 8) strength += 0.25;
         if (password.contains(RegExp(r'[A-Z]'))) strength += 0.25;
         if (password.contains(RegExp(r'[0-9]'))) strength += 0.25;
-        if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')))
+        if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
           strength += 0.25;
+        }
       }
 
       _passwordStrength = strength;
@@ -1018,10 +1296,6 @@ class ProfileScreen extends ConsumerWidget {
                             color: Color(0xFF00BFA5),
                             width: 1.5,
                           ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
                         ),
                       ),
                     ),
@@ -1428,7 +1702,7 @@ class ProfileScreen extends ConsumerWidget {
                         color: const Color(0xFFE0F2F1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF00BFA5).withOpacity(0.3),
+                          color: const Color(0xFF00BFA5).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(

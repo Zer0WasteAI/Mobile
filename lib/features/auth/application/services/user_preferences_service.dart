@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 
 /// Estado de las preferencias del usuario
 class UserPreferencesState {
@@ -70,7 +71,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
     try {
       // SI YA ESTÁN MARCADAS COMO COMPLETADAS EN MEMORIA, NO SOBRESCRIBIR
       if (state.hasCompletedPreferences) {
-        print(
+        log(
           '⚡ Preferencias ya marcadas como completadas en memoria - NO sobrescribir',
         );
         return;
@@ -98,7 +99,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       final firestorePreferencesStatus =
           refreshedUser?.initialPreferencesCompleted ?? false;
 
-      print(
+      log(
         'UserPreferencesService: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
       );
 
@@ -108,7 +109,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
         hasCompletedPreferences: firestorePreferencesStatus,
       );
     } catch (e) {
-      print('Error al cargar preferencias del usuario: $e');
+      log('Error al cargar preferencias del usuario: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -117,13 +118,13 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
   Future<void> markPreferencesAsCompleted() async {
     // Marcar inmediatamente en memoria para evitar redirecciones
     state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
-    print(
+    log(
       "UserPreferencesService: Preferencias marcadas como completadas en memoria",
     );
 
     // No intentar guardar en Firestore aquí para evitar duplicados
     // El guardado en Firestore debe hacerse desde el screen que maneja la lógica de negocio
-    print(
+    log(
       "UserPreferencesService: No guardando en Firestore para evitar race conditions",
     );
   }
@@ -143,13 +144,13 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       // Obtener el usuario actual del estado de autenticación
       final user = _ref.read(authControllerProvider).value;
       if (user == null) {
-        print('forceUpdateFromUserState: No hay usuario autenticado');
+        log('forceUpdateFromUserState: No hay usuario autenticado');
         return;
       }
 
       // Actualizar directamente el estado basado en el valor del usuario
       final preferencesCompleted = user.initialPreferencesCompleted;
-      print(
+      log(
         'forceUpdateFromUserState: Actualizando estado directamente, initialPreferencesCompleted=$preferencesCompleted',
       );
 
@@ -158,14 +159,14 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
         hasCompletedPreferences: preferencesCompleted,
       );
     } catch (e) {
-      print('Error en forceUpdateFromUserState: $e');
+      log('Error en forceUpdateFromUserState: $e');
     }
   }
 
   /// Forzar sincronización inmediata con Firestore
   Future<void> forceSyncWithFirestore() async {
     try {
-      print('🔄 Forzando sincronización con Firestore...');
+      log('🔄 Forzando sincronización con Firestore...');
 
       // Actualizar estado a cargando
       state = state.copyWith(isLoading: true);
@@ -179,7 +180,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
 
       if (updatedUser != null) {
         final firestoreValue = updatedUser.initialPreferencesCompleted;
-        print(
+        log(
           '✅ Sincronización completa - initialPreferencesCompleted: $firestoreValue',
         );
 
@@ -189,11 +190,11 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
           hasCompletedPreferences: firestoreValue,
         );
       } else {
-        print('⚠️ No se pudo obtener usuario actualizado');
+        log('⚠️ No se pudo obtener usuario actualizado');
         state = state.copyWith(isLoading: false);
       }
     } catch (e) {
-      print('❌ Error en forceSyncWithFirestore: $e');
+      log('❌ Error en forceSyncWithFirestore: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -201,7 +202,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
   /// Método específico para INICIAR SESIÓN - siempre lee desde Firestore
   Future<void> loadUserPreferencesFromFirestore() async {
     try {
-      print('🔄 INICIO SESIÓN: Cargando preferencias desde Firestore...');
+      log('🔄 INICIO SESIÓN: Cargando preferencias desde Firestore...');
 
       // Actualizar estado a cargando
       state = state.copyWith(isLoading: true);
@@ -228,7 +229,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       final firestorePreferencesStatus =
           refreshedUser?.initialPreferencesCompleted ?? false;
 
-      print(
+      log(
         '✅ INICIO SESIÓN: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
       );
 
@@ -238,7 +239,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
         hasCompletedPreferences: firestorePreferencesStatus,
       );
     } catch (e) {
-      print('❌ Error al cargar preferencias desde Firestore: $e');
+      log('❌ Error al cargar preferencias desde Firestore: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

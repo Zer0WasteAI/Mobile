@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,7 +56,7 @@ class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
 
   void reset() {
     state = null;
-    print("Resetting cooking level selection");
+    log("Resetting cooking level selection");
   }
 }
 
@@ -211,7 +213,7 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                               final cookingLevelString =
                                   selectedLevel.toStorageString();
 
-                              print(
+                              log(
                                 "Guardando nivel de cocina: $cookingLevelString",
                               );
 
@@ -238,7 +240,7 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                                 context.go(PreferredFoodTypeScreen.routePath);
                               }
                             } catch (e) {
-                              print("Error guardando nivel de cocina: $e");
+                              log("Error guardando nivel de cocina: $e");
                               if (context.mounted) {
                                 ScaffoldMessenger.of(
                                   context,
@@ -259,11 +261,11 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                     backgroundColor:
                         selectedLevel != null
                             ? colorScheme.primary
-                            : colorScheme.outline.withOpacity(0.3),
+                            : colorScheme.outline.withValues(alpha: 0.3),
                     foregroundColor:
                         selectedLevel != null
                             ? colorScheme.onPrimary
-                            : colorScheme.onSurface.withOpacity(0.5),
+                            : colorScheme.onSurface.withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -384,7 +386,7 @@ class _CookingLevelCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: selectedColor.withOpacity(0.2),
+                          color: selectedColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(

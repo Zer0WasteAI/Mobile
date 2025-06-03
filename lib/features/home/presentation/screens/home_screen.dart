@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Import the modular widgets
 import 'package:zer0_waste_ai/features/home/presentation/widgets/welcome_header.dart';
@@ -47,9 +48,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await ref
           .read(authControllerProvider.notifier)
           .refreshUserFromFirestore();
-      print('🏠 Home: Datos de usuario refrescados automáticamente');
+      log('🏠 Home: Datos de usuario refrescados automáticamente');
     } catch (e) {
-      print('🏠 Home: Error al refrescar datos: $e');
+      log('🏠 Home: Error al refrescar datos: $e');
     }
   }
 

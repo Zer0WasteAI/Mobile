@@ -8,12 +8,18 @@ class AIRecipeState {
   final List<Recipe> recipes;
   final String? error;
   final bool hasGenerated;
+  final Map<String, dynamic>? personalizationInfo;
+  final String? totalRecipes;
+  final String? inventoryUsage;
 
   const AIRecipeState({
     this.isGenerating = false,
     this.recipes = const [],
     this.error,
     this.hasGenerated = false,
+    this.personalizationInfo,
+    this.totalRecipes,
+    this.inventoryUsage,
   });
 
   AIRecipeState copyWith({
@@ -21,12 +27,18 @@ class AIRecipeState {
     List<Recipe>? recipes,
     String? error,
     bool? hasGenerated,
+    Map<String, dynamic>? personalizationInfo,
+    String? totalRecipes,
+    String? inventoryUsage,
   }) {
     return AIRecipeState(
       isGenerating: isGenerating ?? this.isGenerating,
       recipes: recipes ?? this.recipes,
       error: error ?? this.error,
       hasGenerated: hasGenerated ?? this.hasGenerated,
+      personalizationInfo: personalizationInfo ?? this.personalizationInfo,
+      totalRecipes: totalRecipes ?? this.totalRecipes,
+      inventoryUsage: inventoryUsage ?? this.inventoryUsage,
     );
   }
 }
@@ -42,10 +54,12 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
-      // Call real backend API
-      final recipesData = await _recipeBackend.generateRecipesFromInventory();
+      // Call real backend API - NOTA: Esto debe devolver el response completo
+      final response =
+          await _recipeBackend.generateRecipesFromInventoryComplete();
 
-      // Convert API response to Recipe models
+      // 🆕 Parsear el response completo según CAMBIOS_ENDPOINTS.md
+      final recipesData = response['generated_recipes'] as List? ?? [];
       final recipes =
           recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
 
@@ -53,6 +67,11 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         isGenerating: false,
         recipes: recipes,
         hasGenerated: true,
+        // 🆕 Capturar información de personalización
+        personalizationInfo:
+            response['personalization_info'] as Map<String, dynamic>?,
+        totalRecipes: response['total_recipes']?.toString(),
+        inventoryUsage: response['inventory_usage']?.toString(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -72,14 +91,15 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
-      // Call real backend API
-      final recipesData = await _recipeBackend.generateCustomRecipes(
+      // Call real backend API - NOTA: Esto debe devolver el response completo
+      final response = await _recipeBackend.generateCustomRecipesComplete(
         ingredients: ingredients,
         preferences: preferences,
         numRecipes: numRecipes,
       );
 
-      // Convert API response to Recipe models
+      // 🆕 Parsear el response completo según CAMBIOS_ENDPOINTS.md
+      final recipesData = response['generated_recipes'] as List? ?? [];
       final recipes =
           recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
 
@@ -87,6 +107,11 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         isGenerating: false,
         recipes: recipes,
         hasGenerated: true,
+        // 🆕 Capturar información de personalización
+        personalizationInfo:
+            response['personalization_info'] as Map<String, dynamic>?,
+        totalRecipes: response['total_recipes']?.toString(),
+        inventoryUsage: response['inventory_usage']?.toString(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -211,4 +236,59 @@ final generatedRecipesProvider = Provider<List<Recipe>>((ref) {
 
 final recipeGenerationErrorProvider = Provider<String?>((ref) {
   return ref.watch(aiRecipeProvider).error;
+});
+
+/// 🆕 NUEVOS providers para información de personalización según CAMBIOS_ENDPOINTS.md
+final personalizationInfoProvider = Provider<Map<String, dynamic>?>((ref) {
+  return ref.watch(aiRecipeProvider).personalizationInfo;
+});
+
+final totalRecipesGeneratedProvider = Provider<String?>((ref) {
+  return ref.watch(aiRecipeProvider).totalRecipes;
+});
+
+final inventoryUsageProvider = Provider<String?>((ref) {
+  return ref.watch(aiRecipeProvider).inventoryUsage;
+});
+
+/// Provider para obtener lista de preferencias aplicadas
+final appliedPreferencesProvider = Provider<List<String>>((ref) {
+  final personalizationInfo = ref.watch(personalizationInfoProvider);
+  if (personalizationInfo == null) return [];
+
+  final preferencesApplied = personalizationInfo['preferences_applied'];
+  if (preferencesApplied is List) {
+    return List<String>.from(preferencesApplied);
+  }
+  return [];
+});
+
+/// Provider para obtener lista de alergias filtradas
+final filteredAllergiesProvider = Provider<List<String>>((ref) {
+  final personalizationInfo = ref.watch(personalizationInfoProvider);
+  if (personalizationInfo == null) return [];
+
+  final allergiesFiltered = personalizationInfo['allergies_filtered'];
+  if (allergiesFiltered is List) {
+    return List<String>.from(allergiesFiltered);
+  }
+  return [];
+});
+
+/// Provider para obtener idioma usado en generación
+final recipeLanguageProvider = Provider<String?>((ref) {
+  final personalizationInfo = ref.watch(personalizationInfoProvider);
+  return personalizationInfo?['language'] as String?;
+});
+
+/// Provider para obtener sistema de medidas usado
+final measurementSystemProvider = Provider<String?>((ref) {
+  final personalizationInfo = ref.watch(personalizationInfoProvider);
+  return personalizationInfo?['measurement_system'] as String?;
+});
+
+/// Provider para obtener nivel de cocina usado
+final cookingLevelProvider = Provider<String?>((ref) {
+  final personalizationInfo = ref.watch(personalizationInfoProvider);
+  return personalizationInfo?['cooking_level'] as String?;
 });

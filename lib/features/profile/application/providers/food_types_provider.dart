@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart'; // Assuming FoodType model is here
@@ -16,7 +17,7 @@ final foodTypesProvider = FutureProvider<List<FoodType>>((ref) async {
         .toList();
   } catch (e) {
     // Handle potential errors during file loading or parsing
-    print("Error loading food types from JSON: $e");
+    log("Error loading food types from JSON: $e");
     // Return an empty list or throw an error, depending on desired behavior
     return [];
   }

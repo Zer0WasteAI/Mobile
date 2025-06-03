@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/core/widgets/error_handler.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/login_form.dart';
@@ -22,29 +23,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Handle auth state changes
+    // Handle auth state changes - only handle successful login
+    // Errors are handled globally by AuthErrorHandler
     ref.listen<AsyncValue>(authControllerProvider, (_, state) {
       state.whenData((user) {
         if (user != null) {
           context.go(AllergySelectorScreen.routePath);
         }
       });
-
-      if (state.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error al iniciar sesión: ${state.error}',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor:
-                isDark ? AppColors.darkError : AppColors.lightError,
-          ),
-        );
-      }
     });
 
-    return Scaffold(
+    return AuthErrorHandler(
+      child: Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
@@ -101,6 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                 ),
               ],
+              ),
             ),
           ),
         ),

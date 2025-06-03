@@ -1,14 +1,13 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension
-import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart'; // Import ItemCategory
+// Import ItemCategory
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // Import for _showQuantityEditDialog
 
 class InventoryItemCard extends ConsumerWidget {
@@ -41,8 +40,8 @@ class InventoryItemCard extends ConsumerWidget {
     final today = DateUtils.dateOnly(now);
     final differenceInDays = expirationDay.difference(today).inDays;
 
-    if (differenceInDays < 0) return AppColors.error.withOpacity(0.15);
-    if (differenceInDays <= 3) return expirationWarningColor.withOpacity(0.3);
+    if (differenceInDays < 0) return AppColors.error.withValues(alpha: 0.15);
+    if (differenceInDays <= 3) return expirationWarningColor.withValues(alpha: 0.3);
     return Colors.transparent;
   }
 
@@ -87,7 +86,7 @@ class InventoryItemCard extends ConsumerWidget {
             border: Border.all(
               color:
                   isHighlighted
-                      ? primaryColor.withOpacity(0.8)
+                      ? primaryColor.withValues(alpha: 0.8)
                       : cardBorderColor,
               width: isHighlighted ? 1.5 : 1.0,
             ),
@@ -95,8 +94,8 @@ class InventoryItemCard extends ConsumerWidget {
               BoxShadow(
                 color:
                     isHighlighted
-                        ? primaryColor.withOpacity(0.15)
-                        : Colors.grey.withOpacity(0.08),
+                        ? primaryColor.withValues(alpha: 0.15)
+                        : Colors.grey.withValues(alpha: 0.08),
                 spreadRadius: isHighlighted ? 2 : 1,
                 blurRadius: isHighlighted ? 6 : 4,
                 offset: const Offset(0, 2),
@@ -163,10 +162,10 @@ class InventoryItemCard extends ConsumerWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.15),
+                                  color: primaryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: primaryColor.withOpacity(0.3),
+                                    color: primaryColor.withValues(alpha: 0.3),
                                     width: 1.0,
                                   ),
                                 ),
@@ -291,7 +290,7 @@ class InventoryItemCard extends ConsumerWidget {
                       vertical: 4.0, // Minimal padding
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.08),
+                      color: Colors.grey.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Column(
@@ -328,7 +327,7 @@ class InventoryItemCard extends ConsumerWidget {
                         Icon(
                           Icons.edit,
                           size: 11, // Smaller icon
-                          color: primaryColor.withOpacity(0.8),
+                          color: primaryColor.withValues(alpha: 0.8),
                         ),
                       ],
                     ),
@@ -360,6 +359,7 @@ class InventoryItemCard extends ConsumerWidget {
   }
 
   // Helper to get minimum quantity based on unit type
+  // ignore: unused_element
   double _getMinimumQuantity(String unitType) {
     switch (unitType.toLowerCase()) {
       case 'kg':
@@ -376,7 +376,7 @@ class InventoryItemCard extends ConsumerWidget {
 
 /// Widget que muestra una etiqueta "Nuevo" con efecto pulsante
 class PulsingNewBadge extends StatefulWidget {
-  const PulsingNewBadge({Key? key}) : super(key: key);
+  const PulsingNewBadge({super.key});
 
   @override
   State<PulsingNewBadge> createState() => _PulsingNewBadgeState();
@@ -427,7 +427,7 @@ class _PulsingNewBadgeState extends State<PulsingNewBadge>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF5252).withOpacity(0.3),
+                  color: const Color(0xFFFF5252).withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

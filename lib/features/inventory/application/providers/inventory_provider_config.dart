@@ -4,6 +4,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 
 /// Configuration for inventory provider
 /// Set to true to use real backend, false to use mock data
+// ignore: constant_identifier_names
 const bool USE_REAL_BACKEND = true;
 
 /// Get the current inventory state

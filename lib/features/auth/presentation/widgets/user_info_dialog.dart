@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 class UserInfoDialog extends StatefulWidget {
   final Function(String, String) onSubmit;
 
-  const UserInfoDialog({Key? key, required this.onSubmit}) : super(key: key);
+  const UserInfoDialog({super.key, required this.onSubmit});
 
   @override
-  _UserInfoDialogState createState() => _UserInfoDialogState();
+  State<UserInfoDialog> createState() => _UserInfoDialogState();
 }
 
 class _UserInfoDialogState extends State<UserInfoDialog> {
@@ -42,7 +42,7 @@ class _UserInfoDialogState extends State<UserInfoDialog> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 10),
           ),

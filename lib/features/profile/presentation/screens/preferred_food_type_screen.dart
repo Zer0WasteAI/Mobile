@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,9 +56,9 @@ class _PreferredFoodTypeScreenState
     final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
     final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
-    print('Initializing food types selector with:');
-    print('- Legacy food type names: $userFoodTypes');
-    print('- Food type items: $userFoodTypeItems');
+    log('Initializing food types selector with:');
+    log('- Legacy food type names: $userFoodTypes');
+    log('- Food type items: $userFoodTypeItems');
 
     List<String> foodTypeNamesToInitialize = userFoodTypes;
 
@@ -77,7 +79,7 @@ class _PreferredFoodTypeScreenState
           if (availableFoodType.name.toLowerCase() ==
               foodTypeName.toLowerCase()) {
             notifier.toggleFoodType(availableFoodType);
-            print('Added food type to selection: ${availableFoodType.name}');
+            log('Added food type to selection: ${availableFoodType.name}');
             break;
           }
         }
@@ -106,7 +108,7 @@ class _PreferredFoodTypeScreenState
     final Color primaryColor = colorScheme.primary;
     final Color backgroundColor = colorScheme.surface;
     final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final Color defaultChipBorderColor = colorScheme.outline.withValues(alpha: 0.5);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -219,7 +221,7 @@ class _PreferredFoodTypeScreenState
                                               .map((foodType) => foodType.name)
                                               .toList();
 
-                                      print(
+                                      log(
                                         "Guardando tipos de comida en Firestore: $foodTypeNames",
                                       );
 
@@ -246,7 +248,7 @@ class _PreferredFoodTypeScreenState
                                         );
                                       }
                                     } catch (e) {
-                                      print(
+                                      log(
                                         "Error guardando tipos de comida: $e",
                                       );
                                       if (context.mounted) {

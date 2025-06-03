@@ -14,10 +14,12 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     : _apiService = apiService ?? ApiService.instance;
 
   @override
-  Future<RecognitionResultModel> recognizeFoods(List<String> imagePaths) async {
+  Future<FoodRecognitionResultModel> recognizeFoods(
+    List<String> imagePaths,
+  ) async {
     try {
       final response = await _apiService.recognizeFoods(imagePaths);
-      return RecognitionResultModel.fromJson(response);
+      return FoodRecognitionResultModel.fromJson(response);
     } catch (e) {
       throw Exception(
         'Food recognition failed: ${_apiService.getErrorMessage(e)}',
@@ -26,12 +28,12 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   }
 
   @override
-  Future<RecognitionResultModel> recognizeIngredients(
+  Future<IngredientRecognitionResultModel> recognizeIngredients(
     List<String> imagePaths,
   ) async {
     try {
       final response = await _apiService.recognizeIngredients(imagePaths);
-      return RecognitionResultModel.fromJson(response);
+      return IngredientRecognitionResultModel.fromJson(response);
     } catch (e) {
       throw Exception(
         'Ingredient recognition failed: ${_apiService.getErrorMessage(e)}',
@@ -107,23 +109,24 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
         uploadResult.image.imagePath,
       ]);
 
-      // Convert to legacy format
-      if (recognitionResult.recognizedItems.isNotEmpty) {
+      // Convert to legacy format using new FoodRecognitionResultModel structure
+      if (recognitionResult.foods.isNotEmpty) {
         return RecognitionResult(
-          recognitionId: recognitionResult.recognitionId,
+          recognitionId:
+              'food_${DateTime.now().millisecondsSinceEpoch}', // Generate ID since foods model doesn't have one
           results:
-              recognitionResult.recognizedItems
+              recognitionResult.foods
                   .map(
-                    (item) => FoodRecognitionItem(
-                      foodName: item.name,
-                      confidence: item.confidence,
+                    (food) => FoodRecognitionItem(
+                      foodName: food.name,
+                      confidence: food.confidence ?? 0.0,
                     ),
                   )
                   .toList(),
           processedImageUrl: uploadResult.image.imagePath,
         );
       } else {
-        throw Exception('No items recognized');
+        throw Exception('No foods recognized');
       }
     } catch (e) {
       throw Exception('Food recognition failed: ${e.toString()}');

@@ -1,17 +1,13 @@
 import 'dart:developer'; // For logging date picker errors
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart'; // Use hooks for local state
-import 'package:hooks_riverpod/hooks_riverpod.dart'; // Use hooks_riverpod
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // For date formatting
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart'; // Import ItemCategory
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // For quantity dialog
 
@@ -80,6 +76,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
   }
 
   // Helper to show Date Picker
+  // ignore: unused_element
   Future<void> _selectDate(
     BuildContext context,
     ValueNotifier<DateTime?> selectedDateNotifier,
@@ -179,6 +176,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
         isDark ? AppColors.darkFormBackground : AppColors.lightFormBackground;
 
     // Get expiration info based on the item's date directly
+    // ignore: unused_local_variable
     final expirationInfo = _getExpirationInfo(item.expirationDate, context);
 
     // --- Build Method ---
@@ -288,7 +286,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(16.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 5,
                             offset: const Offset(0, 2),
                           ),
@@ -406,7 +404,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -520,7 +518,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                                   color: cardBackgroundColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: Colors.grey.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -563,7 +561,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                                   color: cardBackgroundColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: Colors.grey.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -659,7 +657,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                                 ),
                               ),
                             )
-                            .toList(),
+                            ,
                       ],
                     ),
                   ),
@@ -701,6 +699,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
   }
 
   // --- Helper Widgets (Moved outside build) ---
+  // ignore: unused_element
   Widget _buildSustainabilityNote(String note, Color textColor, Color bgColor) {
     // Determine icon based on note content (simple example)
     IconData iconData = Icons.recycling; // Default
@@ -745,6 +744,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
   }
 
   // Métodos para impacto ambiental y reducción de desperdicio
+  // ignore: unused_element
   String _getWaterImpact(String itemName, double quantity, String unitType) {
     // Valores de ejemplo - en una app real, estos valores vendrían de una base de datos
     Map<String, double> waterFootprint = {
@@ -785,6 +785,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
     return "Para producir este alimento se requirieron aproximadamente ${totalImpact.round()} litros de agua.";
   }
 
+  // ignore: unused_element
   String _getCO2Impact(String itemName, double quantity, String unitType) {
     // Valores de ejemplo - en una app real, estos vendrían de una base de datos
     Map<String, double> co2Footprint = {
@@ -982,7 +983,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
           builder: (context, setState) {
             return AlertDialog(
               title: Text('Recetas con ${item.name}'),
-              content: Container(
+              content: SizedBox(
                 width: double.maxFinite,
                 height: MediaQuery.of(context).size.height * 0.6,
                 child: Column(
@@ -1163,7 +1164,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
                                         Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: Colors.grey.withOpacity(0.3),
+                                      color: Colors.grey.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: Row(
@@ -1465,11 +1466,11 @@ class IngredientDetailScreen extends HookConsumerWidget {
     else {
       // Primera receta
       recipes.add({
-        'title': 'Salteado rápido con ${itemName}',
+        'title': 'Salteado rápido con $itemName',
         'difficulty': 'Fácil',
         'time': '20 min',
         'ingredients': [
-          '${itemName} (cantidad necesaria)',
+          '$itemName (cantidad necesaria)',
           '1 cebolla mediana picada',
           '2 dientes de ajo picados',
           'Verduras variadas (pimiento, zanahoria, etc.)',
@@ -1482,7 +1483,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
           'Preparar todos los ingredientes, lavando y picando según sea necesario.',
           'En un wok o sartén grande a fuego alto, calentar el aceite.',
           'Añadir el ajo y la cebolla, sofreír hasta que estén transparentes.',
-          'Incorporar el ${itemName} y las verduras, saltear a fuego vivo durante 5-7 minutos.',
+          'Incorporar el $itemName y las verduras, saltear a fuego vivo durante 5-7 minutos.',
           'Añadir la salsa de soja y el jengibre si se usa.',
           'Cocinar hasta que todo esté al punto, evitando que se ablande demasiado.',
           'Servir inmediatamente decorado con semillas de sésamo.',
@@ -1491,11 +1492,11 @@ class IngredientDetailScreen extends HookConsumerWidget {
 
       // Segunda receta
       recipes.add({
-        'title': 'Guiso reconfortante de ${itemName}',
+        'title': 'Guiso reconfortante de $itemName',
         'difficulty': 'Media',
         'time': '45 min',
         'ingredients': [
-          '${itemName} (cantidad necesaria)',
+          '$itemName (cantidad necesaria)',
           'Cebolla, zanahoria y apio picados (base de sofrito)',
           '2 dientes de ajo',
           '1 lata de tomate triturado',
@@ -1506,7 +1507,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
         ],
         'steps': [
           'Preparar un sofrito con la cebolla, zanahoria, apio y ajo en aceite de oliva.',
-          'Añadir el ${itemName} y sofreír brevemente.',
+          'Añadir el $itemName y sofreír brevemente.',
           'Incorporar el tomate y cocinar a fuego medio durante 5 minutos.',
           'Verter el caldo hasta cubrir todos los ingredientes.',
           'Añadir las hierbas aromáticas y las patatas si se usan.',
@@ -1518,11 +1519,11 @@ class IngredientDetailScreen extends HookConsumerWidget {
 
       // Tercera receta
       recipes.add({
-        'title': 'Tartaleta de ${itemName} al horno',
+        'title': 'Tartaleta de $itemName al horno',
         'difficulty': 'Media-Alta',
         'time': '50 min',
         'ingredients': [
-          '${itemName} (cantidad necesaria)',
+          '$itemName (cantidad necesaria)',
           'Masa quebrada (comprada o casera)',
           '3 huevos',
           '200ml de nata líquida o leche',
@@ -1536,7 +1537,7 @@ class IngredientDetailScreen extends HookConsumerWidget {
           'Extender la masa en un molde para tartas y pinchar con un tenedor.',
           'Hornear la base durante 10 minutos (horneado ciego).',
           'Mientras tanto, batir los huevos con la nata, sal, pimienta y nuez moscada.',
-          'Disponer el ${itemName} sobre la base de masa precocida.',
+          'Disponer el $itemName sobre la base de masa precocida.',
           'Añadir el queso rallado y las hierbas.',
           'Verter la mezcla de huevo y nata.',
           'Hornear durante 30-35 minutos hasta que cuaje y dore.',

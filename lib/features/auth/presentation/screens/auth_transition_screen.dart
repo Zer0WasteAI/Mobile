@@ -1,9 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zer0_waste_ai/core/presentation/screens/custom_loading_screen.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
 
 /// Pantalla de transición después del login mientras se verifican las preferencias del usuario
@@ -92,13 +92,13 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
       // Navegar después de que se complete la animación
       _animationController.addStatusListener((status) {
         if (status == AnimationStatus.completed && mounted) {
-          print('Navegando desde AuthTransitionScreen a $_nextRoute');
+          log('Navegando desde AuthTransitionScreen a $_nextRoute');
           context.go(_nextRoute);
         }
       });
     } catch (e) {
       // En caso de error, manejar graciosamente
-      print('Error al cargar preferencias: $e');
+      log('Error al cargar preferencias: $e');
 
       // Esperar el tiempo mínimo incluso en caso de error
       await minTimeCompleter;
@@ -136,7 +136,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
         return Opacity(
           opacity: _fadeOutAnimation.value,
           child: Scaffold(
-            backgroundColor: colorScheme.background,
+            backgroundColor: colorScheme.surface,
             body: Stack(
               children: [
                 // Círculos decorativos
@@ -147,7 +147,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
                     width: 300,
                     height: 300,
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withOpacity(0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -159,7 +159,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
                     width: 250,
                     height: 250,
                     decoration: BoxDecoration(
-                      color: colorScheme.secondary.withOpacity(0.1),
+                      color: colorScheme.secondary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -195,7 +195,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
                             : 'Preparando tu experiencia...',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: colorScheme.onBackground,
+                          color: colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -210,7 +210,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
                               ? 'Abriendo tu Zer0 Waste AI'
                               : 'Cargando tus preferencias personalizadas',
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onBackground.withOpacity(0.7),
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           textAlign: TextAlign.center,
                         ),

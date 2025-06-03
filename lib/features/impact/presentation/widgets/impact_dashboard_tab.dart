@@ -52,7 +52,7 @@ class ImpactDashboardTab extends ConsumerWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
-                color: textColor.withOpacity(0.8),
+                color: textColor.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -110,7 +110,7 @@ class ImpactDashboardTab extends ConsumerWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: textColor.withOpacity(0.7),
+                  color: textColor.withValues(alpha: 0.7),
                 ),
               ),
               Text(
@@ -124,7 +124,7 @@ class ImpactDashboardTab extends ConsumerWidget {
             ],
           ),
           progressColor: primaryColor,
-          backgroundColor: primaryColor.withOpacity(0.2),
+          backgroundColor: primaryColor.withValues(alpha: 0.2),
           circularStrokeCap: CircularStrokeCap.round,
           animation: true,
           animationDuration: 1200,
@@ -144,7 +144,7 @@ class ImpactDashboardTab extends ConsumerWidget {
             'Próximo nivel: ${levelTitles[metrics.level]}',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: textColor.withOpacity(0.7),
+              color: textColor.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -230,10 +230,10 @@ class ImpactDashboardTab extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: primaryColor.withOpacity(0.3),
+                color: primaryColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -274,7 +274,7 @@ class ImpactDashboardTab extends ConsumerWidget {
                   Colors.blue,
                 ),
                 const SizedBox(height: 8),
-                Divider(color: primaryColor.withOpacity(0.2)),
+                Divider(color: primaryColor.withValues(alpha: 0.2)),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -324,7 +324,7 @@ class ImpactDashboardTab extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 14),

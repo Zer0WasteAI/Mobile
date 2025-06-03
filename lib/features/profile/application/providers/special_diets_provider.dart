@@ -1,10 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
-import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-
-// Removed static JSON data
 
 // Asynchronous provider to load diets from assets
 final predefinedDietsProvider = FutureProvider<List<SpecialDiet>>((ref) async {
@@ -18,7 +16,7 @@ final predefinedDietsProvider = FutureProvider<List<SpecialDiet>>((ref) async {
         .toList();
   } catch (e) {
     // Handle potential errors during file loading or parsing
-    print("Error loading special diets from JSON: $e");
+    log("Error loading special diets from JSON: $e");
     // Return an empty list or throw an error, depending on desired behavior
     return [];
   }
@@ -65,8 +63,8 @@ class SpecialDietsNotifier extends StateNotifier<Set<SpecialDiet>> {
   ) {
     final Set<SpecialDiet> selectedDiets = {};
 
-    print('Initializing special diets with names: $dietNames');
-    print(
+    log('Initializing special diets with names: $dietNames');
+    log(
       'Available predefined diets: ${availableDiets.map((d) => d.name).toList()}',
     );
 
@@ -82,7 +80,7 @@ class SpecialDietsNotifier extends StateNotifier<Set<SpecialDiet>> {
       if (matchingDiets.isNotEmpty) {
         // Found matching predefined diet
         selectedDiets.add(matchingDiets.first);
-        print('Added predefined diet: ${matchingDiets.first.name}');
+        log('Added predefined diet: ${matchingDiets.first.name}');
       } else {
         // If not found, add as custom diet with a default emoji
         final customDiet = SpecialDiet(
@@ -91,11 +89,11 @@ class SpecialDietsNotifier extends StateNotifier<Set<SpecialDiet>> {
           isCustom: true,
         );
         selectedDiets.add(customDiet);
-        print('Added custom diet: ${customDiet.name}');
+        log('Added custom diet: ${customDiet.name}');
       }
     }
 
-    print('Setting state with ${selectedDiets.length} diets');
+    log('Setting state with ${selectedDiets.length} diets');
     state = selectedDiets;
   }
 

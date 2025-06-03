@@ -42,8 +42,9 @@ extension ExpirationStatusExtension on ExpirationStatus {
     final difference = date.difference(now);
 
     if (difference < Duration.zero) return ExpirationStatus.expired;
-    if (difference <= Duration(days: daysThreshold))
+    if (difference <= Duration(days: daysThreshold)) {
       return ExpirationStatus.expiringSoon;
+    }
     return ExpirationStatus.normal;
   }
 }

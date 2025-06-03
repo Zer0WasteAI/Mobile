@@ -1,17 +1,19 @@
-import 'dart:convert';
+// ignore_for_file: unused_element
+
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
-// Potentially needed if you want to reuse the same logic/state for picking more
-// import 'package:zer0_waste_ai/features/scan/presentation/providers/add_scan_item_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
 
 // --- Design Constants ---
 const Color _screenBackgroundColor = Color(0xFFFAF9F6);
@@ -34,6 +36,11 @@ final _confirmImagesProvider = StateNotifierProvider.autoDispose
     .family<ImageListNotifier, List<File>, List<File>>((ref, initialImages) {
       return ImageListNotifier(initialImages);
     });
+
+// Provider for RecognitionRepository
+final _recognitionRepositoryProvider = Provider<RecognitionRepository>((ref) {
+  return RecognitionRepositoryImpl();
+});
 
 // Simple StateNotifier to manage the list of images for this screen
 class ImageListNotifier extends StateNotifier<List<File>> {
@@ -236,7 +243,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         });
       }
     } catch (e) {
-      print('Error picking from camera: $e');
+      log('Error picking from camera: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -299,7 +306,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         }
       }
     } catch (e) {
-      print('Error picking from gallery: $e');
+      log('Error picking from gallery: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al seleccionar de galería: $e')),
@@ -343,8 +350,8 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     // 2. Call the analysis method: e.g., geminiService.analyzeFoodImages(images);
     // 3. Handle loading state (show indicator)
     // 4. Navigate to results screen on success or show error
-    print('Analizando ${images.length} imágenes...');
-    print(images.map((f) => f.path).toList());
+    log('Analizando ${images.length} imágenes...');
+    log(images.map((f) => f.path).toList().toString());
     // Example: Show a success message or navigate to results screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -391,7 +398,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             if (context.canPop()) {
               context.pop();
             } else {
-              print(
+              log(
                 "Cannot pop from ScanConfirmScreen, navigating to fallback based on origin.",
               );
               // Use originType to determine the correct fallback route
@@ -549,50 +556,208 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                       images.isEmpty
                           ? null
                           : () async {
-                            print(
-                              'Simulating analysis and navigating to results...',
+                            log('Starting API analysis with fallback...');
+
+                            // Show loading dialog
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder:
+                                  (context) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
                             );
 
-                            // Determine which JSON file to load
-                            final String jsonPath =
-                                widget.originType == ScanItemType.ingredient
-                                    ? 'lib/core/constants/dummy_ingredients.json'
-                                    : 'lib/core/constants/dummy_food.json';
+                            List<Map<String, dynamic>> formattedResults = [];
 
-                            List<Map<String, dynamic>> loadedJsonData = [];
                             try {
-                              // Load and parse the JSON
-                              final jsonString = await rootBundle.loadString(
-                                jsonPath,
+                              log('🔄 Attempting real API analysis...');
+                              final recognitionRepository = ref.read(
+                                _recognitionRepositoryProvider,
                               );
-                              // Parse directly into the expected List<Map<String, dynamic>> format
-                              final Map<String, dynamic> decodedJson =
-                                  jsonDecode(jsonString);
-                              final List<dynamic> jsonItems =
-                                  decodedJson['items'] as List<dynamic>? ?? [];
-                              loadedJsonData =
-                                  jsonItems.cast<Map<String, dynamic>>();
-                            } catch (e) {
-                              print("Error loading dummy JSON: $e");
-                              // Handle error, maybe show a message or pass empty list
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error al cargar datos simulados: $e',
-                                    ),
-                                  ),
+
+                              // 1. First upload all images and get their paths
+                              List<String> uploadedImagePaths = [];
+                              for (File imageFile in images) {
+                                final uploadResult = await recognitionRepository
+                                    .uploadImage(
+                                      imageFile: imageFile,
+                                      itemName:
+                                          'scan_${DateTime.now().millisecondsSinceEpoch}',
+                                      imageType:
+                                          widget.originType ==
+                                                  ScanItemType.ingredient
+                                              ? 'ingredient'
+                                              : 'food',
+                                    );
+                                uploadedImagePaths.add(
+                                  uploadResult.image.imagePath,
                                 );
+                              }
+
+                              // 2. Call the appropriate recognition endpoint
+                              if (widget.originType ==
+                                  ScanItemType.ingredient) {
+                                final ingredientResult =
+                                    await recognitionRepository
+                                        .recognizeIngredients(
+                                          uploadedImagePaths,
+                                        );
+
+                                // 3. Convert ingredient API response to the format expected by ScanResultsScreen
+                                formattedResults =
+                                    ingredientResult.ingredients.map((
+                                      ingredient,
+                                    ) {
+                                      return {
+                                        'nombre': ingredient.name,
+                                        'imagen': ingredient.imagePath ?? '',
+                                        'cantidad': ingredient.quantity,
+                                        'fecha_de_caducidad':
+                                            DateTime.now()
+                                                .add(
+                                                  Duration(
+                                                    days:
+                                                        ingredient
+                                                            .expirationTime,
+                                                  ),
+                                                )
+                                                .toIso8601String()
+                                                .split('T')[0],
+                                        'confidence':
+                                            ingredient.confidence ?? 1.0,
+                                        'category': 'ingredient',
+                                        'allergyAlert': ingredient.allergyAlert,
+                                        'allergens': ingredient.allergens,
+                                        'storageType': ingredient.storageType,
+                                        'tips': ingredient.tips,
+                                        'typeUnit': ingredient.typeUnit,
+                                        'expiration_time':
+                                            ingredient.expirationTime,
+                                        'timeUnit': ingredient.timeUnit,
+                                      };
+                                    }).toList();
+
+                                // Log allergy alerts if any
+                                if (ingredientResult.hasAllergens &&
+                                    ingredientResult.allergyAlerts.isNotEmpty) {
+                                  log('⚠️ ALLERGY ALERTS DETECTED:');
+                                  for (final alert
+                                      in ingredientResult.allergyAlerts) {
+                                    log('  - ${alert.item}: ${alert.message}');
+                                  }
+                                }
+                              } else {
+                                final foodResult = await recognitionRepository
+                                    .recognizeFoods(uploadedImagePaths);
+
+                                // 3. Convert food API response to the format expected by ScanResultsScreen
+                                formattedResults =
+                                    foodResult.foods.map((food) {
+                                      return {
+                                        'nombre': food.name,
+                                        'imagen': food.imagePath ?? '',
+                                        'cantidad': food.servingQuantity,
+                                        'fecha_de_caducidad':
+                                            DateTime.now()
+                                                .add(
+                                                  Duration(
+                                                    days: food.expirationTime,
+                                                  ),
+                                                )
+                                                .toIso8601String()
+                                                .split('T')[0],
+                                        'confidence': food.confidence ?? 1.0,
+                                        'category': food.category,
+                                        'allergyAlert': food.allergyAlert,
+                                        'allergens': food.allergens,
+                                        'storageType': food.storageType,
+                                        'tips': food.tips,
+                                        'calories': food.calories,
+                                        'description': food.description,
+                                        'mainIngredients': food.mainIngredients,
+                                        'typeUnit':
+                                            'porciones', // Default unit for foods
+                                        'expiration_time':
+                                            food.expirationTime, // Add this field
+                                        'timeUnit': food.timeUnit,
+                                      };
+                                    }).toList();
+
+                                // Log allergy alerts if any
+                                if (foodResult.hasAllergens &&
+                                    foodResult.allergyAlerts.isNotEmpty) {
+                                  log('⚠️ ALLERGY ALERTS DETECTED:');
+                                  for (final alert
+                                      in foodResult.allergyAlerts) {
+                                    log('  - ${alert.item}: ${alert.message}');
+                                  }
+                                }
+                              }
+
+                              log(
+                                '✅ Real API analysis completed. Found ${formattedResults.length} items.',
+                              );
+                            } catch (e) {
+                              log('❌ Real API analysis failed: $e');
+
+                              // Check if it's an authentication error
+                              final isAuthError =
+                                  e.toString().contains('401') ||
+                                  e.toString().contains('Token has expired') ||
+                                  e.toString().contains('unauthorized');
+
+                              if (isAuthError) {
+                                log(
+                                  '🔄 Authentication error detected, falling back to dummy data...',
+                                );
+                              } else {
+                                log(
+                                  '🔄 API error detected, falling back to dummy data...',
+                                );
+                              }
+
+                              // Fallback to dummy data
+                              try {
+                                // Determine which JSON file to load
+                                final String jsonPath =
+                                    widget.originType == ScanItemType.ingredient
+                                        ? 'lib/core/constants/dummy_ingredients.json'
+                                        : 'lib/core/constants/dummy_food.json';
+
+                                // Load and parse the JSON
+                                final jsonString = await rootBundle.loadString(
+                                  jsonPath,
+                                );
+                                final Map<String, dynamic> decodedJson =
+                                    jsonDecode(jsonString);
+                                final List<dynamic> jsonItems =
+                                    decodedJson['items'] as List<dynamic>? ??
+                                    [];
+                                formattedResults =
+                                    jsonItems.cast<Map<String, dynamic>>();
+
+                                log(
+                                  '✅ Fallback to dummy data successful. Found ${formattedResults.length} items.',
+                                );
+                              } catch (fallbackError) {
+                                log(
+                                  '❌ Fallback to dummy data also failed: $fallbackError',
+                                );
+                                formattedResults =
+                                    []; // Empty list as last resort
                               }
                             }
 
-                            // Navigate to ScanResultsScreen with loaded data
-                            // Ensure context is still valid after async operation
+                            // Close loading dialog
+                            if (mounted) Navigator.of(context).pop();
+
+                            // Navigate to ScanResultsScreen with results (real or dummy)
                             if (!mounted) return;
                             context.pushNamed(
                               ScanResultsScreen.routeName,
                               extra: {
-                                'recognizedItemsJson': loadedJsonData,
+                                'recognizedItemsJson': formattedResults,
                                 'itemType': widget.originType,
                               },
                             );

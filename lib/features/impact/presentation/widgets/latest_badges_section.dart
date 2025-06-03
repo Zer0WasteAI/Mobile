@@ -105,7 +105,7 @@ class _BadgeItem extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: badgeColor.withOpacity(0.15),
+              color: badgeColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
               border: Border.all(color: badgeColor, width: 2),
             ),

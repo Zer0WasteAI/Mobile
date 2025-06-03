@@ -1,3 +1,7 @@
+// ignore_for_file: unnecessary_null_comparison
+
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_backend_provider.dart';
@@ -585,6 +589,7 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
       }
     }
 
+
     if (batchToShow != null) {
       // Add the DisplayBatchInfo object containing the selected batch and all batches
       displayBatchInfos.add(
@@ -598,7 +603,7 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
   });
 
   // 3. Apply user's filters TO THE DISPLAY BATCH INFO OBJECTS
-  bool _matchesExpirationFilter(InventoryItem item, ExpirationStatus filter) {
+  bool matchesExpirationFilter(InventoryItem item, ExpirationStatus filter) {
     if (filter == ExpirationStatus.all) return true;
     final currentStatus = ExpirationStatusExtension.fromDate(
       item.expirationDate,
@@ -620,7 +625,7 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
         final matchesStorage =
             inventoryState.storageFilter.isEmpty ||
             inventoryState.storageFilter.contains(item.storageType);
-        final matchesExpiration = _matchesExpirationFilter(
+        final matchesExpiration = matchesExpirationFilter(
           item,
           inventoryState.expirationStatusFilter,
         );
@@ -856,7 +861,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         tips: ingredientData['tips'] ?? _getTipsForItem(name),
       );
     } catch (e) {
-      print('Error parsing stack for $name: $e');
+      log('Error parsing stack for $name: $e');
       return null;
     }
   }
@@ -933,13 +938,16 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     if (nameLower.contains('ajo')) return '🧄';
     if (nameLower.contains('limón') || nameLower.contains('limon')) return '🍋';
     if (nameLower.contains('manzana')) return '🍎';
-    if (nameLower.contains('plátano') || nameLower.contains('banana'))
+    if (nameLower.contains('plátano') || nameLower.contains('banana')) {
       return '🍌';
+    }
     if (nameLower.contains('naranja')) return '🍊';
-    if (nameLower.contains('pimiento') || nameLower.contains('chile'))
+    if (nameLower.contains('pimiento') || nameLower.contains('chile')) {
       return '🌶️';
-    if (nameLower.contains('brócoli') || nameLower.contains('brocoli'))
+    }
+    if (nameLower.contains('brócoli') || nameLower.contains('brocoli')) {
       return '🥦';
+    }
     if (nameLower.contains('espinaca')) return '🍃';
     if (nameLower.contains('apio')) return '🥬';
     if (nameLower.contains('leche')) return '🥛';
@@ -947,14 +955,16 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     if (nameLower.contains('huevo')) return '🥚';
     if (nameLower.contains('pollo')) return '🍗';
     if (nameLower.contains('carne')) return '🥩';
-    if (nameLower.contains('pescado') || nameLower.contains('atún'))
+    if (nameLower.contains('pescado') || nameLower.contains('atún')) {
       return '🐟';
+    }
     if (nameLower.contains('pan')) return '🍞';
     if (nameLower.contains('pasta')) return '🍝';
     if (nameLower.contains('aceite')) return '🫒';
     if (nameLower.contains('sal')) return '🧂';
-    if (nameLower.contains('azúcar') || nameLower.contains('azucar'))
+    if (nameLower.contains('azúcar') || nameLower.contains('azucar')) {
       return '🍯';
+    }
     if (nameLower.contains('agua')) return '💧';
 
     return '🥘'; // Default emoji for food items
@@ -1063,7 +1073,7 @@ final filteredSortedInventoryRealProvider = Provider<List<DisplayBatchInfo>>((
   });
 
   // 3. Apply user's filters TO THE DISPLAY BATCH INFO OBJECTS
-  bool _matchesExpirationFilter(InventoryItem item, ExpirationStatus filter) {
+  bool matchesExpirationFilter(InventoryItem item, ExpirationStatus filter) {
     if (filter == ExpirationStatus.all) return true;
     final currentStatus = ExpirationStatusExtension.fromDate(
       item.expirationDate,
@@ -1085,7 +1095,7 @@ final filteredSortedInventoryRealProvider = Provider<List<DisplayBatchInfo>>((
         final matchesStorage =
             inventoryState.storageFilter.isEmpty ||
             inventoryState.storageFilter.contains(item.storageType);
-        final matchesExpiration = _matchesExpirationFilter(
+        final matchesExpiration = matchesExpirationFilter(
           item,
           inventoryState.expirationStatusFilter,
         );

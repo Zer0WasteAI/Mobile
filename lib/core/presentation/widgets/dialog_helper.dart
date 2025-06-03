@@ -130,7 +130,7 @@ class DialogHelper {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: secondaryTextColor.withOpacity(0.9),
+                    color: secondaryTextColor.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),

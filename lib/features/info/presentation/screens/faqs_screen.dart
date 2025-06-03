@@ -127,6 +127,17 @@ class FaqsScreen extends StatelessWidget {
       ),
       collapsedIconColor: colorScheme.primary,
       iconColor: colorScheme.primary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      collapsedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      backgroundColor: colorScheme.surface,
+      collapsedBackgroundColor: colorScheme.surface,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -139,16 +150,6 @@ class FaqsScreen extends StatelessWidget {
           ),
         ),
       ],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
-      ),
-      collapsedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
-      ),
-      backgroundColor: colorScheme.surface,
-      collapsedBackgroundColor: colorScheme.surface,
     );
   }
 }

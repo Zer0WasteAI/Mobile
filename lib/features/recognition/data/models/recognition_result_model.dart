@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/models/allergy_alert.dart';
 
 part 'recognition_result_model.g.dart';
 
@@ -8,10 +9,22 @@ class RecognitionResultModel {
   final List<RecognizedItemModel> recognizedItems;
   @JsonKey(name: 'recognition_id')
   final String recognitionId;
+  @JsonKey(name: 'allergy_alerts', defaultValue: [])
+  final List<AllergyAlert> allergyAlerts;
+  @JsonKey(name: 'has_allergens', defaultValue: false)
+  final bool hasAllergens;
+  @JsonKey(name: 'processing_time')
+  final String? processingTime;
+  @JsonKey(name: 'total_detected')
+  final int? totalDetected;
 
   const RecognitionResultModel({
     required this.recognizedItems,
     required this.recognitionId,
+    this.allergyAlerts = const [],
+    this.hasAllergens = false,
+    this.processingTime,
+    this.totalDetected,
   });
 
   factory RecognitionResultModel.fromJson(Map<String, dynamic> json) =>
@@ -22,10 +35,18 @@ class RecognitionResultModel {
   RecognitionResultModel copyWith({
     List<RecognizedItemModel>? recognizedItems,
     String? recognitionId,
+    List<AllergyAlert>? allergyAlerts,
+    bool? hasAllergens,
+    String? processingTime,
+    int? totalDetected,
   }) {
     return RecognitionResultModel(
       recognizedItems: recognizedItems ?? this.recognizedItems,
       recognitionId: recognitionId ?? this.recognitionId,
+      allergyAlerts: allergyAlerts ?? this.allergyAlerts,
+      hasAllergens: hasAllergens ?? this.hasAllergens,
+      processingTime: processingTime ?? this.processingTime,
+      totalDetected: totalDetected ?? this.totalDetected,
     );
   }
 
@@ -34,15 +55,18 @@ class RecognitionResultModel {
     if (identical(this, other)) return true;
     return other is RecognitionResultModel &&
         other.recognizedItems == recognizedItems &&
-        other.recognitionId == recognitionId;
+        other.recognitionId == recognitionId &&
+        other.allergyAlerts == allergyAlerts &&
+        other.hasAllergens == hasAllergens;
   }
 
   @override
-  int get hashCode => recognizedItems.hashCode ^ recognitionId.hashCode;
+  int get hashCode =>
+      Object.hash(recognizedItems, recognitionId, allergyAlerts, hasAllergens);
 
   @override
   String toString() {
-    return 'RecognitionResultModel(recognizedItems: $recognizedItems, recognitionId: $recognitionId)';
+    return 'RecognitionResultModel(recognizedItems: $recognizedItems, recognitionId: $recognitionId, allergyAlerts: $allergyAlerts, hasAllergens: $hasAllergens)';
   }
 }
 
@@ -50,12 +74,25 @@ class RecognitionResultModel {
 class RecognizedItemModel {
   final String name;
   final double confidence;
-  final String category;
+  @JsonKey(name: 'bounding_box')
+  final BoundingBoxModel? boundingBox;
+  @JsonKey(name: 'image_path')
+  final String? imagePath;
+  @JsonKey(name: 'allergy_alert', defaultValue: false)
+  final bool allergyAlert;
+  @JsonKey(name: 'allergens', defaultValue: [])
+  final List<String> allergens;
+  @JsonKey(name: 'category')
+  final String? category;
 
   const RecognizedItemModel({
     required this.name,
     required this.confidence,
-    required this.category,
+    this.boundingBox,
+    this.imagePath,
+    this.allergyAlert = false,
+    this.allergens = const [],
+    this.category,
   });
 
   factory RecognizedItemModel.fromJson(Map<String, dynamic> json) =>
@@ -66,11 +103,19 @@ class RecognizedItemModel {
   RecognizedItemModel copyWith({
     String? name,
     double? confidence,
+    BoundingBoxModel? boundingBox,
+    String? imagePath,
+    bool? allergyAlert,
+    List<String>? allergens,
     String? category,
   }) {
     return RecognizedItemModel(
       name: name ?? this.name,
       confidence: confidence ?? this.confidence,
+      boundingBox: boundingBox ?? this.boundingBox,
+      imagePath: imagePath ?? this.imagePath,
+      allergyAlert: allergyAlert ?? this.allergyAlert,
+      allergens: allergens ?? this.allergens,
       category: category ?? this.category,
     );
   }
@@ -81,15 +126,27 @@ class RecognizedItemModel {
     return other is RecognizedItemModel &&
         other.name == name &&
         other.confidence == confidence &&
+        other.boundingBox == boundingBox &&
+        other.imagePath == imagePath &&
+        other.allergyAlert == allergyAlert &&
+        other.allergens == allergens &&
         other.category == category;
   }
 
   @override
-  int get hashCode => name.hashCode ^ confidence.hashCode ^ category.hashCode;
+  int get hashCode => Object.hash(
+    name,
+    confidence,
+    boundingBox,
+    imagePath,
+    allergyAlert,
+    allergens,
+    category,
+  );
 
   @override
   String toString() {
-    return 'RecognizedItemModel(name: $name, confidence: $confidence, category: $category)';
+    return 'RecognizedItemModel(name: $name, confidence: $confidence, boundingBox: $boundingBox, imagePath: $imagePath, allergyAlert: $allergyAlert, allergens: $allergens, category: $category)';
   }
 }
 
@@ -245,4 +302,171 @@ class SimilarImageModel {
   String toString() {
     return 'SimilarImageModel(name: $name, imagePath: $imagePath, imageType: $imageType)';
   }
+}
+
+@JsonSerializable()
+class BoundingBoxModel {
+  @JsonKey(name: 'x_min')
+  final int xMin;
+  @JsonKey(name: 'y_min')
+  final int yMin;
+  @JsonKey(name: 'x_max')
+  final int xMax;
+  @JsonKey(name: 'y_max')
+  final int yMax;
+
+  const BoundingBoxModel({
+    required this.xMin,
+    required this.yMin,
+    required this.xMax,
+    required this.yMax,
+  });
+
+  factory BoundingBoxModel.fromJson(Map<String, dynamic> json) =>
+      _$BoundingBoxModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BoundingBoxModelToJson(this);
+}
+
+@JsonSerializable()
+class IngredientRecognitionResultModel {
+  final List<RecognizedIngredientModel> ingredients;
+  @JsonKey(name: 'allergy_alerts', defaultValue: [])
+  final List<AllergyAlert> allergyAlerts;
+  @JsonKey(name: 'has_allergens', defaultValue: false)
+  final bool hasAllergens;
+  @JsonKey(name: 'processing_time')
+  final String? processingTime;
+  @JsonKey(name: 'total_detected')
+  final int? totalDetected;
+
+  const IngredientRecognitionResultModel({
+    required this.ingredients,
+    this.allergyAlerts = const [],
+    this.hasAllergens = false,
+    this.processingTime,
+    this.totalDetected,
+  });
+
+  factory IngredientRecognitionResultModel.fromJson(
+    Map<String, dynamic> json,
+  ) => _$IngredientRecognitionResultModelFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$IngredientRecognitionResultModelToJson(this);
+}
+
+@JsonSerializable()
+class RecognizedIngredientModel {
+  final String name;
+  final int quantity;
+  @JsonKey(name: 'type_unit')
+  final String typeUnit;
+  @JsonKey(name: 'storage_type')
+  final String storageType;
+  @JsonKey(name: 'expiration_time')
+  final int expirationTime;
+  @JsonKey(name: 'time_unit')
+  final String timeUnit;
+  final String tips;
+  @JsonKey(name: 'image_path')
+  final String? imagePath;
+  @JsonKey(name: 'allergy_alert', defaultValue: false)
+  final bool allergyAlert;
+  @JsonKey(name: 'allergens', defaultValue: [])
+  final List<String> allergens;
+  final double? confidence;
+
+  const RecognizedIngredientModel({
+    required this.name,
+    required this.quantity,
+    required this.typeUnit,
+    required this.storageType,
+    required this.expirationTime,
+    required this.timeUnit,
+    required this.tips,
+    this.imagePath,
+    this.allergyAlert = false,
+    this.allergens = const [],
+    this.confidence,
+  });
+
+  factory RecognizedIngredientModel.fromJson(Map<String, dynamic> json) =>
+      _$RecognizedIngredientModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RecognizedIngredientModelToJson(this);
+}
+
+@JsonSerializable()
+class FoodRecognitionResultModel {
+  final List<RecognizedFoodModel> foods;
+  @JsonKey(name: 'allergy_alerts', defaultValue: [])
+  final List<AllergyAlert> allergyAlerts;
+  @JsonKey(name: 'has_allergens', defaultValue: false)
+  final bool hasAllergens;
+  @JsonKey(name: 'processing_time')
+  final String? processingTime;
+  @JsonKey(name: 'total_detected')
+  final int? totalDetected;
+
+  const FoodRecognitionResultModel({
+    required this.foods,
+    this.allergyAlerts = const [],
+    this.hasAllergens = false,
+    this.processingTime,
+    this.totalDetected,
+  });
+
+  factory FoodRecognitionResultModel.fromJson(Map<String, dynamic> json) =>
+      _$FoodRecognitionResultModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FoodRecognitionResultModelToJson(this);
+}
+
+@JsonSerializable()
+class RecognizedFoodModel {
+  final String name;
+  @JsonKey(name: 'main_ingredients')
+  final List<String> mainIngredients;
+  final String category;
+  final int calories;
+  final String description;
+  @JsonKey(name: 'storage_type')
+  final String storageType;
+  @JsonKey(name: 'expiration_time')
+  final int expirationTime;
+  @JsonKey(name: 'time_unit')
+  final String timeUnit;
+  final String tips;
+  @JsonKey(name: 'serving_quantity')
+  final int servingQuantity;
+  @JsonKey(name: 'image_path')
+  final String? imagePath;
+  @JsonKey(name: 'allergy_alert', defaultValue: false)
+  final bool allergyAlert;
+  @JsonKey(name: 'allergens', defaultValue: [])
+  final List<String> allergens;
+  final double? confidence;
+
+  const RecognizedFoodModel({
+    required this.name,
+    required this.mainIngredients,
+    required this.category,
+    required this.calories,
+    required this.description,
+    required this.storageType,
+    required this.expirationTime,
+    required this.timeUnit,
+    required this.tips,
+    required this.servingQuantity,
+    this.imagePath,
+    this.allergyAlert = false,
+    this.allergens = const [],
+    this.confidence,
+  });
+
+  factory RecognizedFoodModel.fromJson(Map<String, dynamic> json) =>
+      _$RecognizedFoodModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RecognizedFoodModelToJson(this);
 }

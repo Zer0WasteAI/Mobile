@@ -212,7 +212,7 @@ class AboutAppScreen extends StatelessWidget {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: colorScheme.surfaceVariant,
+          color: colorScheme.surfaceContainerHighest,
           shape: BoxShape.circle,
         ),
         child: Center(

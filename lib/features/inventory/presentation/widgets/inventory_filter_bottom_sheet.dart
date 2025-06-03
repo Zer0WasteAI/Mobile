@@ -117,7 +117,7 @@ class _InventoryFilterBottomSheetState
     final Color chipSelectedTextColor = isDark ? Colors.black : Colors.white;
     final Color chipUnselectedTextColor = secondaryTextColor;
     final Color chipUnselectedBorderColor =
-        isDark ? AppColors.darkOutline.withOpacity(0.5) : Colors.grey.shade300;
+        isDark ? AppColors.darkOutline.withValues(alpha: 0.5) : Colors.grey.shade300;
     final Color dropdownBackgroundColor =
         isDark ? AppColors.darkSurface : Colors.white;
     final Color buttonTextColor = isDark ? Colors.black : Colors.white;
@@ -223,6 +223,7 @@ class _InventoryFilterBottomSheetState
                         final bool isSelected = _selectedCategory == category;
                         return FilterChip(
                           avatar:
+                              // ignore: unnecessary_null_comparison
                               category.icon != null
                                   ? Icon(
                                     category.icon,

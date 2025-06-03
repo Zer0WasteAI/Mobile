@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -257,9 +259,10 @@ class _ProfileAllergySelectorScreenState
                                 decoration: BoxDecoration(
                                   color:
                                       isSelected
-                                          ? Theme.of(
-                                            context,
-                                          ).colorScheme.primary.withOpacity(0.1)
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withValues(alpha: 0.1)
                                           : Colors.transparent,
                                   borderRadius: BorderRadius.circular(32),
                                   border: Border.all(
@@ -271,7 +274,7 @@ class _ProfileAllergySelectorScreenState
                                             : Theme.of(context)
                                                 .colorScheme
                                                 .outline
-                                                .withOpacity(0.5),
+                                                .withValues(alpha: 0.5),
                                     width: isSelected ? 2 : 1,
                                   ),
                                 ),
@@ -350,7 +353,7 @@ class _ProfileAllergySelectorScreenState
     final backgroundColor = colorScheme.surface;
     final primaryColor = colorScheme.primary;
     final defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final defaultChipBorderColor = colorScheme.outline.withValues(alpha: 0.5);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -465,10 +468,11 @@ class _ProfileAllergySelectorScreenState
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant.withOpacity(0.4),
+                            color: colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: colorScheme.outline.withOpacity(0.5),
+                              color: colorScheme.outline.withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
@@ -561,17 +565,13 @@ class _ProfileAllergySelectorScreenState
                                         )
                                         .toList();
 
-                                print('Guardando alergias: $allergyNames');
-                                print('Guardando allergyItems: $allergyItems');
+                                log('Guardando alergias: $allergyNames');
+                                log('Guardando allergyItems: $allergyItems');
 
                                 // Save to Firestore using new method
                                 await authRepository.saveUserAllergyItems(
                                   allergyNames,
                                 );
-
-                                // Marcar explícitamente como completado en Firestore
-                                await authRepository
-                                    .markInitialPreferencesCompleted();
 
                                 // Refresh user data
                                 await authController.refreshUserFromFirestore();

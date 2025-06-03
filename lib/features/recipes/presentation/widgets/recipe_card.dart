@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_providers.dart';
 import 'package:zer0_waste_ai/features/recipes/application/states/recipe_state.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart';
 
@@ -18,6 +19,7 @@ class RecipeCard extends ConsumerWidget {
     final bool isDark = theme.brightness == Brightness.dark;
 
     // --- Theme-aware Colors (use AppColors from core) ---
+    // ignore: unused_local_variable
     final Color primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     final Color mainTextColor =
@@ -32,8 +34,8 @@ class RecipeCard extends ConsumerWidget {
     // Use warning colors from core
     final Color expiringBadgeColor =
         isDark
-            ? AppColors.warningTextDark.withOpacity(0.2)
-            : AppColors.warningTextLight.withOpacity(0.15);
+            ? AppColors.warningTextDark.withValues(alpha: 0.2)
+            : AppColors.warningTextLight.withValues(alpha: 0.15);
     final Color expiringBadgeTextColor =
         isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
     // ------------------------- //
@@ -48,7 +50,7 @@ class RecipeCard extends ConsumerWidget {
       child: InkWell(
         onTap: () {
           // TODO: Navigate to Recipe Detail Screen
-          print('Navigate to detail for ${recipe.name}');
+          log('Navigate to detail for ${recipe.name}');
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Padding(
@@ -101,7 +103,7 @@ class RecipeCard extends ConsumerWidget {
                       'Tienes ${recipe.availableIngredientsCount} de ${recipe.requiredIngredientsCount} ingredientes',
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: secondaryTextColor.withOpacity(0.8),
+                        color: secondaryTextColor.withValues(alpha: 0.8),
                       ),
                     ),
                   ),

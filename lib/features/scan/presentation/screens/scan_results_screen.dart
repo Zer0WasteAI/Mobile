@@ -1,18 +1,19 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/scan/application/providers/scan_results_provider.dart';
-import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // For ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item_card.dart';
+import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 
 // Assume Uuid instance is available or create one
 final _uuid = Uuid();
@@ -85,6 +86,9 @@ class ScanResultsScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
+            // Allergy Alert Banner
+            _buildAllergyBanner(itemsState, colorScheme, context),
+
             Expanded(
               child:
                   itemsState.isEmpty
@@ -200,6 +204,220 @@ class ScanResultsScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAllergyBanner(
+    List<RecognizedItem> itemsState,
+    ColorScheme colorScheme,
+    BuildContext context,
+  ) {
+    // Filter items that have allergy alerts
+    final allergenicItems =
+        itemsState.where((item) => item.allergyAlert).toList();
+
+    if (allergenicItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final allergenCount = allergenicItems.length;
+    final uniqueAllergens =
+        allergenicItems.expand((item) => item.allergens).toSet().toList();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.error.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Warning icon
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: colorScheme.error,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.warning, color: colorScheme.onError, size: 16),
+            ),
+            const SizedBox(width: 12),
+
+            // Alert text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '⚠️ ALERTA DE ALERGIA',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    allergenCount == 1
+                        ? 'Detectado 1 ingrediente alergénico'
+                        : 'Detectados $allergenCount ingredientes alergénicos',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                  if (uniqueAllergens.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Contiene: ${uniqueAllergens.join(', ')}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: colorScheme.error.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Info button (optional - for showing more details)
+            IconButton(
+              onPressed: () {
+                _showAllergyDetailsDialog(
+                  context,
+                  allergenicItems,
+                  colorScheme,
+                );
+              },
+              icon: Icon(
+                Icons.info_outline,
+                color: colorScheme.error,
+                size: 20,
+              ),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAllergyDetailsDialog(
+    BuildContext context,
+    List<RecognizedItem> allergenicItems,
+    ColorScheme colorScheme,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: colorScheme.error),
+                const SizedBox(width: 8),
+                Text(
+                  'Alertas de Alergia',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Los siguientes ingredientes contienen alérgenos a los que podrías ser sensible:',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ...allergenicItems
+                      .map(
+                        (item) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.errorContainer.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: colorScheme.error.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: colorScheme.error,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Contiene: ${item.allergens.join(', ')}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: colorScheme.error,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'Entendido',
+                  style: GoogleFonts.inter(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
     );
   }
 }

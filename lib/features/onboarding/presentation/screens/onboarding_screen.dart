@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -156,7 +158,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   ) async {
     // Guardar que el onboarding ya fue visto
     await controller.setOnboardingSeen();
-    print("OnboardingScreen: Onboarding completado, navegando a login");
+    log("OnboardingScreen: Onboarding completado, navegando a login");
 
     if (context.mounted) {
       context.go('/login');
