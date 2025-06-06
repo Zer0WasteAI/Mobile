@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
 
-// --- Dummy Data Models (Replace with actual models) ---
+// --- Data Models ---
 class Recipe {
   final String id;
   final String title;
@@ -32,7 +34,7 @@ class ImpactSummary {
   ImpactSummary({required this.foodSavedKg, required this.co2ReducedG});
 }
 
-// --- Dummy Providers (Replace with actual StateNotifiers/FutureProviders) ---
+// --- Providers ---
 
 /// Proveedor para la cantidad de EcoCoins del usuario
 final ecoCoinsProvider = StateNotifierProvider<EcoCoinsNotifier, int>((ref) {
@@ -41,45 +43,33 @@ final ecoCoinsProvider = StateNotifierProvider<EcoCoinsNotifier, int>((ref) {
 
 /// Notificador para gestionar los EcoCoins del usuario
 class EcoCoinsNotifier extends StateNotifier<int> {
-  // Valor inicial de EcoCoins (sustituir por datos de la base de datos)
-  EcoCoinsNotifier() : super(120);
+  EcoCoinsNotifier() : super(125); // Valor inicial de ejemplo
 
-  /// Añade EcoCoins al usuario
   void addCoins(int amount) {
     state = state + amount;
   }
 
-  /// Gasta EcoCoins (para funcionalidades premium)
-  /// Retorna true si la operación fue exitosa, false si no hay suficientes monedas
-  bool spendCoins(int amount) {
+  void spendCoins(int amount) {
     if (state >= amount) {
       state = state - amount;
-      return true;
     }
-    return false;
+  }
+
+  void resetCoins() {
+    state = 0;
   }
 
   /// Calcula el nivel del usuario basado en EcoCoins acumulados
-  /// Fórmula: Cada 100 EcoCoins = 1 nivel (ajustar según necesidad)
   int calculateLevel() {
-    // Nivel base: 1
-    // Cada 100 EcoCoins adicionales = +1 nivel
-    // Máximo nivel: 10
     return ((state / 100) + 1).clamp(1, 10).toInt();
   }
 
   /// Calcula el progreso hacia el siguiente nivel (0.0 - 1.0)
   double calculateLevelProgress() {
     final currentLevel = calculateLevel();
-    // Si ya está en nivel máximo, el progreso es 1.0
     if (currentLevel >= 10) return 1.0;
-
-    // Calcular progreso basado en EcoCoins dentro del nivel actual
     final coinsForCurrentLevel = (currentLevel - 1) * 100;
-    // ignore: unused_local_variable
-    final coinsForNextLevel = currentLevel * 100;
     final coinsInCurrentLevel = state - coinsForCurrentLevel;
-
     return coinsInCurrentLevel / 100;
   }
 }
@@ -104,38 +94,25 @@ final motivationalMessageProvider = Provider<String>((ref) {
   return messages[index];
 });
 
-/// Valor de recompensa en EcoCoins para diferentes acciones
-class EcoCoinRewards {
-  // Recompensas por nivel de impacto
-  static const int levelUp = 50;
-
-  // Recompensas por objetivos
-  static const int goalCompleted = 30;
-  static const int dailyGoalCompleted = 15;
-  static const int weeklyGoalCompleted = 25;
-  static const int monthlyGoalCompleted = 40;
-
-  // Recompensas por insignias
-  static const int badgeEarned = 20;
-
-  // Recompensas por acciones diarias
-  static const int ingredientSaved = 5;
-  static const int foodSaved = 10;
-  static const int recipeWithExpiring = 15;
-}
-
-/// Costos de funcionalidades premium en EcoCoins
-class EcoCoinCosts {
-  // Funcionalidades de IA
-  static const int generateAIRecipe = 25;
-  static const int aiMealPlan = 50;
-  static const int aiShoppingList = 20;
-  static const int aiIngredientSubstitution = 15;
-}
-
+/// Proveedor real del resumen de inventario usando datos del backend
 final inventorySummaryProvider = Provider<InventorySummary>((ref) {
-  // Replace with actual data fetching
-  return InventorySummary(activeItems: 18, expiringSoonItems: 3);
+  final inventoryState = ref.watch(inventoryStateProvider);
+  final items = inventoryState.items;
+
+  // Calcular elementos activos (todos los elementos del inventario)
+  final activeItems = items.length;
+
+  // Calcular elementos próximos a vencer
+  final expiringSoonItems =
+      items.where((item) {
+        final status = ExpirationStatusExtension.fromDate(item.expirationDate);
+        return status == ExpirationStatus.expiringSoon;
+      }).length;
+
+  return InventorySummary(
+    activeItems: activeItems,
+    expiringSoonItems: expiringSoonItems,
+  );
 });
 
 final recipeSuggestionsProvider = Provider<List<Recipe>>((ref) {
@@ -169,3 +146,32 @@ final impactSummaryProvider = Provider<ImpactSummary>((ref) {
   // Replace with actual data fetching
   return ImpactSummary(foodSavedKg: 5.0, co2ReducedG: 400.0);
 });
+
+/// Valor de recompensa en EcoCoins para diferentes acciones
+class EcoCoinRewards {
+  // Recompensas por nivel de impacto
+  static const int levelUp = 50;
+
+  // Recompensas por objetivos
+  static const int goalCompleted = 30;
+  static const int dailyGoalCompleted = 15;
+  static const int weeklyGoalCompleted = 25;
+  static const int monthlyGoalCompleted = 40;
+
+  // Recompensas por insignias
+  static const int badgeEarned = 20;
+
+  // Recompensas por acciones diarias
+  static const int ingredientSaved = 5;
+  static const int foodSaved = 10;
+  static const int recipeWithExpiring = 15;
+}
+
+/// Costos de funcionalidades premium en EcoCoins
+class EcoCoinCosts {
+  // Funcionalidades de IA
+  static const int generateAIRecipe = 25;
+  static const int aiMealPlan = 50;
+  static const int aiShoppingList = 20;
+  static const int aiIngredientSubstitution = 15;
+}

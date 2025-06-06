@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -169,6 +171,7 @@ class AuthInterceptor extends Interceptor {
 
       // Exchange Firebase token for backend JWT tokens
       log('🔄 Exchanging Firebase token for backend tokens...');
+      // ignore: unused_local_variable
       final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
 
       log('✅ AuthInterceptor: Auto-relogin successful! New tokens obtained');

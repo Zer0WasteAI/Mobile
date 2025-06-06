@@ -359,7 +359,7 @@ class IngredientRecognitionResultModel {
 @JsonSerializable()
 class RecognizedIngredientModel {
   final String name;
-  final int quantity;
+  final double quantity;
   @JsonKey(name: 'type_unit')
   final String typeUnit;
   @JsonKey(name: 'storage_type')
@@ -371,6 +371,10 @@ class RecognizedIngredientModel {
   final String tips;
   @JsonKey(name: 'image_path')
   final String? imagePath;
+  @JsonKey(name: 'expiration_date')
+  final String? expirationDate;
+  @JsonKey(name: 'added_at')
+  final String? addedAt;
   @JsonKey(name: 'allergy_alert', defaultValue: false)
   final bool allergyAlert;
   @JsonKey(name: 'allergens', defaultValue: [])
@@ -386,6 +390,8 @@ class RecognizedIngredientModel {
     required this.timeUnit,
     required this.tips,
     this.imagePath,
+    this.expirationDate,
+    this.addedAt,
     this.allergyAlert = false,
     this.allergens = const [],
     this.confidence,
@@ -439,9 +445,13 @@ class RecognizedFoodModel {
   final String timeUnit;
   final String tips;
   @JsonKey(name: 'serving_quantity')
-  final int servingQuantity;
+  final double servingQuantity;
   @JsonKey(name: 'image_path')
   final String? imagePath;
+  @JsonKey(name: 'expiration_date')
+  final String? expirationDate;
+  @JsonKey(name: 'added_at')
+  final String? addedAt;
   @JsonKey(name: 'allergy_alert', defaultValue: false)
   final bool allergyAlert;
   @JsonKey(name: 'allergens', defaultValue: [])
@@ -460,6 +470,8 @@ class RecognizedFoodModel {
     required this.tips,
     required this.servingQuantity,
     this.imagePath,
+    this.expirationDate,
+    this.addedAt,
     this.allergyAlert = false,
     this.allergens = const [],
     this.confidence,

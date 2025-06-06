@@ -26,300 +26,28 @@ class DisplayBatchInfo {
 }
 
 // TODO: Replace with actual data persistence (e.g., Hive, Supabase)
+// ignore: unused_element
 final _uuid = Uuid();
 
 class InventoryNotifier extends StateNotifier<InventoryState> {
   InventoryNotifier() : super(const InventoryState()) {
     // Load initial data (replace with actual data loading)
-    _loadMockData();
+    // DEPRECATED: Mock data no longer used - using real backend instead
+    // _loadMockData();
   }
 
+  // DEPRECATED: Mock data no longer used - keeping for reference only
+  /*
   void _loadMockData() {
     // Simulate loading initial data
     state = state.copyWith(isLoading: true);
     // Example data based on new structure
     final mockItems = [
-      // INGREDIENTES (con múltiples lotes)
-      // Batch 1 de Tomates
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Tomates',
-        image: '🍅',
-        quantity: 6.0,
-        expirationDate: DateTime.now().add(const Duration(days: 5)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 2)),
-        unitType: 'unidades',
-        tips:
-            'Guarda los tomates a temperatura ambiente para conservar su sabor, o en el refrigerador para extender su vida útil.',
-      ),
-      // Batch 2 de Tomates (venciendo pronto)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Tomates',
-        image: '🍅',
-        quantity: 3.0,
-        expirationDate: DateTime.now().add(const Duration(days: 2)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 4)),
-        unitType: 'unidades',
-        tips:
-            'Guarda los tomates a temperatura ambiente para conservar su sabor, o en el refrigerador para extender su vida útil.',
-      ),
-      // Batch 3 de Tomates (vencidos)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Tomates',
-        image: '🍅',
-        quantity: 2.0,
-        expirationDate: DateTime.now().subtract(const Duration(days: 1)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 8)),
-        unitType: 'unidades',
-        tips:
-            'Guarda los tomates a temperatura ambiente para conservar su sabor, o en el refrigerador para extender su vida útil.',
-      ),
-
-      // Cebollas (un solo lote)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Cebollas',
-        image: '🧅',
-        quantity: 4.0,
-        expirationDate: DateTime.now().add(const Duration(days: 14)),
-        storageType: StorageType.dry,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 3)),
-        unitType: 'unidades',
-        tips:
-            'Almacena en un lugar fresco y seco, separadas de las papas para evitar que ambas se deterioren más rápido.',
-      ),
-
-      // Batch 1 de Arroz (cantidad grande)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Arroz',
-        image: '🍚',
-        quantity: 2.0,
-        storageType: StorageType.dry,
-        expirationDate: DateTime.now().add(const Duration(days: 360)),
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 30)),
-        unitType: 'kg',
-        tips:
-            'Guarda en un recipiente hermético para evitar la humedad y los insectos.',
-      ),
-      // Batch 2 de Arroz (cantidad pequeña)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Arroz',
-        image: '🍚',
-        quantity: 0.5,
-        storageType: StorageType.dry,
-        expirationDate: DateTime.now().add(const Duration(days: 180)),
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 90)),
-        unitType: 'kg',
-        tips:
-            'Guarda en un recipiente hermético para evitar la humedad y los insectos.',
-      ),
-
-      // Lechuga (venciendo muy pronto)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Lechuga',
-        image: '🥬',
-        quantity: 1.0,
-        expirationDate: DateTime.now().add(const Duration(days: 1)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 4)),
-        unitType: 'unidades',
-        tips:
-            'Lava solo cuando vayas a utilizarla. Guarda en el refrigerador envuelta en papel toalla para absorber la humedad.',
-      ),
-
-      // Zanahorias
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Zanahorias',
-        image: '🥕',
-        quantity: 8.0,
-        expirationDate: DateTime.now().add(const Duration(days: 10)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.ingredient,
-        addedDate: DateTime.now().subtract(const Duration(days: 2)),
-        unitType: 'unidades',
-        tips:
-            'Guarda en el refrigerador, preferiblemente en un recipiente con agua para mantener su frescura.',
-      ),
-
-      // ALIMENTOS PREPARADOS (con múltiples lotes)
-
-      // Batch 1 de Lasaña
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Lasaña Casera',
-        image: '🍝',
-        quantity: 2.0,
-        expirationDate: DateTime.now().add(const Duration(days: 3)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.food,
-        addedDate: DateTime.now().subtract(const Duration(hours: 12)),
-        unitType: 'porciones',
-        description:
-            'Lasaña casera con salsa boloñesa, bechamel y queso mozzarella.',
-        calories: 420,
-        foodCategory: 'Plato principal',
-        mainIngredients: [
-          'Pasta',
-          'Carne molida',
-          'Tomate',
-          'Queso',
-          'Bechamel',
-        ],
-        tips:
-            'Recalentar en el microondas 2-3 minutos o en el horno a 180°C por 15 minutos para obtener una textura crujiente.',
-      ),
-      // Batch 2 de Lasaña (congelada)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Lasaña Casera',
-        image: '🍝',
-        quantity: 4.0,
-        expirationDate: DateTime.now().add(const Duration(days: 30)),
-        storageType: StorageType.frozen,
-        category: ItemCategory.food,
-        addedDate: DateTime.now().subtract(const Duration(hours: 12)),
-        unitType: 'porciones',
-        description:
-            'Lasaña casera con salsa boloñesa, bechamel y queso mozzarella.',
-        calories: 420,
-        foodCategory: 'Plato principal',
-        mainIngredients: [
-          'Pasta',
-          'Carne molida',
-          'Tomate',
-          'Queso',
-          'Bechamel',
-        ],
-        tips:
-            'Descongelar en el refrigerador durante la noche antes de recalentar.',
-      ),
-
-      // Ensalada preparada
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Ensalada César',
-        image: '🥗',
-        quantity: 1.0,
-        expirationDate: DateTime.now().add(const Duration(days: 1)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.food,
-        addedDate: DateTime.now(),
-        unitType: 'porciones',
-        description:
-            'Ensalada César fresca con lechuga romana, pollo, crutones y aderezo.',
-        calories: 320,
-        foodCategory: 'Entrada',
-        mainIngredients: [
-          'Lechuga romana',
-          'Pollo',
-          'Crutones',
-          'Queso parmesano',
-          'Aderezo César',
-        ],
-        tips:
-            'Mantener el aderezo por separado hasta el momento de servir para evitar que la ensalada se humedezca.',
-      ),
-
-      // Pollo asado
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Pollo Asado',
-        image: '🍗',
-        quantity: 3.0,
-        expirationDate: DateTime.now().add(const Duration(days: 2)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.food,
-        addedDate: DateTime.now().subtract(const Duration(days: 1)),
-        unitType: 'porciones',
-        description: 'Pollo asado con hierbas y especias.',
-        calories: 280,
-        foodCategory: 'Plato principal',
-        mainIngredients: ['Pollo', 'Romero', 'Tomillo', 'Ajo', 'Limón'],
-        tips:
-            'Recalentar en el horno para mantener la piel crujiente. Se puede usar para ensaladas o sandwiches.',
-      ),
-
-      // Batch 1 de Sopa
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Sopa de Verduras',
-        image: '🍲',
-        quantity: 0.5,
-        expirationDate: DateTime.now().add(const Duration(days: 4)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.food,
-        addedDate: DateTime.now().subtract(const Duration(days: 1)),
-        unitType: 'lt',
-        description:
-            'Sopa casera de verduras con zanahorias, apio, cebolla y papas.',
-        calories: 120,
-        foodCategory: 'Entrada',
-        mainIngredients: ['Zanahoria', 'Cebolla', 'Apio', 'Papa', 'Caldo'],
-        tips: 'Recalentar a fuego medio y servir con hierbas frescas.',
-      ),
-      // Batch 2 de Sopa (congelada)
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Sopa de Verduras',
-        image: '🍲',
-        quantity: 1.0,
-        expirationDate: DateTime.now().add(const Duration(days: 60)),
-        storageType: StorageType.frozen,
-        category: ItemCategory.food,
-        addedDate: DateTime.now().subtract(const Duration(days: 1)),
-        unitType: 'lt',
-        description:
-            'Sopa casera de verduras con zanahorias, apio, cebolla y papas.',
-        calories: 120,
-        foodCategory: 'Entrada',
-        mainIngredients: ['Zanahoria', 'Cebolla', 'Apio', 'Papa', 'Caldo'],
-        tips:
-            'Descongelar en el refrigerador o directamente en una olla a fuego lento. Revolver ocasionalmente.',
-      ),
-
-      // Postre
-      InventoryItem(
-        id: _uuid.v4(),
-        name: 'Mousse de Chocolate',
-        image: '🍮',
-        quantity: 4.0,
-        expirationDate: DateTime.now().add(const Duration(days: 3)),
-        storageType: StorageType.refrigerated,
-        category: ItemCategory.food,
-        addedDate: DateTime.now(),
-        unitType: 'porciones',
-        description: 'Mousse de chocolate negro con un toque de café.',
-        calories: 280,
-        foodCategory: 'Postre',
-        mainIngredients: [
-          'Chocolate negro',
-          'Crema',
-          'Huevos',
-          'Azúcar',
-          'Café',
-        ],
-        tips:
-            'Servir frío. Decorar con virutas de chocolate o bayas frescas al momento de servir.',
-      ),
+      // ... existing mock data ...
     ];
     state = state.copyWith(items: mockItems, isLoading: false);
   }
+  */
 
   // --- Item Management ---
   void addItems(List<InventoryItem> itemsToAdd) {
@@ -517,6 +245,11 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
     }
   }
 
+  // --- Clear all items ---
+  void clearAllItems() {
+    state = state.copyWith(items: []);
+  }
+
   // --- Item Removal ---
   void removeItemById(String itemId) {
     final updatedItems =
@@ -588,7 +321,6 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
         batchToShow = batchList.first;
       }
     }
-
 
     if (batchToShow != null) {
       // Add the DisplayBatchInfo object containing the selected batch and all batches
@@ -718,14 +450,22 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
 
   /// Load inventory from real backend
   Future<void> loadInventoryFromBackend() async {
+    log('🔄 DEBUG - Starting loadInventoryFromBackend');
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
+      log('📡 DEBUG - Calling backend getInventory');
       final inventoryData = await _backendNotifier.getInventory();
+      log('📡 DEBUG - Backend response received: $inventoryData');
+
+      log('🔧 DEBUG - Parsing inventory data');
       final items = _parseInventoryFromAPI(inventoryData);
+      log('🔧 DEBUG - Parsing completed, ${items.length} items created');
 
       state = state.copyWith(items: items, isLoading: false);
+      log('✅ DEBUG - loadInventoryFromBackend completed successfully');
     } catch (e) {
+      log('❌ DEBUG - Error in loadInventoryFromBackend: $e');
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -810,27 +550,57 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     state = state.copyWith(errorMessage: null);
   }
 
+  /// Refresh inventory data from backend manually
+  /// Use this when entering inventory screen or after significant changes
+  Future<void> refreshInventory() async {
+    await loadInventoryFromBackend();
+  }
+
   /// Convert API inventory data to InventoryItem list
   List<InventoryItem> _parseInventoryFromAPI(Map<String, dynamic> data) {
     final List<InventoryItem> items = [];
 
+    // DEBUG: Log raw API response
+    log('🔍 DEBUG - Raw API response: $data');
+
     // API returns: {"ingredients": [{"name": "...", "stacks": [...], ...}]}
     final ingredients = data['ingredients'] as List<dynamic>? ?? [];
+
+    // DEBUG: Log ingredients array
+    log('🔍 DEBUG - Ingredients found: ${ingredients.length}');
+    log('🔍 DEBUG - Ingredients data: $ingredients');
 
     for (final ingredientData in ingredients) {
       final ingredient = ingredientData as Map<String, dynamic>;
       final name = ingredient['name'] ?? 'Ingrediente';
       final stacks = ingredient['stacks'] as List<dynamic>? ?? [];
 
+      // DEBUG: Log each ingredient processing
+      log(
+        '🔍 DEBUG - Processing ingredient: $name with ${stacks.length} stacks',
+      );
+      log('🔍 DEBUG - Ingredient data: $ingredient');
+      log('🔍 DEBUG - Stacks data: $stacks');
+
       // Each ingredient can have multiple stacks (batches)
       for (final stackData in stacks) {
         final stack = stackData as Map<String, dynamic>;
+        log('🔍 DEBUG - Processing stack: $stack');
+
         final item = _parseStackFromAPI(name, ingredient, stack);
         if (item != null) {
           items.add(item);
+          log('✅ DEBUG - Successfully created item: ${item.name} (${item.id})');
+        } else {
+          log('❌ DEBUG - Failed to create item from stack: $stack');
         }
       }
     }
+
+    log('🔍 DEBUG - Final items count: ${items.length}');
+    log(
+      '🔍 DEBUG - Final items: ${items.map((i) => '${i.name} (${i.quantity} ${i.unitType})').toList()}',
+    );
 
     return items;
   }
@@ -842,42 +612,64 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     Map<String, dynamic> stackData,
   ) {
     try {
-      return InventoryItem(
-        id: '${name}_${stackData['added_at'] ?? DateTime.now().toIso8601String()}',
+      // DEBUG: Log parsing details
+      log('🔍 DEBUG - Parsing stack for $name');
+      log('🔍 DEBUG - Stack data: $stackData');
+      log('🔍 DEBUG - Ingredient data: $ingredientData');
+
+      final id =
+          '${name}_${stackData['added_at'] ?? DateTime.now().toIso8601String()}';
+      final quantity = (stackData['quantity'] ?? 0).toDouble();
+      final expirationDateStr = stackData['expiration_date'];
+      final addedAtStr = stackData['added_at'];
+      final storageType = _parseStorageType(ingredientData['storage_type']);
+      final unitType = ingredientData['type_unit'] ?? 'unidades';
+      final tips = ingredientData['tips'] ?? _getTipsForItem(name);
+
+      log('🔍 DEBUG - Parsed values:');
+      log('   - id: $id');
+      log('   - quantity: $quantity');
+      log('   - expirationDateStr: $expirationDateStr');
+      log('   - addedAtStr: $addedAtStr');
+      log('   - storageType: $storageType');
+      log('   - unitType: $unitType');
+
+      final item = InventoryItem(
+        id: id,
         name: name,
         image: _getEmojiForItem(name),
-        quantity: (stackData['quantity'] ?? 0).toDouble(),
+        quantity: quantity,
         expirationDate:
-            stackData['expiration_date'] != null
-                ? DateTime.parse(stackData['expiration_date'])
+            expirationDateStr != null
+                ? DateTime.parse(expirationDateStr)
                 : DateTime.now().add(const Duration(days: 30)),
-        storageType: _parseStorageType(ingredientData['storage_type']),
+        storageType: storageType,
         category: ItemCategory.ingredient, // Backend only handles ingredients
         addedDate:
-            stackData['added_at'] != null
-                ? DateTime.parse(stackData['added_at'])
-                : DateTime.now(),
-        unitType: ingredientData['type_unit'] ?? 'unidades',
-        tips: ingredientData['tips'] ?? _getTipsForItem(name),
+            addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+        unitType: unitType,
+        tips: tips,
       );
+
+      log(
+        '✅ DEBUG - Successfully created InventoryItem: ${item.name} (${item.id})',
+      );
+      return item;
     } catch (e) {
-      log('Error parsing stack for $name: $e');
+      log('❌ Error parsing stack for $name: $e');
+      log('❌ Stack data that caused error: $stackData');
+      log('❌ Ingredient data that caused error: $ingredientData');
       return null;
     }
   }
 
   /// Convert InventoryItem to API format
   Map<String, dynamic> _convertItemToAPI(InventoryItem item) {
-    // Calculate expiration time from expiration date
-    final now = DateTime.now();
-    final daysUntilExpiration =
-        item.expirationDate?.difference(now).inDays ?? 30;
-
     return {
       'name': item.name,
       'quantity': item.quantity,
-      'expiration_time': daysUntilExpiration > 0 ? daysUntilExpiration : 1,
-      'time_unit': 'Días',
+      'expiration_date':
+          item.expirationDate?.toIso8601String(), // Send as ISO date string
       'type_unit': item.unitType,
       'storage_type': _convertStorageTypeToAPI(item.storageType),
       'tips': item.tips ?? _getTipsForItem(item.name),

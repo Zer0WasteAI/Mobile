@@ -24,7 +24,9 @@ class ScanResultsNotifier extends StateNotifier<List<RecognizedItem>> {
     state = [
       for (final item in state)
         if (item.id == itemId)
-          item.copyWith(quantity: item.quantity + 1)
+          item.copyWith(
+            quantity: item.quantity + _getQuantityStep(item.typeUnit),
+          )
         else
           item,
     ];
@@ -33,12 +35,59 @@ class ScanResultsNotifier extends StateNotifier<List<RecognizedItem>> {
   void decrementQuantity(String itemId) {
     state = [
       for (final item in state)
-        // Only decrement if quantity is greater than 1
-        if (item.id == itemId && item.quantity > 1)
-          item.copyWith(quantity: item.quantity - 1)
+        // Only decrement if quantity is greater than minimum
+        if (item.id == itemId &&
+            item.quantity > _getMinimumQuantity(item.typeUnit))
+          item.copyWith(
+            quantity: ((item.quantity * 10 -
+                            _getQuantityStep(item.typeUnit) * 10)
+                        .round() /
+                    10.0)
+                .clamp(_getMinimumQuantity(item.typeUnit), double.infinity),
+          )
         else
           item,
     ];
+  }
+
+  // Helper method to get quantity step based on unit type
+  double _getQuantityStep(String? unit) {
+    if (unit == null) return 1.0;
+    switch (unit.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+      case 'gramos':
+      case 'kilogramos':
+      case 'litros':
+      case 'mililitros':
+        return 0.1;
+      case 'unidades':
+      case 'unidad':
+      default:
+        return 1.0;
+    }
+  }
+
+  // Helper method to get minimum quantity based on unit type
+  double _getMinimumQuantity(String? unit) {
+    if (unit == null) return 1.0;
+    switch (unit.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+      case 'gramos':
+      case 'kilogramos':
+      case 'litros':
+      case 'mililitros':
+        return 0.1;
+      case 'unidades':
+      case 'unidad':
+      default:
+        return 1.0;
+    }
   }
 
   void removeItem(String itemId) {

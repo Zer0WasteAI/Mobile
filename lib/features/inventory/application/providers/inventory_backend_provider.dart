@@ -35,6 +35,12 @@ class InventoryBackendNotifier {
     return await _repository.getInventory();
   }
 
+  /// INFO: Get simplified inventory compatible with recognition format
+  /// RETURNS: Map containing simplified inventory structure
+  Future<Map<String, dynamic>> getInventorySimple() async {
+    return await _repository.getInventorySimple();
+  }
+
   /// INFO: Update specific ingredient in backend inventory
   /// ADVICE: Use name + addedAt as composite key for identification
   Future<void> updateIngredient(

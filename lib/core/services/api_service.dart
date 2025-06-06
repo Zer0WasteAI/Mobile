@@ -21,43 +21,44 @@ class ApiService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   // INFO: API Endpoints - All 23 endpoints from real documentation
-  static const String _authFirebaseSignIn = '/auth/firebase-signin';
-  static const String _authRefresh = '/auth/refresh';
-  static const String _authLogout = '/auth/logout';
+  static const String _authFirebaseSignIn = '/api/auth/firebase-signin';
+  static const String _authRefresh = '/api/auth/refresh';
+  static const String _authLogout = '/api/auth/logout';
 
   // INFO: Updated profile endpoints to match real API structure
-  static const String _userProfile = '/user/profile';
+  static const String _userProfile = '/api/user/profile';
 
-  static const String _recognitionFoods = '/recognition/foods';
-  static const String _recognitionIngredients = '/recognition/ingredients';
-  static const String _recognitionBatch = '/recognition/batch';
-  static const String _imageUpload = '/image_management/upload_image';
+  static const String _recognitionFoods = '/api/recognition/foods';
+  static const String _recognitionIngredients = '/api/recognition/ingredients';
+  static const String _recognitionBatch = '/api/recognition/batch';
+  static const String _imageUpload = '/api/image_management/upload_image';
   static const String _imageSearchSimilar =
-      '/image_management/search_similar_images';
-  static const String _imageAssign = '/image_management/assign_image';
+      '/api/image_management/search_similar_images';
+  static const String _imageAssign = '/api/image_management/assign_image';
 
   // INFO: Reference Image Management endpoints
-  static const String _referenceImageUpload = '/reference-images';
-  static const String _referenceImageList = '/reference-images';
-  static const String _referenceImageGet = '/reference-images';
-  static const String _referenceImageDelete = '/reference-images';
-  static const String _referenceImageUpdate = '/reference-images';
+  static const String _referenceImageUpload = '/api/reference-images';
+  static const String _referenceImageList = '/api/reference-images';
+  static const String _referenceImageGet = '/api/reference-images';
+  static const String _referenceImageDelete = '/api/reference-images';
+  static const String _referenceImageUpdate = '/api/reference-images';
 
-  // INFO: NEW - Inventory Management endpoints (5 endpoints)
-  static const String _inventoryItems = '/inventory';
-  static const String _inventoryIngredients = '/inventory/ingredients';
-  static const String _inventoryExpiring = '/inventory/expiring';
+  // INFO: NEW - Inventory Management endpoints (6 endpoints)
+  static const String _inventoryItems = '/api/inventory';
+  static const String _inventoryIngredients = '/api/inventory/ingredients';
+  static const String _inventorySimple = '/api/inventory/simple';
+  static const String _inventoryExpiring = '/api/inventory/expiring';
 
   // INFO: NEW - Recipe Management endpoints (4 endpoints)
   static const String _recipesGenerateFromInventory =
-      '/recipes/generate-from-inventory';
-  static const String _recipesGenerateCustom = '/recipes/generate-custom';
-  static const String _recipesSave = '/recipes/save';
-  static const String _recipesSaved = '/recipes/saved';
+      '/api/recipes/generate-from-inventory';
+  static const String _recipesGenerateCustom = '/api/recipes/generate-custom';
+  static const String _recipesSave = '/api/recipes/save';
+  static const String _recipesSaved = '/api/recipes/saved';
 
   // INFO: NEW - Admin endpoints (2 endpoints)
-  static const String _adminUsers = '/admin/users';
-  static const String _adminSyncImages = '/admin/sync_images';
+  static const String _adminUsers = '/api/admin/users';
+  static const String _adminSyncImages = '/api/admin/sync_images';
 
   // INFO: Secure Storage Keys for JWT tokens
   static const String _accessTokenKey = 'access_token';
@@ -75,8 +76,12 @@ class ApiService {
       BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(
+          seconds: 30,
+        ), // Default timeout for normal operations
+        sendTimeout: const Duration(
+          seconds: 30,
+        ), // AI operations use longer timeouts in specific methods
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -122,6 +127,14 @@ class ApiService {
             if (error.requestOptions.path == _authRefresh ||
                 error.requestOptions.path == _authFirebaseSignIn) {
               await clearTokens();
+              return handler.reject(error);
+            }
+
+            // Skip automatic retry for image upload endpoints - they handle their own retries
+            if (error.requestOptions.path == _imageUpload) {
+              log(
+                '🔄 ApiService: Skipping automatic retry for image upload - handled by method',
+              );
               return handler.reject(error);
             }
 
@@ -436,9 +449,16 @@ class ApiService {
   /// INFO: AI recognition of prepared foods/dishes
   Future<Map<String, dynamic>> recognizeFoods(List<String> imagePaths) async {
     try {
+      // Use longer timeout for AI recognition operations
       final response = await _dio.post(
         _recognitionFoods,
         data: {'images_paths': imagePaths},
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 3,
+          ), // 3 minutes for AI processing
+          sendTimeout: const Duration(minutes: 1), // 1 minute for upload
+        ),
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -451,9 +471,16 @@ class ApiService {
     List<String> imagePaths,
   ) async {
     try {
+      // Use longer timeout for AI recognition operations
       final response = await _dio.post(
         _recognitionIngredients,
         data: {'images_paths': imagePaths},
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 3,
+          ), // 3 minutes for AI processing
+          sendTimeout: const Duration(minutes: 1), // 1 minute for upload
+        ),
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -464,9 +491,16 @@ class ApiService {
   /// INFO: Batch recognition for mixed content (ingredients + foods)
   Future<Map<String, dynamic>> recognizeBatch(List<String> imagePaths) async {
     try {
+      // Use longer timeout for AI recognition operations
       final response = await _dio.post(
         _recognitionBatch,
         data: {'images_paths': imagePaths},
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 3,
+          ), // 3 minutes for AI processing
+          sendTimeout: const Duration(minutes: 1), // 1 minute for upload
+        ),
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -483,23 +517,64 @@ class ApiService {
     required String itemName,
     required String imageType, // "food", "ingredient", "default"
   }) async {
-    try {
-      final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(imageFile.path),
-        'item_name': itemName,
-        'image_type': imageType,
-      });
+    int retryCount = 0;
+    const maxRetries = 2;
 
-      final response = await _dio.post(
-        _imageUpload,
-        data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
-      );
+    while (retryCount <= maxRetries) {
+      try {
+        // Create fresh FormData for each attempt to avoid "already finalized" errors
+        final formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(imageFile.path),
+          'item_name': itemName,
+          'image_type': imageType,
+        });
 
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Image upload error: ${e.toString()}');
+        final response = await _dio.post(
+          _imageUpload,
+          data: formData,
+          options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        );
+
+        return response.data as Map<String, dynamic>;
+      } on DioException catch (e) {
+        // Handle 401 errors specifically for this upload
+        if (e.response?.statusCode == 401 && retryCount < maxRetries) {
+          log(
+            '🔄 Upload failed with 401, attempting token refresh... (attempt ${retryCount + 1}/$maxRetries)',
+          );
+
+          try {
+            // Step 1: Try normal token refresh
+            final newAccessToken = await refreshTokens();
+            if (newAccessToken != null) {
+              log('✅ Token refresh successful, retrying upload...');
+              retryCount++;
+              continue; // Retry with new token
+            }
+          } catch (refreshError) {
+            log('❌ Token refresh failed: $refreshError');
+          }
+
+          // Step 2: Try auto-relogin if refresh failed
+          final reloginSuccess = await _performAutoRelogin();
+          if (reloginSuccess) {
+            log('✅ Auto-relogin successful, retrying upload...');
+            retryCount++;
+            continue; // Retry with new token
+          }
+
+          log('❌ Both refresh and auto-relogin failed for upload');
+          await clearTokens();
+        }
+
+        // Re-throw the exception if not a 401 or if retries exhausted
+        throw Exception('Image upload error: ${getErrorMessage(e)}');
+      } catch (e) {
+        throw Exception('Image upload error: ${e.toString()}');
+      }
     }
+
+    throw Exception('Image upload failed after $maxRetries retries');
   }
 
   /// INFO: Search for similar images by item name
@@ -642,6 +717,16 @@ class ApiService {
     }
   }
 
+  /// INFO: Get simplified inventory compatible with recognition format
+  Future<Map<String, dynamic>> getInventorySimple() async {
+    try {
+      final response = await _dio.get(_inventorySimple);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get simple inventory error: ${e.toString()}');
+    }
+  }
+
   /// INFO: Update specific ingredient by name and added date
   /// ADVICE: Use name and addedAt as composite key for unique identification
   Future<Map<String, dynamic>> updateIngredient(
@@ -694,7 +779,17 @@ class ApiService {
   /// ADVICE: AI analyzes your inventory and suggests optimal recipes
   Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
     try {
-      final response = await _dio.post(_recipesGenerateFromInventory, data: {});
+      // Use longer timeout for AI recipe generation operations
+      final response = await _dio.post(
+        _recipesGenerateFromInventory,
+        data: {},
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 2,
+          ), // 2 minutes for AI processing
+          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+        ),
+      );
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       throw Exception('Generate recipes from inventory error: ${e.toString()}');
@@ -709,6 +804,7 @@ class ApiService {
     int numRecipes = 2,
   }) async {
     try {
+      // Use longer timeout for AI recipe generation operations
       final response = await _dio.post(
         _recipesGenerateCustom,
         data: {
@@ -716,6 +812,12 @@ class ApiService {
           if (preferences != null) 'preferences': preferences,
           'num_recipes': numRecipes,
         },
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 2,
+          ), // 2 minutes for AI processing
+          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+        ),
       );
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
@@ -854,6 +956,7 @@ class ApiService {
 
       // Exchange Firebase token for backend JWT tokens using the same method
       log('🔄 Exchanging Firebase token for backend tokens...');
+      // ignore: unused_local_variable
       final backendResponse = await firebaseSignIn(firebaseIdToken);
 
       log('✅ ApiService: Auto-relogin successful! New tokens obtained');
@@ -886,22 +989,33 @@ class ApiService {
       listFormat: options.listFormat,
     );
 
-    // If the original request had FormData, we need to recreate it
+    // If the original request had FormData, try to recreate it
     if (options.data is FormData) {
-      final originalFormData = options.data as FormData;
-      final newFormData = FormData();
+      try {
+        final originalFormData = options.data as FormData;
+        final newFormData = FormData();
 
-      // Copy all fields and files from original FormData
-      for (final field in originalFormData.fields) {
-        newFormData.fields.add(field);
+        // Copy all fields
+        for (final field in originalFormData.fields) {
+          newFormData.fields.add(MapEntry(field.key, field.value));
+        }
+
+        // Try to clone files
+        for (final fileEntry in originalFormData.files) {
+          final clonedFile = fileEntry.value.clone();
+          newFormData.files.add(MapEntry(fileEntry.key, clonedFile));
+        }
+
+        newOptions.data = newFormData;
+        log('🔧 FormData recreated successfully for retry request');
+      } catch (e) {
+        log('❌ Failed to recreate FormData: $e');
+        log('⚠️ Returning original request options - retry may fail');
+        // Return original request options - this will likely fail with the
+        // "MultipartFile already finalized" error, but that's better than
+        // creating an invalid request
+        return options;
       }
-
-      for (final file in originalFormData.files) {
-        newFormData.files.add(file);
-      }
-
-      newOptions.data = newFormData;
-      log('🔧 FormData recreated for retry request');
     } else {
       newOptions.data = options.data;
     }

@@ -10,6 +10,10 @@ abstract class InventoryRepository {
   /// RETURNS: Map containing inventory data structure from backend
   Future<Map<String, dynamic>> getInventory();
 
+  /// INFO: Get simplified inventory compatible with recognition format
+  /// RETURNS: Map containing simplified inventory in recognition-compatible format
+  Future<Map<String, dynamic>> getInventorySimple();
+
   /// INFO: Update a specific ingredient using composite key
   /// ADVICE: Use name + addedAt to uniquely identify the ingredient
   /// USAGE: updateData should contain fields to update (quantity, expiry_date, etc.)

@@ -610,10 +610,12 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                       ingredient,
                                     ) {
                                       return {
-                                        'nombre': ingredient.name,
-                                        'imagen': ingredient.imagePath ?? '',
-                                        'cantidad': ingredient.quantity,
-                                        'fecha_de_caducidad':
+                                        'name': ingredient.name,
+                                        'image_path':
+                                            ingredient.imagePath ?? '',
+                                        'quantity': ingredient.quantity,
+                                        'expiration_date':
+                                            ingredient.expirationDate ??
                                             DateTime.now()
                                                 .add(
                                                   Duration(
@@ -622,19 +624,19 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                                             .expirationTime,
                                                   ),
                                                 )
-                                                .toIso8601String()
-                                                .split('T')[0],
+                                                .toIso8601String(),
                                         'confidence':
                                             ingredient.confidence ?? 1.0,
                                         'category': 'ingredient',
                                         'allergyAlert': ingredient.allergyAlert,
                                         'allergens': ingredient.allergens,
-                                        'storageType': ingredient.storageType,
+                                        'storage_type': ingredient.storageType,
                                         'tips': ingredient.tips,
-                                        'typeUnit': ingredient.typeUnit,
+                                        'type_unit': ingredient.typeUnit,
                                         'expiration_time':
                                             ingredient.expirationTime,
-                                        'timeUnit': ingredient.timeUnit,
+                                        'time_unit': ingredient.timeUnit,
+                                        'added_at': ingredient.addedAt,
                                       };
                                     }).toList();
 
@@ -655,32 +657,33 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                 formattedResults =
                                     foodResult.foods.map((food) {
                                       return {
-                                        'nombre': food.name,
-                                        'imagen': food.imagePath ?? '',
-                                        'cantidad': food.servingQuantity,
-                                        'fecha_de_caducidad':
+                                        'name': food.name,
+                                        'image_path': food.imagePath ?? '',
+                                        'quantity': food.servingQuantity,
+                                        'expiration_date':
+                                            food.expirationDate ??
                                             DateTime.now()
                                                 .add(
                                                   Duration(
                                                     days: food.expirationTime,
                                                   ),
                                                 )
-                                                .toIso8601String()
-                                                .split('T')[0],
+                                                .toIso8601String(),
                                         'confidence': food.confidence ?? 1.0,
                                         'category': food.category,
                                         'allergyAlert': food.allergyAlert,
                                         'allergens': food.allergens,
-                                        'storageType': food.storageType,
+                                        'storage_type': food.storageType,
                                         'tips': food.tips,
                                         'calories': food.calories,
                                         'description': food.description,
                                         'mainIngredients': food.mainIngredients,
-                                        'typeUnit':
+                                        'type_unit':
                                             'porciones', // Default unit for foods
                                         'expiration_time':
                                             food.expirationTime, // Add this field
-                                        'timeUnit': food.timeUnit,
+                                        'time_unit': food.timeUnit,
+                                        'added_at': food.addedAt,
                                       };
                                     }).toList();
 

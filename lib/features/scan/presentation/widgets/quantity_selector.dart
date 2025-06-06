@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Assuming AppColors exists
 
 class QuantitySelector extends StatelessWidget {
-  final int quantity;
+  final double quantity;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final String? unit; // Add unit parameter
@@ -51,8 +51,11 @@ class QuantitySelector extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               FontAwesomeIcons.minus,
-              // Disable color if quantity is 1 or less
-              color: quantity > 1 ? iconColor : disabledIconColor,
+              // Disable color if quantity is at minimum
+              color:
+                  quantity > _getMinimumQuantity(unit)
+                      ? iconColor
+                      : disabledIconColor,
             ),
             style: IconButton.styleFrom(
               backgroundColor: buttonBackgroundColor,
@@ -61,8 +64,9 @@ class QuantitySelector extends StatelessWidget {
                 alpha: 0.7,
               ),
             ),
-            // Disable onPressed if quantity is 1 or less
-            onPressed: quantity > 1 ? onDecrement : null,
+            // Disable onPressed if quantity is at minimum
+            onPressed:
+                quantity > _getMinimumQuantity(unit) ? onDecrement : null,
           ),
         ),
 
@@ -81,7 +85,7 @@ class QuantitySelector extends StatelessWidget {
                 color: quantityTextColor,
               ),
               children: [
-                TextSpan(text: quantity.toString()),
+                TextSpan(text: _formatQuantity(quantity, unit)),
                 if (unit != null && unit!.isNotEmpty)
                   TextSpan(
                     text: ' $unit',
@@ -114,5 +118,43 @@ class QuantitySelector extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // Helper method to get minimum quantity based on unit type
+  double _getMinimumQuantity(String? unit) {
+    if (unit == null) return 1.0;
+    switch (unit.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+      case 'gramos':
+      case 'kilogramos':
+      case 'litros':
+      case 'mililitros':
+        return 0.1;
+      case 'unidades':
+      case 'unidad':
+      default:
+        return 1.0;
+    }
+  }
+
+  // Helper method to format quantity display
+  String _formatQuantity(double quantity, String? unit) {
+    if (unit == null) return quantity.toString();
+
+    switch (unit.toLowerCase()) {
+      case 'unidades':
+      case 'unidad':
+        return quantity.toInt().toString(); // Show units as integer
+      default:
+        // For kg, g, lt, ml, show one decimal place if not whole
+        if (quantity == quantity.truncateToDouble()) {
+          return quantity.toInt().toString(); // 5.0 becomes "5"
+        } else {
+          return quantity.toStringAsFixed(1); // 5.1 becomes "5.1"
+        }
+    }
   }
 }

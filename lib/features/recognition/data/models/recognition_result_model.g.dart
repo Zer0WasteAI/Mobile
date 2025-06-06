@@ -160,13 +160,15 @@ RecognizedIngredientModel _$RecognizedIngredientModelFromJson(
   Map<String, dynamic> json,
 ) => RecognizedIngredientModel(
   name: json['name'] as String,
-  quantity: (json['quantity'] as num).toInt(),
+  quantity: (json['quantity'] as num).toDouble(),
   typeUnit: json['type_unit'] as String,
   storageType: json['storage_type'] as String,
   expirationTime: (json['expiration_time'] as num).toInt(),
   timeUnit: json['time_unit'] as String,
   tips: json['tips'] as String,
   imagePath: json['image_path'] as String?,
+  expirationDate: json['expiration_date'] as String?,
+  addedAt: json['added_at'] as String?,
   allergyAlert: json['allergy_alert'] as bool? ?? false,
   allergens:
       (json['allergens'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -185,6 +187,8 @@ Map<String, dynamic> _$RecognizedIngredientModelToJson(
   'time_unit': instance.timeUnit,
   'tips': instance.tips,
   'image_path': instance.imagePath,
+  'expiration_date': instance.expirationDate,
+  'added_at': instance.addedAt,
   'allergy_alert': instance.allergyAlert,
   'allergens': instance.allergens,
   'confidence': instance.confidence,
@@ -231,8 +235,10 @@ RecognizedFoodModel _$RecognizedFoodModelFromJson(Map<String, dynamic> json) =>
       expirationTime: (json['expiration_time'] as num).toInt(),
       timeUnit: json['time_unit'] as String,
       tips: json['tips'] as String,
-      servingQuantity: (json['serving_quantity'] as num).toInt(),
+      servingQuantity: (json['serving_quantity'] as num).toDouble(),
       imagePath: json['image_path'] as String?,
+      expirationDate: json['expiration_date'] as String?,
+      addedAt: json['added_at'] as String?,
       allergyAlert: json['allergy_alert'] as bool? ?? false,
       allergens:
           (json['allergens'] as List<dynamic>?)
@@ -256,6 +262,8 @@ Map<String, dynamic> _$RecognizedFoodModelToJson(
   'tips': instance.tips,
   'serving_quantity': instance.servingQuantity,
   'image_path': instance.imagePath,
+  'expiration_date': instance.expirationDate,
+  'added_at': instance.addedAt,
   'allergy_alert': instance.allergyAlert,
   'allergens': instance.allergens,
   'confidence': instance.confidence,

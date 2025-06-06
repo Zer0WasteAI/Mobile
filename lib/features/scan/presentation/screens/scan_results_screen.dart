@@ -14,6 +14,7 @@ import 'package:zer0_waste_ai/features/scan/application/providers/scan_results_p
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // For ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item_card.dart';
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
+import 'dart:developer';
 
 // Assume Uuid instance is available or create one
 final _uuid = Uuid();
@@ -131,7 +132,7 @@ class ScanResultsScreen extends ConsumerWidget {
                 label: const Text('Agregar al inventario'),
                 onPressed:
                     canAdd
-                        ? () {
+                        ? () async {
                           final itemsToAddRaw = itemsNotifier.getItemsToAdd();
 
                           // Map RecognizedItem to InventoryItem
@@ -143,9 +144,44 @@ class ScanResultsScreen extends ConsumerWidget {
                                         ? ItemCategory.food
                                         : ItemCategory.ingredient;
 
-                                // Assign default storage (e.g., refrigerated) - consider asking user later
-                                const StorageType defaultStorage =
-                                    StorageType.refrigerated;
+                                // Parse storage type from recognition result
+                                StorageType storageType =
+                                    StorageType.dry; // default
+                                if (recognizedItem.storageType != null) {
+                                  switch (recognizedItem.storageType
+                                      ?.toLowerCase()) {
+                                    case 'refrigerated':
+                                    case 'refrigerado':
+                                      storageType = StorageType.refrigerated;
+                                      break;
+                                    case 'frozen':
+                                    case 'congelado':
+                                      storageType = StorageType.frozen;
+                                      break;
+                                    case 'dry':
+                                    case 'seco':
+                                      storageType = StorageType.dry;
+                                      break;
+                                    default:
+                                      storageType = StorageType.dry;
+                                  }
+                                }
+
+                                // Parse expiration date from recognition result
+                                DateTime? expirationDate;
+                                if (recognizedItem.expiryDate != null &&
+                                    recognizedItem.expiryDate!.isNotEmpty) {
+                                  try {
+                                    expirationDate = DateTime.parse(
+                                      recognizedItem.expiryDate!,
+                                    );
+                                  } catch (e) {
+                                    log(
+                                      'Error parsing expiration date: ${recognizedItem.expiryDate} - $e',
+                                    );
+                                    expirationDate = null;
+                                  }
+                                }
 
                                 return InventoryItem(
                                   id: _uuid.v4(), // Generate a unique ID
@@ -156,31 +192,54 @@ class ScanResultsScreen extends ConsumerWidget {
                                           : '❓', // Use first letter or default emoji
                                   quantity: recognizedItem.quantity.toDouble(),
                                   category: category,
-                                  storageType: defaultStorage,
+                                  storageType:
+                                      storageType, // Use parsed storage type
                                   addedDate: DateTime.now(),
-                                  unitType: 'unidades',
-                                  // expirationDate: null, // TODO: Optionally prompt user for expiration
+                                  unitType:
+                                      recognizedItem.typeUnit ??
+                                      'unidades', // Use recognition unit type
+                                  expirationDate:
+                                      expirationDate, // Use parsed expiration date
+                                  tips:
+                                      recognizedItem
+                                          .tips, // Use recognition tips
                                   // imageUrl: recognizedItem.imageUrl, // Use this if actual image URL available
                                 );
                               }).toList();
 
-                          // Add items to inventory via provider
-                          ref
-                              .read(inventoryProvider.notifier)
-                              .addItems(itemsToAddInventory);
+                          try {
+                            // Use real backend inventory provider to add items
+                            await ref
+                                .read(inventoryRealProvider.notifier)
+                                .addIngredientsToBackend(itemsToAddInventory);
 
-                          // Show feedback
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Ítems agregados al inventario',
-                              ),
-                              backgroundColor: primaryColor,
-                            ),
-                          );
+                            // Show success feedback
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Ingredientes agregados al inventario exitosamente',
+                                  ),
+                                  backgroundColor: primaryColor,
+                                ),
+                              );
 
-                          // Navigate to inventory screen
-                          context.go('/inventory');
+                              // Navigate to inventory screen
+                              context.go('/inventory');
+                            }
+                          } catch (e) {
+                            // Show error feedback
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Error al agregar al inventario: ${e.toString()}',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         }
                         : null, // Disable button if no items have quantity > 0
                 style: ElevatedButton.styleFrom(
@@ -401,7 +460,7 @@ class ScanResultsScreen extends ConsumerWidget {
                           ),
                         ),
                       )
-                      .toList(),
+                      ,
                 ],
               ),
             ),

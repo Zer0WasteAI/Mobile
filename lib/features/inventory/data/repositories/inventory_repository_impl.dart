@@ -35,6 +35,18 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> getInventorySimple() async {
+    try {
+      return await _apiService.getInventorySimple();
+    } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
+      throw Exception(
+        'Failed to get simple inventory: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
   Future<void> updateIngredient(
     String name,
     String addedAt,

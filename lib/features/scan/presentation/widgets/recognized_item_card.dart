@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Assuming AppColors exists
+import 'package:zer0_waste_ai/core/utils/date_extensions.dart';
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/quantity_selector.dart';
 
@@ -183,9 +184,8 @@ class RecognizedItemCard extends StatelessWidget {
                             fontStyle: FontStyle.italic,
                           ),
                           children: [
-                            const TextSpan(text: 'Caduca: '),
                             TextSpan(
-                              text: item.expiryDate!,
+                              text: _formatExpiryDate(item.expiryDate!),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
@@ -232,5 +232,16 @@ class RecognizedItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Helper method to format expiry date using the existing extension
+  String _formatExpiryDate(String expiryDateString) {
+    try {
+      final DateTime expiryDate = DateTime.parse(expiryDateString);
+      return expiryDate.formatExpirationStatus();
+    } catch (e) {
+      // If parsing fails, return the original string or a fallback
+      return expiryDateString;
+    }
   }
 }

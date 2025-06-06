@@ -63,12 +63,30 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           initialTabIndex >= 0 ? initialTabIndex : 0, // Handle potential issues
     );
 
-    // Verificar si hay elementos destacados al iniciar la pantalla
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Refresh inventory data when entering the screen
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Refresh inventory from backend to get latest data
+      try {
+        await ref.read(inventoryRealProvider.notifier).refreshInventory();
+        log('✅ Inventory refreshed from backend successfully');
+
+        // After loading from backend, copy data to the UI provider
+        final realItems = ref.read(inventoryRealProvider).items;
+        // ALWAYS clear and sync, even if backend is empty
+        ref.read(inventoryProvider.notifier).clearAllItems();
+        if (realItems.isNotEmpty) {
+          ref.read(inventoryProvider.notifier).addItems(realItems);
+        }
+        log(
+          '📋 Synced ${realItems.length} items from real provider to UI provider',
+        );
+      } catch (e) {
+        log('❌ Failed to refresh inventory: $e');
+      }
+
+      // Verificar si hay elementos destacados al iniciar la pantalla
       final recentlyAddedIds = ref.read(inventoryProvider).recentlyAddedIds;
-      log(
-        'initState: IDs destacados encontrados: ${recentlyAddedIds.length}',
-      );
+      log('initState: IDs destacados encontrados: ${recentlyAddedIds.length}');
 
       if (recentlyAddedIds.isEmpty) {
         // Si no hay elementos destacados, limpiar cualquier resaltado pendiente
@@ -113,9 +131,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       // Si hay nuevos elementos destacados
       if (newIds.isNotEmpty) {
         // Hacer scroll al último elemento de la lista en lugar de al elemento destacado
-        log(
-          'didUpdateWidget: Haciendo scroll al último elemento de la lista',
-        );
+        log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
         // Esperar un poco para que la UI se actualice completamente
         Future.delayed(Duration(milliseconds: 500), () {
@@ -126,9 +142,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       } else if (_previousRecentlyAddedIds.isEmpty &&
           currentRecentlyAddedIds.isNotEmpty) {
         // Si no hay nuevos elementos específicos pero pasamos de ninguno a algunos
-        log(
-          'didUpdateWidget: Haciendo scroll al último elemento de la lista',
-        );
+        log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
         // Esperar un poco para que la UI se actualice completamente
         Future.delayed(Duration(milliseconds: 500), () {
@@ -225,7 +239,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           }).toList(),
       onTap: (index) {
         final selectedStatus = ExpirationStatus.values[index];
-        inventoryNotifier.setExpirationStatusFilter(selectedStatus);
+        ref
+            .read(inventoryProvider.notifier)
+            .setExpirationStatusFilter(selectedStatus);
       },
     );
 
@@ -240,10 +256,41 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             color: mainTextColor,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: mainTextColor),
+        actions: [
+          // Refresh button
+          IconButton(
+            icon: Icon(Icons.refresh, color: primaryColor),
+            onPressed: () async {
+              try {
+                await ref
+                    .read(inventoryRealProvider.notifier)
+                    .refreshInventory();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Inventario actualizado'),
+                      backgroundColor: primaryColor,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al actualizar: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            },
+            tooltip: 'Actualizar inventario',
+          ),
+        ],
       ),
       body: GestureDetector(
         onTap: () {
@@ -511,7 +558,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                   child: RichText(
                                     text: TextSpan(
                                       style: textTheme.labelMedium?.copyWith(
-                                        color: errorColor.withValues(alpha: 0.9),
+                                        color: errorColor.withValues(
+                                          alpha: 0.9,
+                                        ),
                                       ),
                                       children: [
                                         TextSpan(
@@ -1302,8 +1351,8 @@ Future<void> showBatchSelectorDialog(
                                           isCurrentlySelected
                                               ? primaryColor
                                               : statusColor.withValues(
-                                                  alpha: 0.6,
-                                                ),
+                                                alpha: 0.6,
+                                              ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
