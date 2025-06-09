@@ -29,6 +29,15 @@ class InventoryBackendNotifier {
     await _repository.addIngredients(ingredients);
   }
 
+  /// INFO: Add single item to inventory from recognition results
+  /// USAGE: Pass recognized item data and get back created inventory item
+  /// RETURNS: Map with created item data including ID and timestamps
+  Future<Map<String, dynamic>> addInventoryItem(
+    Map<String, dynamic> item,
+  ) async {
+    return await _repository.addInventoryItem(item);
+  }
+
   /// INFO: Get complete inventory from backend
   /// RETURNS: Map containing full inventory structure
   Future<Map<String, dynamic>> getInventory() async {
@@ -57,10 +66,72 @@ class InventoryBackendNotifier {
     await _repository.deleteIngredient(name, addedAt);
   }
 
+  /// INFO: Update inventory item by ID (universal method for foods/ingredients)
+  /// USAGE: Update any inventory item using its unique ID in the backend
+  Future<void> updateInventoryItem(
+    String itemId,
+    Map<String, dynamic> updateData,
+  ) async {
+    await _repository.updateInventoryItem(itemId, updateData);
+  }
+
+  /// INFO: Delete inventory item by ID (universal method for foods/ingredients)
+  /// USAGE: Delete any inventory item using its unique ID from the backend
+  Future<void> deleteInventoryItem(String itemId) async {
+    await _repository.deleteInventoryItem(itemId);
+  }
+
   /// INFO: Get ingredients expiring within specified days from backend
   /// USAGE: Call with days=7 to get items expiring this week
   /// RETURNS: Complete response object with expiring_items array and metadata
   Future<Map<String, dynamic>> getExpiringItems(int days) async {
     return await _repository.getExpiringItems(days);
+  }
+
+  /// INFO: Get detailed information about a specific ingredient from backend
+  /// USAGE: Get comprehensive ingredient data including AI-generated insights
+  /// RETURNS: Complete ingredient detail with stacks, environmental impact, etc.
+  Future<Map<String, dynamic>> getIngredientDetail(
+    String ingredientName,
+  ) async {
+    return await _repository.getIngredientDetail(ingredientName);
+  }
+
+  /// INFO: Get detailed information about a specific food item from backend
+  /// USAGE: Get comprehensive food data including nutritional analysis, consumption ideas
+  /// IMPORTANT: Use both foodName and addedAt to identify unique food items
+  /// RETURNS: Complete food detail with nutritional data, storage advice, etc.
+  Future<Map<String, dynamic>> getFoodDetail(
+    String foodName,
+    String addedAt,
+  ) async {
+    return await _repository.getFoodDetail(foodName, addedAt);
+  }
+
+  /// INFO: Mark a food item as consumed in the backend
+  /// USAGE: Track food consumption for environmental impact and inventory management
+  /// IMPORTANT: Use exact foodName and addedAt from the food item for unique identification
+  /// RETURNS: Consumption tracking data including remaining portions and environmental impact
+  Future<Map<String, dynamic>> markFoodAsConsumed(
+    String foodName,
+    String addedAt, {
+    double? portions,
+  }) async {
+    return await _repository.markFoodAsConsumed(
+      foodName,
+      addedAt,
+      portions: portions,
+    );
+  }
+
+  /// INFO: Generate a recipe based on available inventory ingredients
+  /// USAGE: Send list of ingredients from user's inventory to get AI-generated recipe
+  /// ADVICE: Include all relevant ingredient details for better recipe generation
+  /// IMPORTANT: Ingredients should include quantity, type_unit, and expiration info
+  /// RETURNS: Complete recipe with ingredients list and cooking instructions
+  Future<Map<String, dynamic>> generateRecipe(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    return await _repository.generateRecipe(ingredients);
   }
 }

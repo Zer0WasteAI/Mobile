@@ -110,6 +110,24 @@ Map<String, dynamic> _$SimilarImageModelToJson(SimilarImageModel instance) =>
       'image_type': instance.imageType,
     };
 
+ImageGenerationStatusModel _$ImageGenerationStatusModelFromJson(
+  Map<String, dynamic> json,
+) => ImageGenerationStatusModel(
+  status: json['status'] as String,
+  taskId: json['task_id'] as String,
+  checkImagesUrl: json['check_images_url'] as String,
+  estimatedTime: json['estimated_time'] as String,
+);
+
+Map<String, dynamic> _$ImageGenerationStatusModelToJson(
+  ImageGenerationStatusModel instance,
+) => <String, dynamic>{
+  'status': instance.status,
+  'task_id': instance.taskId,
+  'check_images_url': instance.checkImagesUrl,
+  'estimated_time': instance.estimatedTime,
+};
+
 BoundingBoxModel _$BoundingBoxModelFromJson(Map<String, dynamic> json) =>
     BoundingBoxModel(
       xMin: (json['x_min'] as num).toInt(),
@@ -136,6 +154,14 @@ IngredientRecognitionResultModel _$IngredientRecognitionResultModelFromJson(
                 RecognizedIngredientModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
+  recognitionId: json['recognition_id'] as String,
+  images:
+      json['images'] == null
+          ? null
+          : ImageGenerationStatusModel.fromJson(
+            json['images'] as Map<String, dynamic>,
+          ),
+  message: json['message'] as String?,
   allergyAlerts:
       (json['allergy_alerts'] as List<dynamic>?)
           ?.map((e) => AllergyAlert.fromJson(e as Map<String, dynamic>))
@@ -150,6 +176,9 @@ Map<String, dynamic> _$IngredientRecognitionResultModelToJson(
   IngredientRecognitionResultModel instance,
 ) => <String, dynamic>{
   'ingredients': instance.ingredients,
+  'recognition_id': instance.recognitionId,
+  'images': instance.images,
+  'message': instance.message,
   'allergy_alerts': instance.allergyAlerts,
   'has_allergens': instance.hasAllergens,
   'processing_time': instance.processingTime,
@@ -167,6 +196,7 @@ RecognizedIngredientModel _$RecognizedIngredientModelFromJson(
   timeUnit: json['time_unit'] as String,
   tips: json['tips'] as String,
   imagePath: json['image_path'] as String?,
+  imageStatus: json['image_status'] as String?,
   expirationDate: json['expiration_date'] as String?,
   addedAt: json['added_at'] as String?,
   allergyAlert: json['allergy_alert'] as bool? ?? false,
@@ -187,6 +217,7 @@ Map<String, dynamic> _$RecognizedIngredientModelToJson(
   'time_unit': instance.timeUnit,
   'tips': instance.tips,
   'image_path': instance.imagePath,
+  'image_status': instance.imageStatus,
   'expiration_date': instance.expirationDate,
   'added_at': instance.addedAt,
   'allergy_alert': instance.allergyAlert,
@@ -201,6 +232,14 @@ FoodRecognitionResultModel _$FoodRecognitionResultModelFromJson(
       (json['foods'] as List<dynamic>)
           .map((e) => RecognizedFoodModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+  recognitionId: json['recognition_id'] as String,
+  images:
+      json['images'] == null
+          ? null
+          : ImageGenerationStatusModel.fromJson(
+            json['images'] as Map<String, dynamic>,
+          ),
+  message: json['message'] as String?,
   allergyAlerts:
       (json['allergy_alerts'] as List<dynamic>?)
           ?.map((e) => AllergyAlert.fromJson(e as Map<String, dynamic>))
@@ -215,6 +254,9 @@ Map<String, dynamic> _$FoodRecognitionResultModelToJson(
   FoodRecognitionResultModel instance,
 ) => <String, dynamic>{
   'foods': instance.foods,
+  'recognition_id': instance.recognitionId,
+  'images': instance.images,
+  'message': instance.message,
   'allergy_alerts': instance.allergyAlerts,
   'has_allergens': instance.hasAllergens,
   'processing_time': instance.processingTime,
@@ -237,6 +279,7 @@ RecognizedFoodModel _$RecognizedFoodModelFromJson(Map<String, dynamic> json) =>
       tips: json['tips'] as String,
       servingQuantity: (json['serving_quantity'] as num).toDouble(),
       imagePath: json['image_path'] as String?,
+      imageStatus: json['image_status'] as String?,
       expirationDate: json['expiration_date'] as String?,
       addedAt: json['added_at'] as String?,
       allergyAlert: json['allergy_alert'] as bool? ?? false,
@@ -262,6 +305,7 @@ Map<String, dynamic> _$RecognizedFoodModelToJson(
   'tips': instance.tips,
   'serving_quantity': instance.servingQuantity,
   'image_path': instance.imagePath,
+  'image_status': instance.imageStatus,
   'expiration_date': instance.expirationDate,
   'added_at': instance.addedAt,
   'allergy_alert': instance.allergyAlert,

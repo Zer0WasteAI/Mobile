@@ -291,19 +291,20 @@ class AppRouter {
         ),
         // Route for Ingredient Detail Screen
         GoRoute(
-          path: '/inventory/ingredient/:itemId', // Define path with parameter
+          path:
+              '/inventory/ingredient/:ingredientName', // Define path with parameter
           name: ingredientDetailRouteName,
           builder: (context, state) {
-            final itemId = state.pathParameters['itemId'];
-            if (itemId == null) {
+            final ingredientName = state.pathParameters['ingredientName'];
+            if (ingredientName == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/inventory');
               });
               return const Scaffold(
-                body: Center(child: Text('Item ID missing')),
+                body: Center(child: Text('Ingredient name missing')),
               );
             }
-            return IngredientDetailScreen(itemId: itemId);
+            return IngredientDetailScreen(ingredientName: ingredientName);
           },
         ),
         // Route for Food Detail Screen
@@ -320,7 +321,20 @@ class AppRouter {
                 body: Center(child: Text('Item ID missing')),
               );
             }
-            return FoodDetailScreen(itemId: itemId);
+            // Parse the itemId to extract foodName and addedAt
+            // Expected format: "foodName_addedAt" (from FoodDetail.uniqueId)
+            final parts = itemId.split('_');
+            if (parts.length < 2) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: const Center(child: Text('Invalid food ID format')),
+              );
+            }
+            final foodName = parts[0];
+            final addedAt = parts
+                .sublist(1)
+                .join('_'); // In case addedAt contains underscores
+            return FoodDetailScreen(foodName: foodName, addedAt: addedAt);
           },
         ),
         // Route for AI Recipe Generation Screen

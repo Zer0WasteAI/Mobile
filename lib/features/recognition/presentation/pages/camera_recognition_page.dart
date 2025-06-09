@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
+import 'package:zer0_waste_ai/features/recognition/utils/recognition_to_inventory_converter.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 
 class CameraRecognitionPage extends ConsumerStatefulWidget {
   const CameraRecognitionPage({super.key});
@@ -214,6 +217,41 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                 ),
               ),
 
+            // 🆕 Status message for async image generation
+            if (recognitionState.statusMessage != null)
+              Card(
+                color: _getStatusColor(recognitionState.imageGenerationStatus),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      _getStatusIcon(recognitionState.imageGenerationStatus),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          recognitionState.statusMessage!,
+                          style: TextStyle(
+                            color: _getStatusTextColor(
+                              recognitionState.imageGenerationStatus,
+                            ),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (recognitionState.imageGenerationStatus ==
+                          'generating')
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 8),
+
             // Results display
             if (recognitionState.result != null)
               Expanded(
@@ -237,6 +275,22 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const Spacer(),
+                            if (recognitionState.taskId != null &&
+                                recognitionState.imageGenerationStatus ==
+                                    'generating')
+                              TextButton.icon(
+                                onPressed: () {
+                                  ref
+                                      .read(recognitionProvider.notifier)
+                                      .checkImageGenerationStatus();
+                                },
+                                icon: const Icon(Icons.refresh, size: 16),
+                                label: const Text('Verificar estado'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.blue,
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -249,6 +303,29 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                                   recognitionState
                                       .result!
                                       .recognizedItems[index];
+
+                              // 🆕 Detectar el tipo de resultado para obtener imageStatus
+                              String? imageStatus;
+                              if (recognitionState.result
+                                  is IngredientRecognitionResultModel) {
+                                final ingredients =
+                                    (recognitionState.result
+                                            as IngredientRecognitionResultModel)
+                                        .ingredients;
+                                if (index < ingredients.length) {
+                                  imageStatus = ingredients[index].imageStatus;
+                                }
+                              } else if (recognitionState.result
+                                  is FoodRecognitionResultModel) {
+                                final foods =
+                                    (recognitionState.result
+                                            as FoodRecognitionResultModel)
+                                        .foods;
+                                if (index < foods.length) {
+                                  imageStatus = foods[index].imageStatus;
+                                }
+                              }
+
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 child: ListTile(
@@ -265,16 +342,97 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                                       ),
                                     ),
                                   ),
-                                  title: Text(
-                                    item.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  title: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          item.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      // 🆕 Indicador del estado de imagen
+                                      if (imageStatus != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(imageStatus),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: _getStatusTextColor(
+                                                imageStatus,
+                                              ),
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                _getImageStatusIcon(
+                                                  imageStatus,
+                                                ),
+                                                size: 12,
+                                                color: _getStatusTextColor(
+                                                  imageStatus,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _getImageStatusText(
+                                                  imageStatus,
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: _getStatusTextColor(
+                                                    imageStatus,
+                                                  ),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                   subtitle: Text('Categoría: ${item.category}'),
-                                  trailing: Icon(
-                                    _getConfidenceIcon(item.confidence),
-                                    color: _getConfidenceColor(item.confidence),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Confidence indicator
+                                      Icon(
+                                        _getConfidenceIcon(item.confidence),
+                                        color: _getConfidenceColor(
+                                          item.confidence,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      // Add to inventory button
+                                      ElevatedButton.icon(
+                                        onPressed:
+                                            () => _addToInventory(item, index),
+                                        icon: const Icon(
+                                          Icons.add_shopping_cart,
+                                          size: 16,
+                                        ),
+                                        label: const Text('Agregar'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          minimumSize: const Size(0, 32),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );
@@ -307,6 +465,89 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
         ),
       ),
     );
+  }
+
+  /// INFO: Add recognized item to inventory
+  /// USAGE: Converts recognition result to inventory format and adds to backend
+  Future<void> _addToInventory(RecognizedItemModel item, int index) async {
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => const AlertDialog(
+              content: Row(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 16),
+                  Text('Agregando al inventario...'),
+                ],
+              ),
+            ),
+      );
+
+      // Get the actual recognized item (ingredient or food)
+      dynamic recognizedItem;
+      final recognitionState = ref.read(recognitionProvider);
+
+      if (recognitionState.result is IngredientRecognitionResultModel) {
+        final ingredients =
+            (recognitionState.result as IngredientRecognitionResultModel)
+                .ingredients;
+        if (index < ingredients.length) {
+          recognizedItem = ingredients[index];
+        }
+      } else if (recognitionState.result is FoodRecognitionResultModel) {
+        final foods =
+            (recognitionState.result as FoodRecognitionResultModel).foods;
+        if (index < foods.length) {
+          recognizedItem = foods[index];
+        }
+      }
+
+      if (recognizedItem == null) {
+        throw Exception('No se pudo obtener el item reconocido');
+      }
+
+      // Convert to inventory format using smart converter
+      final inventoryItemData =
+          RecognitionToInventoryConverter.smartConvertToInventoryItem(
+            recognizedItem,
+          );
+
+      // Add to inventory via backend
+      final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
+      await inventoryNotifier.addSingleItemToInventory(inventoryItemData);
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ "${item.name}" agregado al inventario'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error al agregar "${item.name}": $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -365,5 +606,71 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
     if (confidence >= 0.8) return Icons.check_circle;
     if (confidence >= 0.6) return Icons.warning;
     return Icons.error;
+  }
+
+  // 🆕 NUEVO: Helpers para el estado de generación asíncrona
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'generating':
+        return Colors.blue.shade50;
+      case 'generated':
+        return Colors.green.shade50;
+      case 'failed':
+        return Colors.red.shade50;
+      default:
+        return Colors.grey.shade50;
+    }
+  }
+
+  Icon _getStatusIcon(String? status) {
+    switch (status) {
+      case 'generating':
+        return Icon(Icons.auto_awesome, color: Colors.blue.shade600);
+      case 'generated':
+        return Icon(Icons.check_circle, color: Colors.green.shade600);
+      case 'failed':
+        return Icon(Icons.error, color: Colors.red.shade600);
+      default:
+        return Icon(Icons.info, color: Colors.grey.shade600);
+    }
+  }
+
+  Color _getStatusTextColor(String? status) {
+    switch (status) {
+      case 'generating':
+        return Colors.blue.shade700;
+      case 'generated':
+        return Colors.green.shade700;
+      case 'failed':
+        return Colors.red.shade700;
+      default:
+        return Colors.grey.shade700;
+    }
+  }
+
+  IconData _getImageStatusIcon(String status) {
+    switch (status) {
+      case 'generating':
+        return Icons.hourglass_empty;
+      case 'generated':
+        return Icons.image;
+      case 'failed':
+        return Icons.broken_image;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _getImageStatusText(String status) {
+    switch (status) {
+      case 'generating':
+        return 'Generando';
+      case 'generated':
+        return 'Imagen lista';
+      case 'failed':
+        return 'Error';
+      default:
+        return 'Desconocido';
+    }
   }
 }

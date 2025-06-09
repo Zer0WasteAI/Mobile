@@ -669,27 +669,35 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         item.category == ItemCategory.ingredient;
                     final bool isFood = item.category == ItemCategory.food;
 
+                    // Check if item is expired to determine if we should show the delete action
+                    final bool isExpired = _isItemExpired(item);
+
                     return Slidable(
                       key: ValueKey(item.id),
-                      endActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        extentRatio: 0.25,
-                        children: [
-                          SlidableAction(
-                            onPressed:
-                                (context) => _showDeleteConfirmationDialog(
-                                  context,
-                                  item,
-                                  ref,
-                                ),
-                            backgroundColor: AppColors.error,
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete_outline,
-                            label: 'Eliminar',
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                        ],
-                      ),
+                      // Only show delete action if item is NOT expired
+                      endActionPane:
+                          isExpired
+                              ? null
+                              : ActionPane(
+                                motion: const ScrollMotion(),
+                                extentRatio: 0.25,
+                                children: [
+                                  SlidableAction(
+                                    onPressed:
+                                        (context) =>
+                                            _showDeleteConfirmationDialog(
+                                              context,
+                                              item,
+                                              ref,
+                                            ),
+                                    backgroundColor: AppColors.error,
+                                    foregroundColor: Colors.white,
+                                    icon: Icons.delete_outline,
+                                    label: 'Eliminar',
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                ],
+                              ),
                       child: GestureDetector(
                         onTap: () {
                           if (isIngredient) {
@@ -728,6 +736,13 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     );
   }
 
+  // Helper to check if item is expired
+  bool _isItemExpired(InventoryItem item) {
+    if (item.expirationDate == null) return false;
+    final status = ExpirationStatusExtension.fromDate(item.expirationDate);
+    return status == ExpirationStatus.expired;
+  }
+
   Future<void> _showDeleteConfirmationDialog(
     BuildContext context,
     InventoryItem item,
@@ -745,9 +760,31 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     );
 
     if (confirmed && context.mounted) {
-      ref.read(inventoryProvider.notifier).removeItem(item.id);
-      // Usar wrapper seguro para SnackBar
-      showSimpleSnackBar(context, '${item.name} eliminado del inventario');
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      try {
+        // Use the correct provider with backend synchronization
+        await ref.read(inventoryRealProvider.notifier).removeItem(item.id);
+
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Hide loading
+          // Usar wrapper seguro para SnackBar
+          showSimpleSnackBar(
+            context,
+            '✅ ${item.name} eliminado del inventario',
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Hide loading
+          showSimpleSnackBar(context, '❌ Error: ${e.toString()}');
+        }
+      }
     }
   }
 
@@ -1163,14 +1200,17 @@ Future<void> showQuantityEditDialog(
             primaryAction: AppDialog.createPrimaryButton(
               context: context,
               text: 'Guardar',
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   final double newQuantity = double.parse(
                     quantityController.text,
                   );
-                  ref
-                      .read(inventoryProvider.notifier)
-                      .setQuantity(item.id, newQuantity);
+
+                  // Use the real backend provider for persistence
+                  await ref
+                      .read(inventoryRealProvider.notifier)
+                      .updateItemQuantityInBackend(item.id, newQuantity);
+
                   Navigator.of(dialogContext).pop();
                 }
               },

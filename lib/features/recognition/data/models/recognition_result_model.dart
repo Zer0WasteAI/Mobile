@@ -305,6 +305,62 @@ class SimilarImageModel {
 }
 
 @JsonSerializable()
+class ImageGenerationStatusModel {
+  final String status; // 🆕 generating, generated, failed
+  @JsonKey(name: 'task_id')
+  final String taskId; // 🆕 ID para seguimiento
+  @JsonKey(name: 'check_images_url')
+  final String checkImagesUrl; // 🆕 URL para consultar estado
+  @JsonKey(name: 'estimated_time')
+  final String estimatedTime; // 🆕 Tiempo estimado
+
+  const ImageGenerationStatusModel({
+    required this.status,
+    required this.taskId,
+    required this.checkImagesUrl,
+    required this.estimatedTime,
+  });
+
+  factory ImageGenerationStatusModel.fromJson(Map<String, dynamic> json) =>
+      _$ImageGenerationStatusModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ImageGenerationStatusModelToJson(this);
+
+  ImageGenerationStatusModel copyWith({
+    String? status,
+    String? taskId,
+    String? checkImagesUrl,
+    String? estimatedTime,
+  }) {
+    return ImageGenerationStatusModel(
+      status: status ?? this.status,
+      taskId: taskId ?? this.taskId,
+      checkImagesUrl: checkImagesUrl ?? this.checkImagesUrl,
+      estimatedTime: estimatedTime ?? this.estimatedTime,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ImageGenerationStatusModel &&
+        other.status == status &&
+        other.taskId == taskId &&
+        other.checkImagesUrl == checkImagesUrl &&
+        other.estimatedTime == estimatedTime;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(status, taskId, checkImagesUrl, estimatedTime);
+
+  @override
+  String toString() {
+    return 'ImageGenerationStatusModel(status: $status, taskId: $taskId, checkImagesUrl: $checkImagesUrl, estimatedTime: $estimatedTime)';
+  }
+}
+
+@JsonSerializable()
 class BoundingBoxModel {
   @JsonKey(name: 'x_min')
   final int xMin;
@@ -331,6 +387,10 @@ class BoundingBoxModel {
 @JsonSerializable()
 class IngredientRecognitionResultModel {
   final List<RecognizedIngredientModel> ingredients;
+  @JsonKey(name: 'recognition_id')
+  final String recognitionId; // 🆕 ID único del reconocimiento
+  final ImageGenerationStatusModel? images; // 🆕 Estado de generación asíncrona
+  final String? message; // 🆕 Mensaje descriptivo del estado
   @JsonKey(name: 'allergy_alerts', defaultValue: [])
   final List<AllergyAlert> allergyAlerts;
   @JsonKey(name: 'has_allergens', defaultValue: false)
@@ -342,6 +402,9 @@ class IngredientRecognitionResultModel {
 
   const IngredientRecognitionResultModel({
     required this.ingredients,
+    required this.recognitionId,
+    this.images,
+    this.message,
     this.allergyAlerts = const [],
     this.hasAllergens = false,
     this.processingTime,
@@ -371,6 +434,8 @@ class RecognizedIngredientModel {
   final String tips;
   @JsonKey(name: 'image_path')
   final String? imagePath;
+  @JsonKey(name: 'image_status')
+  final String? imageStatus; // 🆕 generating, generated, failed
   @JsonKey(name: 'expiration_date')
   final String? expirationDate;
   @JsonKey(name: 'added_at')
@@ -390,6 +455,7 @@ class RecognizedIngredientModel {
     required this.timeUnit,
     required this.tips,
     this.imagePath,
+    this.imageStatus,
     this.expirationDate,
     this.addedAt,
     this.allergyAlert = false,
@@ -406,6 +472,10 @@ class RecognizedIngredientModel {
 @JsonSerializable()
 class FoodRecognitionResultModel {
   final List<RecognizedFoodModel> foods;
+  @JsonKey(name: 'recognition_id')
+  final String recognitionId; // 🆕 ID único del reconocimiento
+  final ImageGenerationStatusModel? images; // 🆕 Estado de generación asíncrona
+  final String? message; // 🆕 Mensaje descriptivo del estado
   @JsonKey(name: 'allergy_alerts', defaultValue: [])
   final List<AllergyAlert> allergyAlerts;
   @JsonKey(name: 'has_allergens', defaultValue: false)
@@ -417,6 +487,9 @@ class FoodRecognitionResultModel {
 
   const FoodRecognitionResultModel({
     required this.foods,
+    required this.recognitionId,
+    this.images,
+    this.message,
     this.allergyAlerts = const [],
     this.hasAllergens = false,
     this.processingTime,
@@ -448,6 +521,8 @@ class RecognizedFoodModel {
   final double servingQuantity;
   @JsonKey(name: 'image_path')
   final String? imagePath;
+  @JsonKey(name: 'image_status')
+  final String? imageStatus; // 🆕 generating, generated, failed
   @JsonKey(name: 'expiration_date')
   final String? expirationDate;
   @JsonKey(name: 'added_at')
@@ -470,6 +545,7 @@ class RecognizedFoodModel {
     required this.tips,
     required this.servingQuantity,
     this.imagePath,
+    this.imageStatus,
     this.expirationDate,
     this.addedAt,
     this.allergyAlert = false,

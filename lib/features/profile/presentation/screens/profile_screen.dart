@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, no_leading_underscores_for_local_identifiers
+// ignore_for_file: unused_local_variable, no_leading_underscores_for_local_identifiers, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -259,6 +259,7 @@ class ProfileScreen extends ConsumerWidget {
                               print(
                                 '  🎯 INITIAL PREFERENCES COMPLETED: ${user.initialPreferencesCompleted}',
                               );
+                              // ignore: unnecessary_null_comparison
                               print('  Prefs exists: ${user.prefs != null}');
 
                               final prefs = user.prefs;

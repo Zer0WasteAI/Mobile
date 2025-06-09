@@ -20,6 +20,11 @@ class RecognitionState {
   // 🆕 NUEVO: Campos para alertas de alergia según CAMBIOS_ENDPOINTS.md
   final List<AllergyAlert> allergyAlerts;
   final bool hasAllergens;
+  // 🆕 NUEVO: Campos para generación asíncrona de imágenes
+  final String? recognitionId;
+  final String? taskId;
+  final String? imageGenerationStatus; // generating, generated, failed
+  final String? statusMessage;
 
   const RecognitionState({
     this.isLoading = false,
@@ -28,6 +33,10 @@ class RecognitionState {
     this.uploadedImagePaths = const [],
     this.allergyAlerts = const [],
     this.hasAllergens = false,
+    this.recognitionId,
+    this.taskId,
+    this.imageGenerationStatus,
+    this.statusMessage,
   });
 
   RecognitionState copyWith({
@@ -37,6 +46,10 @@ class RecognitionState {
     List<String>? uploadedImagePaths,
     List<AllergyAlert>? allergyAlerts,
     bool? hasAllergens,
+    String? recognitionId,
+    String? taskId,
+    String? imageGenerationStatus,
+    String? statusMessage,
   }) {
     return RecognitionState(
       isLoading: isLoading ?? this.isLoading,
@@ -45,6 +58,11 @@ class RecognitionState {
       uploadedImagePaths: uploadedImagePaths ?? this.uploadedImagePaths,
       allergyAlerts: allergyAlerts ?? this.allergyAlerts,
       hasAllergens: hasAllergens ?? this.hasAllergens,
+      recognitionId: recognitionId ?? this.recognitionId,
+      taskId: taskId ?? this.taskId,
+      imageGenerationStatus:
+          imageGenerationStatus ?? this.imageGenerationStatus,
+      statusMessage: statusMessage ?? this.statusMessage,
     );
   }
 }
@@ -80,38 +98,46 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     }
   }
 
-  // 🆕 ACTUALIZADO: Recognize foods from uploaded images with allergy support
+  // 🆕 ACTUALIZADO: Recognize foods from uploaded images with allergy + async support
   Future<void> recognizeFoods(List<String> imagePaths) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
       final result = await _repository.recognizeFoods(imagePaths);
 
-      // 🆕 Extraer alertas de alergia del resultado
+      // 🆕 Extraer información de generación asíncrona
       state = state.copyWith(
         isLoading: false,
         result: result,
         allergyAlerts: result.allergyAlerts,
         hasAllergens: result.hasAllergens,
+        recognitionId: result.recognitionId,
+        taskId: result.images?.taskId,
+        imageGenerationStatus: result.images?.status,
+        statusMessage: result.message,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  // 🆕 ACTUALIZADO: Recognize ingredients from uploaded images with allergy support
+  // 🆕 ACTUALIZADO: Recognize ingredients from uploaded images with allergy + async support
   Future<void> recognizeIngredients(List<String> imagePaths) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
       final result = await _repository.recognizeIngredients(imagePaths);
 
-      // 🆕 Extraer alertas de alergia del resultado
+      // 🆕 Extraer información de generación asíncrona
       state = state.copyWith(
         isLoading: false,
         result: result,
         allergyAlerts: result.allergyAlerts,
         hasAllergens: result.hasAllergens,
+        recognitionId: result.recognitionId,
+        taskId: result.images?.taskId,
+        imageGenerationStatus: result.images?.status,
+        statusMessage: result.message,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -174,6 +200,74 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
       state = state.copyWith(error: e.toString());
       return [];
     }
+  }
+
+  // 🆕 NUEVO: Verificar estado de generación de imágenes
+  Future<void> checkImageGenerationStatus() async {
+    if (state.taskId == null) return;
+
+    try {
+      final statusResult = await _repository.getImageStatus(state.taskId);
+
+      final status = statusResult['status'] as String?;
+      final message = statusResult['message'] as String?;
+
+      state = state.copyWith(
+        imageGenerationStatus: status,
+        statusMessage: message,
+      );
+
+      // Si las imágenes ya están generadas, actualizar los elementos en result
+      if (status == 'generated' && state.result != null) {
+        _updateResultWithGeneratedImages(statusResult);
+      }
+    } catch (e) {
+      state = state.copyWith(
+        imageGenerationStatus: 'failed',
+        statusMessage: 'Error al verificar estado de imágenes: $e',
+      );
+    }
+  }
+
+  // 🆕 NUEVO: Actualizar resultado con imágenes generadas
+  void _updateResultWithGeneratedImages(Map<String, dynamic> statusResult) {
+    final result = state.result;
+    if (result is IngredientRecognitionResultModel) {
+      // Actualizar image_status de los ingredientes
+      final updatedIngredients =
+          result.ingredients.map((ingredient) {
+            return RecognizedIngredientModel(
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              typeUnit: ingredient.typeUnit,
+              storageType: ingredient.storageType,
+              expirationTime: ingredient.expirationTime,
+              timeUnit: ingredient.timeUnit,
+              tips: ingredient.tips,
+              imagePath: ingredient.imagePath,
+              imageStatus: 'generated', // 🆕 Actualizar estado
+              expirationDate: ingredient.expirationDate,
+              addedAt: ingredient.addedAt,
+              allergyAlert: ingredient.allergyAlert,
+              allergens: ingredient.allergens,
+              confidence: ingredient.confidence,
+            );
+          }).toList();
+
+      final updatedResult = IngredientRecognitionResultModel(
+        ingredients: updatedIngredients,
+        recognitionId: result.recognitionId,
+        images: result.images?.copyWith(status: 'generated'),
+        message: '✅ Imágenes generadas exitosamente',
+        allergyAlerts: result.allergyAlerts,
+        hasAllergens: result.hasAllergens,
+        processingTime: result.processingTime,
+        totalDetected: result.totalDetected,
+      );
+
+      state = state.copyWith(result: updatedResult);
+    }
+    // Similar para FoodRecognitionResultModel si es necesario
   }
 
   // 🆕 NUEVO: Simular reconocimiento con alertas de alergia para testing

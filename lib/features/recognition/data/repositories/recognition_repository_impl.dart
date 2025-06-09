@@ -249,4 +249,43 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       );
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> getRecognitionHistory() async {
+    try {
+      return await _apiService.getRecognitionHistory();
+    } catch (e) {
+      throw Exception(
+        'Failed to get recognition history: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> submitRecognitionFeedback({
+    required String recognitionId,
+    required String feedback,
+  }) async {
+    try {
+      return await _apiService.submitRecognitionFeedback(
+        recognitionId: recognitionId,
+        feedback: feedback,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to submit recognition feedback: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getImageStatus(String? taskId) async {
+    try {
+      return await _apiService.getImageStatus(taskId);
+    } catch (e) {
+      throw Exception(
+        'Failed to get image status: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
 }

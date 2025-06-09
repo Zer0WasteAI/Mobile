@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension
+import 'package:zer0_waste_ai/features/inventory/presentation/widgets/expired_item_actions_bottom_sheet.dart';
 // Import ItemCategory
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // Import for _showQuantityEditDialog
 
@@ -41,7 +43,9 @@ class InventoryItemCard extends ConsumerWidget {
     final differenceInDays = expirationDay.difference(today).inDays;
 
     if (differenceInDays < 0) return AppColors.error.withValues(alpha: 0.15);
-    if (differenceInDays <= 3) return expirationWarningColor.withValues(alpha: 0.3);
+    if (differenceInDays <= 3) {
+      return expirationWarningColor.withValues(alpha: 0.3);
+    }
     return Colors.transparent;
   }
 
@@ -110,16 +114,11 @@ class InventoryItemCard extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                // Image/Emoji
+                // Image/Emoji with real image support
                 SizedBox(
                   width: 36, // Reduced width
                   height: 36, // Reduced height
-                  child: Center(
-                    child: Text(
-                      item.image, // Display emoji directly
-                      style: const TextStyle(fontSize: 24), // Smaller emoji
-                    ),
-                  ),
+                  child: _buildItemImage(item),
                 ),
                 const SizedBox(width: 8.0), // Reduced spacing
                 // Item Details
@@ -340,8 +339,111 @@ class InventoryItemCard extends ConsumerWidget {
         // Etiqueta "Nuevo" animada
         if (isHighlighted)
           Positioned(top: 0, right: 0, child: PulsingNewBadge()),
+
+        // Botón de acciones para items expirados
+        if (_isItemExpired(item))
+          Positioned(
+            top: 8,
+            left: 8,
+            child: _buildExpiredActionButton(context),
+          ),
       ],
     );
+  }
+
+  // Helper to check if item is expired
+  bool _isItemExpired(InventoryItem item) {
+    if (item.expirationDate == null) return false;
+    final status = ExpirationStatusExtension.fromDate(item.expirationDate);
+    return status == ExpirationStatus.expired;
+  }
+
+  // Helper to build expired action button
+  Widget _buildExpiredActionButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder:
+              (context) => ExpiredItemActionsBottomSheet(
+                expiredItem: item,
+                onActionCompleted: () {
+                  // Refresh the parent view if needed
+                },
+              ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.error.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.warning_outlined,
+          color: Colors.white,
+          size: 16,
+        ),
+      ),
+    );
+  }
+
+  // Helper to build item image with fallback to emoji
+  Widget _buildItemImage(InventoryItem item) {
+    // If item has a real image URL and it's not null
+    if (item.imageUrl != null && item.imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.network(
+          item.imageUrl!,
+          width: 36,
+          height: 36,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.grey.shade400,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            // If image fails to load, show emoji as fallback
+            return Center(
+              child: Text(item.image, style: const TextStyle(fontSize: 24)),
+            );
+          },
+        ),
+      );
+    } else {
+      // No image URL available, show emoji
+      return Center(
+        child: Text(item.image, style: const TextStyle(fontSize: 24)),
+      );
+    }
   }
 
   // Helper to format quantity display

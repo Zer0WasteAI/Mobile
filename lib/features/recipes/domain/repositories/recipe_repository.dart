@@ -25,4 +25,9 @@ abstract class RecipeRepository {
   /// INFO: Get all user's saved/favorite recipes
   /// RETURNS: Map containing array of saved recipes
   Future<Map<String, dynamic>> getSavedRecipes();
+
+  /// INFO: Get specific recipe by ID
+  /// USAGE: Retrieve detailed information about a specific recipe
+  /// RETURNS: Complete recipe object with all details
+  Future<Map<String, dynamic>> getRecipeById(String recipeId);
 }

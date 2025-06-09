@@ -13,8 +13,37 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
     try {
+      // INFO: Get current inventory items to send to recipe generation
+      final inventoryResponse = await _apiService.getInventory();
+      final inventoryItems = inventoryResponse['items'] as List<dynamic>;
+
+      // INFO: Convert inventory items to the format expected by recipe generation
+      final ingredients =
+          inventoryItems.map((item) {
+            final itemMap = item as Map<String, dynamic>;
+            return {
+              'name': itemMap['name'],
+              'quantity': itemMap['quantity'],
+              'type_unit': itemMap['type_unit'],
+              'storage_type': itemMap['storage_type'],
+              'expiration_time': itemMap['expiration_time'],
+              'time_unit': itemMap['time_unit'],
+              'tips': itemMap['tips'],
+              'image_path': itemMap['image_path'],
+              'image_status': itemMap['image_status'],
+              'added_at': itemMap['added_at'],
+              'expiration_date': itemMap['expiration_date'],
+              'confidence': itemMap['confidence'],
+              'allergy_alert': itemMap['allergy_alert'],
+              'allergens': itemMap['allergens'],
+            };
+          }).toList();
+
       // INFO: AI analyzes current inventory to suggest optimal recipes
-      return await _apiService.generateRecipesFromInventory();
+      final response = await _apiService.generateRecipe(ingredients);
+
+      // INFO: Return the recipe in a list format for compatibility
+      return [response['recipe']];
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
@@ -68,6 +97,19 @@ class RecipeRepositoryImpl implements RecipeRepository {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to get saved recipes: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRecipeById(String recipeId) async {
+    try {
+      // INFO: Retrieve specific recipe details by ID
+      return await _apiService.getRecipeById(recipeId);
+    } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
+      throw Exception(
+        'Failed to get recipe by ID: ${_apiService.getErrorMessage(e)}',
       );
     }
   }

@@ -62,4 +62,19 @@ abstract class RecognitionRepository {
     String? label,
     String? category,
   });
+
+  /// Get recognition history
+  /// Returns past recognition sessions with all detected items
+  Future<Map<String, dynamic>> getRecognitionHistory();
+
+  /// Submit feedback on recognition results
+  /// Helps improve AI recognition accuracy
+  Future<Map<String, dynamic>> submitRecognitionFeedback({
+    required String recognitionId,
+    required String feedback,
+  });
+
+  /// Check image processing status
+  /// Monitor the status of background image generation tasks
+  Future<Map<String, dynamic>> getImageStatus(String? taskId);
 }

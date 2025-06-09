@@ -448,6 +448,33 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     loadInventoryFromBackend();
   }
 
+  // Helper methods for quantity logic (shared with local notifier)
+  double getQuantityStep(String unitType) {
+    switch (unitType.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+        return 0.1;
+      case 'unidades':
+      default:
+        return 1.0;
+    }
+  }
+
+  double getMinimumQuantity(String unitType) {
+    switch (unitType.toLowerCase()) {
+      case 'kg':
+      case 'g':
+      case 'lt':
+      case 'ml':
+        return 0.1;
+      case 'unidades':
+      default:
+        return 1.0;
+    }
+  }
+
   /// Load inventory from real backend
   Future<void> loadInventoryFromBackend() async {
     log('🔄 DEBUG - Starting loadInventoryFromBackend');
@@ -483,6 +510,26 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       await loadInventoryFromBackend();
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  /// INFO: Add single item to inventory from recognition results
+  /// USAGE: Direct API call to add individual item to backend inventory
+  Future<Map<String, dynamic>> addSingleItemToInventory(
+    Map<String, dynamic> itemData,
+  ) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _backendNotifier.addInventoryItem(itemData);
+
+      // Reload inventory after adding
+      await loadInventoryFromBackend();
+
+      return result;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      rethrow;
     }
   }
 
@@ -550,6 +597,117 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     state = state.copyWith(errorMessage: null);
   }
 
+  /// Remove item from inventory (with backend synchronization)
+  /// Uses the universal DELETE /api/inventory/items/:id endpoint
+  Future<void> removeItem(String itemId) async {
+    // 1. Remove from local state immediately for responsiveness
+    final updatedItems =
+        state.items.where((item) => item.id != itemId).toList();
+    state = state.copyWith(items: updatedItems);
+
+    try {
+      // 2. Sync with backend using the universal deletion endpoint
+      await _backendNotifier.deleteInventoryItem(itemId);
+      log('✅ Item deleted from backend successfully: $itemId');
+    } catch (e) {
+      log('❌ Failed to delete item from backend: $e');
+
+      // 3. Restore item if backend deletion failed
+      await loadInventoryFromBackend(); // Reload to restore accurate state
+      state = state.copyWith(
+        errorMessage: 'Failed to delete item: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Update item quantity in backend (async operation)
+  Future<void> updateItemQuantityInBackend(
+    String itemId,
+    double newQuantity,
+  ) async {
+    // 1. Update local state immediately for responsiveness
+    final originalItem = state.items.firstWhere((item) => item.id == itemId);
+    final minimum = getMinimumQuantity(originalItem.unitType);
+    final clampedQuantity = newQuantity.clamp(minimum, double.infinity);
+
+    final updatedItems =
+        state.items.map((item) {
+          if (item.id == itemId) {
+            return item.copyWith(quantity: clampedQuantity);
+          }
+          return item;
+        }).toList();
+    state = state.copyWith(items: updatedItems);
+
+    try {
+      // 2. Sync with backend
+      final updateData = _convertItemToAPI(
+        originalItem.copyWith(quantity: clampedQuantity),
+      );
+      await _backendNotifier.updateInventoryItem(itemId, updateData);
+      log('✅ Item quantity updated in backend: $itemId -> $clampedQuantity');
+    } catch (e) {
+      log('❌ Failed to update quantity in backend: $e');
+
+      // 3. Rollback if backend update failed
+      await loadInventoryFromBackend(); // Restore accurate state
+      state = state.copyWith(
+        errorMessage: 'Failed to update quantity: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Update expiration date in backend (async operation)
+  Future<void> updateExpirationDateInBackend(
+    String itemId,
+    DateTime newDate,
+  ) async {
+    // 1. Update local state immediately
+    final originalItem = state.items.firstWhere((item) => item.id == itemId);
+    final updatedItems =
+        state.items.map((item) {
+          if (item.id == itemId) {
+            return item.copyWith(expirationDate: newDate);
+          }
+          return item;
+        }).toList();
+    state = state.copyWith(items: updatedItems);
+
+    try {
+      // 2. Sync with backend
+      final updateData = _convertItemToAPI(
+        originalItem.copyWith(expirationDate: newDate),
+      );
+      await _backendNotifier.updateInventoryItem(itemId, updateData);
+      log('✅ Item expiration date updated in backend: $itemId -> $newDate');
+    } catch (e) {
+      log('❌ Failed to update expiration date in backend: $e');
+
+      // 3. Rollback if backend update failed
+      await loadInventoryFromBackend(); // Restore accurate state
+      state = state.copyWith(
+        errorMessage: 'Failed to update expiration date: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Update complete item in backend (async operation)
+  Future<void> updateItemInBackend(InventoryItem updatedItem) async {
+    try {
+      final updateData = _convertItemToAPI(updatedItem);
+      await _backendNotifier.updateInventoryItem(updatedItem.id, updateData);
+
+      // Reload inventory after updating
+      await loadInventoryFromBackend();
+      log('✅ Item updated in backend successfully: ${updatedItem.id}');
+    } catch (e) {
+      log('❌ Failed to update item in backend: $e');
+      state = state.copyWith(
+        errorMessage: 'Failed to update item: ${e.toString()}',
+      );
+    }
+  }
+
   /// Refresh inventory data from backend manually
   /// Use this when entering inventory screen or after significant changes
   Future<void> refreshInventory() async {
@@ -557,43 +715,30 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   }
 
   /// Convert API inventory data to InventoryItem list
+  /// UPDATED: Parse according to README.md structure: {"items": [...]}
   List<InventoryItem> _parseInventoryFromAPI(Map<String, dynamic> data) {
     final List<InventoryItem> items = [];
 
     // DEBUG: Log raw API response
     log('🔍 DEBUG - Raw API response: $data');
 
-    // API returns: {"ingredients": [{"name": "...", "stacks": [...], ...}]}
-    final ingredients = data['ingredients'] as List<dynamic>? ?? [];
+    // API returns: {"items": [{"id": "...", "name": "...", "image_path": null, "image_status": "generated", ...}]}
+    final apiItems = data['items'] as List<dynamic>? ?? [];
 
-    // DEBUG: Log ingredients array
-    log('🔍 DEBUG - Ingredients found: ${ingredients.length}');
-    log('🔍 DEBUG - Ingredients data: $ingredients');
+    // DEBUG: Log items array
+    log('🔍 DEBUG - Items found: ${apiItems.length}');
+    log('🔍 DEBUG - Items data: $apiItems');
 
-    for (final ingredientData in ingredients) {
-      final ingredient = ingredientData as Map<String, dynamic>;
-      final name = ingredient['name'] ?? 'Ingrediente';
-      final stacks = ingredient['stacks'] as List<dynamic>? ?? [];
+    for (final itemData in apiItems) {
+      final itemMap = itemData as Map<String, dynamic>;
+      log('🔍 DEBUG - Processing item: $itemMap');
 
-      // DEBUG: Log each ingredient processing
-      log(
-        '🔍 DEBUG - Processing ingredient: $name with ${stacks.length} stacks',
-      );
-      log('🔍 DEBUG - Ingredient data: $ingredient');
-      log('🔍 DEBUG - Stacks data: $stacks');
-
-      // Each ingredient can have multiple stacks (batches)
-      for (final stackData in stacks) {
-        final stack = stackData as Map<String, dynamic>;
-        log('🔍 DEBUG - Processing stack: $stack');
-
-        final item = _parseStackFromAPI(name, ingredient, stack);
-        if (item != null) {
-          items.add(item);
-          log('✅ DEBUG - Successfully created item: ${item.name} (${item.id})');
-        } else {
-          log('❌ DEBUG - Failed to create item from stack: $stack');
-        }
+      final item = _parseItemFromAPI(itemMap);
+      if (item != null) {
+        items.add(item);
+        log('✅ DEBUG - Successfully created item: ${item.name} (${item.id})');
+      } else {
+        log('❌ DEBUG - Failed to create item from data: $itemMap');
       }
     }
 
@@ -605,50 +750,56 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     return items;
   }
 
-  /// Convert single API stack to InventoryItem
-  InventoryItem? _parseStackFromAPI(
-    String name,
-    Map<String, dynamic> ingredientData,
-    Map<String, dynamic> stackData,
-  ) {
+  /// Convert single API item to InventoryItem (according to README.md structure)
+  InventoryItem? _parseItemFromAPI(Map<String, dynamic> itemData) {
     try {
       // DEBUG: Log parsing details
-      log('🔍 DEBUG - Parsing stack for $name');
-      log('🔍 DEBUG - Stack data: $stackData');
-      log('🔍 DEBUG - Ingredient data: $ingredientData');
+      log('🔍 DEBUG - Parsing item: $itemData');
 
-      final id =
-          '${name}_${stackData['added_at'] ?? DateTime.now().toIso8601String()}';
-      final quantity = (stackData['quantity'] ?? 0).toDouble();
-      final expirationDateStr = stackData['expiration_date'];
-      final addedAtStr = stackData['added_at'];
-      final storageType = _parseStorageType(ingredientData['storage_type']);
-      final unitType = ingredientData['type_unit'] ?? 'unidades';
-      final tips = ingredientData['tips'] ?? _getTipsForItem(name);
+      final id = itemData['id'] ?? 'unknown_id';
+      final name = itemData['name'] ?? 'Item sin nombre';
+      final quantity = (itemData['quantity'] ?? 0).toDouble();
+      final typeUnit = itemData['type_unit'] ?? 'unidades';
+      final storageType = _parseStorageType(itemData['storage_type']);
+      final tips = itemData['tips'] ?? _getTipsForItem(name);
+      final expirationDateStr = itemData['expiration_date'];
+      final addedAtStr = itemData['added_at'];
+      final imagePath = itemData['image_path']; // Can be null or URL
+      final imageStatus =
+          itemData['image_status']; // generating/generated/failed
+      final confidence = (itemData['confidence'] ?? 0.0).toDouble();
+      final allergyAlert = itemData['allergy_alert'] ?? false;
+      // final allergens = List<String>.from(itemData['allergens'] ?? []); // Available but not used yet
 
       log('🔍 DEBUG - Parsed values:');
       log('   - id: $id');
+      log('   - name: $name');
       log('   - quantity: $quantity');
-      log('   - expirationDateStr: $expirationDateStr');
-      log('   - addedAtStr: $addedAtStr');
+      log('   - typeUnit: $typeUnit');
       log('   - storageType: $storageType');
-      log('   - unitType: $unitType');
+      log('   - imagePath: $imagePath');
+      log('   - imageStatus: $imageStatus');
+      log('   - confidence: $confidence');
 
       final item = InventoryItem(
         id: id,
         name: name,
-        image: _getEmojiForItem(name),
+        image: _getEmojiForItem(name), // Keep emoji as fallback
+        imageUrl: imagePath, // NEW: Store actual image URL
         quantity: quantity,
+        unitType: typeUnit,
         expirationDate:
             expirationDateStr != null
                 ? DateTime.parse(expirationDateStr)
                 : DateTime.now().add(const Duration(days: 30)),
         storageType: storageType,
-        category: ItemCategory.ingredient, // Backend only handles ingredients
+        category: ItemCategory.ingredient, // Default to ingredient
         addedDate:
             addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
-        unitType: unitType,
         tips: tips,
+        // Additional metadata (could be used for displaying confidence, etc.)
+        description:
+            'Confianza: ${(confidence * 100).toInt()}%${allergyAlert ? " ⚠️ Alerta de alergia" : ""}',
       );
 
       log(
@@ -656,12 +807,13 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       );
       return item;
     } catch (e) {
-      log('❌ Error parsing stack for $name: $e');
-      log('❌ Stack data that caused error: $stackData');
-      log('❌ Ingredient data that caused error: $ingredientData');
+      log('❌ Error parsing item: $e');
+      log('❌ Item data that caused error: $itemData');
       return null;
     }
   }
+
+  // DEPRECATED method removed - now using _parseItemFromAPI() for README.md structure
 
   /// Convert InventoryItem to API format
   Map<String, dynamic> _convertItemToAPI(InventoryItem item) {
@@ -677,17 +829,22 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     };
   }
 
-  /// Parse storage type from API
+  /// Parse storage type from API (updated for README.md format)
   StorageType _parseStorageType(String? storageType) {
     switch (storageType?.toLowerCase()) {
+      case 'refrigerador':
       case 'refrigerated':
         return StorageType.refrigerated;
+      case 'congelador':
       case 'frozen':
         return StorageType.frozen;
+      case 'despensa':
+      case 'pantry':
+        return StorageType.pantry;
       case 'dry':
         return StorageType.dry;
       default:
-        return StorageType.dry;
+        return StorageType.refrigerated; // Default to refrigerated for safety
     }
   }
 

@@ -48,17 +48,36 @@ class ApiService {
   static const String _inventoryIngredients = '/api/inventory/ingredients';
   static const String _inventorySimple = '/api/inventory/simple';
   static const String _inventoryExpiring = '/api/inventory/expiring';
+  static const String _inventoryIngredientDetail = '/api/inventory/ingredients';
+  static const String _inventoryFoodDetail = '/api/inventory/foods';
 
-  // INFO: NEW - Recipe Management endpoints (4 endpoints)
+  // INFO: NEW - Recipe Management endpoints (5 endpoints)
+  static const String _recipesGenerate = '/api/recipes/generate';
   static const String _recipesGenerateFromInventory =
       '/api/recipes/generate-from-inventory';
   static const String _recipesGenerateCustom = '/api/recipes/generate-custom';
   static const String _recipesSave = '/api/recipes/save';
   static const String _recipesSaved = '/api/recipes/saved';
 
-  // INFO: NEW - Admin endpoints (2 endpoints)
+  // INFO: NEW - Admin endpoints (5 endpoints)
   static const String _adminUsers = '/api/admin/users';
   static const String _adminSyncImages = '/api/admin/sync_images';
+  static const String _adminStats = '/api/admin/stats';
+  static const String _adminHealth = '/api/admin/health';
+
+  // INFO: NEW - Meal Planning endpoints (2 endpoints)
+  static const String _planGenerate = '/api/plan/generate';
+  static const String _planHistory = '/api/plan/history';
+
+  // INFO: NEW - Recognition additional endpoints (2 endpoints)
+  static const String _recognitionHistory = '/api/recognition/history';
+  static const String _recognitionFeedback = '/api/recognition/feedback';
+
+  // INFO: NEW - Image status endpoint
+  static const String _imageStatus = '/api/images/status';
+
+  // INFO: NEW - Status endpoint
+  static const String _systemStatus = '/status';
 
   // INFO: Secure Storage Keys for JWT tokens
   static const String _accessTokenKey = 'access_token';
@@ -508,6 +527,34 @@ class ApiService {
     }
   }
 
+  /// INFO: Get recognition history
+  /// ADVICE: Shows past recognition sessions with all detected items
+  Future<Map<String, dynamic>> getRecognitionHistory() async {
+    try {
+      final response = await _dio.get(_recognitionHistory);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get recognition history error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Submit feedback on recognition results
+  /// USAGE: Helps improve AI recognition accuracy
+  Future<Map<String, dynamic>> submitRecognitionFeedback({
+    required String recognitionId,
+    required String feedback,
+  }) async {
+    try {
+      final response = await _dio.post(
+        _recognitionFeedback,
+        data: {'recognition_id': recognitionId, 'feedback': feedback},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Submit recognition feedback error: ${e.toString()}');
+    }
+  }
+
   // INFO: ===== IMAGE MANAGEMENT ENDPOINTS (3/3) =====
 
   /// INFO: Upload image to Firebase Storage
@@ -605,6 +652,18 @@ class ApiService {
     }
   }
 
+  /// INFO: Check image processing status
+  /// USAGE: Monitor the status of background image generation tasks
+  Future<Map<String, dynamic>> getImageStatus(String? taskId) async {
+    try {
+      final url = taskId != null ? '$_imageStatus/$taskId' : _imageStatus;
+      final response = await _dio.get(url);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get image status error: ${e.toString()}');
+    }
+  }
+
   // INFO: ===== REFERENCE IMAGE MANAGEMENT ENDPOINTS (5/5) =====
   // ADVICE: These are for admin management of reference images
 
@@ -691,7 +750,7 @@ class ApiService {
   // INFO: ===== INVENTORY MANAGEMENT ENDPOINTS (5/5) =====
   // ADVICE: Core feature for managing user's food inventory
 
-  /// INFO: Add multiple ingredients to user's inventory
+  /// INFO: Add multiple ingredients to user's inventory (bulk operation)
   /// USAGE: Pass array of ingredient objects with name, quantity, expiry, etc.
   Future<Map<String, dynamic>> addIngredients(
     List<Map<String, dynamic>> ingredients,
@@ -704,6 +763,19 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Add ingredients error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Add single item to inventory (as specified in README)
+  /// USAGE: Add individual item from recognition results to inventory
+  Future<Map<String, dynamic>> addInventoryItem(
+    Map<String, dynamic> item,
+  ) async {
+    try {
+      final response = await _dio.post(_inventoryItems, data: item);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Add inventory item error: ${e.toString()}');
     }
   }
 
@@ -758,6 +830,34 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Delete ingredient error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Update item by ID (as specified in README.md)
+  /// USAGE: Update any inventory item using its unique ID
+  Future<Map<String, dynamic>> updateInventoryItem(
+    String itemId,
+    Map<String, dynamic> updateData,
+  ) async {
+    try {
+      final response = await _dio.put(
+        '$_inventoryItems/$itemId',
+        data: updateData,
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update inventory item error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Delete item by ID (as specified in README.md)
+  /// USAGE: Delete any inventory item using its unique ID
+  Future<Map<String, dynamic>> deleteInventoryItem(String itemId) async {
+    try {
+      final response = await _dio.delete('$_inventoryItems/$itemId');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Delete inventory item error: ${e.toString()}');
     }
   }
 
@@ -847,7 +947,146 @@ class ApiService {
     }
   }
 
-  // INFO: ===== ADMIN ENDPOINTS (2/2) =====
+  /// INFO: Get specific recipe by ID
+  /// USAGE: Retrieve detailed information about a specific recipe
+  Future<Map<String, dynamic>> getRecipeById(String recipeId) async {
+    try {
+      final response = await _dio.get('/api/recipes/$recipeId');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get recipe by ID error: ${e.toString()}');
+    }
+  }
+
+  // INFO: ===== MEAL PLANNING ENDPOINTS (2/2) =====
+  // ADVICE: AI-powered meal planning and history management
+
+  /// INFO: Generate meal plan based on available ingredients
+  /// ADVICE: AI analyzes your inventory and suggests optimal meal plans
+  Future<Map<String, dynamic>> generateMealPlan({
+    required List<Map<String, dynamic>> ingredients,
+  }) async {
+    try {
+      // Use longer timeout for AI meal planning operations
+      final response = await _dio.post(
+        _planGenerate,
+        data: {'ingredients': ingredients},
+        options: Options(
+          receiveTimeout: const Duration(
+            minutes: 2,
+          ), // 2 minutes for AI processing
+          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+        ),
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Generate meal plan error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get meal planning history
+  /// USAGE: Retrieve past meal plans and their execution status
+  Future<Map<String, dynamic>> getMealPlanHistory() async {
+    try {
+      final response = await _dio.get(_planHistory);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get meal plan history error: ${e.toString()}');
+    }
+  }
+
+  // INFO: ===== INVENTORY DETAIL ENDPOINTS (2/2) =====
+  // ADVICE: Get detailed information about specific inventory items
+
+  /// INFO: Get detailed information about a specific ingredient
+  /// USAGE: Get comprehensive ingredient details including environmental impact, utilization ideas
+  /// ADVICE: ingredientName should be URL-encoded for special characters
+  /// IMPORTANT: Returns detailed ingredient information with AI-generated insights
+  Future<Map<String, dynamic>> getIngredientDetail(
+    String ingredientName,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(ingredientName);
+      final response = await _dio.get(
+        '$_inventoryIngredientDetail/$encodedName/detail',
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get ingredient detail error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get detailed information about a specific food item
+  /// USAGE: Get nutritional analysis, consumption ideas, storage advice
+  /// ADVICE: foodName should be URL-encoded, addedAt should be ISO 8601 format
+  /// IMPORTANT: Multiple food items can have the same name, use addedAt as unique identifier
+  Future<Map<String, dynamic>> getFoodDetail(
+    String foodName,
+    String addedAt,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(foodName);
+      final encodedDate = Uri.encodeComponent(addedAt);
+      final response = await _dio.get(
+        '$_inventoryFoodDetail/$encodedName/$encodedDate/detail',
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get food detail error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Mark a food item as consumed in the backend
+  /// USAGE: Track food consumption for environmental impact and inventory management
+  /// IMPORTANT: Use exact foodName and addedAt from the food item for unique identification
+  /// RETURNS: Consumption tracking data including remaining portions and environmental impact
+  Future<Map<String, dynamic>> markFoodAsConsumed(
+    String foodName,
+    String addedAt, {
+    double? portions,
+  }) async {
+    try {
+      final encodedName = Uri.encodeComponent(foodName);
+      final encodedDate = Uri.encodeComponent(addedAt);
+      final response = await _dio.post(
+        '$_inventoryFoodDetail/$encodedName/$encodedDate/consume',
+        data: portions != null ? {'portions': portions} : {},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Mark food as consumed error: ${e.toString()}');
+    }
+  }
+
+  // INFO: ===== RECIPE GENERATION ENDPOINTS (1/1) =====
+  // ADVICE: Generate recipes based on available inventory ingredients
+
+  /// INFO: Generate a recipe based on available inventory ingredients
+  /// USAGE: Send list of ingredients from user's inventory to get AI-generated recipe
+  /// ADVICE: Include all relevant ingredient details for better recipe generation
+  /// IMPORTANT: Ingredients should include quantity, type_unit, and expiration info
+  /// RETURNS: Complete recipe with ingredients list and cooking instructions
+  Future<Map<String, dynamic>> generateRecipe(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _recipesGenerate,
+        data: {'ingredients': ingredients},
+        options: Options(
+          sendTimeout: const Duration(
+            minutes: 2,
+          ), // AI generation can take time
+          receiveTimeout: const Duration(minutes: 2),
+        ),
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Generate recipe error: ${e.toString()}');
+    }
+  }
+
+  // INFO: ===== ADMIN ENDPOINTS (5/5) =====
   // WARNING: These require admin role permissions
 
   /// INFO: Get all users in the system
@@ -869,6 +1108,42 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Sync images error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get system statistics
+  /// WARNING: Admin only - system metrics and usage stats
+  Future<Map<String, dynamic>> getSystemStats() async {
+    try {
+      final response = await _dio.get(_adminStats);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get system stats error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get system health status
+  /// WARNING: Admin only - comprehensive health monitoring
+  Future<Map<String, dynamic>> getSystemHealth() async {
+    try {
+      final response = await _dio.get(_adminHealth);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get system health error: ${e.toString()}');
+    }
+  }
+
+  // INFO: ===== STATUS ENDPOINTS (1/1) =====
+  // ADVICE: Public status endpoints for system monitoring
+
+  /// INFO: Get public system status
+  /// USAGE: Check if the API is operational and responsive
+  Future<Map<String, dynamic>> getSystemStatus() async {
+    try {
+      final response = await _dio.get(_systemStatus);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get system status error: ${e.toString()}');
     }
   }
 
