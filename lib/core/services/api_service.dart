@@ -30,7 +30,12 @@ class ApiService {
 
   static const String _recognitionFoods = '/api/recognition/foods';
   static const String _recognitionIngredients = '/api/recognition/ingredients';
+  static const String _recognitionIngredientsComplete =
+      '/api/recognition/ingredients/complete';
   static const String _recognitionBatch = '/api/recognition/batch';
+  static const String _recognitionImagesStatus =
+      '/api/recognition/images/status';
+  static const String _recognitionById = '/api/recognition/recognition';
   static const String _imageUpload = '/api/image_management/upload_image';
   static const String _imageSearchSimilar =
       '/api/image_management/search_similar_images';
@@ -552,6 +557,52 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Submit recognition feedback error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Complete ingredient recognition with environmental impact and utilization ideas
+  /// BASED ON: POST /api/recognition/ingredients/complete endpoint
+  Future<Map<String, dynamic>> recognizeIngredientsComplete(
+    List<String> imagePaths,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _recognitionIngredientsComplete,
+        data: {'images_paths': imagePaths},
+        options: Options(
+          receiveTimeout: const Duration(minutes: 3),
+          sendTimeout: const Duration(minutes: 1),
+        ),
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Complete ingredient recognition error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Check image generation status specifically for recognition
+  /// BASED ON: GET /api/recognition/images/status/{task_id} endpoint
+  Future<Map<String, dynamic>> getRecognitionImageStatus(String taskId) async {
+    try {
+      final response = await _dio.get('$_recognitionImagesStatus/$taskId');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get recognition image status error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get recognition with updated image paths
+  /// BASED ON: GET /api/recognition/recognition/{recognition_id}/images endpoint
+  Future<Map<String, dynamic>> getRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      final response = await _dio.get(
+        '$_recognitionById/$recognitionId/images',
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get recognition images error: ${e.toString()}');
     }
   }
 

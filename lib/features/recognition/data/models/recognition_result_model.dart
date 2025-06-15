@@ -558,3 +558,209 @@ class RecognizedFoodModel {
 
   Map<String, dynamic> toJson() => _$RecognizedFoodModelToJson(this);
 }
+
+/// 🆕 NEW MODEL: For complete ingredient recognition with environmental impact
+@JsonSerializable()
+class CompleteIngredientRecognitionResultModel {
+  final List<CompleteRecognizedIngredientModel> ingredients;
+  @JsonKey(name: 'recognition_id')
+  final String recognitionId;
+
+  const CompleteIngredientRecognitionResultModel({
+    required this.ingredients,
+    required this.recognitionId,
+  });
+
+  factory CompleteIngredientRecognitionResultModel.fromJson(
+    Map<String, dynamic> json,
+  ) => _$CompleteIngredientRecognitionResultModelFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$CompleteIngredientRecognitionResultModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Complete ingredient with environmental impact and utilization ideas
+@JsonSerializable()
+class CompleteRecognizedIngredientModel {
+  final String name;
+  final double quantity;
+  @JsonKey(name: 'type_unit')
+  final String typeUnit;
+  @JsonKey(name: 'storage_type')
+  final String storageType;
+  @JsonKey(name: 'expiration_time')
+  final int expirationTime;
+  @JsonKey(name: 'time_unit')
+  final String timeUnit;
+  final String tips;
+  @JsonKey(name: 'image_path')
+  final String? imagePath;
+  @JsonKey(name: 'environmental_impact')
+  final EnvironmentalImpactModel? environmentalImpact;
+  @JsonKey(name: 'utilization_ideas')
+  final List<UtilizationIdeaModel> utilizationIdeas;
+
+  const CompleteRecognizedIngredientModel({
+    required this.name,
+    required this.quantity,
+    required this.typeUnit,
+    required this.storageType,
+    required this.expirationTime,
+    required this.timeUnit,
+    required this.tips,
+    this.imagePath,
+    this.environmentalImpact,
+    this.utilizationIdeas = const [],
+  });
+
+  factory CompleteRecognizedIngredientModel.fromJson(
+    Map<String, dynamic> json,
+  ) => _$CompleteRecognizedIngredientModelFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$CompleteRecognizedIngredientModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Environmental impact data
+@JsonSerializable()
+class EnvironmentalImpactModel {
+  @JsonKey(name: 'carbon_footprint')
+  final FootprintDataModel carbonFootprint;
+  @JsonKey(name: 'water_footprint')
+  final FootprintDataModel waterFootprint;
+  @JsonKey(name: 'sustainability_message')
+  final String sustainabilityMessage;
+
+  const EnvironmentalImpactModel({
+    required this.carbonFootprint,
+    required this.waterFootprint,
+    required this.sustainabilityMessage,
+  });
+
+  factory EnvironmentalImpactModel.fromJson(Map<String, dynamic> json) =>
+      _$EnvironmentalImpactModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EnvironmentalImpactModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Footprint data (carbon/water)
+@JsonSerializable()
+class FootprintDataModel {
+  final double value;
+  final String unit;
+  final String description;
+
+  const FootprintDataModel({
+    required this.value,
+    required this.unit,
+    required this.description,
+  });
+
+  factory FootprintDataModel.fromJson(Map<String, dynamic> json) =>
+      _$FootprintDataModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FootprintDataModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Utilization ideas
+@JsonSerializable()
+class UtilizationIdeaModel {
+  final String title;
+  final String description;
+  final String type; // "receta", "conservación", etc.
+
+  const UtilizationIdeaModel({
+    required this.title,
+    required this.description,
+    required this.type,
+  });
+
+  factory UtilizationIdeaModel.fromJson(Map<String, dynamic> json) =>
+      _$UtilizationIdeaModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UtilizationIdeaModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Recognition image status response
+@JsonSerializable()
+class RecognitionImageStatusModel {
+  @JsonKey(name: 'task_id')
+  final String taskId;
+  final String status; // "pending", "processing", "completed", "failed"
+  @JsonKey(name: 'progress_percentage')
+  final int progressPercentage;
+  @JsonKey(name: 'current_step')
+  final String currentStep;
+  @JsonKey(name: 'created_at')
+  final String createdAt;
+  @JsonKey(name: 'completed_at')
+  final String? completedAt;
+  @JsonKey(name: 'images_data')
+  final List<ImageDataModel> imagesData;
+  final String message;
+
+  const RecognitionImageStatusModel({
+    required this.taskId,
+    required this.status,
+    required this.progressPercentage,
+    required this.currentStep,
+    required this.createdAt,
+    this.completedAt,
+    this.imagesData = const [],
+    required this.message,
+  });
+
+  factory RecognitionImageStatusModel.fromJson(Map<String, dynamic> json) =>
+      _$RecognitionImageStatusModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RecognitionImageStatusModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Image data in status response
+@JsonSerializable()
+class ImageDataModel {
+  @JsonKey(name: 'ingredient_name')
+  final String ingredientName;
+  @JsonKey(name: 'image_path')
+  final String imagePath;
+  @JsonKey(name: 'generation_status')
+  final String generationStatus; // "ready", "failed"
+
+  const ImageDataModel({
+    required this.ingredientName,
+    required this.imagePath,
+    required this.generationStatus,
+  });
+
+  factory ImageDataModel.fromJson(Map<String, dynamic> json) =>
+      _$ImageDataModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ImageDataModelToJson(this);
+}
+
+/// 🆕 NEW MODEL: Get recognition images response
+@JsonSerializable()
+class RecognitionImagesResponseModel {
+  @JsonKey(name: 'recognition_id')
+  final String recognitionId;
+  final List<RecognizedIngredientModel> ingredients;
+  @JsonKey(name: 'images_ready')
+  final bool imagesReady;
+  @JsonKey(name: 'total_ingredients')
+  final int totalIngredients;
+  @JsonKey(name: 'images_generated')
+  final int imagesGenerated;
+
+  const RecognitionImagesResponseModel({
+    required this.recognitionId,
+    required this.ingredients,
+    required this.imagesReady,
+    required this.totalIngredients,
+    required this.imagesGenerated,
+  });
+
+  factory RecognitionImagesResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$RecognitionImagesResponseModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RecognitionImagesResponseModelToJson(this);
+}

@@ -312,3 +312,183 @@ Map<String, dynamic> _$RecognizedFoodModelToJson(
   'allergens': instance.allergens,
   'confidence': instance.confidence,
 };
+
+CompleteIngredientRecognitionResultModel
+_$CompleteIngredientRecognitionResultModelFromJson(Map<String, dynamic> json) =>
+    CompleteIngredientRecognitionResultModel(
+      ingredients:
+          (json['ingredients'] as List<dynamic>)
+              .map(
+                (e) => CompleteRecognizedIngredientModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
+              .toList(),
+      recognitionId: json['recognition_id'] as String,
+    );
+
+Map<String, dynamic> _$CompleteIngredientRecognitionResultModelToJson(
+  CompleteIngredientRecognitionResultModel instance,
+) => <String, dynamic>{
+  'ingredients': instance.ingredients,
+  'recognition_id': instance.recognitionId,
+};
+
+CompleteRecognizedIngredientModel _$CompleteRecognizedIngredientModelFromJson(
+  Map<String, dynamic> json,
+) => CompleteRecognizedIngredientModel(
+  name: json['name'] as String,
+  quantity: (json['quantity'] as num).toDouble(),
+  typeUnit: json['type_unit'] as String,
+  storageType: json['storage_type'] as String,
+  expirationTime: (json['expiration_time'] as num).toInt(),
+  timeUnit: json['time_unit'] as String,
+  tips: json['tips'] as String,
+  imagePath: json['image_path'] as String?,
+  environmentalImpact:
+      json['environmental_impact'] == null
+          ? null
+          : EnvironmentalImpactModel.fromJson(
+            json['environmental_impact'] as Map<String, dynamic>,
+          ),
+  utilizationIdeas:
+      (json['utilization_ideas'] as List<dynamic>?)
+          ?.map((e) => UtilizationIdeaModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$CompleteRecognizedIngredientModelToJson(
+  CompleteRecognizedIngredientModel instance,
+) => <String, dynamic>{
+  'name': instance.name,
+  'quantity': instance.quantity,
+  'type_unit': instance.typeUnit,
+  'storage_type': instance.storageType,
+  'expiration_time': instance.expirationTime,
+  'time_unit': instance.timeUnit,
+  'tips': instance.tips,
+  'image_path': instance.imagePath,
+  'environmental_impact': instance.environmentalImpact,
+  'utilization_ideas': instance.utilizationIdeas,
+};
+
+EnvironmentalImpactModel _$EnvironmentalImpactModelFromJson(
+  Map<String, dynamic> json,
+) => EnvironmentalImpactModel(
+  carbonFootprint: FootprintDataModel.fromJson(
+    json['carbon_footprint'] as Map<String, dynamic>,
+  ),
+  waterFootprint: FootprintDataModel.fromJson(
+    json['water_footprint'] as Map<String, dynamic>,
+  ),
+  sustainabilityMessage: json['sustainability_message'] as String,
+);
+
+Map<String, dynamic> _$EnvironmentalImpactModelToJson(
+  EnvironmentalImpactModel instance,
+) => <String, dynamic>{
+  'carbon_footprint': instance.carbonFootprint,
+  'water_footprint': instance.waterFootprint,
+  'sustainability_message': instance.sustainabilityMessage,
+};
+
+FootprintDataModel _$FootprintDataModelFromJson(Map<String, dynamic> json) =>
+    FootprintDataModel(
+      value: (json['value'] as num).toDouble(),
+      unit: json['unit'] as String,
+      description: json['description'] as String,
+    );
+
+Map<String, dynamic> _$FootprintDataModelToJson(FootprintDataModel instance) =>
+    <String, dynamic>{
+      'value': instance.value,
+      'unit': instance.unit,
+      'description': instance.description,
+    };
+
+UtilizationIdeaModel _$UtilizationIdeaModelFromJson(
+  Map<String, dynamic> json,
+) => UtilizationIdeaModel(
+  title: json['title'] as String,
+  description: json['description'] as String,
+  type: json['type'] as String,
+);
+
+Map<String, dynamic> _$UtilizationIdeaModelToJson(
+  UtilizationIdeaModel instance,
+) => <String, dynamic>{
+  'title': instance.title,
+  'description': instance.description,
+  'type': instance.type,
+};
+
+RecognitionImageStatusModel _$RecognitionImageStatusModelFromJson(
+  Map<String, dynamic> json,
+) => RecognitionImageStatusModel(
+  taskId: json['task_id'] as String,
+  status: json['status'] as String,
+  progressPercentage: (json['progress_percentage'] as num).toInt(),
+  currentStep: json['current_step'] as String,
+  createdAt: json['created_at'] as String,
+  completedAt: json['completed_at'] as String?,
+  imagesData:
+      (json['images_data'] as List<dynamic>?)
+          ?.map((e) => ImageDataModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  message: json['message'] as String,
+);
+
+Map<String, dynamic> _$RecognitionImageStatusModelToJson(
+  RecognitionImageStatusModel instance,
+) => <String, dynamic>{
+  'task_id': instance.taskId,
+  'status': instance.status,
+  'progress_percentage': instance.progressPercentage,
+  'current_step': instance.currentStep,
+  'created_at': instance.createdAt,
+  'completed_at': instance.completedAt,
+  'images_data': instance.imagesData,
+  'message': instance.message,
+};
+
+ImageDataModel _$ImageDataModelFromJson(Map<String, dynamic> json) =>
+    ImageDataModel(
+      ingredientName: json['ingredient_name'] as String,
+      imagePath: json['image_path'] as String,
+      generationStatus: json['generation_status'] as String,
+    );
+
+Map<String, dynamic> _$ImageDataModelToJson(ImageDataModel instance) =>
+    <String, dynamic>{
+      'ingredient_name': instance.ingredientName,
+      'image_path': instance.imagePath,
+      'generation_status': instance.generationStatus,
+    };
+
+RecognitionImagesResponseModel _$RecognitionImagesResponseModelFromJson(
+  Map<String, dynamic> json,
+) => RecognitionImagesResponseModel(
+  recognitionId: json['recognition_id'] as String,
+  ingredients:
+      (json['ingredients'] as List<dynamic>)
+          .map(
+            (e) =>
+                RecognizedIngredientModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList(),
+  imagesReady: json['images_ready'] as bool,
+  totalIngredients: (json['total_ingredients'] as num).toInt(),
+  imagesGenerated: (json['images_generated'] as num).toInt(),
+);
+
+Map<String, dynamic> _$RecognitionImagesResponseModelToJson(
+  RecognitionImagesResponseModel instance,
+) => <String, dynamic>{
+  'recognition_id': instance.recognitionId,
+  'ingredients': instance.ingredients,
+  'images_ready': instance.imagesReady,
+  'total_ingredients': instance.totalIngredients,
+  'images_generated': instance.imagesGenerated,
+};

@@ -42,6 +42,50 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   }
 
   @override
+  Future<CompleteIngredientRecognitionResultModel> recognizeIngredientsComplete(
+    List<String> imagePaths,
+  ) async {
+    try {
+      final response = await _apiService.recognizeIngredientsComplete(
+        imagePaths,
+      );
+      return CompleteIngredientRecognitionResultModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Complete ingredient recognition failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<RecognitionImageStatusModel> getRecognitionImageStatus(
+    String taskId,
+  ) async {
+    try {
+      final response = await _apiService.getRecognitionImageStatus(taskId);
+      return RecognitionImageStatusModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Get recognition image status failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<RecognitionImagesResponseModel> getRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      final response = await _apiService.getRecognitionImages(recognitionId);
+      return RecognitionImagesResponseModel.fromJson(response);
+    } catch (e) {
+      throw Exception(
+        'Get recognition images failed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
   Future<RecognitionResultModel> recognizeBatch(List<String> imagePaths) async {
     try {
       final response = await _apiService.recognizeBatch(imagePaths);

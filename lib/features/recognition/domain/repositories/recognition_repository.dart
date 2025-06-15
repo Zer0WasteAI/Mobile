@@ -15,6 +15,22 @@ abstract class RecognitionRepository {
     List<String> imagePaths,
   );
 
+  /// Complete ingredient recognition with environmental impact and utilization ideas
+  /// Returns CompleteIngredientRecognitionResultModel with full environmental data
+  Future<CompleteIngredientRecognitionResultModel> recognizeIngredientsComplete(
+    List<String> imagePaths,
+  );
+
+  /// Check the status of image generation for recognition
+  /// Returns RecognitionImageStatusModel with progress and completion status
+  Future<RecognitionImageStatusModel> getRecognitionImageStatus(String taskId);
+
+  /// Get recognition results with updated image paths
+  /// Returns RecognitionImagesResponseModel with final image URLs
+  Future<RecognitionImagesResponseModel> getRecognitionImages(
+    String recognitionId,
+  );
+
   /// Batch recognition for mixed content (ingredients + foods)
   /// Returns general RecognitionResultModel for backward compatibility
   Future<RecognitionResultModel> recognizeBatch(List<String> imagePaths);

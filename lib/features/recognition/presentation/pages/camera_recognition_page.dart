@@ -1,3 +1,6 @@
+// ignore_for_file: unnecessary_null_comparison
+
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +22,7 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
   String _recognitionType = 'food'; // 'food' or 'ingredient'
+  bool _useCompleteAnalysis = false; // Toggle para reconocimiento completo
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +83,34 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                         ),
                       ],
                     ),
+
+                    // 🆕 Toggle para reconocimiento completo (solo para ingredientes)
+                    if (_recognitionType == 'ingredient') ...[
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        title: const Text(
+                          'Mostrar Datos Ambientales',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Monitorea y muestra impacto ambiental cuando esté disponible',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        value: _useCompleteAnalysis,
+                        onChanged: (value) {
+                          setState(() {
+                            _useCompleteAnalysis = value;
+                          });
+                        },
+                        activeColor: Colors.green,
+                        secondary: Icon(
+                          _useCompleteAnalysis ? Icons.eco : Icons.eco_outlined,
+                          color:
+                              _useCompleteAnalysis ? Colors.green : Colors.grey,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -326,115 +358,11 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                                 }
                               }
 
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: _getConfidenceColor(
-                                      item.confidence,
-                                    ),
-                                    child: Text(
-                                      '${(item.confidence * 100).toInt()}%',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          item.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      // 🆕 Indicador del estado de imagen
-                                      if (imageStatus != null)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(imageStatus),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            border: Border.all(
-                                              color: _getStatusTextColor(
-                                                imageStatus,
-                                              ),
-                                              width: 0.5,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                _getImageStatusIcon(
-                                                  imageStatus,
-                                                ),
-                                                size: 12,
-                                                color: _getStatusTextColor(
-                                                  imageStatus,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                _getImageStatusText(
-                                                  imageStatus,
-                                                ),
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: _getStatusTextColor(
-                                                    imageStatus,
-                                                  ),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  subtitle: Text('Categoría: ${item.category}'),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Confidence indicator
-                                      Icon(
-                                        _getConfidenceIcon(item.confidence),
-                                        color: _getConfidenceColor(
-                                          item.confidence,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      // Add to inventory button
-                                      ElevatedButton.icon(
-                                        onPressed:
-                                            () => _addToInventory(item, index),
-                                        icon: const Icon(
-                                          Icons.add_shopping_cart,
-                                          size: 16,
-                                        ),
-                                        label: const Text('Agregar'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          minimumSize: const Size(0, 32),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                              return _buildRecognitionItemCard(
+                                item,
+                                index,
+                                imageStatus,
+                                recognitionState.result,
                               );
                             },
                           ),
@@ -589,10 +517,27 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
         itemName,
       );
     } else {
-      await recognitionNotifier.uploadAndRecognizeIngredient(
-        _selectedImage!,
-        itemName,
-      );
+      if (_useCompleteAnalysis) {
+        // Usar reconocimiento completo con datos ambientales
+        final imagePath = await recognitionNotifier.uploadImage(
+          imageFile: _selectedImage!,
+          itemName: itemName,
+          imageType: 'ingredient',
+        );
+
+        if (imagePath != null) {
+          await recognitionNotifier.recognizeIngredientsWithEnvironmentalImpact(
+            [imagePath],
+          );
+          _startImageGenerationMonitoring();
+        }
+      } else {
+        // Reconocimiento básico sin datos ambientales
+        await recognitionNotifier.uploadAndRecognizeIngredient(
+          _selectedImage!,
+          itemName,
+        );
+      }
     }
   }
 
@@ -672,5 +617,428 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
       default:
         return 'Desconocido';
     }
+  }
+
+  // 🆕 NUEVO: Builder para mostrar cada item reconocido con detalles completos
+  Widget _buildRecognitionItemCard(
+    RecognizedItemModel item,
+    int index,
+    String? imageStatus,
+    dynamic recognitionResult,
+  ) {
+    // Obtener datos específicos del reconocimiento completo
+    dynamic fullItem;
+    if (recognitionResult is CompleteIngredientRecognitionResultModel) {
+      final ingredients = recognitionResult.ingredients;
+      if (index < ingredients.length) {
+        fullItem = ingredients[index];
+      }
+    } else if (recognitionResult is IngredientRecognitionResultModel) {
+      final ingredients = recognitionResult.ingredients;
+      if (index < ingredients.length) {
+        fullItem = ingredients[index];
+      }
+    } else if (recognitionResult is FoodRecognitionResultModel) {
+      final foods = recognitionResult.foods;
+      if (index < foods.length) {
+        fullItem = foods[index];
+      }
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header con nombre y confianza
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: _getConfidenceColor(item.confidence),
+                  child: Text(
+                    '${(item.confidence * 100).toInt()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        'Categoría: ${item.category}',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Estado de imagen
+                if (imageStatus != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(imageStatus),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _getStatusTextColor(imageStatus),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getImageStatusIcon(imageStatus),
+                          size: 12,
+                          color: _getStatusTextColor(imageStatus),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getImageStatusText(imageStatus),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: _getStatusTextColor(imageStatus),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+
+            // 🆕 Mostrar sección ambiental si el toggle está activado
+            if (_useCompleteAnalysis && _recognitionType == 'ingredient') ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              Row(
+                children: [
+                  Icon(Icons.eco, color: Colors.green.shade600, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Impacto Ambiental',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  if (fullItem is! CompleteRecognizedIngredientModel ||
+                      fullItem.environmentalImpact == null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              valueColor: AlwaysStoppedAnimation(
+                                Colors.blue.shade600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Cargando...',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Mostrar datos si están disponibles
+              if (fullItem is CompleteRecognizedIngredientModel &&
+                  fullItem.environmentalImpact != null) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildEnvironmentalMetric(
+                        'Huella de Carbono',
+                        '${fullItem.environmentalImpact!.carbonFootprint.value} ${fullItem.environmentalImpact!.carbonFootprint.unit}',
+                        Icons.cloud,
+                        Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildEnvironmentalMetric(
+                        'Huella Hídrica',
+                        '${fullItem.environmentalImpact!.waterFootprint.value} ${fullItem.environmentalImpact!.waterFootprint.unit}',
+                        Icons.water_drop,
+                        Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+                if (fullItem
+                    .environmentalImpact!
+                    .sustainabilityMessage
+                    .isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb,
+                          color: Colors.green.shade600,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            fullItem.environmentalImpact!.sustainabilityMessage,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ] else ...[
+                // No hay datos ambientales disponibles (reconocimiento básico)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.grey.shade600,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Activa "Mostrar Datos Ambientales" para ver el impacto ecológico',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+
+            // 🆕 Mostrar ideas de utilización si el toggle está activado
+            if (_useCompleteAnalysis && _recognitionType == 'ingredient') ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              Row(
+                children: [
+                  Icon(
+                    Icons.tips_and_updates,
+                    color: Colors.amber.shade700,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Ideas de Utilización',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Mostrar ideas de utilización reales del API
+              if (fullItem is CompleteRecognizedIngredientModel &&
+                  fullItem.utilizationIdeas.isNotEmpty)
+                ...fullItem.utilizationIdeas
+                    .take(2)
+                    .map(
+                      (idea) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.amber.shade200),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                idea.type == 'receta'
+                                    ? Icons.restaurant
+                                    : Icons.lightbulb_outline,
+                                color: Colors.amber.shade700,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      idea.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                        color: Colors.amber.shade900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      idea.description,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.amber.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ],
+
+            // Botón de agregar al inventario
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  _getConfidenceIcon(item.confidence),
+                  color: _getConfidenceColor(item.confidence),
+                  size: 18,
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: () => _addToInventory(item, index),
+                  icon: const Icon(Icons.add_shopping_cart, size: 16),
+                  label: const Text('Agregar al Inventario'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🆕 NUEVO: Widget para mostrar métricas ambientales
+  Widget _buildEnvironmentalMetric(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: color.withValues(alpha: 0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🆕 NUEVO: Iniciar monitoreo automático de generación de imágenes
+  void _startImageGenerationMonitoring() {
+    // Verificar el estado cada 15 segundos durante los primeros 2 minutos
+    Timer.periodic(const Duration(seconds: 15), (timer) {
+      final recognitionState = ref.read(recognitionProvider);
+
+      // Detener el timer si ya no hay task_id o si las imágenes ya están listas
+      if (recognitionState.taskId == null ||
+          recognitionState.imageGenerationStatus == 'generated' ||
+          recognitionState.imageGenerationStatus == 'failed') {
+        timer.cancel();
+        return;
+      }
+
+      // Verificar estado de generación
+      ref.read(recognitionProvider.notifier).checkImageGenerationStatus();
+
+      // Detener después de 2 minutos (8 intentos)
+      if (timer.tick >= 8) {
+        timer.cancel();
+      }
+    });
   }
 }

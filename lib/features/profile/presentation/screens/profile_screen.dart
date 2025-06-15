@@ -237,7 +237,7 @@ class ProfileScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
 
-                    _buildLogoutButton(context),
+                    _buildLogoutButton(context, ref),
                     const SizedBox(height: 20),
 
                     // DEBUG: Botón para leer directamente de Firestore
@@ -961,14 +961,60 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Redirigir al usuario a la pantalla de login
-          context.go('/login');
+        onPressed: () async {
+          // Mostrar diálogo de confirmación
+          final shouldLogout = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Cerrar sesión'),
+                content: const Text(
+                  '¿Estás seguro de que quieres cerrar sesión?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE53935),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Cerrar sesión'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (shouldLogout == true && context.mounted) {
+            try {
+              // Cerrar sesión completa (backend + Firebase + tokens)
+              await ref.read(authControllerProvider.notifier).signOut();
+
+              // Navegar a login después del cierre exitoso
+              if (context.mounted) {
+                context.go('/login');
+              }
+            } catch (e) {
+              // Mostrar error si algo falla
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error al cerrar sesión: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
         },
         icon: const Icon(Icons.logout_rounded),
         label: Text(

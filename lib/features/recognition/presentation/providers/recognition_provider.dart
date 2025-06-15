@@ -229,6 +229,61 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     }
   }
 
+  // 🆕 NUEVO: Reconocimiento completo de ingredientes con impacto ambiental
+  Future<void> recognizeIngredientsWithEnvironmentalImpact(
+    List<String> imagePaths,
+  ) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final result = await _repository.recognizeIngredientsComplete(imagePaths);
+
+      state = state.copyWith(
+        isLoading: false,
+        result: result,
+        recognitionId: result.recognitionId,
+        statusMessage: 'Reconocimiento completo con impacto ambiental exitoso',
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  // 🆕 NUEVO: Verificar estado específico de reconocimiento
+  Future<void> checkRecognitionImageStatus() async {
+    if (state.taskId == null) return;
+
+    try {
+      final statusResult = await _repository.getRecognitionImageStatus(
+        state.taskId!,
+      );
+
+      state = state.copyWith(
+        imageGenerationStatus: statusResult.status,
+        statusMessage: statusResult.message,
+      );
+
+      // Si las imágenes están listas, obtener resultados actualizados
+      if (statusResult.status == 'completed' && state.recognitionId != null) {
+        final imagesResult = await _repository.getRecognitionImages(
+          state.recognitionId!,
+        );
+        // Actualizar estado con las nuevas imágenes
+        state = state.copyWith(
+          statusMessage: 'Imágenes actualizadas disponibles',
+        );
+
+        // Actualizar el resultado con las nuevas imágenes
+        state = state.copyWith(result: imagesResult);
+      }
+    } catch (e) {
+      state = state.copyWith(
+        imageGenerationStatus: 'failed',
+        statusMessage: 'Error al verificar estado: $e',
+      );
+    }
+  }
+
   // 🆕 NUEVO: Actualizar resultado con imágenes generadas
   void _updateResultWithGeneratedImages(Map<String, dynamic> statusResult) {
     final result = state.result;
