@@ -80,4 +80,47 @@ abstract class InventoryRepository {
   Future<Map<String, dynamic>> generateRecipe(
     List<Map<String, dynamic>> ingredients,
   );
+
+  /// INFO: Get complete inventory with environmental impact and utilization ideas
+  /// USAGE: Enriched inventory with AI-generated insights
+  Future<Map<String, dynamic>> getInventoryComplete();
+
+  /// INFO: Add ingredients from recognition results
+  /// USAGE: Add ingredients directly from AI recognition with environmental data
+  Future<Map<String, dynamic>> addIngredientsFromRecognition(
+    List<Map<String, dynamic>> ingredients,
+  );
+
+  /// INFO: Update ingredient quantity only
+  /// USAGE: Quick quantity update for specific ingredient stack
+  Future<Map<String, dynamic>> updateIngredientQuantity(
+    String ingredientName,
+    String addedAt,
+    double newQuantity,
+  );
+
+  /// INFO: Delete complete ingredient (all stacks)
+  /// USAGE: Remove all stacks of an ingredient from inventory
+  Future<Map<String, dynamic>> deleteCompleteIngredient(String ingredientName);
+
+  /// INFO: Mark ingredient as consumed
+  /// USAGE: Track ingredient consumption with details
+  Future<Map<String, dynamic>> markIngredientConsumed(
+    String ingredientName,
+    String addedAt, {
+    required double consumedQuantity,
+    String? consumptionReason,
+    String? recipeUsed,
+  });
+
+  /// INFO: Get simplified list of ingredient names
+  /// USAGE: Quick access to all ingredient names in inventory
+  Future<Map<String, dynamic>> getIngredientsList();
+
+  /// INFO: Add single item with advanced options
+  /// USAGE: Add individual item with detailed configuration
+  Future<Map<String, dynamic>> addSingleInventoryItem({
+    required String itemType,
+    required Map<String, dynamic> itemData,
+  });
 }

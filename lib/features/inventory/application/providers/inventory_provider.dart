@@ -497,6 +497,30 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     }
   }
 
+  /// Load complete inventory with environmental impact and utilization ideas
+  Future<void> loadCompleteInventoryFromBackend() async {
+    log('🔄 DEBUG - Starting loadCompleteInventoryFromBackend');
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      log('📡 DEBUG - Calling backend getInventoryComplete');
+      final inventoryData = await _backendNotifier.getInventoryComplete();
+      log('📡 DEBUG - Complete inventory response received: $inventoryData');
+
+      log('🔧 DEBUG - Parsing complete inventory data');
+      final items = _parseInventoryFromAPI(inventoryData);
+      log('🔧 DEBUG - Parsing completed, ${items.length} items created');
+
+      state = state.copyWith(items: items, isLoading: false);
+      log('✅ DEBUG - loadCompleteInventoryFromBackend completed successfully');
+    } catch (e) {
+      log('❌ DEBUG - Error in loadCompleteInventoryFromBackend: $e');
+      // Fallback to regular inventory if complete fails
+      log('🔄 DEBUG - Falling back to regular inventory');
+      await loadInventoryFromBackend();
+    }
+  }
+
   /// Add ingredients to real backend
   Future<void> addIngredientsToBackend(List<InventoryItem> items) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -657,6 +681,45 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     }
   }
 
+  /// Quick update ingredient quantity using PATCH endpoint (faster)
+  Future<void> updateIngredientQuantityQuick(
+    String itemId,
+    double newQuantity,
+  ) async {
+    try {
+      // Find the item to get its name and addedDate
+      final originalItem = state.items.firstWhere((item) => item.id == itemId);
+      final minimum = getMinimumQuantity(originalItem.unitType);
+      final clampedQuantity = newQuantity.clamp(minimum, double.infinity);
+
+      // 1. Update local state immediately for better UX
+      final updatedItems =
+          state.items.map((item) {
+            if (item.id == itemId) {
+              return item.copyWith(quantity: clampedQuantity);
+            }
+            return item;
+          }).toList();
+      state = state.copyWith(items: updatedItems);
+
+      // 2. Use the new quick quantity update endpoint
+      await _backendNotifier.updateIngredientQuantity(
+        originalItem.name,
+        originalItem.addedDate.toIso8601String(),
+        clampedQuantity,
+      );
+
+      log('✅ Ingredient quantity updated quickly: $itemId -> $clampedQuantity');
+    } catch (e) {
+      log('❌ Failed to update ingredient quantity quickly: $e');
+      state = state.copyWith(
+        errorMessage: 'Failed to update quantity: ${e.toString()}',
+      );
+      // Reload to restore accurate state
+      await loadInventoryFromBackend();
+    }
+  }
+
   /// Update expiration date in backend (async operation)
   Future<void> updateExpirationDateInBackend(
     String itemId,
@@ -712,6 +775,82 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   /// Use this when entering inventory screen or after significant changes
   Future<void> refreshInventory() async {
     await loadInventoryFromBackend();
+  }
+
+  /// Mark ingredient as consumed with consumption details
+  Future<void> markIngredientAsConsumed(
+    String itemId, {
+    required double consumedQuantity,
+    String? consumptionReason,
+    String? recipeUsed,
+  }) async {
+    try {
+      // Find the item to get its name and addedDate
+      final originalItem = state.items.firstWhere((item) => item.id == itemId);
+
+      // Call the backend to mark as consumed
+      final result = await _backendNotifier.markIngredientConsumed(
+        originalItem.name,
+        originalItem.addedDate.toIso8601String(),
+        consumedQuantity: consumedQuantity,
+        consumptionReason: consumptionReason,
+        recipeUsed: recipeUsed,
+      );
+
+      log('✅ Ingredient marked as consumed: $itemId');
+      log('📊 Consumption data: $result');
+
+      // Reload inventory to reflect changes
+      await loadInventoryFromBackend();
+
+      // Show success message with consumption details
+      final consumptionData =
+          result['consumption_data'] as Map<String, dynamic>?;
+      if (consumptionData != null) {
+        final remainingQuantity = consumptionData['remaining_quantity'] ?? 0;
+        log('📈 Remaining quantity: $remainingQuantity');
+      }
+    } catch (e) {
+      log('❌ Failed to mark ingredient as consumed: $e');
+      state = state.copyWith(
+        errorMessage: 'Failed to mark as consumed: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Add ingredients from recognition results
+  Future<void> addIngredientsFromRecognition(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _backendNotifier.addIngredientsFromRecognition(
+        ingredients,
+      );
+      log('✅ Ingredients added from recognition: $result');
+
+      // Reload inventory to show new items
+      await loadInventoryFromBackend();
+    } catch (e) {
+      log('❌ Failed to add ingredients from recognition: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to add ingredients: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Get list of ingredient names for quick access
+  Future<List<String>> getIngredientNamesList() async {
+    try {
+      final result = await _backendNotifier.getIngredientsList();
+      final ingredients = result['ingredients'] as List<dynamic>? ?? [];
+      return ingredients.cast<String>();
+    } catch (e) {
+      log('❌ Failed to get ingredients list: $e');
+      return [];
+    }
   }
 
   /// Convert API inventory data to InventoryItem list

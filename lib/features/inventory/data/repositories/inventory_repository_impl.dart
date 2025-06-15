@@ -201,4 +201,111 @@ class InventoryRepositoryImpl implements InventoryRepository {
       );
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> getInventoryComplete() async {
+    try {
+      return await _apiService.getInventoryComplete();
+    } catch (e) {
+      throw Exception(
+        'Failed to get complete inventory: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> addIngredientsFromRecognition(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    try {
+      return await _apiService.addIngredientsFromRecognition(ingredients);
+    } catch (e) {
+      throw Exception(
+        'Failed to add ingredients from recognition: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateIngredientQuantity(
+    String ingredientName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    try {
+      return await _apiService.updateIngredientQuantity(
+        ingredientName,
+        addedAt,
+        newQuantity,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to update ingredient quantity: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteCompleteIngredient(
+    String ingredientName,
+  ) async {
+    try {
+      return await _apiService.deleteCompleteIngredient(ingredientName);
+    } catch (e) {
+      throw Exception(
+        'Failed to delete complete ingredient: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> markIngredientConsumed(
+    String ingredientName,
+    String addedAt, {
+    required double consumedQuantity,
+    String? consumptionReason,
+    String? recipeUsed,
+  }) async {
+    try {
+      return await _apiService.markIngredientConsumed(
+        ingredientName,
+        addedAt,
+        consumedQuantity: consumedQuantity,
+        consumptionReason: consumptionReason,
+        recipeUsed: recipeUsed,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to mark ingredient consumed: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getIngredientsList() async {
+    try {
+      return await _apiService.getIngredientsList();
+    } catch (e) {
+      throw Exception(
+        'Failed to get ingredients list: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> addSingleInventoryItem({
+    required String itemType,
+    required Map<String, dynamic> itemData,
+  }) async {
+    try {
+      return await _apiService.addSingleInventoryItem(
+        itemType: itemType,
+        itemData: itemData,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to add single inventory item: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
 }

@@ -20,6 +20,7 @@ import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for da
 import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/snackbar_wrapper.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/widgets/mark_consumed_dialog.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -65,10 +66,12 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
     // Refresh inventory data when entering the screen
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Refresh inventory from backend to get latest data
+      // Refresh inventory from backend to get latest data with environmental impact
       try {
-        await ref.read(inventoryRealProvider.notifier).refreshInventory();
-        log('✅ Inventory refreshed from backend successfully');
+        await ref
+            .read(inventoryRealProvider.notifier)
+            .loadCompleteInventoryFromBackend();
+        log('✅ Complete inventory refreshed from backend successfully');
 
         // After loading from backend, copy data to the UI provider
         final realItems = ref.read(inventoryRealProvider).items;
@@ -81,7 +84,20 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           '📋 Synced ${realItems.length} items from real provider to UI provider',
         );
       } catch (e) {
-        log('❌ Failed to refresh inventory: $e');
+        log('❌ Failed to refresh complete inventory: $e');
+        // Fallback to regular inventory
+        try {
+          await ref.read(inventoryRealProvider.notifier).refreshInventory();
+          log('✅ Fallback: Regular inventory refreshed successfully');
+
+          final realItems = ref.read(inventoryRealProvider).items;
+          ref.read(inventoryProvider.notifier).clearAllItems();
+          if (realItems.isNotEmpty) {
+            ref.read(inventoryProvider.notifier).addItems(realItems);
+          }
+        } catch (fallbackError) {
+          log('❌ Failed to refresh inventory (fallback): $fallbackError');
+        }
       }
 
       // Verificar si hay elementos destacados al iniciar la pantalla
@@ -264,31 +280,67 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             icon: Icon(Icons.refresh, color: primaryColor),
             onPressed: () async {
               try {
+                // Try to load complete inventory first
                 await ref
                     .read(inventoryRealProvider.notifier)
-                    .refreshInventory();
+                    .loadCompleteInventoryFromBackend();
+
+                // Sync with UI provider
+                final realItems = ref.read(inventoryRealProvider).items;
+                ref.read(inventoryProvider.notifier).clearAllItems();
+                if (realItems.isNotEmpty) {
+                  ref.read(inventoryProvider.notifier).addItems(realItems);
+                }
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Inventario actualizado'),
+                      content: const Text('Inventario completo actualizado'),
                       backgroundColor: primaryColor,
                       duration: const Duration(seconds: 2),
                     ),
                   );
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al actualizar: ${e.toString()}'),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                // Fallback to regular inventory
+                try {
+                  await ref
+                      .read(inventoryRealProvider.notifier)
+                      .refreshInventory();
+
+                  final realItems = ref.read(inventoryRealProvider).items;
+                  ref.read(inventoryProvider.notifier).clearAllItems();
+                  if (realItems.isNotEmpty) {
+                    ref.read(inventoryProvider.notifier).addItems(realItems);
+                  }
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'Inventario actualizado (modo básico)',
+                        ),
+                        backgroundColor: primaryColor,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                } catch (fallbackError) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Error al actualizar: ${fallbackError.toString()}',
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
                 }
               }
             },
-            tooltip: 'Actualizar inventario',
+            tooltip: 'Actualizar inventario completo',
           ),
         ],
       ),
@@ -674,7 +726,24 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
                     return Slidable(
                       key: ValueKey(item.id),
-                      // Only show delete action if item is NOT expired
+                      // Start action: Mark as consumed
+                      startActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        extentRatio: 0.25,
+                        children: [
+                          SlidableAction(
+                            onPressed:
+                                (context) =>
+                                    _showMarkConsumedDialog(context, item),
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            icon: Icons.restaurant,
+                            label: 'Consumido',
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                        ],
+                      ),
+                      // End action: Delete (only if not expired)
                       endActionPane:
                           isExpired
                               ? null
@@ -741,6 +810,11 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     if (item.expirationDate == null) return false;
     final status = ExpirationStatusExtension.fromDate(item.expirationDate);
     return status == ExpirationStatus.expired;
+  }
+
+  // Helper to show mark consumed dialog
+  void _showMarkConsumedDialog(BuildContext context, InventoryItem item) {
+    showMarkConsumedDialog(context, item);
   }
 
   Future<void> _showDeleteConfirmationDialog(
@@ -1206,10 +1280,34 @@ Future<void> showQuantityEditDialog(
                     quantityController.text,
                   );
 
-                  // Use the real backend provider for persistence
-                  await ref
-                      .read(inventoryRealProvider.notifier)
-                      .updateItemQuantityInBackend(item.id, newQuantity);
+                  // Use the new quick quantity update endpoint for better performance
+                  try {
+                    await ref
+                        .read(inventoryRealProvider.notifier)
+                        .updateIngredientQuantityQuick(item.id, newQuantity);
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Cantidad actualizada: ${_formatQuantityForEditing(newQuantity, item.unitType)} ${item.unitType}',
+                          ),
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al actualizar: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
 
                   Navigator.of(dialogContext).pop();
                 }

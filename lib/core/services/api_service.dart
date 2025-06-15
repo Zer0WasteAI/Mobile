@@ -48,13 +48,20 @@ class ApiService {
   static const String _referenceImageDelete = '/api/reference-images';
   static const String _referenceImageUpdate = '/api/reference-images';
 
-  // INFO: NEW - Inventory Management endpoints (6 endpoints)
+  // INFO: NEW - Inventory Management endpoints (15 endpoints)
   static const String _inventoryItems = '/api/inventory';
   static const String _inventoryIngredients = '/api/inventory/ingredients';
+  static const String _inventoryComplete = '/api/inventory/complete';
   static const String _inventorySimple = '/api/inventory/simple';
   static const String _inventoryExpiring = '/api/inventory/expiring';
   static const String _inventoryIngredientDetail = '/api/inventory/ingredients';
   static const String _inventoryFoodDetail = '/api/inventory/foods';
+  static const String _inventoryFromRecognition =
+      '/api/inventory/ingredients/from-recognition';
+  static const String _inventoryAddItem = '/api/inventory/add_item';
+  static const String _inventoryUploadImage = '/api/inventory/upload_image';
+  static const String _inventoryIngredientsList =
+      '/api/inventory/ingredients/list';
 
   // INFO: NEW - Recipe Management endpoints (5 endpoints)
   static const String _recipesGenerate = '/api/recipes/generate';
@@ -920,6 +927,156 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Get expiring items error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get complete inventory with environmental impact and utilization ideas
+  /// USAGE: Enriched inventory with AI-generated insights
+  Future<Map<String, dynamic>> getInventoryComplete() async {
+    try {
+      final response = await _dio.get(_inventoryComplete);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get complete inventory error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Add ingredients from recognition results
+  /// USAGE: Add ingredients directly from AI recognition with environmental data
+  Future<Map<String, dynamic>> addIngredientsFromRecognition(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _inventoryFromRecognition,
+        data: {'ingredients': ingredients},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception(
+        'Add ingredients from recognition error: ${e.toString()}',
+      );
+    }
+  }
+
+  /// INFO: Update ingredient quantity only
+  /// USAGE: Quick quantity update for specific ingredient stack
+  Future<Map<String, dynamic>> updateIngredientQuantity(
+    String ingredientName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(ingredientName);
+      final encodedDate = Uri.encodeComponent(addedAt);
+      final response = await _dio.patch(
+        '$_inventoryIngredients/$encodedName/$encodedDate/quantity',
+        data: {'new_quantity': newQuantity},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update ingredient quantity error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Delete complete ingredient (all stacks)
+  /// USAGE: Remove all stacks of an ingredient from inventory
+  Future<Map<String, dynamic>> deleteCompleteIngredient(
+    String ingredientName,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(ingredientName);
+      final response = await _dio.delete('$_inventoryIngredients/$encodedName');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Delete complete ingredient error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Mark ingredient as consumed
+  /// USAGE: Track ingredient consumption with details
+  Future<Map<String, dynamic>> markIngredientConsumed(
+    String ingredientName,
+    String addedAt, {
+    required double consumedQuantity,
+    String? consumptionReason,
+    String? recipeUsed,
+  }) async {
+    try {
+      final encodedName = Uri.encodeComponent(ingredientName);
+      final encodedDate = Uri.encodeComponent(addedAt);
+      final response = await _dio.post(
+        '$_inventoryIngredients/$encodedName/$encodedDate/consume',
+        data: {
+          'consumed_quantity': consumedQuantity,
+          if (consumptionReason != null)
+            'consumption_reason': consumptionReason,
+          if (recipeUsed != null) 'recipe_used': recipeUsed,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Mark ingredient consumed error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get simplified list of ingredient names
+  /// USAGE: Quick access to all ingredient names in inventory
+  Future<Map<String, dynamic>> getIngredientsList() async {
+    try {
+      final response = await _dio.get(_inventoryIngredientsList);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get ingredients list error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Add single item with advanced options
+  /// USAGE: Add individual item with detailed configuration
+  Future<Map<String, dynamic>> addSingleInventoryItem({
+    required String itemType,
+    required Map<String, dynamic> itemData,
+  }) async {
+    try {
+      final response = await _dio.post(
+        _inventoryAddItem,
+        data: {'item_type': itemType, 'item_data': itemData},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Add single inventory item error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Upload inventory image
+  /// USAGE: Upload reference image for inventory items
+  Future<Map<String, dynamic>> uploadInventoryImage({
+    required File imageFile,
+    required String itemName,
+    String imageType = 'ingredient',
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.path.split('/').last,
+        ),
+        'item_name': itemName,
+        'image_type': imageType,
+      });
+
+      final response = await _dio.post(
+        _inventoryUploadImage,
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: const Duration(minutes: 2),
+          receiveTimeout: const Duration(minutes: 2),
+        ),
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Upload inventory image error: ${e.toString()}');
     }
   }
 

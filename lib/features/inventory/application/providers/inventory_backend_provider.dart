@@ -134,4 +134,76 @@ class InventoryBackendNotifier {
   ) async {
     return await _repository.generateRecipe(ingredients);
   }
+
+  /// INFO: Get complete inventory with environmental impact and utilization ideas
+  /// USAGE: Enriched inventory with AI-generated insights
+  Future<Map<String, dynamic>> getInventoryComplete() async {
+    return await _repository.getInventoryComplete();
+  }
+
+  /// INFO: Add ingredients from recognition results
+  /// USAGE: Add ingredients directly from AI recognition with environmental data
+  Future<Map<String, dynamic>> addIngredientsFromRecognition(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    return await _repository.addIngredientsFromRecognition(ingredients);
+  }
+
+  /// INFO: Update ingredient quantity only
+  /// USAGE: Quick quantity update for specific ingredient stack
+  Future<Map<String, dynamic>> updateIngredientQuantity(
+    String ingredientName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    return await _repository.updateIngredientQuantity(
+      ingredientName,
+      addedAt,
+      newQuantity,
+    );
+  }
+
+  /// INFO: Delete complete ingredient (all stacks)
+  /// USAGE: Remove all stacks of an ingredient from inventory
+  Future<Map<String, dynamic>> deleteCompleteIngredient(
+    String ingredientName,
+  ) async {
+    return await _repository.deleteCompleteIngredient(ingredientName);
+  }
+
+  /// INFO: Mark ingredient as consumed
+  /// USAGE: Track ingredient consumption with details
+  Future<Map<String, dynamic>> markIngredientConsumed(
+    String ingredientName,
+    String addedAt, {
+    required double consumedQuantity,
+    String? consumptionReason,
+    String? recipeUsed,
+  }) async {
+    return await _repository.markIngredientConsumed(
+      ingredientName,
+      addedAt,
+      consumedQuantity: consumedQuantity,
+      consumptionReason: consumptionReason,
+      recipeUsed: recipeUsed,
+    );
+  }
+
+  /// INFO: Get simplified list of ingredient names
+  /// USAGE: Quick access to all ingredient names in inventory
+  Future<Map<String, dynamic>> getIngredientsList() async {
+    return await _repository.getIngredientsList();
+  }
+
+  /// INFO: Add single item with advanced options
+  /// USAGE: Add individual item with detailed configuration
+  Future<Map<String, dynamic>> addSingleInventoryItem({
+    required String itemType,
+    required Map<String, dynamic> itemData,
+  }) async {
+    return await _repository.addSingleInventoryItem(
+      itemType: itemType,
+      itemData: itemData,
+    );
+  }
 }

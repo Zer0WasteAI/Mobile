@@ -174,6 +174,16 @@ class _AddInventoryItemScreenState
                   if (value == null || value.trim().isEmpty) {
                     return 'Por favor ingresa un nombre';
                   }
+                  if (value.trim().length < 2) {
+                    return 'El nombre debe tener al menos 2 caracteres';
+                  }
+                  if (value.trim().length > 50) {
+                    return 'El nombre no puede exceder 50 caracteres';
+                  }
+                  // Validar que no contenga solo números
+                  if (RegExp(r'^\d+$').hasMatch(value.trim())) {
+                    return 'El nombre no puede ser solo números';
+                  }
                   return null;
                 },
                 textCapitalization: TextCapitalization.sentences,
@@ -288,11 +298,23 @@ class _AddInventoryItemScreenState
                 controller: _tipsController,
                 style: TextStyle(color: mainTextColor),
                 maxLines: 3,
+                maxLength: 200,
                 decoration: inputDecorationHelper(
                   hintText: 'Ej: Mantener en lugar fresco y seco...',
                   icon: Icons.lightbulb_outline,
                   hintStyle: hintTextStyle,
                 ),
+                validator: (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (value.trim().length < 5) {
+                      return 'Los tips deben tener al menos 5 caracteres';
+                    }
+                    if (value.trim().length > 200) {
+                      return 'Los tips no pueden exceder 200 caracteres';
+                    }
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
 
@@ -437,6 +459,25 @@ class _AddInventoryItemScreenState
                   if (_expirationDate == null) {
                     return 'Por favor selecciona una fecha de expiración';
                   }
+                  // Validar que la fecha no sea en el pasado
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  final selectedDate = DateTime(
+                    _expirationDate!.year,
+                    _expirationDate!.month,
+                    _expirationDate!.day,
+                  );
+
+                  if (selectedDate.isBefore(today)) {
+                    return 'La fecha de expiración no puede ser en el pasado';
+                  }
+
+                  // Validar que no sea más de 5 años en el futuro
+                  final maxDate = today.add(const Duration(days: 365 * 5));
+                  if (selectedDate.isAfter(maxDate)) {
+                    return 'La fecha no puede ser más de 5 años en el futuro';
+                  }
+
                   return null;
                 },
               ),
@@ -741,6 +782,32 @@ class _AddInventoryItemScreenState
 
   Future<void> _saveItem() async {
     if (_formKey.currentState!.validate()) {
+      // Validaciones adicionales antes de enviar
+      if (_quantity <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La cantidad debe ser mayor a 0'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (_selectedUnitType != null) {
+        final minQuantity = _getMinimumQuantity(_selectedUnitType!);
+        if (_quantity < minQuantity) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'La cantidad mínima para ${_selectedUnitType!} es $minQuantity',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
       setState(() {
         _isSubmitting = true;
       });
@@ -776,7 +843,24 @@ class _AddInventoryItemScreenState
           }
         }
 
-        // Step 2: Create item data for backend
+        // Step 2: Check for duplicate names (optional warning)
+        final existingItems = ref.read(inventoryRealProvider).items;
+        final itemName = _nameController.text.trim().toLowerCase();
+        final hasDuplicate = existingItems.any(
+          (item) => item.name.toLowerCase() == itemName,
+        );
+
+        if (hasDuplicate) {
+          final shouldContinue = await _showDuplicateWarning();
+          if (!shouldContinue) {
+            setState(() {
+              _isSubmitting = false;
+            });
+            return;
+          }
+        }
+
+        // Step 3: Create item data for backend
         final itemData = {
           'name': _nameController.text.trim(),
           'quantity': _quantity,
@@ -903,5 +987,30 @@ class _AddInventoryItemScreenState
 
   void _updateQuantityController() {
     // Implementation of _updateQuantityController method
+  }
+
+  Future<bool> _showDuplicateWarning() async {
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Elemento Similar Encontrado'),
+                content: Text(
+                  'Ya existe un elemento con el nombre "${_nameController.text.trim()}" en tu inventario. '
+                  '¿Deseas continuar agregando este elemento?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Continuar'),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
   }
 }
