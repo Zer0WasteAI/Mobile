@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
-import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'
-    as home;
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
 
 class AIRecipeGenerationScreen extends ConsumerStatefulWidget {
@@ -52,37 +50,14 @@ class _AIRecipeGenerationScreenState
     super.dispose();
   }
 
-  // Costo en EcoCoins para usar este servicio
-  final int _ecoCoinsRequired = home.EcoCoinCosts.generateAIRecipe;
-
-  // Método para verificar y gastar EcoCoins
-  bool _checkAndSpendEcoCoins() {
-    final ecoCoinsNotifier = ref.read(home.ecoCoinsProvider.notifier);
-    final currentCoins = ref.read(home.ecoCoinsProvider);
-
-    if (currentCoins < _ecoCoinsRequired) {
-      // No hay suficientes monedas
-      _showInsufficientCoinsDialog();
-      return false;
-    }
-
-    // Hay suficientes monedas, cobrar
-    ecoCoinsNotifier.spendCoins(_ecoCoinsRequired);
-    return true;
-  }
-
   // Generar recetas desde inventario
   Future<void> _generateFromInventory() async {
-    if (!_checkAndSpendEcoCoins()) return;
-
     // Call the real backend API
     ref.read(aiRecipeProvider.notifier).generateRecipesFromInventory();
   }
 
   // Generar recetas personalizadas
   Future<void> _generateCustomRecipes() async {
-    if (!_checkAndSpendEcoCoins()) return;
-
     final ingredients =
         _ingredientsController.text
             .split(',')
@@ -117,63 +92,6 @@ class _AIRecipeGenerationScreenState
         );
   }
 
-  // Diálogo para mostrar cuando no hay suficientes EcoCoins
-  void _showInsufficientCoinsDialog() {
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text(
-                'EcoCoins insuficientes',
-                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Necesitas $_ecoCoinsRequired EcoCoins para generar recetas con IA.',
-                    style: GoogleFonts.inter(),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '¿Cómo conseguir más EcoCoins?',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '• Completa objetivos en el Panel de Impacto\n'
-                    '• Salva alimentos de ser desperdiciados\n'
-                    '• Consigue insignias por tus acciones\n'
-                    '• Sube de nivel salvando alimentos',
-                    style: GoogleFonts.inter(),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    if (mounted) {
-                      context.push('/impact');
-                    }
-                  },
-                  child: Text(
-                    'Ver Panel de Impacto',
-                    style: GoogleFonts.inter(),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cerrar', style: GoogleFonts.inter()),
-                ),
-              ],
-            ),
-      );
-    }
-  }
-
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -197,7 +115,6 @@ class _AIRecipeGenerationScreenState
 
     // Watch the AI recipe state
     final aiRecipeState = ref.watch(aiRecipeProvider);
-    final currentEcoCoins = ref.watch(home.ecoCoinsProvider);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -216,30 +133,6 @@ class _AIRecipeGenerationScreenState
           icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          // Mostrar EcoCoins actuales
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              children: [
-                Image.asset(
-                  'assets/icons/home/eco_coin.png',
-                  width: 20,
-                  height: 20,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$currentEcoCoins',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.lightPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
       body:
           aiRecipeState.isGenerating
@@ -316,7 +209,7 @@ class _AIRecipeGenerationScreenState
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    'Generando con $_ecoCoinsRequired EcoCoins',
+                    'Generando recetas con IA',
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       color: Colors.green.shade800,
@@ -538,7 +431,7 @@ class _AIRecipeGenerationScreenState
                   onPressed: _generateCustomRecipes,
                   icon: const Icon(Icons.auto_awesome),
                   label: Text(
-                    'Generar Recetas ($_ecoCoinsRequired EcoCoins)',
+                    'Generar Recetas',
                     style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -689,7 +582,7 @@ class _AIRecipeGenerationScreenState
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                '¡Felicidades por cocinar esta receta! Has ganado EcoCoins por reducir el desperdicio.',
+                                '¡Felicidades por cocinar esta receta! Has contribuido a reducir el desperdicio de alimentos.',
                                 style: GoogleFonts.inter(),
                               ),
                               backgroundColor: Colors.green.shade600,
@@ -703,9 +596,6 @@ class _AIRecipeGenerationScreenState
                               ),
                             ),
                           );
-
-                          // Otorgar EcoCoins al usuario
-                          ref.read(home.ecoCoinsProvider.notifier).addCoins(15);
                         }
                       });
                     },

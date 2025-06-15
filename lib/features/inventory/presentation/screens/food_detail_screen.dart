@@ -134,30 +134,29 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
       _isMarkingConsumed = false;
     });
 
-    // Calculate environmental impact for display
+    // Calculate environmental impact
     final co2Saved =
-        tracking.environmentalImpact?['co2_saved']?.toDouble() ?? 0.5;
+        tracking.environmentalImpact?['co2_saved']?.toDouble() ?? 1.2;
     final waterSaved =
-        tracking.environmentalImpact?['water_saved']?.toInt() ?? 100;
-    final coinsEarned = tracking.coinsEarned ?? 10;
+        tracking.environmentalImpact?['water_saved']?.toInt() ?? 150;
 
     // Navigate to success screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => FoodConsumedScreen(
-              foodName: _foodDetail!.name,
-              foodEmoji: '🍽️', // You can enhance this based on food category
-              co2Saved: co2Saved,
-              waterSaved: waterSaved,
-              coinsEarned: coinsEarned,
-            ),
-      ),
-    ).then((_) {
-      // Navigate back to inventory after success screen
-      Navigator.of(context).pop();
-    });
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder:
+                (context) => FoodConsumedScreen(
+                  foodName: widget.foodName,
+                  foodEmoji: '🍽️',
+                  co2Saved: co2Saved,
+                  waterSaved: waterSaved,
+                ),
+          ),
+        )
+        .then((_) {
+          // Navigate back to inventory after success screen
+          Navigator.of(context).pop();
+        });
   }
 
   @override

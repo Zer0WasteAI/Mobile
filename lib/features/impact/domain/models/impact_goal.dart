@@ -30,12 +30,6 @@ class ImpactGoal {
   /// Si el objetivo está activo actualmente
   final bool isActive;
 
-  /// Cantidad de EcoCoins que se ganan al completar el objetivo
-  final int ecoCoinsReward;
-
-  /// Cantidad de experiencia (XP) que se gana al completar el objetivo
-  final int xpReward;
-
   const ImpactGoal({
     required this.id,
     required this.title,
@@ -47,8 +41,6 @@ class ImpactGoal {
     this.endDate,
     this.isCompleted = false,
     this.isActive = true,
-    this.ecoCoinsReward = 0,
-    this.xpReward = 0,
   });
 
   /// Calcula el progreso actual del objetivo (0.0 - 1.0)
@@ -77,8 +69,6 @@ class ImpactGoal {
               : null,
       isCompleted: map['isCompleted'] ?? false,
       isActive: map['isActive'] ?? true,
-      ecoCoinsReward: map['ecoCoinsReward'] ?? 0,
-      xpReward: map['xpReward'] ?? 0,
     );
   }
 
@@ -95,8 +85,6 @@ class ImpactGoal {
       'endDate': endDate?.millisecondsSinceEpoch,
       'isCompleted': isCompleted,
       'isActive': isActive,
-      'ecoCoinsReward': ecoCoinsReward,
-      'xpReward': xpReward,
     };
   }
 
@@ -113,8 +101,6 @@ class ImpactGoal {
     bool? endDateRemoved,
     bool? isCompleted,
     bool? isActive,
-    int? ecoCoinsReward,
-    int? xpReward,
   }) {
     return ImpactGoal(
       id: id ?? this.id,
@@ -127,8 +113,6 @@ class ImpactGoal {
       endDate: endDateRemoved == true ? null : (endDate ?? this.endDate),
       isCompleted: isCompleted ?? this.isCompleted,
       isActive: isActive ?? this.isActive,
-      ecoCoinsReward: ecoCoinsReward ?? this.ecoCoinsReward,
-      xpReward: xpReward ?? this.xpReward,
     );
   }
 }

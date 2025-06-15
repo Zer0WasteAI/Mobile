@@ -1,4 +1,4 @@
-/// INFO: Model for tracking food consumption response
+/// Model for tracking food consumption and environmental impact
 /// USAGE: Use to handle the response when marking food as consumed
 /// ADVICE: Contains information about what was consumed and environmental impact
 class ConsumptionTracking {
@@ -11,7 +11,6 @@ class ConsumptionTracking {
   final String consumptionDate; // Date when the food was consumed
   final Map<String, dynamic>?
   environmentalImpact; // ⚠️ NULLABLE - environmental data
-  final int? coinsEarned; // ⚠️ NULLABLE - eco coins earned from consumption
 
   ConsumptionTracking({
     this.food, // Optional
@@ -21,7 +20,6 @@ class ConsumptionTracking {
     this.foodDetails, // Optional
     required this.consumptionDate,
     this.environmentalImpact, // Optional
-    this.coinsEarned, // Optional
   });
 
   factory ConsumptionTracking.fromJson(Map<String, dynamic> json) {
@@ -34,7 +32,6 @@ class ConsumptionTracking {
       consumptionDate:
           json['consumption_date'] ?? DateTime.now().toIso8601String(),
       environmentalImpact: json['environmental_impact'],
-      coinsEarned: json['coins_earned'],
     );
   }
 
@@ -47,7 +44,6 @@ class ConsumptionTracking {
       'food_details': foodDetails,
       'consumption_date': consumptionDate,
       'environmental_impact': environmentalImpact,
-      'coins_earned': coinsEarned,
     };
   }
 

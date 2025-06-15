@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/impact_metrics.dart';
@@ -13,352 +12,389 @@ class ImpactProgressTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final metrics = ref.watch(impactMetricsProvider);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
-    final primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final goals = ref.watch(impactGoalsProvider);
 
-    // Ordenar logros por fecha, más recientes primero
-    final achievements = List<UserAchievement>.from(metrics.achievements)
-      ..sort((a, b) => b.achievedAt.compareTo(a.achievedAt));
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor =
+        isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sección de comparativas
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Tu impacto equivale a:',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
+          // Título
+          Text(
+            'Tu Progreso',
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
-          const SizedBox(height: 12),
-
-          // Comparativas visuales
-          _buildComparisonCard(
-            context: context,
-            title: 'Viajes en coche',
-            value: '${(metrics.co2AvoidedKg * 6).toStringAsFixed(0)} km',
-            description: 'Emisiones de CO₂ evitadas',
-            icon: Icons.directions_car,
-            color: Colors.blue,
+          const SizedBox(height: 8),
+          Text(
+            'Sigue tu evolución hacia un estilo de vida más sostenible',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: textColor.withValues(alpha: 0.7),
+            ),
           ),
-          _buildComparisonCard(
-            context: context,
-            title: 'Duchas completas',
-            value: (metrics.waterSavedLiters / 50).toStringAsFixed(0),
-            description: 'Agua ahorrada',
-            icon: Icons.shower,
-            color: Colors.lightBlue,
-          ),
-          _buildComparisonCard(
-            context: context,
-            title: 'Comidas completas',
-            value: (metrics.foodSavedKg * 2).toStringAsFixed(0),
-            description: 'Alimentos salvados',
-            icon: Icons.restaurant,
-            color: Colors.green,
-          ),
-
           const SizedBox(height: 24),
 
-          // Progreso mensual
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Progreso mensual',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Progreso de métricas
+          _buildMetricsProgress(metrics, primaryColor, textColor),
+          const SizedBox(height: 24),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _buildProgressBar(
-                  context: context,
-                  label: 'Alimentos salvados',
-                  currentValue: metrics.foodSavedKg,
-                  targetValue: 20.0,
-                  color: Colors.green,
-                ),
-                const SizedBox(height: 16),
-                _buildProgressBar(
-                  context: context,
-                  label: 'CO₂ evitado',
-                  currentValue: metrics.co2AvoidedKg,
-                  targetValue: 30.0,
-                  color: Colors.blue,
-                ),
-                const SizedBox(height: 16),
-                _buildProgressBar(
-                  context: context,
-                  label: 'Agua ahorrada',
-                  currentValue: metrics.waterSavedLiters / 1000,
-                  targetValue: 2.0,
-                  suffix: ' m³',
-                  color: Colors.lightBlue,
-                ),
-              ],
-            ),
-          ),
+          // Objetivos activos
+          _buildActiveGoals(goals, primaryColor, textColor),
+          const SizedBox(height: 24),
 
-          const SizedBox(height: 32),
-
-          // Logros recientes
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Logros alcanzados',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Lista de logros
-          if (achievements.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Todavía no has alcanzado ningún logro. ¡Sigue usando la app!',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: secondaryTextColor,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: achievements.length,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemBuilder: (context, index) {
-                final achievement = achievements[index];
-                return _buildAchievementItem(
-                  context: context,
-                  achievement: achievement,
-                  primaryColor: primaryColor,
-                  textColor: textColor,
-                  secondaryTextColor: secondaryTextColor,
-                );
-              },
-            ),
-
-          const SizedBox(height: 20),
+          // Tendencias
+          _buildTrends(metrics, primaryColor, textColor),
         ],
       ),
     );
   }
 
-  Widget _buildComparisonCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required String description,
-    required IconData icon,
-    required Color color,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: color.withValues(alpha: 0.3), width: 1),
-        ),
-        color: cardColor,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: textColor.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                value,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressBar({
-    required BuildContext context,
-    required String label,
-    required double currentValue,
-    required double targetValue,
-    String suffix = '',
-    required Color color,
-  }) {
-    final percent = (currentValue / targetValue).clamp(0.0, 1.0);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-
+  Widget _buildMetricsProgress(
+    ImpactMetrics metrics,
+    Color primaryColor,
+    Color textColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(fontSize: 12, color: textColor),
-            ),
-            Text(
-              '${currentValue.toStringAsFixed(1)}$suffix / ${targetValue.toStringAsFixed(1)}$suffix',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: textColor.withValues(alpha: 0.7),
-              ),
-            ),
-          ],
+        Text(
+          'Métricas de Impacto',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
-        const SizedBox(height: 8),
-        LinearPercentIndicator(
-          lineHeight: 10.0,
-          percent: percent,
-          backgroundColor: color.withValues(alpha: 0.2),
-          progressColor: color,
-          barRadius: const Radius.circular(5),
-          animation: true,
-          animationDuration: 1000,
-          padding: EdgeInsets.zero,
+        const SizedBox(height: 16),
+        _buildProgressCard(
+          title: 'Alimentos Salvados',
+          value: metrics.foodSavedKg,
+          unit: 'kg',
+          target: 50.0,
+          icon: Icons.restaurant,
+          color: Colors.green,
+          textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        _buildProgressCard(
+          title: 'CO₂ Evitado',
+          value: metrics.co2AvoidedKg,
+          unit: 'kg',
+          target: 100.0,
+          icon: Icons.cloud_off,
+          color: Colors.blue,
+          textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        _buildProgressCard(
+          title: 'Agua Ahorrada',
+          value: metrics.waterSavedLiters,
+          unit: 'L',
+          target: 5000.0,
+          icon: Icons.water_drop,
+          color: Colors.cyan,
+          textColor: textColor,
         ),
       ],
     );
   }
 
-  Widget _buildAchievementItem({
-    required BuildContext context,
-    required UserAchievement achievement,
-    required Color primaryColor,
+  Widget _buildProgressCard({
+    required String title,
+    required double value,
+    required String unit,
+    required double target,
+    required IconData icon,
+    required Color color,
     required Color textColor,
-    required Color secondaryTextColor,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
+    final progress = (value / target).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.emoji_events_outlined,
-              color: primaryColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement.title,
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
                 ),
-                Text(
-                  achievement.description,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: secondaryTextColor,
-                  ),
+              ),
+              Text(
+                '${value.toStringAsFixed(1)} / ${target.toStringAsFixed(0)} $unit',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: textColor.withValues(alpha: 0.7),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: color.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation(color),
+            minHeight: 6,
+          ),
+          const SizedBox(height: 8),
           Text(
-            _getTimeAgo(achievement.achievedAt),
-            style: GoogleFonts.inter(fontSize: 12, color: secondaryTextColor),
+            '${(progress * 100).toStringAsFixed(1)}% completado',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
-  String _getTimeAgo(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  Widget _buildActiveGoals(
+    List<dynamic> goals,
+    Color primaryColor,
+    Color textColor,
+  ) {
+    final activeGoals =
+        goals.where((goal) => goal.isActive && !goal.isCompleted).toList();
 
-    if (difference.inDays > 30) {
-      return 'hace ${(difference.inDays / 30).floor()} meses';
-    } else if (difference.inDays > 0) {
-      return 'hace ${difference.inDays} días';
-    } else if (difference.inHours > 0) {
-      return 'hace ${difference.inHours} horas';
-    } else {
-      return 'hace poco';
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Objetivos Activos',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (activeGoals.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: primaryColor.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.flag_outlined, color: primaryColor),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'No tienes objetivos activos. ¡Crea uno nuevo para seguir tu progreso!',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: textColor.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...activeGoals.map(
+            (goal) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildGoalCard(goal, primaryColor, textColor),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGoalCard(dynamic goal, Color primaryColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            goal.title,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            goal.description,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: textColor.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: goal.progress,
+            backgroundColor: primaryColor.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation(primaryColor),
+            minHeight: 6,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${(goal.progress * 100).toStringAsFixed(1)}% completado',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                '${goal.currentValue.toStringAsFixed(1)} / ${goal.targetValue.toStringAsFixed(1)}',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrends(
+    ImpactMetrics metrics,
+    Color primaryColor,
+    Color textColor,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tendencias',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: primaryColor.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: primaryColor.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildTrendItem(
+                'Esta semana',
+                '+2.3 kg alimentos salvados',
+                Icons.trending_up,
+                Colors.green,
+                textColor,
+              ),
+              const SizedBox(height: 12),
+              _buildTrendItem(
+                'Este mes',
+                '+8.7 kg CO₂ evitados',
+                Icons.trending_up,
+                Colors.blue,
+                textColor,
+              ),
+              const SizedBox(height: 12),
+              _buildTrendItem(
+                'Promedio diario',
+                '450 L agua ahorrados',
+                Icons.water_drop,
+                Colors.cyan,
+                textColor,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTrendItem(
+    String period,
+    String value,
+    IconData icon,
+    Color color,
+    Color textColor,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 16),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                period,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
+              ),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
