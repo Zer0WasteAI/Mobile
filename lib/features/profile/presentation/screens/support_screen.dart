@@ -47,15 +47,13 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         _isSending = true;
       });
 
-      // Simular tiempo de envío
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _isSending = false;
-          });
-          _showSuccessDialog();
-        }
-      });
+      // ✅ UPDATED: Immediate response without artificial delay
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+        _showSuccessDialog();
+      }
     }
   }
 

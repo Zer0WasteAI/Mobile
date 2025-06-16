@@ -13,8 +13,6 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
-import 'package:flutter/services.dart';
-import 'dart:convert';
 
 // --- Design Constants ---
 const Color _screenBackgroundColor = Color(0xFFFAF9F6);
@@ -809,35 +807,31 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                                 );
                               }
 
-                              // Fallback to dummy data
-                              try {
-                                // Determine which JSON file to load
-                                final String jsonPath =
-                                    widget.originType == ScanItemType.ingredient
-                                        ? 'lib/core/constants/dummy_ingredients.json'
-                                        : 'lib/core/constants/dummy_food.json';
+                              // ✅ UPDATED: Proper error handling without dummy fallback
+                              log('❌ Recognition API failed: $e');
+                              formattedResults = []; // Return empty results
 
-                                // Load and parse the JSON
-                                final jsonString = await rootBundle.loadString(
-                                  jsonPath,
+                              // Show error message to user
+                              if (mounted) {
+                                Navigator.of(
+                                  context,
+                                ).pop(); // Close loading dialog
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error al analizar las imágenes. Por favor, intenta nuevamente.',
+                                    ),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                    action: SnackBarAction(
+                                      label: 'Reintentar',
+                                      onPressed: () {
+                                        // User can tap the analyze button again
+                                      },
+                                    ),
+                                  ),
                                 );
-                                final Map<String, dynamic> decodedJson =
-                                    jsonDecode(jsonString);
-                                final List<dynamic> jsonItems =
-                                    decodedJson['items'] as List<dynamic>? ??
-                                    [];
-                                formattedResults =
-                                    jsonItems.cast<Map<String, dynamic>>();
-
-                                log(
-                                  '✅ Fallback to dummy data successful. Found ${formattedResults.length} items.',
-                                );
-                              } catch (fallbackError) {
-                                log(
-                                  '❌ Fallback to dummy data also failed: $fallbackError',
-                                );
-                                formattedResults =
-                                    []; // Empty list as last resort
+                                return; // Exit early on error
                               }
                             }
 

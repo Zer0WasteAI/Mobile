@@ -1,3 +1,4 @@
+import 'package:zer0_waste_ai/core/usecases/usecase.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 
@@ -25,46 +26,28 @@ class LoginController {
 
   /// Login with email and password
   Future<UserEntity> login(String email, String password) async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'mock-user-id',
-      email: email,
-      displayName: 'UI Navigation User',
-      photoURL: 'https://via.placeholder.com/150',
+    // ✅ FIXED: Use real authentication through use case
+    return await loginUseCase.call(
+      LoginParams(email: email, password: password),
     );
   }
 
   /// Login with Google
   Future<UserEntity> loginWithGoogle() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'google-user-id',
-      email: 'google@example.com',
-      displayName: 'Google User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    // ✅ FIXED: Use real Google authentication through use case
+    return await googleLoginUseCase.call(NoParams());
   }
 
   /// Login with Facebook
   Future<UserEntity> loginWithFacebook() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'facebook-user-id',
-      email: 'facebook@example.com',
-      displayName: 'Facebook User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    // ✅ FIXED: Use real Facebook authentication through use case
+    return await facebookLoginUseCase.call(NoParams());
   }
 
   /// Login with Apple
   Future<UserEntity> loginWithApple() async {
-    // Return a mock user for UI navigation without functionality
-    return UserEntity(
-      id: 'apple-user-id',
-      email: 'apple@example.com',
-      displayName: 'Apple User',
-      photoURL: 'https://via.placeholder.com/150',
-    );
+    // ✅ FIXED: Use real Apple authentication through use case
+    return await appleLoginUseCase.call(NoParams());
   }
 
   /// Validate email

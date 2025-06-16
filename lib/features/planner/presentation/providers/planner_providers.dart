@@ -993,7 +993,7 @@ final aiSuggestionsProvider = FutureProvider.family<
       parameters['availableIngredients'] as List<String>?;
 
   // Simular tiempo de procesamiento
-  await Future.delayed(const Duration(seconds: 1));
+  // ✅ UPDATED: Removed artificial delay
 
   // Filtrar recetas
   var suggestions = [...allRecipes];

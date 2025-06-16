@@ -179,9 +179,6 @@ class AppProviders {
   /// SharedPreferences provider
   static final sharedPrefs = sharedPrefsProvider;
 
-  /// Auth API provider
-  static final authApi = login.authApiProvider;
-
   /// Auth repository provider
   static final authRepository = authRepositoryProvider;
 

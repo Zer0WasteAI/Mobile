@@ -186,7 +186,7 @@ class _ProfileAllergySelectorScreenState
 
     // Wait for allergies to load if they haven't yet
     if (allergiesAsyncValue is AsyncLoading) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // ✅ UPDATED: Removed artificial delay
     }
 
     // Get the list of all available allergies

@@ -144,7 +144,7 @@ class _ProfilePreferredFoodTypeScreenState
 
     // Wait for food types to load if they haven't yet
     if (foodTypesAsyncValue is AsyncLoading) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // ✅ UPDATED: Removed artificial delay
     }
 
     // Get the list of all available food types

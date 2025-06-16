@@ -165,13 +165,11 @@ class _ProfileSpecialDietSelectorScreenState
   }
 
   Future<void> _initializeDiets() async {
+    // ignore: unused_local_variable
     final dietsAsyncValue = ref.read(predefinedDietsProvider);
     final user = ref.read(authStateProvider).value;
 
-    // Wait for diets to load if they haven't yet
-    if (dietsAsyncValue is AsyncLoading) {
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    // ✅ UPDATED: Removed artificial delay - wait for diets to load naturally
 
     // Get the list of all available diets
     final availableDiets = ref.read(predefinedDietsProvider).value ?? [];

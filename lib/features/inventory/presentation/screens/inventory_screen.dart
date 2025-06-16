@@ -112,10 +112,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         _previousRecentlyAddedIds = Set<String>.from(recentlyAddedIds);
         log('initState: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco más para garantizar que la UI está lista
-        Future.delayed(Duration(milliseconds: 300), () {
-          scrollToLastItem();
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        scrollToLastItem();
       }
     });
   }
@@ -149,23 +147,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         // Hacer scroll al último elemento de la lista en lugar de al elemento destacado
         log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco para que la UI se actualice completamente
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted) {
-            scrollToLastItem();
-          }
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        if (mounted) {
+          scrollToLastItem();
+        }
       } else if (_previousRecentlyAddedIds.isEmpty &&
           currentRecentlyAddedIds.isNotEmpty) {
         // Si no hay nuevos elementos específicos pero pasamos de ninguno a algunos
         log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco para que la UI se actualice completamente
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted) {
-            scrollToLastItem();
-          }
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        if (mounted) {
+          scrollToLastItem();
+        }
       }
     }
 
@@ -897,8 +891,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   // Función para hacer scroll al último elemento de la lista
   void scrollToLastItem() {
-    // Delay inicial para asegurar que la lista se ha construido completamente
-    Future.delayed(const Duration(milliseconds: 300), () {
+    // ✅ UPDATED: Reduced delay for better performance
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
 
       // Obtener los elementos filtrados
@@ -921,14 +915,12 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             'Usando maxScrollExtent para scroll: ${_scrollController.position.maxScrollExtent}',
           );
 
-          // Hacer un scroll con un pequeño delay para asegurar que la UI está actualizada
-          Future.delayed(const Duration(milliseconds: 200), () {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 1200),
-              curve: Curves.easeOutQuart,
-            );
-          });
+          // ✅ UPDATED: Immediate scroll without additional delay
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutQuart,
+          );
           return;
         }
       } catch (e) {
@@ -953,7 +945,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         // Hacer scroll a la posición calculada
         _scrollController.animateTo(
           scrollPosition,
-          duration: const Duration(milliseconds: 1200),
+          duration: const Duration(milliseconds: 800),
           curve: Curves.easeOutQuart,
         );
       } catch (e) {
@@ -964,7 +956,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           log('Intento final con valor fijo grande');
           _scrollController.animateTo(
             10000.0, // Valor grande para intentar llegar al final
-            duration: const Duration(milliseconds: 1200),
+            duration: const Duration(milliseconds: 800),
             curve: Curves.easeOutQuart,
           );
         } catch (e) {

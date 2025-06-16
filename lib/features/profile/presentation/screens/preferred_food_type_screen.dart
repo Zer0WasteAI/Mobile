@@ -46,7 +46,7 @@ class _PreferredFoodTypeScreenState
 
     // Wait for food types to load if they haven't yet
     if (foodTypesAsyncValue is AsyncLoading) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // ✅ UPDATED: Removed artificial delay
     }
 
     // Get the list of all available food types
@@ -108,7 +108,9 @@ class _PreferredFoodTypeScreenState
     final Color primaryColor = colorScheme.primary;
     final Color backgroundColor = colorScheme.surface;
     final Color defaultChipTextColor = colorScheme.onSurfaceVariant;
-    final Color defaultChipBorderColor = colorScheme.outline.withValues(alpha: 0.5);
+    final Color defaultChipBorderColor = colorScheme.outline.withValues(
+      alpha: 0.5,
+    );
 
     return Scaffold(
       backgroundColor: backgroundColor,
