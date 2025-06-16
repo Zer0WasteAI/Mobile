@@ -145,8 +145,14 @@ class FavoriteRecipesNotifier extends StateNotifier<FavoriteRecipesState> {
   }
 
   /// INFO: Remove a recipe from favorites
-  /// USAGE: Remove a recipe from the user's favorites collection
+  /// USAGE: Remove a recipe from the user's favorites collection using DELETE endpoint
   Future<bool> removeRecipeFromFavorites(String recipeId) async {
+    // Find the recipe to get its title for deletion
+    final recipe = state.favoriteRecipes.firstWhere(
+      (r) => r.id == recipeId,
+      orElse: () => throw Exception('Recipe not found'),
+    );
+
     // Add to loading set for UI feedback
     state = state.copyWith(
       savingRecipeIds: {...state.savingRecipeIds, recipeId},
@@ -154,8 +160,8 @@ class FavoriteRecipesNotifier extends StateNotifier<FavoriteRecipesState> {
     );
 
     try {
-      // TODO: Implement delete endpoint in backend if available
-      // For now, we'll simulate success since the API docs don't show a delete favorite endpoint
+      // Use the new DELETE endpoint with recipe title
+      await _apiService.deleteRecipe(recipe.name);
 
       // Update local state
       final updatedFavorites =

@@ -82,12 +82,41 @@ class _AIRecipeGenerationScreenState
       preferences.add(_cuisineController.text.trim());
     }
 
-    // Call the real backend API
+    // Build recipe categories list
+    final recipeCategories = <String>[];
+    if (_timeController.text.isNotEmpty) {
+      final timeValue = _timeController.text.trim().toLowerCase();
+      if (timeValue.contains('rápid') || timeValue.contains('quick')) {
+        recipeCategories.add('rápidas y fáciles');
+      } else if (timeValue.contains('lent') || timeValue.contains('slow')) {
+        recipeCategories.add('cocción lenta');
+      }
+    }
+
+    // Add default categories based on preferences
+    if (preferences.any(
+      (p) =>
+          p.toLowerCase().contains('vegetarian') ||
+          p.toLowerCase().contains('vegano'),
+    )) {
+      recipeCategories.add('vegetarianas');
+    }
+    if (preferences.any(
+      (p) =>
+          p.toLowerCase().contains('saludable') ||
+          p.toLowerCase().contains('healthy'),
+    )) {
+      recipeCategories.add('saludables');
+    }
+
+    // Call the real backend API with enhanced parameters
     ref
         .read(aiRecipeProvider.notifier)
         .generateCustomRecipes(
           ingredients: ingredients,
           preferences: preferences.isNotEmpty ? preferences : null,
+          recipeCategories:
+              recipeCategories.isNotEmpty ? recipeCategories : null,
           numRecipes: 3,
         );
   }
@@ -101,6 +130,25 @@ class _AIRecipeGenerationScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  // Guardar receta usando el nuevo endpoint
+  Future<void> _saveRecipe(Recipe recipe) async {
+    try {
+      final success = await ref
+          .read(aiRecipeProvider.notifier)
+          .saveRecipe(recipe);
+      if (success) {
+        _showSnackBar('Receta guardada exitosamente');
+      } else {
+        _showSnackBar('Error al guardar la receta', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar(
+        'Error al guardar la receta: ${e.toString()}',
+        isError: true,
+      );
+    }
   }
 
   @override
@@ -324,16 +372,134 @@ class _AIRecipeGenerationScreenState
   }
 
   Widget _buildRecipesView(List<Recipe> recipes) {
+    final aiRecipeState = ref.watch(aiRecipeProvider);
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: recipes.length + 1, // +1 for the custom generation option
+      itemCount:
+          recipes.length + 2, // +1 for inventory info, +1 for custom generation
       itemBuilder: (context, index) {
-        if (index == recipes.length) {
+        if (index == 0) {
+          return _buildInventoryUtilizationCard(aiRecipeState);
+        }
+        if (index == recipes.length + 1) {
           return _buildCustomGenerationCard();
         }
-        final recipe = recipes[index];
+        final recipe = recipes[index - 1]; // Adjust index for inventory card
         return _buildRecipeCard(context, recipe);
       },
+    );
+  }
+
+  Widget _buildInventoryUtilizationCard(AIRecipeState aiRecipeState) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.analytics, color: Colors.blue.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Utilización del Inventario',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (aiRecipeState.inventoryUsage != null) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Eficiencia de Uso',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        Text(
+                          aiRecipeState.inventoryUsage!,
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (aiRecipeState.totalRecipes != null)
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Recetas Generadas',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          Text(
+                            aiRecipeState.totalRecipes!,
+                            style: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.eco, color: Colors.green.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Estas recetas aprovechan eficientemente tus ingredientes disponibles',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              Text(
+                'Información de utilización no disponible',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -546,71 +712,94 @@ class _AIRecipeGenerationScreenState
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Botón para ver receta completa
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Navegar a la pantalla de detalle
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => RecipeDetailScreen(
-                                recipe: {
-                                  'name': recipe.name,
-                                  'description': recipe.description,
-                                  'emoji': recipe.emoji,
-                                  'ingredients': recipe.ingredients,
-                                  'time': '${recipe.cookingTime} min',
-                                  'difficulty': recipe.difficulty,
-                                  'type': 'fondo', // Valor por defecto
-                                  'tags': recipe.categories,
-                                  'usesExpiringItems': recipe.usesExpiringItems,
-                                  'dietType': recipe.dietType,
-                                  'steps': [
-                                    'Prepara todos los ingredientes antes de comenzar',
-                                    'Sigue las instrucciones de la receta paso a paso',
-                                    'Disfruta de tu comida recién preparada',
-                                  ],
-                                },
-                              ),
-                        ),
-                      ).then((value) {
-                        // Si el usuario ha cocinado la receta, mostrar feedback
-                        if (value == true) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '¡Felicidades por cocinar esta receta! Has contribuido a reducir el desperdicio de alimentos.',
-                                style: GoogleFonts.inter(),
-                              ),
-                              backgroundColor: Colors.green.shade600,
-                              duration: const Duration(seconds: 4),
-                              action: SnackBarAction(
-                                label: 'Ver impacto',
-                                textColor: Colors.white,
-                                onPressed: () {
-                                  context.push('/impact');
-                                },
-                              ),
+                // Botones de acción
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Navegar a la pantalla de detalle
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => RecipeDetailScreen(
+                                    recipe: {
+                                      'name': recipe.name,
+                                      'description': recipe.description,
+                                      'emoji': recipe.emoji,
+                                      'ingredients': recipe.ingredients,
+                                      'time': '${recipe.cookingTime} min',
+                                      'difficulty': recipe.difficulty,
+                                      'type': 'fondo', // Valor por defecto
+                                      'tags': recipe.categories,
+                                      'usesExpiringItems':
+                                          recipe.usesExpiringItems,
+                                      'dietType': recipe.dietType,
+                                      'steps': [
+                                        'Prepara todos los ingredientes antes de comenzar',
+                                        'Sigue las instrucciones de la receta paso a paso',
+                                        'Disfruta de tu comida recién preparada',
+                                      ],
+                                    },
+                                  ),
                             ),
-                          );
-                        }
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                          ).then((value) {
+                            // Si el usuario ha cocinado la receta, mostrar feedback
+                            if (value == true) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '¡Felicidades por cocinar esta receta! Has contribuido a reducir el desperdicio de alimentos.',
+                                    style: GoogleFonts.inter(),
+                                  ),
+                                  backgroundColor: Colors.green.shade600,
+                                  duration: const Duration(seconds: 4),
+                                  action: SnackBarAction(
+                                    label: 'Ver impacto',
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      context.push('/impact');
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Ver receta',
+                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'Ver receta completa',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _saveRecipe(recipe),
+                        icon: const Icon(Icons.bookmark_add, size: 16),
+                        label: Text(
+                          'Guardar',
+                          style: GoogleFonts.inter(fontSize: 12),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.green.shade600,
+                          side: BorderSide(color: Colors.green.shade600),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

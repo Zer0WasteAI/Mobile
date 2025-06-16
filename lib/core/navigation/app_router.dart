@@ -27,6 +27,7 @@ import 'package:zer0_waste_ai/features/inventory/presentation/screens/ingredient
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_detail_screen.dart'; // Import FoodDetailScreen
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart'; // Import RecipeMode
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/ai_recipe_generation_screen.dart'; // Import AIRecipeGenerationScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/all_recipes_screen.dart'; // Import AllRecipesScreen
 import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
@@ -76,6 +77,7 @@ const String cookingLevelSelectorRouteName =
 const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
 const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
+const String allRecipesRouteName = AllRecipesScreen.routeName;
 
 // Profile-specific selector route names
 const String profileCookingLevelSelectorRouteName =
@@ -342,6 +344,13 @@ class AppRouter {
           path: '/recipes/ai-generation',
           name: aiRecipeGenerationRouteName,
           builder: (context, state) => const AIRecipeGenerationScreen(),
+        ),
+        // Route for All Recipes Screen
+        GoRoute(
+          path: AllRecipesScreen.routePath,
+          name: allRecipesRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const AllRecipesScreen(),
         ),
         // Route for Recipe Detail Screen
         GoRoute(

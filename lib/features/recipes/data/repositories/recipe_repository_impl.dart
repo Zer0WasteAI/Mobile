@@ -11,39 +11,10 @@ class RecipeRepositoryImpl implements RecipeRepository {
     : _apiService = apiService ?? ApiService.instance;
 
   @override
-  Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
+  Future<Map<String, dynamic>> generateRecipesFromInventory() async {
     try {
-      // INFO: Get current inventory items to send to recipe generation
-      final inventoryResponse = await _apiService.getInventory();
-      final inventoryItems = inventoryResponse['items'] as List<dynamic>;
-
-      // INFO: Convert inventory items to the format expected by recipe generation
-      final ingredients =
-          inventoryItems.map((item) {
-            final itemMap = item as Map<String, dynamic>;
-            return {
-              'name': itemMap['name'],
-              'quantity': itemMap['quantity'],
-              'type_unit': itemMap['type_unit'],
-              'storage_type': itemMap['storage_type'],
-              'expiration_time': itemMap['expiration_time'],
-              'time_unit': itemMap['time_unit'],
-              'tips': itemMap['tips'],
-              'image_path': itemMap['image_path'],
-              'image_status': itemMap['image_status'],
-              'added_at': itemMap['added_at'],
-              'expiration_date': itemMap['expiration_date'],
-              'confidence': itemMap['confidence'],
-              'allergy_alert': itemMap['allergy_alert'],
-              'allergens': itemMap['allergens'],
-            };
-          }).toList();
-
       // INFO: AI analyzes current inventory to suggest optimal recipes
-      final response = await _apiService.generateRecipe(ingredients);
-
-      // INFO: Return the recipe in a list format for compatibility
-      return [response['recipe']];
+      return await _apiService.generateRecipesFromInventory();
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
@@ -53,9 +24,10 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> generateCustomRecipes({
+  Future<Map<String, dynamic>> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
+    List<String>? recipeCategories,
     int numRecipes = 2,
   }) async {
     try {
@@ -63,6 +35,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
       return await _apiService.generateCustomRecipes(
         ingredients: ingredients,
         preferences: preferences,
+        recipeCategories: recipeCategories,
         numRecipes: numRecipes,
       );
     } catch (e) {
@@ -102,14 +75,27 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getRecipeById(String recipeId) async {
+  Future<Map<String, dynamic>> getAllRecipes() async {
     try {
-      // INFO: Retrieve specific recipe details by ID
-      return await _apiService.getRecipeById(recipeId);
+      // INFO: Retrieve all available recipes (public + user's)
+      return await _apiService.getAllRecipes();
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
-        'Failed to get recipe by ID: ${_apiService.getErrorMessage(e)}',
+        'Failed to get all recipes: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteRecipe(String recipeTitle) async {
+    try {
+      // INFO: Delete a user's saved recipe by title
+      return await _apiService.deleteRecipe(recipeTitle);
+    } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
+      throw Exception(
+        'Failed to delete recipe: ${_apiService.getErrorMessage(e)}',
       );
     }
   }

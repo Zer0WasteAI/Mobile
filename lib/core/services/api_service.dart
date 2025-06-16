@@ -63,13 +63,15 @@ class ApiService {
   static const String _inventoryIngredientsList =
       '/api/inventory/ingredients/list';
 
-  // INFO: NEW - Recipe Management endpoints (5 endpoints)
+  // INFO: Recipe Management endpoints (6 endpoints)
   static const String _recipesGenerate = '/api/recipes/generate';
   static const String _recipesGenerateFromInventory =
       '/api/recipes/generate-from-inventory';
   static const String _recipesGenerateCustom = '/api/recipes/generate-custom';
   static const String _recipesSave = '/api/recipes/save';
   static const String _recipesSaved = '/api/recipes/saved';
+  static const String _recipesAll = '/api/recipes/all';
+  static const String _recipesDelete = '/api/recipes/delete';
 
   // INFO: NEW - Admin endpoints (5 endpoints)
   static const String _adminUsers = '/api/admin/users';
@@ -1080,12 +1082,13 @@ class ApiService {
     }
   }
 
-  // INFO: ===== RECIPE MANAGEMENT ENDPOINTS (4/4) =====
+  // INFO: ===== RECIPE MANAGEMENT ENDPOINTS (6/6) =====
   // ADVICE: AI-powered recipe generation and management
 
   /// INFO: Generate recipes using current inventory items
   /// ADVICE: AI analyzes your inventory and suggests optimal recipes
-  Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
+  /// RETURNS: Complete response with generated_recipes, inventory_utilization, and images info
+  Future<Map<String, dynamic>> generateRecipesFromInventory() async {
     try {
       // Use longer timeout for AI recipe generation operations
       final response = await _dio.post(
@@ -1098,17 +1101,19 @@ class ApiService {
           sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
         ),
       );
-      return List<Map<String, dynamic>>.from(response.data);
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Generate recipes from inventory error: ${e.toString()}');
     }
   }
 
-  /// INFO: Generate custom recipes with specific ingredients
-  /// USAGE: Specify ingredients you want to use, dietary preferences, etc.
-  Future<List<Map<String, dynamic>>> generateCustomRecipes({
+  /// INFO: Generate custom recipes with specific ingredients and preferences
+  /// USAGE: Specify ingredients, dietary preferences, categories, and number of recipes
+  /// RETURNS: Complete response with generated_recipes and images info
+  Future<Map<String, dynamic>> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
+    List<String>? recipeCategories,
     int numRecipes = 2,
   }) async {
     try {
@@ -1118,6 +1123,7 @@ class ApiService {
         data: {
           'ingredients': ingredients,
           if (preferences != null) 'preferences': preferences,
+          if (recipeCategories != null) 'recipe_categories': recipeCategories,
           'num_recipes': numRecipes,
         },
         options: Options(
@@ -1127,13 +1133,15 @@ class ApiService {
           sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
         ),
       );
-      return List<Map<String, dynamic>>.from(response.data);
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Generate custom recipes error: ${e.toString()}');
     }
   }
 
-  /// INFO: Save a recipe to user's favorites collection
+  /// INFO: Save a generated or custom recipe to user's collection
+  /// USAGE: Save complete recipe data including ingredients, instructions, and metadata
+  /// RETURNS: Saved recipe with UID and timestamp
   Future<Map<String, dynamic>> saveRecipe(
     Map<String, dynamic> recipeData,
   ) async {
@@ -1146,6 +1154,8 @@ class ApiService {
   }
 
   /// INFO: Get all user's saved/favorite recipes
+  /// USAGE: Retrieve user's personal recipe collection
+  /// RETURNS: Array of saved recipes with metadata and count
   Future<Map<String, dynamic>> getSavedRecipes() async {
     try {
       final response = await _dio.get(_recipesSaved);
@@ -1155,14 +1165,30 @@ class ApiService {
     }
   }
 
-  /// INFO: Get specific recipe by ID
-  /// USAGE: Retrieve detailed information about a specific recipe
-  Future<Map<String, dynamic>> getRecipeById(String recipeId) async {
+  /// INFO: Get all available recipes (public + user's)
+  /// USAGE: Retrieve complete recipe database for browsing
+  /// RETURNS: Array of all recipes with count
+  Future<Map<String, dynamic>> getAllRecipes() async {
     try {
-      final response = await _dio.get('/api/recipes/$recipeId');
+      final response = await _dio.get(_recipesAll);
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Get recipe by ID error: ${e.toString()}');
+      throw Exception('Get all recipes error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Delete a user's saved recipe
+  /// USAGE: Remove recipe from user's collection by title
+  /// RETURNS: Confirmation message
+  Future<Map<String, dynamic>> deleteRecipe(String recipeTitle) async {
+    try {
+      final response = await _dio.delete(
+        _recipesDelete,
+        data: {'title': recipeTitle},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Delete recipe error: ${e.toString()}');
     }
   }
 

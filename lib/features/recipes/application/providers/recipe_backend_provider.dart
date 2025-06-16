@@ -25,75 +25,27 @@ class RecipeBackendNotifier {
 
   /// INFO: Generate recipes from current inventory using AI
   /// ADVICE: AI analyzes your inventory and suggests optimal recipes to reduce waste
-  /// RETURNS: List of generated recipe objects with ingredients, instructions, etc.
-  Future<List<Map<String, dynamic>>> generateRecipesFromInventory() async {
+  /// RETURNS: Complete response with generated_recipes, inventory_utilization, and images info
+  Future<Map<String, dynamic>> generateRecipesFromInventory() async {
     return await _repository.generateRecipesFromInventory();
   }
 
-  /// 🆕 NUEVO: Generate recipes from inventory with complete response info
-  /// RETURNS: Complete response with personalization_info según CAMBIOS_ENDPOINTS.md
-  Future<Map<String, dynamic>> generateRecipesFromInventoryComplete() async {
-    // Por ahora devolvemos el formato antiguo hasta que el backend implemente el nuevo
-    final recipes = await _repository.generateRecipesFromInventory();
-    return {
-      'generated_recipes': recipes,
-      'total_recipes': recipes.length,
-      'inventory_usage': '75%', // Mock value
-      'personalization_info': <String, dynamic>{
-        'language': 'es',
-        'measurement_system': 'metric',
-        'cooking_level': 'intermediate',
-        'preferences_applied': <String>[],
-        'allergies_filtered': <String>[],
-        'dietary_restrictions': <String>[],
-        'preferred_food_types': <String>[],
-      },
-    };
-  }
-
-  /// INFO: Generate custom recipes with specific ingredients using AI
-  /// USAGE: Specify ingredients you want to use and dietary preferences
+  /// INFO: Generate custom recipes with specific ingredients and preferences using AI
+  /// USAGE: Specify ingredients, dietary preferences, categories, and number of recipes
   /// ADVICE: Use preferences like ["vegetarian", "gluten-free", "low-calorie"]
-  /// RETURNS: List of custom recipe objects tailored to your requirements
-  Future<List<Map<String, dynamic>>> generateCustomRecipes({
+  /// RETURNS: Complete response with generated_recipes and images info
+  Future<Map<String, dynamic>> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
+    List<String>? recipeCategories,
     int numRecipes = 2,
   }) async {
     return await _repository.generateCustomRecipes(
       ingredients: ingredients,
       preferences: preferences,
+      recipeCategories: recipeCategories,
       numRecipes: numRecipes,
     );
-  }
-
-  /// 🆕 NUEVO: Generate custom recipes with complete response info
-  /// RETURNS: Complete response with personalization_info según CAMBIOS_ENDPOINTS.md
-  Future<Map<String, dynamic>> generateCustomRecipesComplete({
-    required List<String> ingredients,
-    List<String>? preferences,
-    int numRecipes = 2,
-  }) async {
-    // Por ahora devolvemos el formato antiguo hasta que el backend implemente el nuevo
-    final recipes = await _repository.generateCustomRecipes(
-      ingredients: ingredients,
-      preferences: preferences,
-      numRecipes: numRecipes,
-    );
-    return {
-      'generated_recipes': recipes,
-      'total_recipes': recipes.length,
-      'inventory_usage': '100%', // Mock value
-      'personalization_info': <String, dynamic>{
-        'language': 'es',
-        'measurement_system': 'metric',
-        'cooking_level': 'intermediate',
-        'preferences_applied': preferences ?? <String>[],
-        'allergies_filtered': <String>[],
-        'dietary_restrictions': <String>[],
-        'preferred_food_types': <String>[],
-      },
-    };
   }
 
   /// INFO: Save a recipe to user's favorites collection
@@ -106,8 +58,23 @@ class RecipeBackendNotifier {
   }
 
   /// INFO: Get all user's saved/favorite recipes
-  /// RETURNS: Map containing array of saved recipes
+  /// USAGE: Retrieve user's personal recipe collection
+  /// RETURNS: Array of saved recipes with metadata and count
   Future<Map<String, dynamic>> getSavedRecipes() async {
     return await _repository.getSavedRecipes();
+  }
+
+  /// INFO: Get all available recipes (public + user's)
+  /// USAGE: Retrieve complete recipe database for browsing
+  /// RETURNS: Array of all recipes with count
+  Future<Map<String, dynamic>> getAllRecipes() async {
+    return await _repository.getAllRecipes();
+  }
+
+  /// INFO: Delete a user's saved recipe
+  /// USAGE: Remove recipe from user's collection by title
+  /// RETURNS: Confirmation message
+  Future<Map<String, dynamic>> deleteRecipe(String recipeTitle) async {
+    return await _repository.deleteRecipe(recipeTitle);
   }
 }

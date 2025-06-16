@@ -54,11 +54,10 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
-      // Call real backend API - NOTA: Esto debe devolver el response completo
-      final response =
-          await _recipeBackend.generateRecipesFromInventoryComplete();
+      // Call real backend API - returns complete response with generated_recipes, inventory_utilization, and images info
+      final response = await _recipeBackend.generateRecipesFromInventory();
 
-      // 🆕 Parsear el response completo según CAMBIOS_ENDPOINTS.md
+      // Parse the complete response according to the new API format
       final recipesData = response['generated_recipes'] as List? ?? [];
       final recipes =
           recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
@@ -67,11 +66,11 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         isGenerating: false,
         recipes: recipes,
         hasGenerated: true,
-        // 🆕 Capturar información de personalización
-        personalizationInfo:
-            response['personalization_info'] as Map<String, dynamic>?,
+        // Capture inventory utilization info
         totalRecipes: response['total_recipes']?.toString(),
-        inventoryUsage: response['inventory_usage']?.toString(),
+        inventoryUsage:
+            (response['inventory_utilization']?['utilization_percentage'])
+                ?.toString(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -82,23 +81,25 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     }
   }
 
-  /// Generate custom recipes with specific ingredients
+  /// Generate custom recipes with specific ingredients and preferences
   Future<void> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
+    List<String>? recipeCategories,
     int numRecipes = 2,
   }) async {
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
-      // Call real backend API - NOTA: Esto debe devolver el response completo
-      final response = await _recipeBackend.generateCustomRecipesComplete(
+      // Call real backend API - returns complete response with generated_recipes and images info
+      final response = await _recipeBackend.generateCustomRecipes(
         ingredients: ingredients,
         preferences: preferences,
+        recipeCategories: recipeCategories,
         numRecipes: numRecipes,
       );
 
-      // 🆕 Parsear el response completo según CAMBIOS_ENDPOINTS.md
+      // Parse the complete response according to the new API format
       final recipesData = response['generated_recipes'] as List? ?? [];
       final recipes =
           recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
@@ -107,11 +108,10 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         isGenerating: false,
         recipes: recipes,
         hasGenerated: true,
-        // 🆕 Capturar información de personalización
-        personalizationInfo:
-            response['personalization_info'] as Map<String, dynamic>?,
+        // Capture generation info
         totalRecipes: response['total_recipes']?.toString(),
-        inventoryUsage: response['inventory_usage']?.toString(),
+        inventoryUsage:
+            '100%', // Custom recipes use 100% of specified ingredients
       );
     } catch (e) {
       state = state.copyWith(
@@ -146,38 +146,68 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
 
   /// Convert API response to Recipe model
   Recipe _parseRecipeFromAPI(Map<String, dynamic> data) {
+    // Parse ingredients from the new API format
+    final ingredientsData = data['ingredients'] as List? ?? [];
+    final ingredientNames =
+        ingredientsData
+            .map((ingredient) {
+              if (ingredient is Map<String, dynamic>) {
+                return ingredient['name']?.toString() ?? '';
+              }
+              return ingredient.toString();
+            })
+            .where((name) => name.isNotEmpty)
+            .toList();
+
     return Recipe(
       id:
           data['id']?.toString() ??
           DateTime.now().millisecondsSinceEpoch.toString(),
-      name: data['name'] ?? 'Receta Generada',
+      name: data['title'] ?? data['name'] ?? 'Receta Generada',
       description: data['description'] ?? '',
-      emoji: _getEmojiForRecipe(data['name'] ?? ''),
-      ingredients: List<String>.from(data['ingredients'] ?? []),
-      requiredIngredientsCount: (data['ingredients'] as List?)?.length ?? 0,
-      availableIngredientsCount: (data['ingredients'] as List?)?.length ?? 0,
+      emoji: _getEmojiForRecipe(data['title'] ?? data['name'] ?? ''),
+      ingredients: ingredientNames,
+      requiredIngredientsCount: ingredientNames.length,
+      availableIngredientsCount: ingredientNames.length,
       usesExpiringItems: data['uses_expiring_items'] ?? false,
-      cookingTime: data['cooking_time_minutes'] ?? 30,
-      difficulty: data['difficulty'] ?? 'Medio',
+      cookingTime: data['prep_time'] ?? data['cook_time'] ?? 30,
+      difficulty: data['difficulty'] ?? 'fácil',
       dietType: data['diet_type'] ?? 'Omnívora',
-      categories: List<String>.from(data['categories'] ?? ['Generado por IA']),
+      categories: [data['category'] ?? 'Generado por IA'],
     );
   }
 
-  /// Convert Recipe model to API format
+  /// Convert Recipe model to API format for saving
   Map<String, dynamic> _convertRecipeToAPI(Recipe recipe) {
+    // Convert ingredients to the format expected by the save endpoint
+    final ingredientsData =
+        recipe.ingredients
+            .map(
+              (ingredient) => {
+                'name': ingredient,
+                'quantity': 1, // Default quantity
+                'unit': 'unidades', // Default unit
+              },
+            )
+            .toList();
+
     return {
-      'id': recipe.id,
-      'name': recipe.name,
+      'title': recipe.name,
       'description': recipe.description,
-      'ingredients': recipe.ingredients,
-      'instructions': [], // Will be handled separately if needed
-      'cooking_time_minutes': recipe.cookingTime,
+      'ingredients': ingredientsData,
+      'instructions': [
+        'Preparar todos los ingredientes',
+        'Seguir las instrucciones de cocción',
+        'Servir y disfrutar',
+      ], // Default instructions
+      'prep_time': recipe.cookingTime ~/ 2, // Half for prep
+      'cook_time':
+          recipe.cookingTime - (recipe.cookingTime ~/ 2), // Rest for cooking
+      'servings': 2, // Default servings
       'difficulty': recipe.difficulty,
-      'diet_type': recipe.dietType,
-      'categories': recipe.categories,
-      'servings': 4, // Default servings
-      'nutritional_info': null, // Will be handled separately if needed
+      'category':
+          recipe.categories.isNotEmpty ? recipe.categories.first : 'general',
+      'image_path': null, // Will be generated by backend
     };
   }
 

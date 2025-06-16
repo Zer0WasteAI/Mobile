@@ -4,30 +4,37 @@
 abstract class RecipeRepository {
   /// INFO: Generate recipes using AI based on current inventory items
   /// ADVICE: AI analyzes your inventory and suggests optimal recipes to reduce waste
-  /// RETURNS: List of generated recipe objects with ingredients, instructions, etc.
-  Future<List<Map<String, dynamic>>> generateRecipesFromInventory();
+  /// RETURNS: Complete response with generated_recipes, inventory_utilization, and images info
+  Future<Map<String, dynamic>> generateRecipesFromInventory();
 
-  /// INFO: Generate custom recipes with specific ingredients using AI
-  /// USAGE: Specify ingredients you want to use and any dietary preferences
+  /// INFO: Generate custom recipes with specific ingredients and preferences using AI
+  /// USAGE: Specify ingredients, dietary preferences, categories, and number of recipes
   /// ADVICE: Use preferences like ["vegetarian", "gluten-free", "low-calorie"]
-  /// RETURNS: List of custom recipe objects
-  Future<List<Map<String, dynamic>>> generateCustomRecipes({
+  /// RETURNS: Complete response with generated_recipes and images info
+  Future<Map<String, dynamic>> generateCustomRecipes({
     required List<String> ingredients,
     List<String>? preferences,
+    List<String>? recipeCategories,
     int numRecipes = 2,
   });
 
-  /// INFO: Save a recipe to user's favorites collection
-  /// USAGE: Pass complete recipe object to save for later access
-  /// RETURNS: Confirmation with saved recipe data
+  /// INFO: Save a generated or custom recipe to user's collection
+  /// USAGE: Save complete recipe data including ingredients, instructions, and metadata
+  /// RETURNS: Saved recipe with UID and timestamp
   Future<Map<String, dynamic>> saveRecipe(Map<String, dynamic> recipeData);
 
   /// INFO: Get all user's saved/favorite recipes
-  /// RETURNS: Map containing array of saved recipes
+  /// USAGE: Retrieve user's personal recipe collection
+  /// RETURNS: Array of saved recipes with metadata and count
   Future<Map<String, dynamic>> getSavedRecipes();
 
-  /// INFO: Get specific recipe by ID
-  /// USAGE: Retrieve detailed information about a specific recipe
-  /// RETURNS: Complete recipe object with all details
-  Future<Map<String, dynamic>> getRecipeById(String recipeId);
+  /// INFO: Get all available recipes (public + user's)
+  /// USAGE: Retrieve complete recipe database for browsing
+  /// RETURNS: Array of all recipes with count
+  Future<Map<String, dynamic>> getAllRecipes();
+
+  /// INFO: Delete a user's saved recipe
+  /// USAGE: Remove recipe from user's collection by title
+  /// RETURNS: Confirmation message
+  Future<Map<String, dynamic>> deleteRecipe(String recipeTitle);
 }

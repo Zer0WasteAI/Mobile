@@ -539,6 +539,16 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
         backgroundColor: scaffoldBackgroundColor, // Match scaffold
         elevation: 0,
         iconTheme: IconThemeData(color: mainTextColor), // Back button color
+        actions: [
+          // Botón para ver todas las recetas
+          IconButton(
+            icon: Icon(Icons.library_books, color: mainTextColor),
+            onPressed: () {
+              Navigator.pushNamed(context, '/recipes/all');
+            },
+            tooltip: 'Ver todas las recetas',
+          ),
+        ],
         // TabBar as the bottom part of the AppBar
         bottom: TabBar(
           controller: _tabController,
@@ -3799,7 +3809,9 @@ class CategoryDetailScreen extends StatelessWidget {
                                         vertical: 3.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withValues(alpha: 0.1),
+                                        color: primaryColor.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         borderRadius: BorderRadius.circular(
                                           8.0,
                                         ),

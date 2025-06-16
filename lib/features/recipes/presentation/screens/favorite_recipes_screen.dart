@@ -364,212 +364,295 @@ class _FavoriteRecipesScreenState extends ConsumerState<FavoriteRecipesScreen> {
     final isRecipeSaving = ref.watch(isRecipeSavingProvider(recipe.id));
     final favoritesNotifier = ref.read(favoriteRecipesProvider.notifier);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return Dismissible(
+      key: Key(recipe.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.red.shade400,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.delete, color: Colors.white, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              'Eliminar',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          // Navigate to recipe detail
-          context.push('/recipes/detail/${recipe.id}');
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with emoji and favorite button
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Recipe emoji
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+              context: context,
+              builder:
+                  (context) => AlertDialog(
+                    title: Text(
+                      'Eliminar receta',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                     ),
-                    child: Center(
-                      child: Text(
-                        recipe.emoji,
-                        style: const TextStyle(fontSize: 28),
+                    content: Text(
+                      '¿Estás seguro de que quieres eliminar "${recipe.name}" de tus favoritas?',
+                      style: GoogleFonts.inter(),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(
+                          'Cancelar',
+                          style: GoogleFonts.inter(color: Colors.grey.shade600),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(
+                          'Eliminar',
+                          style: GoogleFonts.inter(
+                            color: Colors.red.shade600,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            ) ??
+            false;
+      },
+      onDismissed: (direction) async {
+        final success = await favoritesNotifier.removeRecipeFromFavorites(
+          recipe.id,
+        );
+        if (success && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${recipe.name} eliminada de favoritas'),
+              action: SnackBarAction(
+                label: 'Deshacer',
+                textColor: Colors.white,
+                onPressed: () async {
+                  await favoritesNotifier.saveRecipeToFavorites(recipe);
+                },
+              ),
+            ),
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            // Navigate to recipe detail
+            context.push('/recipes/detail/${recipe.id}');
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with emoji and favorite button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Recipe emoji
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          recipe.emoji,
+                          style: const TextStyle(fontSize: 28),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                  // Recipe info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recipe.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                    // Recipe info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recipe.name,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          recipe.description,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                          const SizedBox(height: 4),
+                          Text(
+                            recipe.description,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // Favorite button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon:
-                          isRecipeSaving
-                              ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    Colors.red.shade400,
-                                  ),
-                                ),
-                              )
-                              : Icon(
-                                Icons.favorite,
-                                color: Colors.red.shade400,
-                              ),
-                      onPressed:
-                          isRecipeSaving
-                              ? null
-                              : () async {
-                                final success = await favoritesNotifier
-                                    .removeRecipeFromFavorites(recipe.id);
-                                if (success && context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '${recipe.name} eliminada de favoritas',
-                                      ),
-                                      action: SnackBarAction(
-                                        label: 'Deshacer',
-                                        textColor: Colors.white,
-                                        onPressed: () async {
-                                          await favoritesNotifier
-                                              .saveRecipeToFavorites(recipe);
-                                        },
-                                      ),
+                    // Favorite button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon:
+                            isRecipeSaving
+                                ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      Colors.red.shade400,
                                     ),
-                                  );
-                                }
-                              },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Recipe stats
-              Row(
-                children: [
-                  _buildStatChip(
-                    icon: Icons.schedule,
-                    label: recipe.formattedCookingTime,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildStatChip(
-                    icon: Icons.signal_cellular_alt,
-                    label: recipe.difficulty,
-                    color: _getDifficultyColor(recipe.difficulty),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildStatChip(
-                    icon: Icons.restaurant,
-                    label: recipe.dietType,
-                    color: Colors.green,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Ingredients available indicator
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color:
-                      recipe.availableIngredientsCount ==
-                              recipe.requiredIngredientsCount
-                          ? Colors.green.shade50
-                          : Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color:
-                        recipe.availableIngredientsCount ==
-                                recipe.requiredIngredientsCount
-                            ? Colors.green.shade200
-                            : Colors.orange.shade200,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      recipe.availableIngredientsCount ==
-                              recipe.requiredIngredientsCount
-                          ? Icons.check_circle
-                          : Icons.info,
-                      size: 16,
-                      color:
-                          recipe.availableIngredientsCount ==
-                                  recipe.requiredIngredientsCount
-                              ? Colors.green.shade600
-                              : Colors.orange.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${recipe.availableIngredientsCount}/${recipe.requiredIngredientsCount} ingredientes disponibles',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            recipe.availableIngredientsCount ==
-                                    recipe.requiredIngredientsCount
-                                ? Colors.green.shade700
-                                : Colors.orange.shade700,
+                                  ),
+                                )
+                                : Icon(
+                                  Icons.favorite,
+                                  color: Colors.red.shade400,
+                                ),
+                        onPressed:
+                            isRecipeSaving
+                                ? null
+                                : () async {
+                                  final success = await favoritesNotifier
+                                      .removeRecipeFromFavorites(recipe.id);
+                                  if (success && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          '${recipe.name} eliminada de favoritas',
+                                        ),
+                                        action: SnackBarAction(
+                                          label: 'Deshacer',
+                                          textColor: Colors.white,
+                                          onPressed: () async {
+                                            await favoritesNotifier
+                                                .saveRecipeToFavorites(recipe);
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 16),
+
+                // Recipe stats
+                Row(
+                  children: [
+                    _buildStatChip(
+                      icon: Icons.schedule,
+                      label: recipe.formattedCookingTime,
+                      color: Colors.blue,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStatChip(
+                      icon: Icons.signal_cellular_alt,
+                      label: recipe.difficulty,
+                      color: _getDifficultyColor(recipe.difficulty),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStatChip(
+                      icon: Icons.restaurant,
+                      label: recipe.dietType,
+                      color: Colors.green,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Ingredients available indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        recipe.availableIngredientsCount ==
+                                recipe.requiredIngredientsCount
+                            ? Colors.green.shade50
+                            : Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color:
+                          recipe.availableIngredientsCount ==
+                                  recipe.requiredIngredientsCount
+                              ? Colors.green.shade200
+                              : Colors.orange.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        recipe.availableIngredientsCount ==
+                                recipe.requiredIngredientsCount
+                            ? Icons.check_circle
+                            : Icons.info,
+                        size: 16,
+                        color:
+                            recipe.availableIngredientsCount ==
+                                    recipe.requiredIngredientsCount
+                                ? Colors.green.shade600
+                                : Colors.orange.shade600,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${recipe.availableIngredientsCount}/${recipe.requiredIngredientsCount} ingredientes disponibles',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              recipe.availableIngredientsCount ==
+                                      recipe.requiredIngredientsCount
+                                  ? Colors.green.shade700
+                                  : Colors.orange.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
