@@ -79,9 +79,15 @@ class ApiService {
   static const String _adminStats = '/api/admin/stats';
   static const String _adminHealth = '/api/admin/health';
 
-  // INFO: NEW - Meal Planning endpoints (2 endpoints)
+  // INFO: NEW - Meal Planning endpoints (8 endpoints)
   static const String _planGenerate = '/api/plan/generate';
   static const String _planHistory = '/api/plan/history';
+  static const String _planningSave = '/api/planning/save';
+  static const String _planningUpdate = '/api/planning/update';
+  static const String _planningGet = '/api/planning/get';
+  static const String _planningAll = '/api/planning/all';
+  static const String _planningDates = '/api/planning/dates';
+  static const String _planningDelete = '/api/planning/delete';
 
   // INFO: NEW - Recognition additional endpoints (2 endpoints)
   static const String _recognitionHistory = '/api/recognition/history';
@@ -1192,8 +1198,8 @@ class ApiService {
     }
   }
 
-  // INFO: ===== MEAL PLANNING ENDPOINTS (2/2) =====
-  // ADVICE: AI-powered meal planning and history management
+  // INFO: ===== MEAL PLANNING ENDPOINTS (8/8) =====
+  // ADVICE: AI-powered meal planning and complete meal plan management
 
   /// INFO: Generate meal plan based on available ingredients
   /// ADVICE: AI analyzes your inventory and suggests optimal meal plans
@@ -1226,6 +1232,96 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Get meal plan history error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Save meal plan for a specific date
+  /// USAGE: Save complete meal plan with breakfast, lunch, dinner for a date
+  /// RETURNS: Saved meal plan with UID and total calories
+  Future<Map<String, dynamic>> saveMealPlan({
+    required String date,
+    required Map<String, dynamic> meals,
+  }) async {
+    try {
+      final response = await _dio.post(
+        _planningSave,
+        data: {'date': date, 'meals': meals},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Save meal plan error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Update existing meal plan
+  /// USAGE: Update meal plan for a specific date with new meal data
+  /// RETURNS: Updated meal plan with modifications
+  Future<Map<String, dynamic>> updateMealPlan({
+    required String date,
+    required Map<String, dynamic> meals,
+  }) async {
+    try {
+      final response = await _dio.put(
+        _planningUpdate,
+        data: {'date': date, 'meals': meals},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update meal plan error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get meal plan by specific date
+  /// USAGE: Retrieve meal plan for a specific date (YYYY-MM-DD format)
+  /// RETURNS: Meal plan with breakfast, lunch, dinner and total calories
+  Future<Map<String, dynamic>> getMealPlanByDate(String date) async {
+    try {
+      final response = await _dio.get(
+        _planningGet,
+        queryParameters: {'date': date},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get meal plan by date error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get all user's meal plans
+  /// USAGE: Retrieve all meal plans created by the user
+  /// RETURNS: Array of all meal plans with metadata
+  Future<Map<String, dynamic>> getAllMealPlans() async {
+    try {
+      final response = await _dio.get(_planningAll);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get all meal plans error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get list of dates with existing meal plans
+  /// USAGE: Get dates that have meal plans for calendar/navigation purposes
+  /// RETURNS: Array of dates in YYYY-MM-DD format
+  Future<Map<String, dynamic>> getMealPlanDates() async {
+    try {
+      final response = await _dio.get(_planningDates);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get meal plan dates error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Delete meal plan for specific date
+  /// USAGE: Remove meal plan for a specific date
+  /// RETURNS: Confirmation message
+  Future<Map<String, dynamic>> deleteMealPlan(String date) async {
+    try {
+      final response = await _dio.delete(
+        _planningDelete,
+        queryParameters: {'date': date},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Delete meal plan error: ${e.toString()}');
     }
   }
 

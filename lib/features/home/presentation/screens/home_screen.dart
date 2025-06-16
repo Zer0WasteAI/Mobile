@@ -10,6 +10,7 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summa
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
+import 'package:zer0_waste_ai/features/home/presentation/widgets/quick_actions_widget.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 /// The HomeScreen widget is the main entry point of the app.
@@ -100,6 +101,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   horizontal: HomeScreen._horizontalPadding,
                 ),
                 child: InventorySummaryCard(),
+              ),
+              const SizedBox(height: HomeScreen._sectionSpacing),
+
+              // Quick Actions Widget - Acciones rápidas
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
+                child: QuickActionsWidget(),
               ),
               const SizedBox(height: HomeScreen._sectionSpacing),
 

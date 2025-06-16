@@ -366,6 +366,14 @@ class PlannerScreen extends ConsumerWidget {
             },
             tooltip: 'Biblioteca de recetas',
           ),
+          // Botón de planificación de comidas
+          IconButton(
+            icon: Icon(Icons.calendar_today, color: textColor),
+            onPressed: () {
+              Navigator.pushNamed(context, '/meal-planning');
+            },
+            tooltip: 'Planificación de Comidas',
+          ),
           IconButton(
             icon: Icon(Icons.shopping_cart_outlined, color: textColor),
             onPressed: () => _showShoppingList(context),
@@ -499,7 +507,9 @@ class PlannerScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color:
-            isCurrentWeek ? primaryColor.withValues(alpha: 0.08) : Colors.transparent,
+            isCurrentWeek
+                ? primaryColor.withValues(alpha: 0.08)
+                : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -973,7 +983,9 @@ class PlannerScreen extends ConsumerWidget {
                           color:
                               isSelected
                                   ? const Color(0xFF00BFA5)
-                                  : textColor.withValues(alpha: isToday ? 1.0 : 0.7),
+                                  : textColor.withValues(
+                                    alpha: isToday ? 1.0 : 0.7,
+                                  ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -987,7 +999,9 @@ class PlannerScreen extends ConsumerWidget {
                               isSelected
                                   ? const Color(0xFF00BFA5)
                                   : isToday
-                                  ? const Color(0xFF00BFA5).withValues(alpha: 0.2)
+                                  ? const Color(
+                                    0xFF00BFA5,
+                                  ).withValues(alpha: 0.2)
                                   : Colors.transparent,
                           border:
                               isToday && !isSelected
@@ -1350,16 +1364,10 @@ class PlannerScreen extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            ...mealsOfType
-                                .map(
-                                  (meal) => _buildMealItem(
-                                    context,
-                                    ref,
-                                    meal,
-                                    dateKey,
-                                  ),
-                                )
-                                ,
+                            ...mealsOfType.map(
+                              (meal) =>
+                                  _buildMealItem(context, ref, meal, dateKey),
+                            ),
                             const SizedBox(height: 16),
                           ],
                         );
@@ -2026,7 +2034,9 @@ class PlannerScreen extends ConsumerWidget {
                                 label: Text(type.name),
                                 selected: isSelected,
                                 backgroundColor: Colors.grey.shade100,
-                                selectedColor: type.color.withValues(alpha: 0.2),
+                                selectedColor: type.color.withValues(
+                                  alpha: 0.2,
+                                ),
                                 onSelected: (selected) {
                                   setState(() {
                                     initialType = selected ? type : null;
@@ -2169,7 +2179,9 @@ class PlannerScreen extends ConsumerWidget {
                                                       )
                                                       : Container(
                                                         color: recipe.type.color
-                                                            .withValues(alpha: 0.2),
+                                                            .withValues(
+                                                              alpha: 0.2,
+                                                            ),
                                                         child: Icon(
                                                           recipe.type.icon,
                                                           color:
@@ -2196,7 +2208,9 @@ class PlannerScreen extends ConsumerWidget {
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: recipe.type.color
-                                                          .withValues(alpha: 0.1),
+                                                          .withValues(
+                                                            alpha: 0.1,
+                                                          ),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             4,
@@ -4008,8 +4022,9 @@ class PlannerScreen extends ConsumerWidget {
                                               vertical: 3,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: meal.type.color
-                                                  .withValues(alpha: 0.1),
+                                              color: meal.type.color.withValues(
+                                                alpha: 0.1,
+                                              ),
                                               borderRadius:
                                                   BorderRadius.circular(6),
                                             ),
@@ -4064,7 +4079,9 @@ class PlannerScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF00BFA5).withValues(alpha: 0.07),
+                              color: const Color(
+                                0xFF00BFA5,
+                              ).withValues(alpha: 0.07),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
@@ -4183,7 +4200,9 @@ class PlannerScreen extends ConsumerWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.03),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.03,
+                                          ),
                                           blurRadius: 6,
                                           offset: const Offset(0, 2),
                                         ),

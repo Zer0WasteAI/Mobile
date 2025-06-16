@@ -9,11 +9,11 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
 
   static ImpactMetrics _getInitialMetrics() {
     return ImpactMetrics(
-      foodSavedKg: 12.5,
-      co2AvoidedKg: 20.3,
-      waterSavedLiters: 1250.0,
-      lastUpdated: DateTime.now(),
-    );
+          foodSavedKg: 12.5,
+          co2AvoidedKg: 20.3,
+          waterSavedLiters: 1250.0,
+        lastUpdated: DateTime.now(),
+      );
   }
 
   /// Añade una cantidad de alimentos salvados y actualiza métricas relacionadas
@@ -49,8 +49,8 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
     state = state.copyWith(
       waterSavedLiters: state.waterSavedLiters + liters,
       lastUpdated: DateTime.now(),
-    );
-  }
+      );
+    }
 
   /// Resetea todas las métricas
   void resetMetrics() {
@@ -70,28 +70,28 @@ class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
 
   static List<ImpactGoal> _getInitialGoals() {
     return [
-      ImpactGoal(
+        ImpactGoal(
         id: const Uuid().v4(),
-        title: 'Salvar 5kg de alimentos',
+          title: 'Salvar 5kg de alimentos',
         description:
             'Evita el desperdicio de 5 kilogramos de alimentos esta semana',
-        metricType: GoalMetricType.foodSaved,
-        targetValue: 5.0,
+          metricType: GoalMetricType.foodSaved,
+          targetValue: 5.0,
         currentValue: 2.3,
         startDate: DateTime.now().subtract(const Duration(days: 2)),
         endDate: DateTime.now().add(const Duration(days: 5)),
-      ),
-      ImpactGoal(
+        ),
+        ImpactGoal(
         id: const Uuid().v4(),
         title: 'Reducir 20kg de CO2',
         description: 'Evita la emisión de 20kg de CO2 este mes',
-        metricType: GoalMetricType.co2Avoided,
+          metricType: GoalMetricType.co2Avoided,
         targetValue: 20.0,
         currentValue: 8.7,
         startDate: DateTime.now().subtract(const Duration(days: 10)),
         endDate: DateTime.now().add(const Duration(days: 20)),
-      ),
-      ImpactGoal(
+        ),
+        ImpactGoal(
         id: const Uuid().v4(),
         title: 'Ahorrar 1000L de agua',
         description:
@@ -101,7 +101,7 @@ class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
         currentValue: 450.0,
         startDate: DateTime.now().subtract(const Duration(days: 5)),
         endDate: DateTime.now().add(const Duration(days: 25)),
-      ),
+        ),
     ];
   }
 
@@ -149,7 +149,7 @@ class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
 final impactGoalsProvider =
     StateNotifierProvider<ImpactGoalsNotifier, List<ImpactGoal>>((ref) {
       return ImpactGoalsNotifier();
-    });
+});
 
 /// Función para crear un nuevo objetivo
 ImpactGoal createNewGoal({

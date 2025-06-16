@@ -34,7 +34,7 @@ class WelcomeHeader extends ConsumerWidget {
       child: SafeArea(
         bottom: false,
         child: authState.when(
-          data: (user) {
+      data: (user) {
             if (user == null) {
               return _buildLoadingState(textColor, secondaryTextColor);
             }
@@ -46,14 +46,14 @@ class WelcomeHeader extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
                     // Saludo personalizado
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                             _getGreeting(),
                             style: GoogleFonts.inter(
                               fontSize: 16,
@@ -64,9 +64,9 @@ class WelcomeHeader extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             firstName,
-                            style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
                               fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                               color: textColor,
                             ),
                           ),
@@ -161,12 +161,12 @@ class WelcomeHeader extends ConsumerWidget {
                             fontSize: 14,
                             color: textColor,
                             fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
                 ),
+              ),
+            ],
+          ),
+        ),
               ],
             );
           },
@@ -183,38 +183,38 @@ class WelcomeHeader extends ConsumerWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
                     height: 16,
                     width: 80,
-                    decoration: BoxDecoration(
+                      decoration: BoxDecoration(
                       color: secondaryTextColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(
+                    Container(
                     height: 28,
                     width: 120,
-                    decoration: BoxDecoration(
+                      decoration: BoxDecoration(
                       color: textColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: secondaryTextColor.withValues(alpha: 0.3),
-              ),
+          ),
             ),
           ],
         ),
@@ -233,24 +233,24 @@ class WelcomeHeader extends ConsumerWidget {
   Widget _buildErrorState(Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+        children: [
         Text(
           'Error al cargar',
-          style: GoogleFonts.inter(
+                          style: GoogleFonts.inter(
             fontSize: 16,
-            color: textColor,
+                            color: textColor,
             fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
         const SizedBox(height: 8),
-        Text(
+            Text(
           'No se pudo cargar la información del usuario',
-          style: GoogleFonts.inter(
-            fontSize: 14,
+              style: GoogleFonts.inter(
+                fontSize: 14,
             color: textColor.withValues(alpha: 0.7),
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
     );
   }
 

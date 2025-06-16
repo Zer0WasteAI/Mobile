@@ -37,20 +37,20 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
           // Título
           Text(
             'Mis Objetivos',
-            style: GoogleFonts.inter(
+              style: GoogleFonts.inter(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: textColor,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           Text(
             'Define metas para maximizar tu impacto ambiental',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
+              ),
           const SizedBox(height: 24),
 
           // Botón para crear nuevo objetivo
@@ -81,7 +81,7 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
               (goal) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _buildGoalCard(goal, primaryColor, textColor),
-              ),
+            ),
             ),
         ],
       ),
@@ -91,40 +91,40 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
   Widget _buildEmptyState(Color primaryColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
+          decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: primaryColor.withValues(alpha: 0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
           width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
+                ),
+              ),
+                child: Column(
+                  children: [
           Icon(
             Icons.flag_outlined,
             size: 48,
             color: primaryColor.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
-          Text(
+                    Text(
             'No tienes objetivos aún',
-            style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
               color: textColor,
-            ),
-          ),
+                      ),
+                    ),
           const SizedBox(height: 8),
-          Text(
+                    Text(
             'Crea tu primer objetivo para comenzar a medir tu impacto ambiental',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
               fontSize: 14,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
+                        color: textColor.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
       ),
     );
   }
@@ -143,7 +143,7 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -157,20 +157,20 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
           width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
               Expanded(
                 child: Text(
                   goal.title,
-                  style: GoogleFonts.inter(
+                    style: GoogleFonts.inter(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
                   ),
-                ),
               ),
               if (isCompleted)
                 Container(
@@ -184,23 +184,23 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
                   ),
                   child: Text(
                     'Completado',
-                    style: GoogleFonts.inter(
+                style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                    ),
-                  ),
+                ),
+              ),
                 )
               else if (isExpired)
-                Container(
+              Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
                   ),
-                  decoration: BoxDecoration(
+                decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(12),
-                  ),
+                ),
                   child: Text(
                     'Expirado',
                     style: GoogleFonts.inter(
@@ -209,7 +209,7 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
                       color: Colors.white,
                     ),
                   ),
-                ),
+                        ),
             ],
           ),
           const SizedBox(height: 8),
@@ -218,8 +218,8 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
             style: GoogleFonts.inter(
               fontSize: 12,
               color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
+                ),
+              ),
           const SizedBox(height: 12),
 
           // Barra de progreso
@@ -228,10 +228,10 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
             backgroundColor: Colors.grey.withValues(alpha: 0.2),
             valueColor: AlwaysStoppedAnimation(
               isCompleted ? Colors.green : primaryColor,
-            ),
+                ),
             minHeight: 6,
-          ),
-          const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 8),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -256,13 +256,13 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
 
           if (goal.endDate != null) ...[
             const SizedBox(height: 8),
-            Text(
+                    Text(
               'Fecha límite: ${_formatDate(goal.endDate!)}',
-              style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
                 fontSize: 11,
                 color: textColor.withValues(alpha: 0.6),
-              ),
-            ),
+                      ),
+                    ),
           ],
         ],
       ),
@@ -284,24 +284,24 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
             ),
             content: SingleChildScrollView(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                   TextField(
                     controller: _titleController,
                     decoration: const InputDecoration(
                       labelText: 'Título del objetivo',
                       border: OutlineInputBorder(),
                     ),
-                  ),
+                              ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _descriptionController,
                     decoration: const InputDecoration(
                       labelText: 'Descripción (opcional)',
                       border: OutlineInputBorder(),
-                    ),
+                              ),
                     maxLines: 2,
-                  ),
+                        ),
                   const SizedBox(height: 16),
 
                   // Selector de tipo de métrica
@@ -326,7 +326,7 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
                         );
                       });
                     },
-                  ),
+                          ),
                   const SizedBox(height: 16),
 
                   // Selector de duración
@@ -348,11 +348,11 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
                         _selectedDuration = value!;
                       });
                     },
-                  ),
+                              ),
                   const SizedBox(height: 16),
 
                   // Slider para valor objetivo
-                  Text(
+                              Text(
                     'Valor objetivo: ${_targetValue.toStringAsFixed(1)} ${_getMetricUnit(_selectedMetricType)}',
                     style: GoogleFonts.inter(fontWeight: FontWeight.w500),
                   ),
@@ -366,28 +366,28 @@ class _ImpactGoalsTabState extends ConsumerState<ImpactGoalsTab> {
                         _targetValue = value;
                       });
                     },
-                  ),
-                ],
-              ),
-            ),
+                              ),
+                            ],
+                          ),
+                        ),
             actions: [
-              TextButton(
+                  TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _createGoal();
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _createGoal();
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                ),
+                      ),
                 child: const Text('Crear'),
-              ),
-            ],
-          ),
+                  ),
+                ],
+      ),
     );
   }
 

@@ -30,6 +30,7 @@ import 'package:zer0_waste_ai/features/recipes/presentation/screens/ai_recipe_ge
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/all_recipes_screen.dart'; // Import AllRecipesScreen
 import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_cooking_level_selector_screen.dart'; // Import profile cooking level screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_preferred_food_type_screen.dart'; // Import profile food type screen
@@ -383,6 +384,13 @@ class AppRouter {
           name: plannerRouteName,
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const PlannerScreen(),
+        ),
+        // Route for Meal Planning
+        GoRoute(
+          path: '/meal-planning',
+          name: 'mealPlanning',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const MealPlanningScreen(),
         ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(

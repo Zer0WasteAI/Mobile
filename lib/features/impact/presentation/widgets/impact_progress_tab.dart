@@ -27,11 +27,11 @@ class ImpactProgressTab extends ConsumerWidget {
           // Título
           Text(
             'Tu Progreso',
-            style: GoogleFonts.inter(
+              style: GoogleFonts.inter(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -39,7 +39,7 @@ class ImpactProgressTab extends ConsumerWidget {
             style: GoogleFonts.inter(
               fontSize: 14,
               color: textColor.withValues(alpha: 0.7),
-            ),
+          ),
           ),
           const SizedBox(height: 24),
 
@@ -68,22 +68,22 @@ class ImpactProgressTab extends ConsumerWidget {
       children: [
         Text(
           'Métricas de Impacto',
-          style: GoogleFonts.inter(
+              style: GoogleFonts.inter(
             fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: textColor,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
         _buildProgressCard(
           title: 'Alimentos Salvados',
           value: metrics.foodSavedKg,
           unit: 'kg',
           target: 50.0,
           icon: Icons.restaurant,
-          color: Colors.green,
+                  color: Colors.green,
           textColor: textColor,
-        ),
+                ),
         const SizedBox(height: 12),
         _buildProgressCard(
           title: 'CO₂ Evitado',
@@ -91,9 +91,9 @@ class ImpactProgressTab extends ConsumerWidget {
           unit: 'kg',
           target: 100.0,
           icon: Icons.cloud_off,
-          color: Colors.blue,
+                  color: Colors.blue,
           textColor: textColor,
-        ),
+                ),
         const SizedBox(height: 12),
         _buildProgressCard(
           title: 'Agua Ahorrada',
@@ -103,8 +103,8 @@ class ImpactProgressTab extends ConsumerWidget {
           icon: Icons.water_drop,
           color: Colors.cyan,
           textColor: textColor,
-        ),
-      ],
+                ),
+              ],
     );
   }
 
@@ -134,15 +134,15 @@ class ImpactProgressTab extends ConsumerWidget {
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
+            child: Text(
                   title,
-                  style: GoogleFonts.inter(
+              style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
+                color: textColor,
               ),
+            ),
+          ),
               Text(
                 '${value.toStringAsFixed(1)} / ${target.toStringAsFixed(0)} $unit',
                 style: GoogleFonts.inter(
@@ -199,14 +199,14 @@ class ImpactProgressTab extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: primaryColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: primaryColor.withValues(alpha: 0.2),
                 width: 1,
-              ),
+        ),
             ),
-            child: Row(
-              children: [
+          child: Row(
+            children: [
                 Icon(Icons.flag_outlined, color: primaryColor),
                 const SizedBox(width: 12),
                 Expanded(
@@ -235,7 +235,7 @@ class ImpactProgressTab extends ConsumerWidget {
   Widget _buildGoalCard(dynamic goal, Color primaryColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+                decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -243,25 +243,25 @@ class ImpactProgressTab extends ConsumerWidget {
           width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
             goal.title,
-            style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
           const SizedBox(height: 4),
-          Text(
+                    Text(
             goal.description,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: textColor.withValues(alpha: 0.7),
+                      ),
+                    ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: goal.progress,
@@ -302,15 +302,15 @@ class ImpactProgressTab extends ConsumerWidget {
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+          children: [
+            Text(
           'Tendencias',
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
-        ),
+            ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
@@ -346,9 +346,9 @@ class ImpactProgressTab extends ConsumerWidget {
                 Icons.water_drop,
                 Colors.cyan,
                 textColor,
-              ),
-            ],
-          ),
+            ),
+          ],
+        ),
         ),
       ],
     );
@@ -362,39 +362,39 @@ class ImpactProgressTab extends ConsumerWidget {
     Color textColor,
   ) {
     return Row(
-      children: [
-        Container(
+        children: [
+          Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
+            decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
-          ),
+            ),
           child: Icon(icon, color: color, size: 16),
-        ),
+          ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                 period,
-                style: GoogleFonts.inter(
+                  style: GoogleFonts.inter(
                   fontSize: 12,
                   color: textColor.withValues(alpha: 0.7),
+                  ),
                 ),
-              ),
-              Text(
+                Text(
                 value,
-                style: GoogleFonts.inter(
+                  style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: textColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
     );
   }
 }

@@ -27,7 +27,7 @@ class ImpactDashboardTab extends ConsumerWidget {
           // Título principal
           Text(
             'Tu Impacto Ambiental',
-            style: GoogleFonts.inter(
+              style: GoogleFonts.inter(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: textColor,
@@ -39,7 +39,7 @@ class ImpactDashboardTab extends ConsumerWidget {
             style: GoogleFonts.inter(
               fontSize: 14,
               color: textColor.withValues(alpha: 0.7),
-            ),
+          ),
           ),
           const SizedBox(height: 24),
 
@@ -66,7 +66,7 @@ class ImpactDashboardTab extends ConsumerWidget {
     return Column(
       children: [
         Row(
-          children: [
+            children: [
             Expanded(
               child: _buildMetricCard(
                 title: 'Alimentos Salvados',
@@ -74,8 +74,8 @@ class ImpactDashboardTab extends ConsumerWidget {
                 icon: Icons.restaurant,
                 color: Colors.green,
                 textColor: textColor,
+                ),
               ),
-            ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
@@ -84,10 +84,10 @@ class ImpactDashboardTab extends ConsumerWidget {
                 icon: Icons.cloud_off,
                 color: Colors.blue,
                 textColor: textColor,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         const SizedBox(height: 12),
         _buildMetricCard(
           title: 'Agua Ahorrada',
@@ -96,7 +96,7 @@ class ImpactDashboardTab extends ConsumerWidget {
           color: Colors.cyan,
           textColor: textColor,
           isWide: true,
-        ),
+            ),
       ],
     );
   }
@@ -126,7 +126,7 @@ class ImpactDashboardTab extends ConsumerWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.inter(
+                style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: textColor.withValues(alpha: 0.8),
@@ -155,19 +155,19 @@ class ImpactDashboardTab extends ConsumerWidget {
     Color textColor,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
           color: primaryColor.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
             'Equivalencias',
             style: GoogleFonts.inter(
               fontSize: 18,
@@ -209,20 +209,20 @@ class ImpactDashboardTab extends ConsumerWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: textColor,
-                  ),
+                ),
                 ),
                 TextSpan(
                   text: ' $description',
-                  style: GoogleFonts.inter(
+                          style: GoogleFonts.inter(
                     fontSize: 14,
                     color: textColor.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
-        ),
-      ],
+        ],
     );
   }
 

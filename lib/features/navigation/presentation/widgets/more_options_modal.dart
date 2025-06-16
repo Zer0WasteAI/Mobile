@@ -121,6 +121,22 @@ class MoreOptionsModal extends ConsumerWidget {
                 },
               ),
 
+              const Divider(height: 24),
+
+              _buildOptionItem(
+                context,
+                ref,
+                icon: FontAwesomeIcons.utensils,
+                iconColor: Colors.green,
+                title: 'Planificación de Comidas',
+                subtitle: 'Planifica tus comidas diarias con IA',
+                onTap: () {
+                  onClose();
+                  // Navegación a la planificación de comidas
+                  context.push('/meal-planning');
+                },
+              ),
+
               const SizedBox(height: 24),
 
               // Botón para cerrar más prominente
