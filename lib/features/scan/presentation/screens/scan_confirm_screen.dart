@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
@@ -343,23 +344,111 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     );
   }
 
-  // Placeholder function for analyzing images
-  void _analyzeImages(List<File> images) {
-    // TODO: Implement actual API call to Gemini
-    // 1. Get the Gemini service/repository via ref.read(geminiServiceProvider)
-    // 2. Call the analysis method: e.g., geminiService.analyzeFoodImages(images);
-    // 3. Handle loading state (show indicator)
-    // 4. Navigate to results screen on success or show error
-    log('Analizando ${images.length} imágenes...');
-    log(images.map((f) => f.path).toList().toString());
-    // Example: Show a success message or navigate to results screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Enviando imágenes para análisis... (Simulado)'),
-      ),
+  // Real function for analyzing images using AI
+  Future<void> _analyzeImages(List<File> images) async {
+    if (images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay imágenes para analizar'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Analizando imágenes con IA...'),
+                    Text('Esto puede tomar unos momentos'),
+                  ],
+                ),
+              ),
+            ),
+          ),
     );
-    // Potentially navigate after analysis:
-    // context.go('/scan/results', extra: analysisResult);
+
+    try {
+      log('Iniciando análisis de ${images.length} imágenes...');
+
+      // Get the API service
+      final apiService = ApiService.instance;
+
+      // For now, we'll use mock image paths since we need to upload images first
+      // In a real implementation, you'd upload images to Firebase Storage first
+      final List<String> imagePaths = images.map((file) => file.path).toList();
+
+      Map<String, dynamic> analysisResult;
+
+      // Choose the appropriate recognition endpoint based on scan type
+      if (widget.originType == ScanItemType.ingredient) {
+        analysisResult = await apiService.recognizeIngredients(imagePaths);
+      } else {
+        analysisResult = await apiService.recognizeFoods(imagePaths);
+      }
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      log('Análisis completado exitosamente');
+      log('Resultado: ${analysisResult.toString()}');
+
+      // Navigate to results screen with the analysis data
+      if (context.mounted) {
+        // Convert the analysis result to the format expected by ScanResultsScreen
+        final List<Map<String, dynamic>> recognizedItems = [];
+
+        // Parse the API response based on the expected format
+        if (analysisResult['recognized_items'] != null) {
+          final items = analysisResult['recognized_items'] as List;
+          for (final item in items) {
+            if (item is Map<String, dynamic>) {
+              recognizedItems.add(item);
+            }
+          }
+        }
+
+        // Navigate to results screen
+        context.go(
+          '/scan/results',
+          extra: {
+            'recognizedItemsJson': recognizedItems,
+            'itemType': widget.originType,
+          },
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      log('Error en análisis de imágenes: $e');
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al analizar imágenes: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   @override

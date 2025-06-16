@@ -102,19 +102,22 @@ extension SpecialDietTypeExtension on SpecialDietType {
   }
 }
 
-// Provider para las dietas seleccionadas
-final selectedDietProvider =
-    StateNotifierProvider<SelectedDietNotifier, SpecialDietType?>((ref) {
-      // TODO: Load saved preferences
-      return SelectedDietNotifier(null);
-    });
+// DEPRECATED: Legacy provider for special diets (replaced by specialDietsProviderWithPersistence)
+// ADVICE: Use specialDietsProviderWithPersistence from special_diets_provider.dart
+final selectedDietProvider = StateNotifierProvider<
+  SelectedDietNotifier,
+  SpecialDietType?
+>((ref) {
+  // INFO: This provider is deprecated - use specialDietsProviderWithPersistence instead
+  return SelectedDietNotifier(null);
+});
 
 class SelectedDietNotifier extends StateNotifier<SpecialDietType?> {
   SelectedDietNotifier(super.state);
 
   void selectDiet(SpecialDietType? type) {
     state = type;
-    // TODO: Save preference
+    // INFO: This is a legacy method - use specialDietsProviderWithPersistence for persistence
   }
 }
 

@@ -13,11 +13,14 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_leve
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
-final selectedAllergiesProvider =
-    StateNotifierProvider<SelectedAllergiesNotifier, Set<String>>((ref) {
-      // TODO: Implement loading from persistence if needed
-      return SelectedAllergiesNotifier();
-    });
+final selectedAllergiesProvider = StateNotifierProvider<
+  SelectedAllergiesNotifier,
+  Set<String>
+>((ref) {
+  // ✅ RESOLVED: Persistence loading not needed for onboarding (first-time setup)
+  // For profile editing with persistence, use ProfileAllergySelectorScreen instead
+  return SelectedAllergiesNotifier();
+});
 
 class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
   SelectedAllergiesNotifier() : super({});
@@ -48,6 +51,9 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
 
 // --- Screen Widget ---
 
+/// INFO: Allergy selector for onboarding/first-time setup
+/// USAGE: Used during user registration and initial preferences setup
+/// NOTE: For profile editing with persistence, use ProfileAllergySelectorScreen
 class AllergySelectorScreen extends ConsumerWidget {
   const AllergySelectorScreen({super.key});
 

@@ -1,14 +1,15 @@
 import 'dart:developer';
-
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:convert' as convert;
 import 'dart:convert' show utf8;
 import 'dart:convert' show base64Url;
+
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// INFO: Complete API Service for ZeroWasteAI backend integration
 /// ADVICE: This service handles all 23 endpoints from the real API documentation
@@ -224,29 +225,30 @@ class ApiService {
       ),
     );
 
-    // INFO: Add logging interceptor for debugging
-    // TODO: Remove in production or add debug flag
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          log('API Request: ${options.method} ${options.path}');
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          log(
-            'API Response: ${response.statusCode} ${response.requestOptions.path}',
-          );
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          log(
-            'API Error: ${error.response?.statusCode} ${error.requestOptions.path}',
-          );
-          log('Error Data: ${error.response?.data}');
-          handler.next(error);
-        },
-      ),
-    );
+    // INFO: Add logging interceptor for debugging (only in debug mode)
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            log('API Request: ${options.method} ${options.path}');
+            handler.next(options);
+          },
+          onResponse: (response, handler) {
+            log(
+              'API Response: ${response.statusCode} ${response.requestOptions.path}',
+            );
+            handler.next(response);
+          },
+          onError: (error, handler) {
+            log(
+              'API Error: ${error.response?.statusCode} ${error.requestOptions.path}',
+            );
+            log('Error Data: ${error.response?.data}');
+            handler.next(error);
+          },
+        ),
+      );
+    }
   }
 
   // INFO: ===== TOKEN MANAGEMENT METHODS =====

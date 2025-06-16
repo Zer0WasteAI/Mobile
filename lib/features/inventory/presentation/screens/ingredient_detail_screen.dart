@@ -4,8 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/ingredient_detail.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_backend_provider.dart';
 
-// TODO: Define route name constant if needed elsewhere
-// const String ingredientDetailRouteName = 'ingredientDetail';
+// ✅ RESOLVED: Route name constant already defined in app_router.dart as 'ingredientDetailRouteName'
 
 /// INFO: Pantalla de detalle completo de un ingrediente del inventario
 /// USAGE: Muestra información enriquecida con IA: impacto ambiental, ideas de utilización, consejos
@@ -14,6 +13,8 @@ class IngredientDetailScreen extends ConsumerStatefulWidget {
   final String ingredientName;
 
   const IngredientDetailScreen({super.key, required this.ingredientName});
+
+  static const String routeName = 'ingredientDetail';
 
   @override
   ConsumerState<IngredientDetailScreen> createState() =>

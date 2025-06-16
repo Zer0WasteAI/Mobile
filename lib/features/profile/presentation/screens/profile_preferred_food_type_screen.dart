@@ -88,12 +88,15 @@ extension FoodTypeExtension on FoodType {
   }
 }
 
-// Provider para los tipos de comida seleccionados
-final selectedFoodTypesProvider =
-    StateNotifierProvider<SelectedFoodTypesNotifier, List<FoodType>>((ref) {
-      // TODO: Load saved preferences
-      return SelectedFoodTypesNotifier([]);
-    });
+// DEPRECATED: Legacy provider for food types (replaced by selectedFoodTypesProviderWithPersistence)
+// ADVICE: Use selectedFoodTypesProviderWithPersistence from selected_food_types_provider.dart
+final selectedFoodTypesProvider = StateNotifierProvider<
+  SelectedFoodTypesNotifier,
+  List<FoodType>
+>((ref) {
+  // INFO: This provider is deprecated - use selectedFoodTypesProviderWithPersistence instead
+  return SelectedFoodTypesNotifier([]);
+});
 
 class SelectedFoodTypesNotifier extends StateNotifier<List<FoodType>> {
   SelectedFoodTypesNotifier(super.state);
@@ -104,7 +107,7 @@ class SelectedFoodTypesNotifier extends StateNotifier<List<FoodType>> {
     } else {
       state = [...state, type];
     }
-    // TODO: Save preferences
+    // INFO: This is a legacy method - use selectedFoodTypesProviderWithPersistence for persistence
   }
 }
 

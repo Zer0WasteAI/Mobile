@@ -7,6 +7,7 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/login_form.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 /// Login screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -26,71 +27,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Handle auth state changes - only handle successful login
     // Errors are handled globally by AuthErrorHandler
     ref.listen<AsyncValue>(authControllerProvider, (_, state) {
-      state.whenData((user) {
+      state.whenData((user) async {
         if (user != null) {
-          context.go(AllergySelectorScreen.routePath);
+          // Check if this is the user's first time logging in
+          final userProfileState = ref.read(userProfileProvider);
+          final hasCompletedPreferences =
+              userProfileState.user?.initialPreferencesCompleted ?? false;
+
+          if (hasCompletedPreferences) {
+            // User has already completed preferences, go to home
+            context.go('/home');
+          } else {
+            // First time user or user hasn't completed preferences, go to onboarding
+            context.go(AllergySelectorScreen.routePath);
+          }
         }
       });
     });
 
     return AuthErrorHandler(
       child: Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo
-                const Center(child: AnimatedLogo(size: 120)),
-                const SizedBox(height: 40),
+        backgroundColor:
+            isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo
+                  const Center(child: AnimatedLogo(size: 120)),
+                  const SizedBox(height: 40),
 
-                // Welcome text
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bienvenido de Nuevo',
-                        style: theme.textTheme.displayLarge?.copyWith(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              isDark
-                                  ? AppColors.darkMainText
-                                  : AppColors.lightMainText,
+                  // Welcome text
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bienvenido de Nuevo',
+                          style: theme.textTheme.displayLarge?.copyWith(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                isDark
+                                    ? AppColors.darkMainText
+                                    : AppColors.lightMainText,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Inicie sesión para seguir reduciendo el desperdicio de alimentos',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontSize: 16,
-                          color:
-                              isDark
-                                  ? AppColors.darkSecondaryText
-                                  : AppColors.lightSecondaryText,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Inicie sesión para seguir reduciendo el desperdicio de alimentos',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontSize: 16,
+                            color:
+                                isDark
+                                    ? AppColors.darkSecondaryText
+                                    : AppColors.lightSecondaryText,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
+                  const SizedBox(height: 40),
 
-                // Login form
-                LoginForm(
-                  onForgotPassword: () {
-                    context.go('/forgot-password');
-                  },
-                  onRegister: () {
-                    context.go('/register');
-                  },
-                ),
-              ],
+                  // Login form
+                  LoginForm(
+                    onForgotPassword: () {
+                      context.go('/forgot-password');
+                    },
+                    onRegister: () {
+                      context.go('/register');
+                    },
+                  ),
+                ],
               ),
             ),
           ),

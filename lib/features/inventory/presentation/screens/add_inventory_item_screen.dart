@@ -15,7 +15,9 @@ import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 
 class AddInventoryItemScreen extends ConsumerStatefulWidget {
-  const AddInventoryItemScreen({super.key});
+  final List<Map<String, dynamic>>? prefilledItems;
+
+  const AddInventoryItemScreen({super.key, this.prefilledItems});
 
   // Define route name and path for GoRouter
   static const String routeName = 'addInventoryItem';
@@ -46,6 +48,41 @@ class _AddInventoryItemScreenState
 
   // Define available units
   final List<String> _availableUnits = ['unidades', 'kg', 'g', 'lt', 'ml'];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePrefilledData();
+  }
+
+  void _initializePrefilledData() {
+    if (widget.prefilledItems != null && widget.prefilledItems!.isNotEmpty) {
+      // Use the first item for pre-filling (in case multiple items were scanned)
+      final firstItem = widget.prefilledItems!.first;
+
+      // Pre-fill the name field
+      if (firstItem['name'] != null) {
+        _nameController.text = firstItem['name'].toString();
+      }
+
+      // Pre-fill category if available
+      if (firstItem['category'] != null) {
+        final categoryString = firstItem['category'].toString().toLowerCase();
+        if (categoryString.contains('food') ||
+            categoryString.contains('alimento')) {
+          _selectedCategory = ItemCategory.food;
+        } else if (categoryString.contains('ingredient') ||
+            categoryString.contains('ingrediente')) {
+          _selectedCategory = ItemCategory.ingredient;
+        }
+      }
+
+      // Set default values for scanned items
+      _quantity = 1.0;
+      _selectedUnitType = 'unidades'; // Default unit for scanned items
+      _selectedStorageType = StorageType.pantry; // Default storage
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +187,42 @@ class _AddInventoryItemScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- Pre-filled Data Banner ---
+              if (widget.prefilledItems != null &&
+                  widget.prefilledItems!.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: primaryColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.qr_code_scanner,
+                        color: primaryColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Datos pre-llenados desde escaneo',
+                          style: GoogleFonts.inter(
+                            color: primaryColor,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // --- Nombre del Alimento ---
               Text(
                 'Nombre del Alimento',
@@ -771,7 +844,6 @@ class _AddInventoryItemScreenState
       initialDate: _expirationDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-      // TODO: Add theme for DatePicker if needed
     );
     if (picked != null && picked != _expirationDate) {
       setState(() {

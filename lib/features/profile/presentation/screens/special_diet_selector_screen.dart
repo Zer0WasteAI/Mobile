@@ -12,8 +12,7 @@ import 'package:zer0_waste_ai/features/profile/application/providers/special_die
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
-// TODO: Define route name if needed
-// No: Defined below
+// ✅ RESOLVED: Route name already defined below as routeName and routePath constants
 
 class SpecialDietSelectorScreen extends ConsumerWidget {
   const SpecialDietSelectorScreen({super.key});
@@ -225,7 +224,7 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
 
                         log('✅ Special diets saved to Firestore successfully');
                         log('✅ Initial preferences marked as completed');
-                      log("Selected Diets on Continue: $selectedDiets");
+                        log("Selected Diets on Continue: $selectedDiets");
 
                         // Navigate to home
                         if (context.mounted) {

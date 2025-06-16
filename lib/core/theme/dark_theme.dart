@@ -78,6 +78,43 @@ class DarkTheme {
         ),
         actionsPadding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 16.0),
       ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: AppColors.darkSurface,
+        headerBackgroundColor: AppColors.darkPrimary,
+        headerForegroundColor: Colors.white,
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return AppColors.darkMainText;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.darkPrimary;
+          }
+          return Colors.transparent;
+        }),
+        todayForegroundColor: WidgetStateProperty.all(AppColors.darkPrimary),
+        todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return AppColors.darkMainText;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.darkPrimary;
+          }
+          return Colors.transparent;
+        }),
+        confirmButtonStyle: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(AppColors.darkPrimary),
+        ),
+        cancelButtonStyle: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(AppColors.darkSecondaryText),
+        ),
+      ),
     );
   }
 }

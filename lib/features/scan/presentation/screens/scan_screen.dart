@@ -597,11 +597,20 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
   void _addToInventory(List items) {
     // Navigate to inventory add screen with recognized items
-    // TODO: Implement navigation to inventory with pre-filled data
-    _showSnackBar('¡Función de agregar al inventario próximamente!');
+    // ✅ RESOLVED: Navigation to inventory with pre-filled data implemented
 
-    // For now, just show success message
-    context.pop(); // Go back to previous screen
+    // Convert recognized items to the format expected by AddInventoryItemScreen
+    final List<Map<String, dynamic>> prefilledItems =
+        items.map((item) {
+          return {
+            'name': item.name ?? 'Producto escaneado',
+            'category': item.category ?? 'food',
+            'confidence': item.confidence ?? 0.0,
+          };
+        }).toList();
+
+    // Navigate to add inventory screen with pre-filled data
+    context.pushNamed('addInventoryItem', extra: prefilledItems);
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

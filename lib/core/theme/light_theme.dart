@@ -78,6 +78,45 @@ class LightTheme {
         ),
         actionsPadding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 16.0),
       ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: Colors.white,
+        headerBackgroundColor: AppColors.lightPrimary,
+        headerForegroundColor: Colors.white,
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return AppColors.lightMainText;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.lightPrimary;
+          }
+          return Colors.transparent;
+        }),
+        todayForegroundColor: WidgetStateProperty.all(AppColors.lightPrimary),
+        todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return AppColors.lightMainText;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.lightPrimary;
+          }
+          return Colors.transparent;
+        }),
+        confirmButtonStyle: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(AppColors.lightPrimary),
+        ),
+        cancelButtonStyle: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(
+            AppColors.lightSecondaryText,
+          ),
+        ),
+      ),
     );
   }
 }

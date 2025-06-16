@@ -314,9 +314,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                     ref.read(inventoryProvider.notifier).addItems(realItems);
                   }
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
                         content: const Text(
                           'Inventario actualizado (modo básico)',
                         ),
@@ -332,10 +332,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         content: Text(
                           'Error al actualizar: ${fallbackError.toString()}',
                         ),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
                   }
                 }
               }
@@ -772,7 +772,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                           if (isIngredient) {
                             context.pushNamed(
                               'ingredientDetail',
-                              pathParameters: {'itemId': item.id},
+                              pathParameters: {'ingredientName': item.name},
                             );
                           } else if (isFood) {
                             context.pushNamed(
@@ -1282,8 +1282,8 @@ Future<void> showQuantityEditDialog(
 
                   // Use the new quick quantity update endpoint for better performance
                   try {
-                  await ref
-                      .read(inventoryRealProvider.notifier)
+                    await ref
+                        .read(inventoryRealProvider.notifier)
                         .updateIngredientQuantityQuick(item.id, newQuantity);
 
                     if (context.mounted) {

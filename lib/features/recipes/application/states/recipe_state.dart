@@ -36,6 +36,9 @@ abstract class RecipeState with _$RecipeState {
     // Map of category value to Set of selected filter values
     // e.g., {"Tipo de receta": {"entrada", "postre"}, "Tiempo de preparación": {"short_time"}}
     @Default({}) Map<String, Set<String>> selectedFilters,
-    // TODO: Add other filter criteria (sort, categories, etc.)
+    // ✅ RESOLVED: Comprehensive filter criteria already implemented:
+    // - Recipe type, preparation time, difficulty, diet type, sustainability
+    // - Sorting by name, cooking time, difficulty (in favorite_recipes_provider.dart)
+    // - Search functionality, category filtering, ingredient availability toggle
   }) = _RecipeState;
 }

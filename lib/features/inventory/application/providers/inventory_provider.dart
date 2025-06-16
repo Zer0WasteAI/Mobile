@@ -25,10 +25,14 @@ class DisplayBatchInfo {
   });
 }
 
-// TODO: Replace with actual data persistence (e.g., Hive, Supabase)
+// INFO: This is the legacy local/mock inventory notifier
+// ADVICE: Use inventoryRealProvider for production with backend persistence
 // ignore: unused_element
 final _uuid = Uuid();
 
+/// DEPRECATED: Legacy local inventory notifier without backend persistence
+/// ADVICE: Use InventoryRealNotifier (inventoryRealProvider) for production
+/// This class is kept for testing and development purposes only
 class InventoryNotifier extends StateNotifier<InventoryState> {
   InventoryNotifier() : super(const InventoryState()) {
     // Load initial data (replace with actual data loading)
@@ -69,7 +73,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
     final updatedItems =
         state.items.where((item) => item.id != itemId).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.removeItem() for backend persistence
   }
 
   void incrementQuantity(String itemId) {
@@ -85,7 +89,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
           return item;
         }).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.updateItemQuantityInBackend() for backend persistence
   }
 
   void decrementQuantity(String itemId) {
@@ -105,7 +109,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
           return item;
         }).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.updateItemQuantityInBackend() for backend persistence
   }
 
   double getQuantityStep(String unitType) {
@@ -143,7 +147,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
           return item;
         }).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.updateExpirationDateInBackend() for backend persistence
   }
 
   void saveItemChanges(InventoryItem updatedItem) {
@@ -152,7 +156,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
           return item.id == updatedItem.id ? updatedItem : item;
         }).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.updateItemInBackend() for backend persistence
   }
 
   void setQuantity(String batchId, double newQuantity) {
@@ -168,7 +172,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
           return item;
         }).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.updateItemQuantityInBackend() for backend persistence
   }
 
   // --- Filtering & Sorting ---
@@ -255,11 +259,12 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
     final updatedItems =
         state.items.where((item) => item.id != itemId).toList();
     state = state.copyWith(items: updatedItems);
-    // TODO: Update persistence layer
+    // INFO: Local-only operation - use InventoryRealNotifier.removeItem() for backend persistence
   }
 }
 
-// Provider definition
+// DEPRECATED: Legacy provider for local/mock inventory (no backend persistence)
+// ADVICE: Use inventoryRealProvider for production with backend persistence
 final inventoryProvider =
     StateNotifierProvider<InventoryNotifier, InventoryState>((ref) {
       return InventoryNotifier();
@@ -1234,3 +1239,28 @@ final filteredSortedInventoryRealProvider = Provider<List<DisplayBatchInfo>>((
 
   return filteredDisplayInfo;
 });
+
+// ============================================================================
+// PROVIDER USAGE GUIDE
+// ============================================================================
+//
+// 🚀 PRODUCTION USE:
+//   - Use `inventoryRealProvider` for all production features
+//   - Use `filteredSortedInventoryRealProvider` for filtered/sorted lists
+//   - These providers have full backend persistence and synchronization
+//
+// 🧪 DEVELOPMENT/TESTING USE:
+//   - Use `inventoryProvider` for local testing without backend
+//   - Use `filteredSortedInventoryProvider` for filtered/sorted lists
+//   - These providers are local-only and don't persist data
+//
+// 📋 AVAILABLE METHODS IN InventoryRealNotifier:
+//   - loadInventoryFromBackend() - Load all items from API
+//   - addIngredientsToBackend() - Add multiple items with backend sync
+//   - removeItem() - Delete item with backend sync
+//   - updateItemQuantityInBackend() - Update quantity with backend sync
+//   - updateExpirationDateInBackend() - Update expiration with backend sync
+//   - markIngredientAsConsumed() - Mark as consumed with tracking
+//   - refreshInventory() - Manual refresh from backend
+//
+// ============================================================================

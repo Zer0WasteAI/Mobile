@@ -270,8 +270,8 @@ class AppRouter {
             // Extract data passed from ScanConfirmScreen (or analysis step)
             final Map<String, dynamic>? extraData =
                 state.extra as Map<String, dynamic>?;
-            // TODO: Replace List<String> with the actual result type from analysis
-            // Expecting the raw JSON list now
+
+            // Extract the recognized items JSON data from the analysis
             final List<Map<String, dynamic>> initialJsonData =
                 extraData?['recognizedItemsJson']
                     as List<Map<String, dynamic>>? ??
@@ -290,7 +290,11 @@ class AppRouter {
         GoRoute(
           path: AddInventoryItemScreen.routePath, // '/inventory/add'
           name: addInventoryItemRouteName,
-          builder: (context, state) => const AddInventoryItemScreen(),
+          builder: (context, state) {
+            // Handle pre-filled data from scan results
+            final prefilledItems = state.extra as List<Map<String, dynamic>>?;
+            return AddInventoryItemScreen(prefilledItems: prefilledItems);
+          },
         ),
         // Route for Ingredient Detail Screen
         GoRoute(

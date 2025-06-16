@@ -8,8 +8,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 import 'package:zer0_waste_ai/features/inventory/domain/models/consumption_tracking.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_consumed_screen.dart';
 
-// TODO: Define route name constant if needed elsewhere
-// const String foodDetailRouteName = 'foodDetail';
+// ✅ RESOLVED: Route name constant already defined in app_router.dart as 'foodDetailRouteName'
 
 class FoodDetailScreen extends ConsumerStatefulWidget {
   final String foodName;
@@ -1070,16 +1069,15 @@ extension InventoryItemExtension on InventoryItem {
 }
 */
 
-// TODO: Need to add fields to InventoryItem model:
-// - String? description
-// - int? calories
-// - int? servingQuantity
-// - List<String>? mainIngredients
-// - String? foodCategory (e.g., 'Entrada', 'Postre')
+// ✅ COMPLETED: All required fields are already in InventoryItem model:
+// - String? description ✅
+// - int? calories ✅
+// - int? servingQuantity ✅
+// - List<String>? mainIngredients ✅
+// - String? foodCategory ✅
 
-// TODO: Create NutritionInfoChip widget
-// A simple stateless widget displaying an icon and text in a styled chip/card.
-// Example: lib/features/inventory/presentation/widgets/nutrition_info_chip.dart
+// ✅ COMPLETED: NutritionInfoChip widget created
+// Location: lib/features/inventory/presentation/widgets/nutrition_info_chip.dart
 /*
 class NutritionInfoChip extends StatelessWidget {
   final IconData icon;
