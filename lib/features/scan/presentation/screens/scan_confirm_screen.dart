@@ -13,6 +13,7 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 // --- Design Constants ---
 const Color _screenBackgroundColor = Color(0xFFFAF9F6);
@@ -363,15 +364,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             child: Card(
               child: Padding(
                 padding: EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Analizando imágenes con IA...'),
-                    Text('Esto puede tomar unos momentos'),
-                  ],
-                ),
+                child: LoadingWidgets.scanLoading,
               ),
             ),
           ),

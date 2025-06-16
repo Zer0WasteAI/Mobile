@@ -7,6 +7,7 @@ import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_back
 import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 class AllRecipesScreen extends ConsumerStatefulWidget {
   const AllRecipesScreen({super.key});
@@ -275,16 +276,7 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
           Expanded(
             child:
                 _isLoading
-                    ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Cargando recetas...'),
-                        ],
-                      ),
-                    )
+                    ? const Center(child: LoadingWidgets.recipeLoading)
                     : _error != null
                     ? Center(
                       child: Column(
@@ -399,10 +391,9 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
                     onPressed: isSaving ? null : () => _toggleFavorite(recipe),
                     icon:
                         isSaving
-                            ? const SizedBox(
+                            ? const LottieLoadingWidget.small(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                             : Icon(
                               isFavorite

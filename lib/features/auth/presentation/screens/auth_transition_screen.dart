@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 /// Pantalla de transición después del login mientras se verifican las preferencias del usuario
 class AuthTransitionScreen extends ConsumerStatefulWidget {
@@ -171,21 +172,7 @@ class _AuthTransitionScreenState extends ConsumerState<AuthTransitionScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Animación de carga
-                      Container(
-                        width: 80,
-                        height: 80,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            colorScheme.primary,
-                          ),
-                          strokeWidth: 3,
-                        ),
-                      ),
+                      LoadingWidgets.authLoading,
                       const SizedBox(height: 32),
 
                       // Mensaje principal

@@ -9,6 +9,7 @@ import 'package:zer0_waste_ai/features/recognition/presentation/providers/recogn
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/utils/recognition_to_inventory_converter.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 class CameraRecognitionPage extends ConsumerStatefulWidget {
   const CameraRecognitionPage({super.key});
@@ -182,23 +183,9 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                           ),
                           child:
                               recognitionState.isLoading
-                                  ? const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Analizando...'),
-                                    ],
+                                  ? const LottieLoadingWidget.small(
+                                    message: 'Analizando...',
+                                    showMessage: true,
                                   )
                                   : Text(
                                     'Reconocer ${_recognitionType == 'food' ? 'Alimento' : 'Ingrediente'}',
@@ -272,11 +259,7 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                       ),
                       if (recognitionState.imageGenerationStatus ==
                           'generating')
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
+                        const LottieLoadingWidget.small(),
                     ],
                   ),
                 ),
@@ -404,15 +387,8 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
         context: context,
         barrierDismissible: false,
         builder:
-            (context) => const AlertDialog(
-              content: Row(
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(width: 16),
-                  Text('Agregando al inventario...'),
-                ],
-              ),
-            ),
+            (context) =>
+                const AlertDialog(content: LoadingWidgets.inventoryLoading),
       );
 
       // Get the actual recognized item (ingredient or food)
@@ -755,15 +731,9 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(
+                          const LottieLoadingWidget.small(
                             width: 12,
                             height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                              valueColor: AlwaysStoppedAnimation(
-                                Colors.blue.shade600,
-                              ),
-                            ),
                           ),
                           const SizedBox(width: 6),
                           Text(
