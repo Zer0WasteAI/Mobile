@@ -15,44 +15,112 @@ class RecipeSuggestions extends ConsumerWidget {
     final Color mainTextColor =
         isDark ? AppColors.darkMainText : AppColors.lightMainText;
 
-    final recipes = ref.watch(recipeSuggestionsProvider);
-
-    if (recipes.isEmpty) {
-      return const SizedBox.shrink(); // Don't show section if no recipes
-    }
+    final recipesAsyncValue = ref.watch(recipeSuggestionsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 12.0), // Space below title
+          padding: const EdgeInsets.only(bottom: 12.0),
           child: Text(
-            'Recetas basadas en tu despensa 🍽️',
+            'Tus Recetas Favoritas ⭐',
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: mainTextColor, // Use theme color
+              color: mainTextColor,
             ),
           ),
         ),
-        SizedBox(
-          height: 220, // Adjust height as needed for cards
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: recipes.length,
-            itemBuilder: (context, index) {
-              final recipe = recipes[index];
-              return Padding(
-                // Add spacing between cards, except for the last one
-                padding: EdgeInsets.only(
-                  right: index == recipes.length - 1 ? 0 : 12.0,
+        recipesAsyncValue.when(
+          loading:
+              () => const SizedBox(
+                height: 220,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          error:
+              (error, stack) => SizedBox(
+                height: 100,
+                child: Center(
+                  child: Text(
+                    'No se pudieron cargar tus recetas.\nInténtalo más tarde.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.red.shade400),
+                  ),
                 ),
-                child: RecipeCard(recipe: recipe),
-              );
-            },
-          ),
+              ),
+          data: (recipes) {
+            if (recipes.isEmpty) {
+              return const NoFavoritesCard();
+            }
+            return SizedBox(
+              height: 220,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: recipes.length,
+                itemBuilder: (context, index) {
+                  final recipe = recipes[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index == recipes.length - 1 ? 0 : 12.0,
+                    ),
+                    child: RecipeCard(recipe: recipe),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ],
+    );
+  }
+}
+
+class NoFavoritesCard extends StatelessWidget {
+  const NoFavoritesCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          children: [
+            Icon(
+              Icons.star_border,
+              size: 40,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Aún no tienes recetas favoritas',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Explora recetas y pulsa el corazón para guardarlas aquí.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

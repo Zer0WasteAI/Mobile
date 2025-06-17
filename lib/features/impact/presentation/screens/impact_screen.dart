@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_dashboard_tab.dart';
-import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_goals_tab.dart';
 import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_progress_tab.dart';
 import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_tab_bar.dart';
 
@@ -24,7 +23,7 @@ class _ImpactScreenState extends ConsumerState<ImpactScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
 
     // Sincronizar el controlador con el estado de Riverpod
     _tabController.addListener(() {
@@ -89,9 +88,6 @@ class _ImpactScreenState extends ConsumerState<ImpactScreen>
 
                 // Pestaña de Progreso
                 ImpactProgressTab(),
-
-                // Pestaña de Objetivos
-                ImpactGoalsTab(),
               ],
             ),
           ),

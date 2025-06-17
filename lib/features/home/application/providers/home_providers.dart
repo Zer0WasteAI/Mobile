@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
+import 'dart:developer';
+
+import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_providers.dart';
 
 // --- Data Models ---
 class Recipe {
@@ -27,10 +31,10 @@ class InventorySummary {
 }
 
 class ImpactSummary {
-  final double foodSavedKg;
-  final double co2ReducedG;
+  final int cookedRecipes;
+  final int totalRecipes;
 
-  ImpactSummary({required this.foodSavedKg, required this.co2ReducedG});
+  ImpactSummary({required this.cookedRecipes, required this.totalRecipes});
 }
 
 // --- Providers ---
@@ -61,34 +65,49 @@ final inventorySummaryProvider = Provider<InventorySummary>((ref) {
   );
 });
 
-final recipeSuggestionsProvider = Provider<List<Recipe>>((ref) {
-  // Replace with actual data fetching
-  return [
-    Recipe(
-      id: '1',
-      title: 'Pasta Primavera Fácil',
-      imageUrl:
-          'https://images.services.kitchenstories.io/w7kIw5bZaJP6rgq3Zj_HOouUq_U=/3840x0/filters:quality(85)/images.kitchenstories.io/wagtailOriginalImages/R2572-picnic-final-photo-4x3.jpg',
-      difficulty: 'Fácil',
-    ),
-    Recipe(
-      id: '2',
-      title: 'Ensalada César Rápida',
-      imageUrl:
-          'https://www.recetassinlactosa.com/wp-content/uploads/2022/02/Ensalada-Cesar.jpg',
-      difficulty: 'Fácil',
-    ),
-    Recipe(
-      id: '3',
-      title: 'Salteado Vegano',
-      imageUrl:
-          'https://img-global.cpcdn.com/recipes/a2633772f3972747/680x482cq70/salteado-de-verduras-en-30-minutos-vegano-foto-principal.jpg',
-      difficulty: 'Medio',
-    ),
-  ];
+final recipeSuggestionsProvider = FutureProvider<List<Recipe>>((ref) async {
+  final savedRecipesAsyncValue = ref.watch(savedRecipesProvider);
+
+  return savedRecipesAsyncValue.when(
+    data: (recipes) {
+      if (recipes.isEmpty) {
+        return []; // Return empty list if no favorites
+      }
+      // Map the dynamic list to a list of Recipe objects
+      return recipes.map((recipeData) {
+        final recipe = recipeData as Map<String, dynamic>;
+        return Recipe(
+          id: recipe['uid'] ?? '',
+          title: recipe['title'] ?? 'Receta sin título',
+          imageUrl:
+              recipe['imageUrl'] ??
+              'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80',
+          difficulty: recipe['difficulty'] ?? 'Desconocida',
+        );
+      }).toList();
+    },
+    loading: () => [], // Return empty list while loading
+    error: (error, stackTrace) {
+      // Log the error and return an empty list on failure
+      log('Error fetching saved recipes: $error');
+      return [];
+    },
+  );
 });
 
 final impactSummaryProvider = Provider<ImpactSummary>((ref) {
-  // Replace with actual data fetching
-  return ImpactSummary(foodSavedKg: 5.0, co2ReducedG: 400.0);
+  final calculationsAsync = ref.watch(allImpactCalculationsProvider);
+
+  return calculationsAsync.when(
+    data: (calculations) {
+      final cookedRecipes =
+          calculations.calculations.where((c) => c.isCooked).length;
+      return ImpactSummary(
+        cookedRecipes: cookedRecipes,
+        totalRecipes: calculations.count,
+      );
+    },
+    loading: () => ImpactSummary(cookedRecipes: 0, totalRecipes: 0),
+    error: (_, _) => ImpactSummary(cookedRecipes: 0, totalRecipes: 0),
+  );
 });

@@ -23,14 +23,11 @@ class ImpactSummaryCard extends ConsumerWidget {
 
     final impact = ref.watch(impactSummaryProvider);
 
-    final String foodSavedFormatted = impact.foodSavedKg.toStringAsFixed(1);
-    final String co2ReducedFormatted = impact.co2ReducedG.toStringAsFixed(0);
-
-    // --- Define Progress Value and Text ---
-    // TODO: Replace with actual progress calculation if needed
-    const double progressValue = 0.75; // Example: 75%
-    const String progressText = "75%";
-    // --- End Progress Value and Text ---
+    final double progressValue =
+        impact.totalRecipes > 0
+            ? impact.cookedRecipes / impact.totalRecipes
+            : 0;
+    final String progressText = "${(progressValue * 100).toStringAsFixed(0)}%";
 
     return InkWell(
       onTap: () {
@@ -59,7 +56,7 @@ class ImpactSummaryCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Has salvado ${foodSavedFormatted}kg de alimentos 🥦',
+                      'Has cocinado ${impact.cookedRecipes} de ${impact.totalRecipes} recetas calculadas 🥦',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -68,7 +65,7 @@ class ImpactSummaryCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Redujiste ${co2ReducedFormatted}g de CO₂ 🌱',
+                      '¡Sigue así para reducir el desperdicio! 🌱',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

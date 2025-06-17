@@ -392,4 +392,14 @@ final recipeFiltersProvider = FutureProvider<List<FilterCategory>>((ref) async {
   }
 }, name: 'recipeFilters');
 
+final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
+  return RecipeRepositoryImpl();
+});
+
+final savedRecipesProvider = FutureProvider<List<dynamic>>((ref) async {
+  final repository = ref.watch(recipeRepositoryProvider);
+  final result = await repository.getSavedRecipes();
+  return result['recipes'] as List<dynamic>;
+});
+
 // --- End Provider Definitions ---

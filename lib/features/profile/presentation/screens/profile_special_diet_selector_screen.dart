@@ -169,8 +169,6 @@ class _ProfileSpecialDietSelectorScreenState
     final dietsAsyncValue = ref.read(predefinedDietsProvider);
     final user = ref.read(authStateProvider).value;
 
-    // ✅ UPDATED: Removed artificial delay - wait for diets to load naturally
-
     // Get the list of all available diets
     final availableDiets = ref.read(predefinedDietsProvider).value ?? [];
 

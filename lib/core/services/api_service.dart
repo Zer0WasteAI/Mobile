@@ -90,6 +90,19 @@ class ApiService {
   static const String _planningDates = '/api/planning/dates';
   static const String _planningDelete = '/api/planning/delete';
 
+  // INFO: NEW - Environmental Savings endpoints (5 endpoints)
+  static const String _envSavingsCalculateFromTitle =
+      '/api/environmental_savings/calculate/from-title';
+  static const String _envSavingsCalculateFromUid =
+      '/api/environmental_savings/calculate/from-uid';
+  static const String _envSavingsCalculations =
+      '/api/environmental_savings/calculations';
+  static const String _envSavingsCalculationsByStatus =
+      '/api/environmental_savings/calculations/status';
+  static const String _envSavingsSummary = '/api/environmental_savings/summary';
+  static const String _envSavingsUpdateCalculation =
+      '/api/environmental_savings/calculations';
+
   // INFO: NEW - Recognition additional endpoints (2 endpoints)
   static const String _recognitionHistory = '/api/recognition/history';
   static const String _recognitionFeedback = '/api/recognition/feedback';
@@ -1479,8 +1492,93 @@ class ApiService {
     }
   }
 
-  // INFO: ===== UTILITY METHODS =====
-  // ADVICE: Helper methods for error handling and debugging
+  // INFO: =================================================================
+  // INFO: Environmental Savings API
+  // INFO: =================================================================
+
+  /// Calculates the environmental impact of a recipe from its title.
+  Future<Map<String, dynamic>> calculateImpactFromTitle(String title) async {
+    try {
+      final response = await _dio.post(
+        _envSavingsCalculateFromTitle,
+        data: {'title': title},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      log('Error calculating impact from title: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  /// Calculates the environmental impact of a recipe from its UID.
+  Future<Map<String, dynamic>> calculateImpactFromUid(String recipeUid) async {
+    try {
+      final response = await _dio.post(
+        '$_envSavingsCalculateFromUid/$recipeUid',
+      );
+      return response.data;
+    } on DioException catch (e) {
+      log('Error calculating impact from UID: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  /// Gets the complete history of environmental calculations for the user.
+  Future<Map<String, dynamic>> getAllCalculations() async {
+    try {
+      final response = await _dio.get(_envSavingsCalculations);
+      return response.data;
+    } on DioException catch (e) {
+      log('Error getting all calculations: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  /// Filters environmental calculations by cooking status.
+  Future<Map<String, dynamic>> getCalculationsByStatus(bool isCooked) async {
+    try {
+      final response = await _dio.get(
+        _envSavingsCalculationsByStatus,
+        queryParameters: {'is_cooked': isCooked},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      log('Error getting calculations by status: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  /// Gets the total environmental impact summary for the user.
+  Future<Map<String, dynamic>> getImpactSummary() async {
+    try {
+      final response = await _dio.get(_envSavingsSummary);
+      return response.data;
+    } on DioException catch (e) {
+      log('Error getting impact summary: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  /// Updates the status of an environmental calculation.
+  Future<Map<String, dynamic>> updateCalculationStatus(
+    String recipeUid,
+    bool isCooked,
+  ) async {
+    try {
+      final response = await _dio.patch(
+        '$_envSavingsUpdateCalculation/$recipeUid',
+        data: {'is_cooked': isCooked},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      log('Error updating calculation status: $e');
+      throw Exception(getErrorMessage(e));
+    }
+  }
+
+  // INFO: =================================================================
+  // INFO: Helper and Error Handling
+  // INFO: =================================================================
 
   /// INFO: Extract meaningful error messages from API responses
   /// USAGE: Use in catch blocks to get user-friendly error messages

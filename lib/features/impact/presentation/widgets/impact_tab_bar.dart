@@ -47,11 +47,7 @@ class ImpactTabBar extends ConsumerWidget {
         onTap: (index) {
           ref.read(impactTabIndexProvider.notifier).state = index;
         },
-        tabs: const [
-          Tab(text: 'Mi Impacto'),
-          Tab(text: 'Progreso'),
-          Tab(text: 'Objetivos'),
-        ],
+        tabs: const [Tab(text: 'Mi Impacto'), Tab(text: 'Progreso')],
       ),
     );
   }

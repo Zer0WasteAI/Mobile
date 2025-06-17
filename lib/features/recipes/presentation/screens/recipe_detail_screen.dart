@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart'
+    as impact;
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooking_mode.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_rating_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
+import 'dart:developer';
+
+import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
+
+import '../../../home/application/providers/home_providers.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> recipe;
@@ -32,11 +39,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
   // Verifica qué ingredientes están disponibles en el inventario
   void _checkIngredientAvailability() {
-    final inventoryState = ref.read(inventoryProvider);
+    final inventoryState = ref.watch(inventoryRealProvider);
     final List<dynamic> recipeIngredients = widget.recipe['ingredients'] ?? [];
 
-    // Inicializar todos como no disponibles
-    Map<String, bool> availability = {};
+    final availableIngredients = <String>{};
 
     for (var ingredient in recipeIngredients) {
       String ingredientName = ingredient.toString().toLowerCase();
@@ -46,11 +52,15 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             item.name.toLowerCase().contains(ingredientName) ||
             ingredientName.contains(item.name.toLowerCase()),
       );
-      availability[ingredient.toString()] = isAvailable;
+      if (isAvailable) {
+        availableIngredients.add(ingredient.toString());
+      }
     }
 
     setState(() {
-      _ingredientAvailability = availability;
+      _ingredientAvailability = {
+        for (var ingredient in availableIngredients) ingredient: true,
+      };
     });
   }
 
@@ -75,7 +85,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               ? RecipeCookingMode(
                 recipe: widget.recipe,
                 onExit: () => setState(() => _isCookingMode = false),
-                onComplete: _showRatingDialog,
+                onComplete: _completeRecipe,
               )
               : _buildRecipeDetails(
                 context,
@@ -634,7 +644,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: secondaryColor.withValues(alpha: 0.3), width: 1),
+        side: BorderSide(
+          color: secondaryColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -678,43 +691,60 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     Color primaryColor,
     Color cardColor,
   ) {
-    return Card(
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(Icons.eco, color: Colors.green.shade600, size: 40),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Impacto Ambiental',
+          style: GoogleFonts.lato(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  Text(
-                    'Impacto ambiental positivo',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Ahorras 0.8 kg CO₂ y 150 L de agua usando tus ingredientes.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: textColor.withValues(alpha: 0.7),
-                      height: 1.4,
+                  Icon(Icons.eco, color: primaryColor, size: 40),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text(
+                      'Calcula cómo esta receta ayuda al planeta reduciendo tu huella de carbono y ahorrando recursos.',
+                      style: TextStyle(height: 1.4),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.calculate_outlined),
+                  label: const Text('Calcular y Guardar Impacto'),
+                  onPressed: _completeRecipe,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -839,15 +869,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Aquí podría agregarse la funcionalidad para añadir a la lista de compras
-                },
-                child: Text('Añadir a lista de compras'),
-              ),
-              TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Cancelar'),
+                child: const Text('Cancelar'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -856,35 +879,106 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     _isCookingMode = true;
                   });
                 },
-                child: Text('Cocinar de todos modos'),
+                child: const Text('Cocinar de todos modos'),
               ),
             ],
           ),
     );
   }
 
-  void _showRatingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => RecipeRatingDialog(
-            recipeName: widget.recipe['name'] ?? 'Curry de garbanzos',
-            onSubmit: (rating, comment) {
-              // Aquí podrías guardar la calificación y feedback
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('¡Gracias por tu calificación!'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+  void _completeRecipe() async {
+    final recipeName = widget.recipe['name'] ?? 'una receta';
+    try {
+      final impactService = ref.read(impact.impactCalculationServiceProvider);
 
-              // Volver a la pantalla anterior y notificar que se completó la cocción
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(true);
-            },
-          ),
-    );
+      // 1. Create the impact calculation record
+      await impactService.calculateFromTitle(recipeName);
+
+      // 2. Consume ingredients from inventory
+      _consumeIngredientsFromInventory(ref);
+
+      // 3. Invalidate providers to refresh UI
+      ref.invalidate(impact.allImpactCalculationsProvider);
+      ref.invalidate(impact.impactSummaryProvider);
+      ref.invalidate(recipeSuggestionsProvider);
+      ref.invalidate(inventoryRealProvider); // Ensure inventory UI updates
+
+      // 4. Show success feedback and pop
+      if (mounted) {
+        await DialogHelper.showAlert(
+          context: context,
+          title: '¡Receta Completada!',
+          message:
+              'Hemos registrado el impacto ambiental y actualizado tu inventario.',
+          emoji: '🎉',
+        );
+        context.pop(true); // Pop screen and signal success
+      }
+    } catch (e) {
+      log('Failed to complete recipe flow: $e');
+      if (mounted) {
+        DialogHelper.showAlert(
+          context: context,
+          title: 'Error',
+          message: 'No pudimos completar la acción. Inténtalo de nuevo.',
+          icon: Icons.error,
+          iconColor: Colors.red,
+        );
+      }
+    }
+  }
+
+  void _consumeIngredientsFromInventory(WidgetRef ref) {
+    final List<String> recipeIngredients =
+        (widget.recipe['ingredients'] as List<dynamic>).cast<String>();
+    final List<InventoryItem> currentInventory =
+        ref.read(inventoryRealProvider).items;
+
+    if (currentInventory.isEmpty) {
+      log('Inventory is empty, nothing to consume.');
+      return;
+    }
+
+    final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
+    final Set<String> consumedItemIds = {};
+
+    for (var ingredientName in recipeIngredients) {
+      final normalizedIngredientName = ingredientName.toLowerCase().trim();
+
+      // Find all matching items in inventory, sorted by expiration date (soonest first)
+      final matchingItems =
+          currentInventory
+              .where(
+                (item) =>
+                    item.name.toLowerCase().trim() ==
+                        normalizedIngredientName &&
+                    !consumedItemIds.contains(item.id),
+              )
+              .toList();
+
+      if (matchingItems.isNotEmpty) {
+        // Sort by expiration date, nulls last
+        matchingItems.sort((a, b) {
+          if (a.expirationDate == null) return 1;
+          if (b.expirationDate == null) return -1;
+          return a.expirationDate!.compareTo(b.expirationDate!);
+        });
+
+        // Get the item that will expire soonest
+        final itemToConsume = matchingItems.first;
+
+        log('Consuming item: ${itemToConsume.name} (ID: ${itemToConsume.id})');
+
+        // Call the notifier to remove the item
+        inventoryNotifier.removeItem(itemToConsume.id);
+        consumedItemIds.add(itemToConsume.id);
+      } else {
+        log('Ingredient "$normalizedIngredientName" not found in inventory.');
+      }
+    }
+
+    // Invalidate inventory provider to ensure UI reflects the removal
+    ref.invalidate(inventoryRealProvider);
   }
 
   String _getRecipeTypeLabel(String type) {

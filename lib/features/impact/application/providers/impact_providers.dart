@@ -1,7 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
+import 'package:zer0_waste_ai/features/impact/data/repositories/impact_repository_impl.dart';
+import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact.dart';
+import 'package:zer0_waste_ai/features/impact/domain/models/environmental_summary.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/impact_metrics.dart';
-import 'package:zer0_waste_ai/features/impact/domain/models/impact_goal.dart';
+import 'package:zer0_waste_ai/features/impact/domain/repositories/impact_repository.dart';
+
+enum ImpactHistoryFilter { all, cooked, notCooked }
+
+final impactHistoryFilterProvider = StateProvider<ImpactHistoryFilter>(
+  (ref) => ImpactHistoryFilter.all,
+);
 
 /// Notificador para las métricas de impacto ambiental
 class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
@@ -9,11 +18,11 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
 
   static ImpactMetrics _getInitialMetrics() {
     return ImpactMetrics(
-          foodSavedKg: 12.5,
-          co2AvoidedKg: 20.3,
-          waterSavedLiters: 1250.0,
-        lastUpdated: DateTime.now(),
-      );
+      foodSavedKg: 12.5,
+      co2AvoidedKg: 20.3,
+      waterSavedLiters: 1250.0,
+      lastUpdated: DateTime.now(),
+    );
   }
 
   /// Añade una cantidad de alimentos salvados y actualiza métricas relacionadas
@@ -49,8 +58,8 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
     state = state.copyWith(
       waterSavedLiters: state.waterSavedLiters + liters,
       lastUpdated: DateTime.now(),
-      );
-    }
+    );
+  }
 
   /// Resetea todas las métricas
   void resetMetrics() {
@@ -63,114 +72,6 @@ final impactMetricsProvider =
     StateNotifierProvider<ImpactMetricsNotifier, ImpactMetrics>((ref) {
       return ImpactMetricsNotifier();
     });
-
-/// Notificador para los objetivos de impacto
-class ImpactGoalsNotifier extends StateNotifier<List<ImpactGoal>> {
-  ImpactGoalsNotifier() : super(_getInitialGoals());
-
-  static List<ImpactGoal> _getInitialGoals() {
-    return [
-        ImpactGoal(
-        id: const Uuid().v4(),
-          title: 'Salvar 5kg de alimentos',
-        description:
-            'Evita el desperdicio de 5 kilogramos de alimentos esta semana',
-          metricType: GoalMetricType.foodSaved,
-          targetValue: 5.0,
-        currentValue: 2.3,
-        startDate: DateTime.now().subtract(const Duration(days: 2)),
-        endDate: DateTime.now().add(const Duration(days: 5)),
-        ),
-        ImpactGoal(
-        id: const Uuid().v4(),
-        title: 'Reducir 20kg de CO2',
-        description: 'Evita la emisión de 20kg de CO2 este mes',
-          metricType: GoalMetricType.co2Avoided,
-        targetValue: 20.0,
-        currentValue: 8.7,
-        startDate: DateTime.now().subtract(const Duration(days: 10)),
-        endDate: DateTime.now().add(const Duration(days: 20)),
-        ),
-        ImpactGoal(
-        id: const Uuid().v4(),
-        title: 'Ahorrar 1000L de agua',
-        description:
-            'Ahorra 1000 litros de agua mediante el aprovechamiento de alimentos',
-        metricType: GoalMetricType.waterSaved,
-        targetValue: 1000.0,
-        currentValue: 450.0,
-        startDate: DateTime.now().subtract(const Duration(days: 5)),
-        endDate: DateTime.now().add(const Duration(days: 25)),
-        ),
-    ];
-  }
-
-  /// Añade un nuevo objetivo
-  void addGoal(ImpactGoal goal) {
-    state = [...state, goal];
-  }
-
-  /// Elimina un objetivo
-  void removeGoal(String goalId) {
-    state = state.where((goal) => goal.id != goalId).toList();
-  }
-
-  /// Actualiza el progreso de un objetivo
-  void updateGoalProgress(String goalId, double newValue) {
-    state =
-        state.map((goal) {
-          if (goal.id != goalId) return goal;
-
-          // Actualizar el valor actual
-          final updatedGoal = goal.copyWith(currentValue: newValue);
-
-          // Comprobar si el objetivo se ha completado
-          if (!goal.isCompleted && updatedGoal.progress >= 1.0) {
-            return updatedGoal.copyWith(isCompleted: true);
-          }
-
-          return updatedGoal;
-        }).toList();
-  }
-
-  /// Marca un objetivo como completado
-  void completeGoal(String goalId) {
-    state =
-        state.map((goal) {
-          if (goal.id == goalId) {
-            return goal.copyWith(isCompleted: true);
-          }
-          return goal;
-        }).toList();
-  }
-}
-
-/// Proveedor para los objetivos de impacto
-final impactGoalsProvider =
-    StateNotifierProvider<ImpactGoalsNotifier, List<ImpactGoal>>((ref) {
-      return ImpactGoalsNotifier();
-});
-
-/// Función para crear un nuevo objetivo
-ImpactGoal createNewGoal({
-  required String title,
-  required String description,
-  required GoalMetricType metricType,
-  required double targetValue,
-  DateTime? endDate,
-}) {
-  return ImpactGoal(
-    id: const Uuid().v4(),
-    title: title,
-    description: description,
-    metricType: metricType,
-    targetValue: targetValue,
-    currentValue: 0,
-    startDate: DateTime.now(),
-    endDate: endDate,
-    isActive: true,
-  );
-}
 
 /// Proveedor para el texto de equivalencia basado en las métricas
 final impactEquivalenceProvider = Provider<Map<String, String>>((ref) {
@@ -191,3 +92,50 @@ final impactEquivalenceProvider = Provider<Map<String, String>>((ref) {
 
 /// Proveedor para el índice de la pestaña activa en el panel de impacto
 final impactTabIndexProvider = StateProvider<int>((ref) => 0);
+
+// --- API Based Providers ---
+
+final impactRepositoryProvider = Provider<ImpactRepository>((ref) {
+  return ImpactRepositoryImpl(ApiService.instance);
+});
+
+final impactSummaryProvider = FutureProvider<EnvironmentalSummary>((ref) {
+  final repository = ref.watch(impactRepositoryProvider);
+  return repository.getImpactSummary();
+});
+
+final allImpactCalculationsProvider = FutureProvider<EnvironmentalCalculations>(
+  (ref) {
+    final repository = ref.watch(impactRepositoryProvider);
+    return repository.getAllCalculations();
+  },
+);
+
+final impactCalculationsByStatusProvider =
+    FutureProvider.family<EnvironmentalCalculations, bool>((ref, isCooked) {
+      final repository = ref.watch(impactRepositoryProvider);
+      return repository.getCalculationsByStatus(isCooked);
+    });
+
+final impactCalculationServiceProvider = Provider((ref) {
+  final repository = ref.watch(impactRepositoryProvider);
+  return ImpactCalculationService(repository);
+});
+
+class ImpactCalculationService {
+  final ImpactRepository _repository;
+
+  ImpactCalculationService(this._repository);
+
+  Future<EnvironmentalImpact> calculateFromTitle(String title) {
+    return _repository.calculateImpactFromTitle(title);
+  }
+
+  Future<EnvironmentalImpact> calculateFromUid(String recipeUid) {
+    return _repository.calculateImpactFromUid(recipeUid);
+  }
+
+  Future<void> updateStatus(String recipeUid, bool isCooked) {
+    return _repository.updateCalculationStatus(recipeUid, isCooked);
+  }
+}
