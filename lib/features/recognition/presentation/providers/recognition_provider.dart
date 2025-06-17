@@ -193,7 +193,6 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
   // Upload and recognize food in one step - UPDATED to use simplified method
   Future<void> uploadAndRecognizeFood(File imageFile, String itemName) async {
     // For now, use the simplified ingredients method as the backend logic is similar
-    // TODO: Create a separate recognizeFoodsSimplified method if needed
     await recognizeIngredientsSimplified([imageFile]);
   }
 

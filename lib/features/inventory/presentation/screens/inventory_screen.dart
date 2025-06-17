@@ -64,41 +64,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           initialTabIndex >= 0 ? initialTabIndex : 0, // Handle potential issues
     );
 
-    // Refresh inventory data when entering the screen
+    // 🚀 OPTIMIZED: Smart inventory loading with cache
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Refresh inventory from backend to get latest data with environmental impact
-      try {
-        await ref
-            .read(inventoryRealProvider.notifier)
-            .loadCompleteInventoryFromBackend();
-        log('✅ Complete inventory refreshed from backend successfully');
-
-        // After loading from backend, copy data to the UI provider
-        final realItems = ref.read(inventoryRealProvider).items;
-        // ALWAYS clear and sync, even if backend is empty
-        ref.read(inventoryProvider.notifier).clearAllItems();
-        if (realItems.isNotEmpty) {
-          ref.read(inventoryProvider.notifier).addItems(realItems);
-        }
-        log(
-          '📋 Synced ${realItems.length} items from real provider to UI provider',
-        );
-      } catch (e) {
-        log('❌ Failed to refresh complete inventory: $e');
-        // Fallback to regular inventory
-        try {
-          await ref.read(inventoryRealProvider.notifier).refreshInventory();
-          log('✅ Fallback: Regular inventory refreshed successfully');
-
-          final realItems = ref.read(inventoryRealProvider).items;
-          ref.read(inventoryProvider.notifier).clearAllItems();
-          if (realItems.isNotEmpty) {
-            ref.read(inventoryProvider.notifier).addItems(realItems);
-          }
-        } catch (fallbackError) {
-          log('❌ Failed to refresh inventory (fallback): $fallbackError');
-        }
-      }
+      await _loadInventorySmartly();
 
       // Verificar si hay elementos destacados al iniciar la pantalla
       final recentlyAddedIds = ref.read(inventoryProvider).recentlyAddedIds;
@@ -116,6 +84,110 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         scrollToLastItem();
       }
     });
+  }
+
+  /// 🧠 Smart inventory loading logic
+  /// Only loads from backend when necessary
+  Future<void> _loadInventorySmartly() async {
+    // 🚀 Use the new smart loading method from the provider
+    await ref.read(inventoryRealProvider.notifier).loadInventoryIfNeeded();
+
+    // Sync with UI provider
+    final realItems = ref.read(inventoryRealProvider).items;
+    ref.read(inventoryProvider.notifier).clearAllItems();
+    if (realItems.isNotEmpty) {
+      ref.read(inventoryProvider.notifier).addItems(realItems);
+    }
+
+    log('📋 Smart loading completed: ${realItems.length} items synced to UI');
+  }
+
+  /// 🔄 Force refresh inventory from backend (user-triggered)
+  Future<void> _forceRefreshInventory() async {
+    try {
+      // Show loading feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text('Actualizando inventario...'),
+              ],
+            ),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // Force complete inventory reload
+      await ref
+          .read(inventoryRealProvider.notifier)
+          .loadCompleteInventoryFromBackend();
+
+      // Sync with UI provider
+      final realItems = ref.read(inventoryRealProvider).items;
+      ref.read(inventoryProvider.notifier).clearAllItems();
+      if (realItems.isNotEmpty) {
+        ref.read(inventoryProvider.notifier).addItems(realItems);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Inventario actualizado (${realItems.length} items)',
+            ),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      log('❌ Failed to force refresh inventory: $e');
+      // Fallback to regular inventory
+      try {
+        await ref.read(inventoryRealProvider.notifier).refreshInventory();
+
+        final realItems = ref.read(inventoryRealProvider).items;
+        ref.read(inventoryProvider.notifier).clearAllItems();
+        if (realItems.isNotEmpty) {
+          ref.read(inventoryProvider.notifier).addItems(realItems);
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '✅ Inventario actualizado - modo básico (${realItems.length} items)',
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (fallbackError) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${fallbackError.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -269,72 +341,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         backgroundColor: scaffoldBackgroundColor,
         elevation: 0,
         actions: [
-          // Refresh button
+          // 🚀 OPTIMIZED: Smart refresh button
           IconButton(
             icon: Icon(Icons.refresh, color: primaryColor),
             onPressed: () async {
-              try {
-                // Try to load complete inventory first
-                await ref
-                    .read(inventoryRealProvider.notifier)
-                    .loadCompleteInventoryFromBackend();
-
-                // Sync with UI provider
-                final realItems = ref.read(inventoryRealProvider).items;
-                ref.read(inventoryProvider.notifier).clearAllItems();
-                if (realItems.isNotEmpty) {
-                  ref.read(inventoryProvider.notifier).addItems(realItems);
-                }
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Inventario completo actualizado'),
-                      backgroundColor: primaryColor,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              } catch (e) {
-                // Fallback to regular inventory
-                try {
-                  await ref
-                      .read(inventoryRealProvider.notifier)
-                      .refreshInventory();
-
-                  final realItems = ref.read(inventoryRealProvider).items;
-                  ref.read(inventoryProvider.notifier).clearAllItems();
-                  if (realItems.isNotEmpty) {
-                    ref.read(inventoryProvider.notifier).addItems(realItems);
-                  }
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text(
-                          'Inventario actualizado (modo básico)',
-                        ),
-                        backgroundColor: primaryColor,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                } catch (fallbackError) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Error al actualizar: ${fallbackError.toString()}',
-                        ),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                }
-              }
+              // Force refresh from backend (user explicitly requested)
+              await _forceRefreshInventory();
             },
-            tooltip: 'Actualizar inventario completo',
+            tooltip: 'Actualizar inventario',
           ),
         ],
       ),

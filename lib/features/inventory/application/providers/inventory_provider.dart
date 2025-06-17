@@ -449,8 +449,44 @@ final expiredCountProvider = Provider<int>((ref) {
 class InventoryRealNotifier extends StateNotifier<InventoryState> {
   final InventoryBackendNotifier _backendNotifier;
 
+  // 🚀 CACHE: Track when data was last loaded
+  DateTime? _lastLoadTime;
+  static const Duration _cacheValidDuration = Duration(
+    minutes: 5,
+  ); // 5 minutes cache
+
   InventoryRealNotifier(this._backendNotifier) : super(const InventoryState()) {
-    loadInventoryFromBackend();
+    // DON'T auto-load on construction - let screens decide when to load
+    log('🔧 InventoryRealNotifier initialized (cache-optimized)');
+  }
+
+  /// 🧠 Check if cached data is still valid
+  bool get _isCacheValid {
+    if (_lastLoadTime == null) return false;
+    final now = DateTime.now();
+    final cacheAge = now.difference(_lastLoadTime!);
+    final isValid = cacheAge < _cacheValidDuration;
+    log('📦 Cache check: age=${cacheAge.inMinutes}min, valid=$isValid');
+    return isValid;
+  }
+
+  /// 🚀 Smart load: only load if cache is invalid or empty
+  Future<void> loadInventoryIfNeeded() async {
+    // Skip if already loading
+    if (state.isLoading) {
+      log('⏳ Already loading inventory, skipping');
+      return;
+    }
+
+    // Skip if cache is valid and has data
+    if (_isCacheValid && state.items.isNotEmpty) {
+      log('📦 Using valid cached data (${state.items.length} items)');
+      return;
+    }
+
+    // Load fresh data
+    log('🌐 Cache invalid or empty, loading fresh data');
+    await loadCompleteInventoryFromBackend();
   }
 
   // Helper methods for quantity logic (shared with local notifier)
@@ -495,6 +531,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       log('🔧 DEBUG - Parsing completed, ${items.length} items created');
 
       state = state.copyWith(items: items, isLoading: false);
+      _lastLoadTime = DateTime.now(); // 🚀 Update cache timestamp
       log('✅ DEBUG - loadInventoryFromBackend completed successfully');
     } catch (e) {
       log('❌ DEBUG - Error in loadInventoryFromBackend: $e');
@@ -517,6 +554,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       log('🔧 DEBUG - Parsing completed, ${items.length} items created');
 
       state = state.copyWith(items: items, isLoading: false);
+      _lastLoadTime = DateTime.now(); // 🚀 Update cache timestamp
       log('✅ DEBUG - loadCompleteInventoryFromBackend completed successfully');
     } catch (e) {
       log('❌ DEBUG - Error in loadCompleteInventoryFromBackend: $e');
@@ -859,31 +897,43 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   }
 
   /// Convert API inventory data to InventoryItem list
-  /// UPDATED: Parse according to README.md structure: {"items": [...]}
+  /// UPDATED: Parse actual backend structure with ingredients and food_items
   List<InventoryItem> _parseInventoryFromAPI(Map<String, dynamic> data) {
     final List<InventoryItem> items = [];
 
     // DEBUG: Log raw API response
     log('🔍 DEBUG - Raw API response: $data');
 
-    // API returns: {"items": [{"id": "...", "name": "...", "image_path": null, "image_status": "generated", ...}]}
-    final apiItems = data['items'] as List<dynamic>? ?? [];
+    // 🚀 FIX: Backend returns: {"ingredients": [...], "food_items": [...]}
+    final ingredients = data['ingredients'] as List<dynamic>? ?? [];
+    final foodItems = data['food_items'] as List<dynamic>? ?? [];
 
-    // DEBUG: Log items array
-    log('🔍 DEBUG - Items found: ${apiItems.length}');
-    log('🔍 DEBUG - Items data: $apiItems');
+    // DEBUG: Log arrays
+    log('🔍 DEBUG - Ingredients found: ${ingredients.length}');
+    log('🔍 DEBUG - Food items found: ${foodItems.length}');
 
-    for (final itemData in apiItems) {
-      final itemMap = itemData as Map<String, dynamic>;
-      log('🔍 DEBUG - Processing item: $itemMap');
+    // 🧩 Process ingredients (each has multiple stacks)
+    for (final ingredientData in ingredients) {
+      final ingredientMap = ingredientData as Map<String, dynamic>;
+      log('🔍 DEBUG - Processing ingredient: ${ingredientMap['name']}');
 
-      final item = _parseItemFromAPI(itemMap);
-      if (item != null) {
-        items.add(item);
-        log('✅ DEBUG - Successfully created item: ${item.name} (${item.id})');
-      } else {
-        log('❌ DEBUG - Failed to create item from data: $itemMap');
-      }
+      final parsedItems = _parseIngredientWithStacks(ingredientMap);
+      items.addAll(parsedItems);
+      log(
+        '✅ DEBUG - Created ${parsedItems.length} items from ingredient ${ingredientMap['name']}',
+      );
+    }
+
+    // 🧩 Process food items (if any)
+    for (final foodData in foodItems) {
+      final foodMap = foodData as Map<String, dynamic>;
+      log('🔍 DEBUG - Processing food item: ${foodMap['name']}');
+
+      final parsedItems = _parseFoodWithStacks(foodMap);
+      items.addAll(parsedItems);
+      log(
+        '✅ DEBUG - Created ${parsedItems.length} items from food ${foodMap['name']}',
+      );
     }
 
     log('🔍 DEBUG - Final items count: ${items.length}');
@@ -894,7 +944,129 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     return items;
   }
 
+  /// 🧩 Parse ingredient with multiple stacks into individual InventoryItems
+  List<InventoryItem> _parseIngredientWithStacks(
+    Map<String, dynamic> ingredientData,
+  ) {
+    final List<InventoryItem> items = [];
+
+    try {
+      final name = ingredientData['name'] ?? 'Ingrediente sin nombre';
+      final imagePath = ingredientData['image_path']; // Can be null or URL
+      final storageType = _parseStorageType(ingredientData['storage_type']);
+      final tips = ingredientData['tips'] ?? _getTipsForItem(name);
+      final typeUnit = ingredientData['type_unit'] ?? 'unidades';
+
+      // Get stacks array
+      final stacks = ingredientData['stacks'] as List<dynamic>? ?? [];
+      log(
+        '🔍 DEBUG - Processing ${stacks.length} stacks for ingredient: $name',
+      );
+
+      // Create one InventoryItem per stack
+      for (int i = 0; i < stacks.length; i++) {
+        final stackData = stacks[i] as Map<String, dynamic>;
+        final quantity = (stackData['quantity'] ?? 0).toDouble();
+        final stackTypeUnit = stackData['type_unit'] ?? typeUnit;
+        final addedAtStr = stackData['added_at'];
+        final expirationDateStr = stackData['expiration_date'];
+
+        // Create unique ID for each stack
+        final stackId = '${name.toLowerCase().replaceAll(' ', '_')}_stack_$i';
+
+        final item = InventoryItem(
+          id: stackId,
+          name: name,
+          image: _getEmojiForItem(name),
+          imageUrl: imagePath,
+          quantity: quantity,
+          unitType: stackTypeUnit,
+          expirationDate:
+              expirationDateStr != null
+                  ? DateTime.parse(expirationDateStr)
+                  : DateTime.now().add(const Duration(days: 30)),
+          storageType: storageType,
+          category: ItemCategory.ingredient,
+          addedDate:
+              addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+          tips: tips,
+          description: 'Lote ${i + 1}',
+        );
+
+        items.add(item);
+        log(
+          '✅ DEBUG - Created stack item: ${item.name} - ${item.quantity} ${item.unitType}',
+        );
+      }
+    } catch (e) {
+      log('❌ Error parsing ingredient with stacks: $e');
+      log('❌ Ingredient data that caused error: $ingredientData');
+    }
+
+    return items;
+  }
+
+  /// 🧩 Parse food item with multiple stacks into individual InventoryItems
+  List<InventoryItem> _parseFoodWithStacks(Map<String, dynamic> foodData) {
+    final List<InventoryItem> items = [];
+
+    try {
+      final name = foodData['name'] ?? 'Comida sin nombre';
+      final imagePath = foodData['image_path']; // Can be null or URL
+      final storageType = _parseStorageType(foodData['storage_type']);
+      final tips = foodData['tips'] ?? _getTipsForItem(name);
+      final typeUnit = foodData['type_unit'] ?? 'unidades';
+
+      // Get stacks array
+      final stacks = foodData['stacks'] as List<dynamic>? ?? [];
+      log('🔍 DEBUG - Processing ${stacks.length} stacks for food: $name');
+
+      // Create one InventoryItem per stack
+      for (int i = 0; i < stacks.length; i++) {
+        final stackData = stacks[i] as Map<String, dynamic>;
+        final quantity = (stackData['quantity'] ?? 0).toDouble();
+        final stackTypeUnit = stackData['type_unit'] ?? typeUnit;
+        final addedAtStr = stackData['added_at'];
+        final expirationDateStr = stackData['expiration_date'];
+
+        // Create unique ID for each stack
+        final stackId =
+            '${name.toLowerCase().replaceAll(' ', '_')}_food_stack_$i';
+
+        final item = InventoryItem(
+          id: stackId,
+          name: name,
+          image: _getEmojiForItem(name),
+          imageUrl: imagePath,
+          quantity: quantity,
+          unitType: stackTypeUnit,
+          expirationDate:
+              expirationDateStr != null
+                  ? DateTime.parse(expirationDateStr)
+                  : DateTime.now().add(const Duration(days: 30)),
+          storageType: storageType,
+          category: ItemCategory.food,
+          addedDate:
+              addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+          tips: tips,
+          description: 'Lote ${i + 1}',
+        );
+
+        items.add(item);
+        log(
+          '✅ DEBUG - Created food stack item: ${item.name} - ${item.quantity} ${item.unitType}',
+        );
+      }
+    } catch (e) {
+      log('❌ Error parsing food with stacks: $e');
+      log('❌ Food data that caused error: $foodData');
+    }
+
+    return items;
+  }
+
   /// Convert single API item to InventoryItem (according to README.md structure)
+  // ignore: unused_element
   InventoryItem? _parseItemFromAPI(Map<String, dynamic> itemData) {
     try {
       // DEBUG: Log parsing details

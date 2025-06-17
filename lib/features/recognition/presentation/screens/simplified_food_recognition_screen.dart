@@ -169,7 +169,7 @@ class _SimplifiedFoodRecognitionScreenState
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -331,7 +331,7 @@ class _SimplifiedFoodRecognitionScreenState
             isImageReady
                 ? Theme.of(
                   context,
-                ).colorScheme.primaryContainer.withOpacity(0.1)
+                ).colorScheme.primaryContainer.withValues(alpha: 0.1)
                 : Theme.of(context).colorScheme.surface,
       ),
       child: Padding(
@@ -344,7 +344,7 @@ class _SimplifiedFoodRecognitionScreenState
               height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
               child:
                   hasImage && isImageReady

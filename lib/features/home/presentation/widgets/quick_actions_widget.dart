@@ -90,7 +90,7 @@ class QuickActionsWidget extends ConsumerWidget {
             const SizedBox(height: 12),
 
             // ✨ TEST: Segunda fila con botón de prueba del reconocimiento simplificado
-            Row(
+            /*Row(
               children: [
                 Expanded(
                   child: _buildActionButton(
@@ -105,7 +105,7 @@ class QuickActionsWidget extends ConsumerWidget {
                 const Expanded(child: SizedBox()), // Espacio vacío
                 const Expanded(child: SizedBox()), // Espacio vacío
               ],
-            ),
+            ),*/
           ],
         ),
       ),
