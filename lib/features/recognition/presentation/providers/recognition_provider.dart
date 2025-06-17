@@ -29,6 +29,9 @@ class RecognitionState {
   final String? statusMessage;
   final int progressPercentage;
   final bool isPolling;
+  // 🆕 NUEVO: Campos para polling automático como SimplifiedRecognitionProvider
+  final String? imagesStatus; // 'generating', 'ready', 'failed'
+  final Timer? imageCheckTimer;
 
   const RecognitionState({
     this.isLoading = false,
@@ -43,6 +46,8 @@ class RecognitionState {
     this.statusMessage,
     this.progressPercentage = 0,
     this.isPolling = false,
+    this.imagesStatus,
+    this.imageCheckTimer,
   });
 
   RecognitionState copyWith({
@@ -58,6 +63,8 @@ class RecognitionState {
     String? statusMessage,
     int? progressPercentage,
     bool? isPolling,
+    String? imagesStatus,
+    Timer? imageCheckTimer,
   }) {
     return RecognitionState(
       isLoading: isLoading ?? this.isLoading,
@@ -73,6 +80,8 @@ class RecognitionState {
       statusMessage: statusMessage ?? this.statusMessage,
       progressPercentage: progressPercentage ?? this.progressPercentage,
       isPolling: isPolling ?? this.isPolling,
+      imagesStatus: imagesStatus ?? this.imagesStatus,
+      imageCheckTimer: imageCheckTimer ?? this.imageCheckTimer,
     );
   }
 }
@@ -87,6 +96,7 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    state.imageCheckTimer?.cancel();
     super.dispose();
   }
 
@@ -180,33 +190,20 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     }
   }
 
-  // Upload and recognize food in one step
+  // Upload and recognize food in one step - UPDATED to use simplified method
   Future<void> uploadAndRecognizeFood(File imageFile, String itemName) async {
-    final imagePath = await uploadImage(
-      imageFile: imageFile,
-      itemName: itemName,
-      imageType: 'food',
-    );
-
-    if (imagePath != null) {
-      await recognizeFoods([imagePath]);
-    }
+    // For now, use the simplified ingredients method as the backend logic is similar
+    // TODO: Create a separate recognizeFoodsSimplified method if needed
+    await recognizeIngredientsSimplified([imageFile]);
   }
 
-  // Upload and recognize ingredient in one step
+  // Upload and recognize ingredient in one step - UPDATED to use simplified method
   Future<void> uploadAndRecognizeIngredient(
     File imageFile,
     String itemName,
   ) async {
-    final imagePath = await uploadImage(
-      imageFile: imageFile,
-      itemName: itemName,
-      imageType: 'ingredient',
-    );
-
-    if (imagePath != null) {
-      await recognizeIngredients([imagePath]);
-    }
+    // Use the new simplified method directly with the image file
+    await recognizeIngredientsSimplified([imageFile]);
   }
 
   // Search similar images
@@ -246,6 +243,8 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
 
   // Clear state
   void clearState() {
+    // Cancel any active timer
+    state.imageCheckTimer?.cancel();
     state = const RecognitionState();
   }
 
@@ -254,148 +253,188 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     state = state.copyWith(error: null);
   }
 
-  Future<void> recognizeIngredientsAsync(File imageFile) async {
+  /// ✨ NEW: Simplified ingredient recognition (based on working simplified flow)
+  Future<void> recognizeIngredientsSimplified(List<File> imageFiles) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
-      final initialResponse = await _repository.recognizeIngredientsAsync(
-        imageFile,
+      log(
+        '🚀 [RECOGNITION] Starting simplified recognition with ${imageFiles.length} images',
       );
-      final taskId = initialResponse['task_id'] as String?;
 
-      if (taskId == null) {
-        throw Exception("No se recibió un task_id del servidor.");
+      // Use the simplified recognition method that works
+      final result = await _repository.recognizeIngredientsSimplified(
+        imageFiles,
+      );
+
+      log('✅ [RECOGNITION] Simplified recognition completed!');
+      log('📋 [RECOGNITION] Recognition ID: ${result.recognitionId}');
+      log('🖼️ [RECOGNITION] Found ${result.ingredients.length} ingredients');
+
+      // Determine images status
+      final imagesStatus = _getImagesStatus(result);
+
+      // Update state with results and images status
+      state = state.copyWith(
+        isLoading: false,
+        result: result,
+        allergyAlerts: result.allergyAlerts,
+        hasAllergens: result.hasAllergens,
+        recognitionId: result.recognitionId,
+        imagesStatus: imagesStatus,
+        error: null,
+      );
+
+      // Start background polling for image updates if needed
+      if (imagesStatus == 'generating') {
+        log('🎨 [RECOGNITION] Starting background image polling');
+        _startImagePolling(result.recognitionId);
       }
-
-      state = state.copyWith(
-        isLoading: false,
-        isPolling: true,
-        taskId: taskId,
-        imageGenerationStatus: initialResponse['status'] as String?,
-        statusMessage: initialResponse['message'] as String?,
-        progressPercentage: initialResponse['progress_percentage'] as int?,
-      );
-
-      _startPolling(taskId);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-        isPolling: false,
-      );
+      log('❌ [RECOGNITION] Simplified recognition error: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  void _startPolling(String taskId) {
-    _pollingTimer?.cancel(); // Cancel any existing timer
-    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      if (!state.isPolling) {
-        timer.cancel();
-        return;
+  /// Helper method to determine overall images status
+  String _getImagesStatus(IngredientRecognitionResultModel result) {
+    if (result.ingredients.isEmpty) return 'ready';
+
+    int generating = 0;
+    int ready = 0;
+
+    for (final ingredient in result.ingredients) {
+      final status = ingredient.imageStatus;
+      if (status == 'generating' || status == null || status == '') {
+        generating++;
+      } else if (status == 'ready' || status == 'generated') {
+        ready++;
       }
+    }
 
-      try {
-        log('🔄 [POLLING] Checking status for task: $taskId');
-        final statusResponse = await _repository.checkRecognitionStatus(taskId);
-        final status = statusResponse['status'] as String;
+    log('🎨 [RECOGNITION] Images: $ready ready, $generating generating');
 
-        log(
-          '📊 [POLLING] Status: $status, Progress: ${statusResponse['progress_percentage']}%',
-        );
+    if (generating > 0) return 'generating';
+    return 'ready';
+  }
 
-        state = state.copyWith(
-          imageGenerationStatus: status,
-          progressPercentage: statusResponse['progress_percentage'] as int?,
-          statusMessage: statusResponse['current_step'] as String?,
-        );
+  /// Start background polling for image updates (copied from SimplifiedRecognitionProvider)
+  void _startImagePolling(String recognitionId) {
+    // Wait 10 seconds before starting to poll to give backend time to set up
+    Future.delayed(const Duration(seconds: 10), () {
+      if (state.recognitionId == recognitionId &&
+          state.imageCheckTimer == null) {
+        log('🎨 [RECOGNITION] Starting image polling for: $recognitionId');
 
-        if (status == 'completed' || status == 'failed') {
-          _pollingTimer?.cancel();
-          state = state.copyWith(isPolling: false);
+        final timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+          if (state.recognitionId == null ||
+              state.recognitionId != recognitionId) {
+            timer.cancel();
+            return;
+          }
 
-          if (status == 'completed') {
-            log('✅ [POLLING] Task completed! Processing result data...');
-            final resultData =
-                statusResponse['result_data'] as Map<String, dynamic>;
-            log('🔍 [POLLING] Result data keys: ${resultData.keys.toList()}');
+          try {
+            log('🔍 [RECOGNITION] Checking images for: $recognitionId');
 
-            // Add detailed JSON structure logging
-            log('📋 [POLLING] Full result data structure:');
-            log(resultData.toString());
+            final updatedResult = await _repository.checkRecognitionImages(
+              recognitionId,
+            );
+            final newImagesStatus = _getImagesStatus(updatedResult);
 
-            try {
-              final recognitionResult =
-                  IngredientRecognitionResultModel.fromJson(resultData);
+            log('📊 [RECOGNITION] Images status: $newImagesStatus');
 
-              // Debug: Print image URLs
+            // Update state with new results and images status
+            state = state.copyWith(
+              result: updatedResult,
+              imagesStatus: newImagesStatus,
+            );
+
+            // 🔍 DEBUG: Log detailed ingredient info like SimplifiedRecognitionProvider
+            log('🔍 [RECOGNITION] Updated ingredients:');
+            for (int i = 0; i < updatedResult.ingredients.length; i++) {
+              final ingredient = updatedResult.ingredients[i];
+              log('   ${i + 1}. ${ingredient.name}:');
+              log('      📷 imagePath: ${ingredient.imagePath}');
+              log('      📊 imageStatus: ${ingredient.imageStatus}');
               log(
-                '🖼️ [POLLING] Found ${recognitionResult.ingredients.length} ingredients:',
-              );
-              for (final ingredient in recognitionResult.ingredients) {
-                log(
-                  '   - ${ingredient.name}: ${ingredient.imagePath ?? "NO IMAGE"}',
-                );
-              }
-
-              state = state.copyWith(
-                result: recognitionResult,
-                allergyAlerts: recognitionResult.allergyAlerts,
-                hasAllergens: recognitionResult.hasAllergens,
-              );
-            } catch (parseError) {
-              log('❌ [POLLING] JSON parsing error: $parseError');
-              log(
-                '📋 [POLLING] Raw JSON being parsed: ${resultData.toString()}',
-              );
-
-              // Try to parse each ingredient individually to find the problem
-              if (resultData.containsKey('ingredients') &&
-                  resultData['ingredients'] is List) {
-                final ingredients = resultData['ingredients'] as List;
-                log(
-                  '🔍 [POLLING] Trying to parse ${ingredients.length} ingredients individually...',
-                );
-
-                for (int i = 0; i < ingredients.length; i++) {
-                  try {
-                    final ingredient = ingredients[i] as Map<String, dynamic>;
-                    log('   Ingredient $i: ${ingredient.toString()}');
-
-                    final parsed = RecognizedIngredientModel.fromJson(
-                      ingredient,
-                    );
-                    log(
-                      '   ✅ Ingredient $i parsed successfully: ${parsed.name}',
-                    );
-                  } catch (ingredientError) {
-                    log('   ❌ Ingredient $i failed: $ingredientError');
-                    log('   Raw data: ${ingredients[i].toString()}');
-                  }
-                }
-              }
-
-              state = state.copyWith(
-                error: "Error parsing result: $parseError",
+                '      🔗 hasImage: ${ingredient.imagePath?.isNotEmpty ?? false}',
               );
             }
-          } else {
-            log('❌ [POLLING] Task failed: ${statusResponse['error_message']}');
-            state = state.copyWith(
-              error:
-                  statusResponse['error_message'] as String? ??
-                  'La tarea de reconocimiento falló sin un mensaje de error.',
-            );
+
+            // Stop polling if all images are ready
+            if (newImagesStatus == 'ready') {
+              log('✅ [RECOGNITION] All images ready! Stopping polling.');
+              timer.cancel();
+
+              // Update state to remove timer reference
+              state = state.copyWith(imageCheckTimer: null);
+            }
+          } catch (e) {
+            log('❌ [RECOGNITION] Image polling error: $e');
+            timer.cancel();
+            state = state.copyWith(imageCheckTimer: null);
           }
-        }
-      } catch (e) {
-        log('💥 [POLLING] Error during polling: $e');
-        _pollingTimer?.cancel();
-        state = state.copyWith(
-          isPolling: false,
-          error: "Error durante el sondeo: ${e.toString()}",
-        );
+        });
+
+        // Store timer reference in state
+        state = state.copyWith(imageCheckTimer: timer);
       }
     });
+  }
+
+  /// Legacy async method for compatibility (kept for existing code)
+  Future<void> recognizeIngredientsAsync(File imageFile) async {
+    // Convert single image to list and use simplified method
+    await recognizeIngredientsSimplified([imageFile]);
+  }
+
+  /// Force refresh images for current recognition (copied from SimplifiedRecognitionProvider)
+  Future<void> forceRefreshImages() async {
+    if (state.recognitionId == null || state.recognitionId!.isEmpty) {
+      log('⚠️ [REFRESH] No recognition ID available for refresh');
+      return;
+    }
+
+    try {
+      log('🔄 [RECOGNITION] Force checking images for: ${state.recognitionId}');
+
+      final updatedResult = await _repository.checkRecognitionImages(
+        state.recognitionId!,
+      );
+      final newImagesStatus = _getImagesStatus(updatedResult);
+
+      log('📊 [RECOGNITION] Force check - Images status: $newImagesStatus');
+
+      // Update state with new results and images status
+      state = state.copyWith(
+        result: updatedResult,
+        imagesStatus: newImagesStatus,
+      );
+
+      // 🔍 DEBUG: Log detailed ingredient info
+      log('🔍 [RECOGNITION] Force check - Updated ingredients:');
+      for (int i = 0; i < updatedResult.ingredients.length; i++) {
+        final ingredient = updatedResult.ingredients[i];
+        log('   ${i + 1}. ${ingredient.name}:');
+        log('      📷 imagePath: ${ingredient.imagePath}');
+        log('      📊 imageStatus: ${ingredient.imageStatus}');
+        log('      🔗 hasImage: ${ingredient.imagePath?.isNotEmpty ?? false}');
+      }
+
+      // Start polling if still generating and no timer is active
+      if (newImagesStatus == 'generating' && state.imageCheckTimer == null) {
+        log('🎨 [RECOGNITION] Starting polling after force check');
+        _startImagePolling(state.recognitionId!);
+      } else if (newImagesStatus == 'ready') {
+        // Stop any existing polling
+        state.imageCheckTimer?.cancel();
+        state = state.copyWith(imageCheckTimer: null);
+        log('✅ [RECOGNITION] All images ready after force check');
+      }
+    } catch (e) {
+      log('❌ [RECOGNITION] Force check error: $e');
+      state = state.copyWith(error: e.toString());
+    }
   }
 }
 

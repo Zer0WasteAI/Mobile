@@ -103,4 +103,12 @@ class ScanResultsNotifier extends StateNotifier<List<RecognizedItem>> {
   List<RecognizedItem> getItemsToAdd() {
     return state.where((item) => item.quantity > 0).toList();
   }
+
+  // Update a specific item (useful for syncing images)
+  void updateItem(RecognizedItem updatedItem) {
+    state = [
+      for (final item in state)
+        if (item.id == updatedItem.id) updatedItem else item,
+    ];
+  }
 }

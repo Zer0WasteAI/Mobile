@@ -100,6 +100,7 @@ class RecognizedItem {
 
   // Helper method to create a copy with updated quantity
   RecognizedItem copyWith({
+    String? imageUrl,
     double? quantity,
     String? expiryDate,
     String? typeUnit,
@@ -114,7 +115,7 @@ class RecognizedItem {
     return RecognizedItem(
       id: id,
       name: name,
-      imageUrl: imageUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
       quantity: quantity ?? this.quantity,
       expiryDate: expiryDate ?? this.expiryDate,
       category: category,

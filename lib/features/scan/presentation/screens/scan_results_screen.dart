@@ -15,6 +15,8 @@ import 'package:zer0_waste_ai/features/scan/application/providers/scan_results_p
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // For ScanItemType
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item_card.dart';
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'dart:developer';
 
 // Assume Uuid instance is available or create one
@@ -41,6 +43,39 @@ class ScanResultsScreen extends ConsumerWidget {
     final itemsNotifier = ref.read(
       scanResultsProvider(initialJsonData).notifier,
     );
+
+    // Watch simplified recognition state for automatic image updates
+    final simplifiedState = ref.watch(simplifiedRecognitionProvider);
+
+    // Initial sync after build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncImagesFromSimplifiedProvider(ref, simplifiedState, itemsNotifier);
+    });
+
+    // Listen for changes in SimplifiedRecognitionProvider to sync images and show notifications
+    ref.listen(simplifiedRecognitionProvider, (previous, current) {
+      // Sync images when recognition results change
+      _syncImagesFromSimplifiedProvider(ref, current, itemsNotifier);
+
+      // Show notification when all images are ready
+      if (previous?.imagesStatus == 'generating' &&
+          current.imagesStatus == 'ready' &&
+          context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('¡Todas las imágenes están listas!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    });
 
     // Determine if the add button should be enabled
     final bool canAdd = itemsState.any((item) => item.quantity > 0);
@@ -90,6 +125,9 @@ class ScanResultsScreen extends ConsumerWidget {
           children: [
             // Allergy Alert Banner
             _buildAllergyBanner(itemsState, colorScheme, context),
+
+            // Image Refresh Button
+            _buildImageRefreshButton(ref, context),
 
             Expanded(
               child:
@@ -441,6 +479,172 @@ class ScanResultsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildImageRefreshButton(WidgetRef ref, BuildContext context) {
+    final simplifiedState = ref.watch(simplifiedRecognitionProvider);
+    final simplifiedNotifier = ref.read(simplifiedRecognitionProvider.notifier);
+
+    // Only show if we have a recognition ID (meaning we have active recognition results)
+    if (simplifiedState.recognitionId == null ||
+        simplifiedState.recognitionId!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed:
+                  simplifiedState.isLoading
+                      ? null
+                      : () async {
+                        await simplifiedNotifier.forceCheckImages();
+
+                        // Show appropriate message based on result
+                        if (context.mounted) {
+                          final newState = ref.read(
+                            simplifiedRecognitionProvider,
+                          );
+                          if (newState.error != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    Icon(Icons.error, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text('Error al actualizar imágenes'),
+                                  ],
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    Icon(Icons.refresh, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text('Imágenes actualizadas'),
+                                  ],
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        }
+                      },
+              icon:
+                  simplifiedState.isLoading
+                      ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : simplifiedState.imagesStatus == 'generating'
+                      ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.orange,
+                        ),
+                      )
+                      : Icon(Icons.refresh),
+              label: Text(
+                simplifiedState.isLoading
+                    ? 'Actualizando...'
+                    : simplifiedState.imagesStatus == 'generating'
+                    ? 'Generando automáticamente...'
+                    : 'Actualizar imágenes',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+          // Debug info button
+          IconButton(
+            onPressed: () => _showImageDebugInfo(context, simplifiedState),
+            icon: Icon(Icons.info_outline),
+            tooltip: 'Info de imágenes',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showImageDebugInfo(
+    BuildContext context,
+    SimplifiedRecognitionState state,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('🔍 Debug - Imágenes'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Recognition ID: ${state.recognitionId ?? "null"}'),
+                  Text('Estado: ${state.isLoading ? "Cargando" : "Listo"}'),
+                  SizedBox(height: 16),
+                  if (state.result != null) ...[
+                    Text('Tipo de resultado: ${state.result.runtimeType}'),
+                    SizedBox(height: 8),
+                    if (state.result is IngredientRecognitionResultModel) ...[
+                      Text(
+                        'Ingredientes:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      ...(state.result as IngredientRecognitionResultModel)
+                          .ingredients
+                          .map(
+                            (ingredient) => Padding(
+                              padding: EdgeInsets.only(left: 8, top: 4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('• ${ingredient.name}'),
+                                  Text(
+                                    '  📷 Image: ${ingredient.imagePath ?? "null"}',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    '  📊 Status: ${ingredient.imageStatus ?? "null"}',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                    ],
+                  ] else ...[
+                    Text('No hay resultados disponibles'),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Cerrar'),
+              ),
+            ],
+          ),
+    );
+  }
+
   void _showAllergyDetailsDialog(
     BuildContext context,
     List<RecognizedItem> allergenicItems,
@@ -547,5 +751,44 @@ class ScanResultsScreen extends ConsumerWidget {
             ],
           ),
     );
+  }
+
+  /// Sync images from SimplifiedRecognitionProvider to scan results items
+  void _syncImagesFromSimplifiedProvider(
+    WidgetRef ref,
+    SimplifiedRecognitionState simplifiedState,
+    dynamic itemsNotifier,
+  ) {
+    // Only sync if we have recognition results
+    if (simplifiedState.result == null ||
+        simplifiedState.result!.ingredients.isEmpty) {
+      return;
+    }
+
+    final ingredients = simplifiedState.result!.ingredients;
+    final currentItems = ref.read(scanResultsProvider(initialJsonData));
+
+    // Update items with images from SimplifiedRecognitionProvider
+    for (int i = 0; i < ingredients.length && i < currentItems.length; i++) {
+      final ingredient = ingredients[i];
+      final currentItem = currentItems[i];
+
+      // Update image URL if it's different
+      if (ingredient.imagePath != null &&
+          ingredient.imagePath!.isNotEmpty &&
+          currentItem.imageUrl != ingredient.imagePath) {
+        log(
+          '🖼️ [SYNC] Updating image for ${currentItem.name}: ${ingredient.imagePath}',
+        );
+
+        // Create updated item with new image URL using copyWith
+        final updatedItem = currentItem.copyWith(
+          imageUrl: ingredient.imagePath, // Update with new image
+        );
+
+        // Update the item in the provider
+        itemsNotifier.updateItem(updatedItem);
+      }
+    }
   }
 }

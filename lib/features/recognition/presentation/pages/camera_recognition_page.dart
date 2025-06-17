@@ -32,6 +32,27 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
     final recognitionState = ref.watch(recognitionProvider);
     final recognitionNotifier = ref.read(recognitionProvider.notifier);
 
+    // Listen for when all images are ready to show notification
+    ref.listen(recognitionProvider, (previous, current) {
+      if (previous?.imagesStatus == 'generating' &&
+          current.imagesStatus == 'ready' &&
+          context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('¡Todas las imágenes están listas!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reconocimiento de Alimentos'),
@@ -721,6 +742,90 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
     return Icons.error;
   }
 
+  /// Build ingredient image with proper error handling and local placeholder
+  Widget _buildIngredientImage(String imagePath, String ingredientName) {
+    debugPrint('🖼️ [UI] $ingredientName:');
+    debugPrint('   📷 imagePath: $imagePath');
+
+    // Show local placeholder if no image or placeholder URL
+    if (imagePath.isEmpty || imagePath.contains('placeholder')) {
+      return _buildLocalPlaceholder(false);
+    }
+
+    // Show actual image directly - let the backend handle authentication
+    return _buildNetworkImage(imagePath);
+  }
+
+  /// Build regular network image
+  Widget _buildNetworkImage(String imageUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        imageUrl,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            debugPrint('✅ [UI] Image loaded successfully: $imageUrl');
+            return child;
+          }
+          return _buildLocalPlaceholder(true);
+        },
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('❌ [UI] Error loading image $imageUrl: $error');
+          return _buildLocalPlaceholder(false);
+        },
+      ),
+    );
+  }
+
+  /// Build local placeholder widget
+  Widget _buildLocalPlaceholder(bool isGenerating) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isGenerating) ...[
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Generando...',
+              style: TextStyle(
+                fontSize: 8,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else ...[
+            Icon(Icons.image_outlined, size: 20, color: Colors.grey[400]),
+            const SizedBox(height: 2),
+            Text(
+              'Sin imagen',
+              style: TextStyle(
+                fontSize: 8,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   // 🆕 NUEVO: Helpers para el estado de generación asíncrona
   Color _getStatusColor(String? status) {
     switch (status) {
@@ -894,6 +999,28 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                   ),
               ],
             ),
+
+            // 🆕 NEW: Show ingredient image if available
+            if (fullItem is RecognizedIngredientModel &&
+                fullItem.imagePath != null &&
+                fullItem.imagePath!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _buildIngredientImage(
+                    fullItem.imagePath!,
+                    fullItem.name,
+                  ),
+                ),
+              ),
+            ],
 
             // 🆕 Mostrar sección ambiental si el toggle está activado
             if (_useCompleteAnalysis && _recognitionType == 'ingredient') ...[

@@ -10,10 +10,10 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType
-import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 // --- Design Constants ---
@@ -99,6 +99,136 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// ✨ NEW: Simplified analysis method using the working simplified provider
+  Future<void> _analyzeImagesSimplified() async {
+    final images = ref.read(_confirmImagesProvider(widget.initialImages));
+
+    if (images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay imágenes para analizar'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LottieLoadingWidget.small(),
+                const SizedBox(height: 16),
+                const Text('Analizando imágenes con IA...'),
+                const Text('Esto puede tardar unos segundos'),
+              ],
+            ),
+          ),
+    );
+
+    try {
+      log('🚀 Starting simplified analysis with ${images.length} images');
+
+      // Use the simplified recognition provider that works
+      final simplifiedNotifier = ref.read(
+        simplifiedRecognitionProvider.notifier,
+      );
+      await simplifiedNotifier.recognizeIngredients(images);
+
+      // Get the results from simplified provider
+      final simplifiedState = ref.read(simplifiedRecognitionProvider);
+
+      if (simplifiedState.error != null) {
+        throw Exception(simplifiedState.error!);
+      }
+
+      if (simplifiedState.result == null) {
+        throw Exception('No se recibieron resultados del reconocimiento');
+      }
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      log('✅ Simplified analysis completed!');
+
+      // Convert results to the format expected by ScanResultsScreen
+      List<Map<String, dynamic>> formattedResults = [];
+
+      if (simplifiedState.result is IngredientRecognitionResultModel) {
+        final result =
+            simplifiedState.result as IngredientRecognitionResultModel;
+
+        formattedResults =
+            result.ingredients.map((ingredient) {
+              return {
+                'name': ingredient.name,
+                'image_path': ingredient.imagePath ?? '',
+                'quantity': ingredient.quantity,
+                'expiration_date':
+                    ingredient.expirationDate ??
+                    DateTime.now()
+                        .add(Duration(days: ingredient.expirationTime))
+                        .toIso8601String(),
+                'confidence': ingredient.confidence ?? 1.0,
+                'category': 'ingredient',
+                'allergyAlert': ingredient.allergyAlert,
+                'allergens': ingredient.allergens,
+                'storage_type': ingredient.storageType,
+                'tips': ingredient.tips,
+                'type_unit': ingredient.typeUnit,
+                'expiration_time': ingredient.expirationTime,
+                'time_unit': ingredient.timeUnit,
+                'added_at': ingredient.addedAt,
+              };
+            }).toList();
+
+        // Log allergy alerts if any
+        if (result.hasAllergens && result.allergyAlerts.isNotEmpty) {
+          log('⚠️ ALLERGY ALERTS DETECTED:');
+          for (final alert in result.allergyAlerts) {
+            log('  - ${alert.item}: ${alert.message}');
+          }
+        }
+      }
+
+      if (formattedResults.isEmpty) {
+        throw Exception('No se encontraron ingredientes en las imágenes');
+      }
+
+      // Navigate to results screen
+      if (context.mounted) {
+        context.go(
+          '/scan/results',
+          extra: {
+            'recognizedItemsJson': formattedResults,
+            'itemType': widget.originType,
+          },
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted) Navigator.of(context).pop();
+
+      log('❌ Error in simplified analysis: $e');
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al analizar imágenes: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   // --- Image Picking Logic with Limit and Dialog ---
@@ -633,305 +763,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0, top: 10.0),
                 child: ElevatedButton(
-                  onPressed:
-                      images.isEmpty
-                          ? null
-                          : () async {
-                            log('Starting API analysis with fallback...');
-
-                            // Show loading dialog
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder:
-                                  (context) => const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                            );
-
-                            List<Map<String, dynamic>> formattedResults = [];
-
-                            try {
-                              log('🔄 Attempting real API analysis...');
-                              final recognitionRepository = ref.read(
-                                _recognitionRepositoryProvider,
-                              );
-
-                              // 1. First upload all images and get their paths
-                              List<String> uploadedImagePaths = [];
-                              for (File imageFile in images) {
-                                final uploadResult = await recognitionRepository
-                                    .uploadImage(
-                                      imageFile: imageFile,
-                                      itemName:
-                                          'scan_${DateTime.now().millisecondsSinceEpoch}',
-                                      imageType:
-                                          widget.originType ==
-                                                  ScanItemType.ingredient
-                                              ? 'ingredient'
-                                              : 'food',
-                                    );
-                                uploadedImagePaths.add(
-                                  uploadResult.image.imagePath,
-                                );
-                              }
-
-                              // 2. Call the appropriate recognition endpoint
-                              if (widget.originType ==
-                                  ScanItemType.ingredient) {
-                                // Use async recognition for ingredients
-                                final File firstImage =
-                                    widget.initialImages.first;
-
-                                // Start async recognition
-                                final initialResponse =
-                                    await recognitionRepository
-                                        .recognizeIngredientsAsync(firstImage);
-
-                                final taskId =
-                                    initialResponse['task_id'] as String?;
-                                if (taskId == null) {
-                                  throw Exception(
-                                    "No se recibió un task_id del servidor.",
-                                  );
-                                }
-
-                                // Close initial loading dialog
-                                if (mounted) Navigator.of(context).pop();
-
-                                // Show progress dialog and poll for completion
-                                if (mounted) {
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder:
-                                        (dialogContext) => AlertDialog(
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              LottieLoadingWidget.small(),
-                                              SizedBox(height: 16),
-                                              Text(
-                                                'Generando imágenes con IA...',
-                                              ),
-                                              Text(
-                                                'Esto puede tardar hasta un minuto.',
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                  );
-                                }
-
-                                dynamic ingredientResult;
-                                while (true) {
-                                  await Future.delayed(
-                                    const Duration(seconds: 3),
-                                  );
-                                  final statusResponse =
-                                      await recognitionRepository
-                                          .checkRecognitionStatus(taskId);
-
-                                  final status =
-                                      statusResponse['status'] as String;
-                                  final progress =
-                                      statusResponse['progress_percentage']
-                                          as int? ??
-                                      0;
-                                  log(
-                                    '🔄 Polling status: $status, Progress: $progress%',
-                                  );
-
-                                  if (status == 'completed') {
-                                    final resultData =
-                                        statusResponse['result_data']
-                                            as Map<String, dynamic>;
-                                    ingredientResult =
-                                        IngredientRecognitionResultModel.fromJson(
-                                          resultData,
-                                        );
-                                    log(
-                                      '✅ Async recognition completed with images!',
-                                    );
-
-                                    // Log image URLs for debugging
-                                    for (final ingredient
-                                        in ingredientResult.ingredients) {
-                                      log(
-                                        '🖼️ ${ingredient.name}: ${ingredient.imagePath ?? "NO IMAGE"}',
-                                      );
-                                    }
-
-                                    // Close progress dialog
-                                    if (mounted) Navigator.of(context).pop();
-                                    break;
-                                  } else if (status == 'failed') {
-                                    if (mounted) Navigator.of(context).pop();
-                                    throw Exception(
-                                      statusResponse['error_message'] ??
-                                          'Recognition failed',
-                                    );
-                                  }
-                                  // Continue polling if status is 'processing'
-                                }
-
-                                // 3. Convert ingredient API response to the format expected by ScanResultsScreen
-                                formattedResults =
-                                    ingredientResult.ingredients.map((
-                                      ingredient,
-                                    ) {
-                                      return {
-                                        'name': ingredient.name,
-                                        'image_path':
-                                            ingredient.imagePath ?? '',
-                                        'quantity': ingredient.quantity,
-                                        'expiration_date':
-                                            ingredient.expirationDate ??
-                                            DateTime.now()
-                                                .add(
-                                                  Duration(
-                                                    days:
-                                                        ingredient
-                                                            .expirationTime,
-                                                  ),
-                                                )
-                                                .toIso8601String(),
-                                        'confidence':
-                                            ingredient.confidence ?? 1.0,
-                                        'category': 'ingredient',
-                                        'allergyAlert': ingredient.allergyAlert,
-                                        'allergens': ingredient.allergens,
-                                        'storage_type': ingredient.storageType,
-                                        'tips': ingredient.tips,
-                                        'type_unit': ingredient.typeUnit,
-                                        'expiration_time':
-                                            ingredient.expirationTime,
-                                        'time_unit': ingredient.timeUnit,
-                                        'added_at': ingredient.addedAt,
-                                      };
-                                    }).toList();
-
-                                // Log allergy alerts if any
-                                if (ingredientResult.hasAllergens &&
-                                    ingredientResult.allergyAlerts.isNotEmpty) {
-                                  log('⚠️ ALLERGY ALERTS DETECTED:');
-                                  for (final alert
-                                      in ingredientResult.allergyAlerts) {
-                                    log('  - ${alert.item}: ${alert.message}');
-                                  }
-                                }
-                              } else {
-                                final foodResult = await recognitionRepository
-                                    .recognizeFoods(uploadedImagePaths);
-
-                                // 3. Convert food API response to the format expected by ScanResultsScreen
-                                formattedResults =
-                                    foodResult.foods.map((food) {
-                                      return {
-                                        'name': food.name,
-                                        'image_path': food.imagePath ?? '',
-                                        'quantity': food.servingQuantity,
-                                        'expiration_date':
-                                            food.expirationDate ??
-                                            DateTime.now()
-                                                .add(
-                                                  Duration(
-                                                    days: food.expirationTime,
-                                                  ),
-                                                )
-                                                .toIso8601String(),
-                                        'confidence': food.confidence ?? 1.0,
-                                        'category': food.category,
-                                        'allergyAlert': food.allergyAlert,
-                                        'allergens': food.allergens,
-                                        'storage_type': food.storageType,
-                                        'tips': food.tips,
-                                        'calories': food.calories,
-                                        'description': food.description,
-                                        'mainIngredients': food.mainIngredients,
-                                        'type_unit':
-                                            'porciones', // Default unit for foods
-                                        'expiration_time':
-                                            food.expirationTime, // Add this field
-                                        'time_unit': food.timeUnit,
-                                        'added_at': food.addedAt,
-                                      };
-                                    }).toList();
-
-                                // Log allergy alerts if any
-                                if (foodResult.hasAllergens &&
-                                    foodResult.allergyAlerts.isNotEmpty) {
-                                  log('⚠️ ALLERGY ALERTS DETECTED:');
-                                  for (final alert
-                                      in foodResult.allergyAlerts) {
-                                    log('  - ${alert.item}: ${alert.message}');
-                                  }
-                                }
-                              }
-
-                              log(
-                                '✅ Real API analysis completed. Found ${formattedResults.length} items.',
-                              );
-                            } catch (e) {
-                              log('❌ Real API analysis failed: $e');
-
-                              // Check if it's an authentication error
-                              final isAuthError =
-                                  e.toString().contains('401') ||
-                                  e.toString().contains('Token has expired') ||
-                                  e.toString().contains('unauthorized');
-
-                              if (isAuthError) {
-                                log(
-                                  '🔄 Authentication error detected, falling back to dummy data...',
-                                );
-                              } else {
-                                log(
-                                  '🔄 API error detected, falling back to dummy data...',
-                                );
-                              }
-
-                              // ✅ UPDATED: Proper error handling without dummy fallback
-                              log('❌ Recognition API failed: $e');
-                              formattedResults = []; // Return empty results
-
-                              // Show error message to user
-                              if (mounted) {
-                                Navigator.of(
-                                  context,
-                                ).pop(); // Close loading dialog
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error al analizar las imágenes. Por favor, intenta nuevamente.',
-                                    ),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.error,
-                                    action: SnackBarAction(
-                                      label: 'Reintentar',
-                                      onPressed: () {
-                                        // User can tap the analyze button again
-                                      },
-                                    ),
-                                  ),
-                                );
-                                return; // Exit early on error
-                              }
-                            }
-
-                            // Close loading dialog
-                            if (mounted) Navigator.of(context).pop();
-
-                            // Navigate to ScanResultsScreen with results (real or dummy)
-                            if (!mounted) return;
-                            context.pushNamed(
-                              ScanResultsScreen.routeName,
-                              extra: {
-                                'recognizedItemsJson': formattedResults,
-                                'itemType': widget.originType,
-                              },
-                            );
-                          },
+                  onPressed: images.isEmpty ? null : _analyzeImagesSimplified,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
