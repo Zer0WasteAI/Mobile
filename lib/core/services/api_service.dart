@@ -1942,4 +1942,130 @@ class ApiService {
       throw Exception('Check images error: ${e.toString()}');
     }
   }
+
+  /// ✨ NEW: Simplified food recognition with immediate response
+  /// USAGE: Upload images first, then get immediate results with background image generation
+  /// RETURNS: Complete recognition result with data and image status
+  Future<Map<String, dynamic>> recognizeFoodsSimplified(
+    List<File> imageFiles,
+  ) async {
+    try {
+      log(
+        '🚀 [SIMPLIFIED FOODS] Starting recognition with ${imageFiles.length} images',
+      );
+
+      // Step 1: Upload all images first
+      List<String> imageUrls = [];
+      for (int i = 0; i < imageFiles.length; i++) {
+        log(
+          '📤 [SIMPLIFIED FOODS] Uploading image ${i + 1}/${imageFiles.length}',
+        );
+
+        final formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            imageFiles[i].path,
+            filename: imageFiles[i].path.split('/').last,
+          ),
+          'item_name': 'food_scan_${DateTime.now().millisecondsSinceEpoch}_$i',
+          'image_type': 'food',
+        });
+
+        final uploadResponse = await _dio.post(
+          _imageUpload,
+          data: formData,
+          options: Options(
+            contentType: 'multipart/form-data',
+            sendTimeout: const Duration(minutes: 2),
+            receiveTimeout: const Duration(minutes: 2),
+          ),
+        );
+
+        final imageUrl = uploadResponse.data['image']['image_path'] as String;
+        imageUrls.add(imageUrl);
+        log('✅ [SIMPLIFIED FOODS] Image ${i + 1} uploaded: $imageUrl');
+      }
+
+      // Step 2: Call simplified food recognition endpoint with immediate response
+      log(
+        '🔄 [SIMPLIFIED FOODS] Starting recognition with ${imageUrls.length} URLs...',
+      );
+      final recognitionResponse = await _dio.post(
+        _recognitionFoods, // Using the simplified endpoint
+        data: {'images_paths': imageUrls},
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          sendTimeout: const Duration(minutes: 3),
+          receiveTimeout: const Duration(minutes: 3),
+        ),
+      );
+
+      log('✅ [SIMPLIFIED FOODS] Recognition completed successfully!');
+      final result = recognitionResponse.data as Map<String, dynamic>;
+
+      // Log the response structure for debugging
+      log('📋 [SIMPLIFIED FOODS] Response keys: ${result.keys.toList()}');
+      if (result.containsKey('foods')) {
+        final foods = result['foods'] as List;
+        log('🖼️ [SIMPLIFIED FOODS] Found ${foods.length} foods');
+        for (int i = 0; i < foods.length; i++) {
+          final food = foods[i] as Map<String, dynamic>;
+          final name = food['name'] as String?;
+          final imagePath = food['image_path'] as String?;
+          final imageStatus = food['image_status'] as String?;
+          log('   ${i + 1}. $name: $imagePath (status: $imageStatus)');
+        }
+      }
+
+      return result;
+    } catch (e) {
+      log('❌ [SIMPLIFIED FOODS] Recognition error: $e');
+      throw Exception('Simplified food recognition error: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Check food image generation status for a recognition
+  /// USAGE: Call this periodically to check if food images are ready
+  /// RETURNS: Updated recognition data with current image status
+  Future<Map<String, dynamic>> checkFoodRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      log(
+        '🔍 [SIMPLIFIED FOODS] Checking images for food recognition: $recognitionId',
+      );
+      final response = await _dio.get(
+        '$_recognitionById/$recognitionId/images',
+      );
+
+      final result = response.data as Map<String, dynamic>;
+      log('📊 [SIMPLIFIED FOODS] Images status response received');
+      log('🔍 [SIMPLIFIED FOODS] Response keys: ${result.keys.toList()}');
+      log('🔍 [SIMPLIFIED FOODS] Full response: $result');
+
+      if (result.containsKey('foods')) {
+        final foods = result['foods'] as List;
+        log('🖼️ [SIMPLIFIED FOODS] Updated ${foods.length} foods');
+        int readyCount = 0;
+        for (int i = 0; i < foods.length; i++) {
+          final food = foods[i] as Map<String, dynamic>;
+          final name = food['name'] as String?;
+          final imagePath = food['image_path'] as String?;
+          final imageStatus = food['image_status'] as String?;
+          log('   ${i + 1}. $name:');
+          log('      📷 image_path: $imagePath');
+          log('      📊 image_status: $imageStatus');
+
+          if (imageStatus == 'ready' || imageStatus == 'generated') {
+            readyCount++;
+          }
+        }
+        log('✅ [SIMPLIFIED FOODS] $readyCount/${foods.length} images ready');
+      }
+
+      return result;
+    } catch (e) {
+      log('❌ [SIMPLIFIED FOODS] Check food images error: $e');
+      throw Exception('Check food images error: ${e.toString()}');
+    }
+  }
 }

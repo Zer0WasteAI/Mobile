@@ -99,4 +99,14 @@ abstract class RecognitionRepository {
   Future<IngredientRecognitionResultModel> checkRecognitionImages(
     String recognitionId,
   );
+
+  /// ✨ NEW: Simplified food recognition with immediate response
+  Future<FoodRecognitionResultModel> recognizeFoodsSimplified(
+    List<File> imageFiles,
+  );
+
+  /// ✨ NEW: Check food image generation status for a recognition
+  Future<FoodRecognitionResultModel> checkFoodRecognitionImages(
+    String recognitionId,
+  );
 }

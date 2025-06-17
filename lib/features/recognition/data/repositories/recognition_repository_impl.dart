@@ -377,4 +377,32 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       throw Exception('Check recognition images failed: ${e.toString()}');
     }
   }
+
+  /// ✨ NEW: Simplified food recognition with immediate response
+  @override
+  Future<FoodRecognitionResultModel> recognizeFoodsSimplified(
+    List<File> imageFiles,
+  ) async {
+    try {
+      final result = await _apiService.recognizeFoodsSimplified(imageFiles);
+      return FoodRecognitionResultModel.fromJson(result);
+    } catch (e) {
+      throw Exception('Simplified food recognition failed: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Check food image generation status for a recognition
+  @override
+  Future<FoodRecognitionResultModel> checkFoodRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      final result = await _apiService.checkFoodRecognitionImages(
+        recognitionId,
+      );
+      return FoodRecognitionResultModel.fromJson(result);
+    } catch (e) {
+      throw Exception('Check food recognition images failed: ${e.toString()}');
+    }
+  }
 }
