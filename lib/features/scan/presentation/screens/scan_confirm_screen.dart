@@ -13,6 +13,7 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
+import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 // --- Design Constants ---
@@ -678,11 +679,101 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
                               // 2. Call the appropriate recognition endpoint
                               if (widget.originType ==
                                   ScanItemType.ingredient) {
-                                final ingredientResult =
+                                // Use async recognition for ingredients
+                                final File firstImage =
+                                    widget.initialImages.first;
+
+                                // Start async recognition
+                                final initialResponse =
                                     await recognitionRepository
-                                        .recognizeIngredients(
-                                          uploadedImagePaths,
+                                        .recognizeIngredientsAsync(firstImage);
+
+                                final taskId =
+                                    initialResponse['task_id'] as String?;
+                                if (taskId == null) {
+                                  throw Exception(
+                                    "No se recibió un task_id del servidor.",
+                                  );
+                                }
+
+                                // Close initial loading dialog
+                                if (mounted) Navigator.of(context).pop();
+
+                                // Show progress dialog and poll for completion
+                                if (mounted) {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder:
+                                        (dialogContext) => AlertDialog(
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              LottieLoadingWidget.small(),
+                                              SizedBox(height: 16),
+                                              Text(
+                                                'Generando imágenes con IA...',
+                                              ),
+                                              Text(
+                                                'Esto puede tardar hasta un minuto.',
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                  );
+                                }
+
+                                dynamic ingredientResult;
+                                while (true) {
+                                  await Future.delayed(
+                                    const Duration(seconds: 3),
+                                  );
+                                  final statusResponse =
+                                      await recognitionRepository
+                                          .checkRecognitionStatus(taskId);
+
+                                  final status =
+                                      statusResponse['status'] as String;
+                                  final progress =
+                                      statusResponse['progress_percentage']
+                                          as int? ??
+                                      0;
+                                  log(
+                                    '🔄 Polling status: $status, Progress: $progress%',
+                                  );
+
+                                  if (status == 'completed') {
+                                    final resultData =
+                                        statusResponse['result_data']
+                                            as Map<String, dynamic>;
+                                    ingredientResult =
+                                        IngredientRecognitionResultModel.fromJson(
+                                          resultData,
                                         );
+                                    log(
+                                      '✅ Async recognition completed with images!',
+                                    );
+
+                                    // Log image URLs for debugging
+                                    for (final ingredient
+                                        in ingredientResult.ingredients) {
+                                      log(
+                                        '🖼️ ${ingredient.name}: ${ingredient.imagePath ?? "NO IMAGE"}',
+                                      );
+                                    }
+
+                                    // Close progress dialog
+                                    if (mounted) Navigator.of(context).pop();
+                                    break;
+                                  } else if (status == 'failed') {
+                                    if (mounted) Navigator.of(context).pop();
+                                    throw Exception(
+                                      statusResponse['error_message'] ??
+                                          'Recognition failed',
+                                    );
+                                  }
+                                  // Continue polling if status is 'processing'
+                                }
 
                                 // 3. Convert ingredient API response to the format expected by ScanResultsScreen
                                 formattedResults =

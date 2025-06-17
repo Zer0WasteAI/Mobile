@@ -176,34 +176,13 @@ class RecognizedItemCard extends StatelessWidget {
                   if (item.expiryDate != null && item.expiryDate!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: RichText(
-                        text: TextSpan(
+                      child: Text(
+                        _formatExpiryDate(item.expiryDate!),
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: colorScheme.secondary,
                             fontStyle: FontStyle.italic,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: _formatExpiryDate(item.expiryDate!),
-                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            // Add expiration time and time unit in parentheses
-                            if (item.expirationTime != null &&
-                                item.timeUnit != null)
-                              TextSpan(
-                                text:
-                                    ' (${item.expirationTime} ${item.timeUnit})',
-                                style: TextStyle(
-                                  color: colorScheme.secondary.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                          ],
                         ),
                       ),
                     ),

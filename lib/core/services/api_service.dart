@@ -31,6 +31,9 @@ class ApiService {
 
   static const String _recognitionFoods = '/api/recognition/foods';
   static const String _recognitionIngredients = '/api/recognition/ingredients';
+  static const String _recognitionIngredientsAsync =
+      '/api/recognition/ingredients/async';
+  static const String _recognitionStatus = '/api/recognition/status';
   static const String _recognitionIngredientsComplete =
       '/api/recognition/ingredients/complete';
   static const String _recognitionBatch = '/api/recognition/batch';
@@ -721,13 +724,12 @@ class ApiService {
   }
 
   /// INFO: Assign reference image to an item
-  Future<Map<String, dynamic>> assignImage(String itemName) async {
+  Future<void> assignImage(String itemName, String imagePath) async {
     try {
-      final response = await _dio.post(
+      await _dio.post(
         _imageAssign,
-        data: {'item_name': itemName},
+        data: {'item_name': itemName, 'image_path': imagePath},
       );
-      return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Assign image error: ${e.toString()}');
     }
@@ -1061,7 +1063,7 @@ class ApiService {
     required Map<String, dynamic> itemData,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _dio.put(
         _inventoryAddItem,
         data: {'item_type': itemType, 'item_data': itemData},
       );
@@ -1726,5 +1728,218 @@ class ApiService {
     }
 
     return newOptions;
+  }
+
+  /// INFO: Start async ingredient recognition (CORRECTED)
+  /// USAGE: Uploads image first, then starts async recognition with URLs
+  /// RETURNS: Initial task data including task_id
+  Future<Map<String, dynamic>> recognizeIngredientsAsync(File imageFile) async {
+    try {
+      log('🔄 Step 1: Uploading image first...');
+
+      // Step 1: Upload the image first to get URL
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.path.split('/').last,
+        ),
+        'item_name': 'scan_${DateTime.now().millisecondsSinceEpoch}',
+        'image_type': 'ingredient',
+      });
+
+      final uploadResponse = await _dio.post(
+        _imageUpload,
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: const Duration(minutes: 2),
+          receiveTimeout: const Duration(minutes: 2),
+        ),
+      );
+
+      final imageUrl = uploadResponse.data['image']['image_path'] as String;
+      log('✅ Image uploaded successfully: $imageUrl');
+
+      // Step 2: Call async recognition with JSON and URLs
+      log('🔄 Step 2: Starting async recognition with URL...');
+      final asyncResponse = await _dio.post(
+        _recognitionIngredientsAsync,
+        data: {
+          'images_paths': [imageUrl], // ✅ CORRECTED: Array of URLs in JSON
+        },
+        options: Options(
+          headers: {
+            'Content-Type':
+                'application/json', // ✅ CORRECTED: JSON content type
+          },
+          sendTimeout: const Duration(minutes: 2),
+          receiveTimeout: const Duration(minutes: 2),
+        ),
+      );
+
+      log('✅ Async recognition task created: ${asyncResponse.data['task_id']}');
+      return asyncResponse.data as Map<String, dynamic>;
+    } catch (e) {
+      log('❌ Async ingredients recognition error: $e');
+      throw Exception('Async ingredients recognition error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Check recognition task status
+  /// USAGE: Poll this endpoint with a task_id to get progress
+  /// RETURNS: Task status and result when completed
+  Future<Map<String, dynamic>> checkRecognitionStatus(String taskId) async {
+    try {
+      log('🔍 Checking status for task: $taskId');
+      final response = await _dio.get('$_recognitionStatus/$taskId');
+
+      final responseData = response.data as Map<String, dynamic>;
+      final status = responseData['status'] as String?;
+      final progress = responseData['progress_percentage'] as int?;
+
+      log('📊 Status Response: $status (${progress ?? 0}%)');
+
+      // Log when completed to see if we have image URLs
+      if (status == 'completed') {
+        final resultData = responseData['result_data'] as Map<String, dynamic>?;
+        if (resultData != null && resultData.containsKey('ingredients')) {
+          final ingredients = resultData['ingredients'] as List;
+          log('🖼️ Found ${ingredients.length} ingredients with images:');
+          for (int i = 0; i < ingredients.length; i++) {
+            final ingredient = ingredients[i] as Map<String, dynamic>;
+            final name = ingredient['name'] as String?;
+            final imagePath = ingredient['image_path'] as String?;
+            log('   ${i + 1}. $name: ${imagePath ?? "NO IMAGE"}');
+          }
+        }
+      }
+
+      return responseData;
+    } catch (e) {
+      log('❌ Check recognition status error: $e');
+      throw Exception('Check recognition status error: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Simplified ingredient recognition with immediate response
+  /// USAGE: Upload images first, then get immediate results with background image generation
+  /// RETURNS: Complete recognition result with data and image status
+  Future<Map<String, dynamic>> recognizeIngredientsSimplified(
+    List<File> imageFiles,
+  ) async {
+    try {
+      log(
+        '🚀 [SIMPLIFIED] Starting recognition with ${imageFiles.length} images',
+      );
+
+      // Step 1: Upload all images first
+      List<String> imageUrls = [];
+      for (int i = 0; i < imageFiles.length; i++) {
+        log('📤 [SIMPLIFIED] Uploading image ${i + 1}/${imageFiles.length}');
+
+        final formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            imageFiles[i].path,
+            filename: imageFiles[i].path.split('/').last,
+          ),
+          'item_name': 'scan_${DateTime.now().millisecondsSinceEpoch}_$i',
+          'image_type': 'ingredient',
+        });
+
+        final uploadResponse = await _dio.post(
+          _imageUpload,
+          data: formData,
+          options: Options(
+            contentType: 'multipart/form-data',
+            sendTimeout: const Duration(minutes: 2),
+            receiveTimeout: const Duration(minutes: 2),
+          ),
+        );
+
+        final imageUrl = uploadResponse.data['image']['image_path'] as String;
+        imageUrls.add(imageUrl);
+        log('✅ [SIMPLIFIED] Image ${i + 1} uploaded: $imageUrl');
+      }
+
+      // Step 2: Call simplified recognition endpoint with immediate response
+      log(
+        '🔄 [SIMPLIFIED] Starting recognition with ${imageUrls.length} URLs...',
+      );
+      final recognitionResponse = await _dio.post(
+        _recognitionIngredients, // Using the simplified endpoint
+        data: {'images_paths': imageUrls},
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          sendTimeout: const Duration(minutes: 3),
+          receiveTimeout: const Duration(minutes: 3),
+        ),
+      );
+
+      log('✅ [SIMPLIFIED] Recognition completed successfully!');
+      final result = recognitionResponse.data as Map<String, dynamic>;
+
+      // Log the response structure for debugging
+      log('📋 [SIMPLIFIED] Response keys: ${result.keys.toList()}');
+      if (result.containsKey('ingredients')) {
+        final ingredients = result['ingredients'] as List;
+        log('🖼️ [SIMPLIFIED] Found ${ingredients.length} ingredients');
+        for (int i = 0; i < ingredients.length; i++) {
+          final ingredient = ingredients[i] as Map<String, dynamic>;
+          final name = ingredient['name'] as String?;
+          final imagePath = ingredient['image_path'] as String?;
+          final imageStatus = ingredient['image_status'] as String?;
+          log('   ${i + 1}. $name: $imagePath (status: $imageStatus)');
+        }
+      }
+
+      return result;
+    } catch (e) {
+      log('❌ [SIMPLIFIED] Recognition error: $e');
+      throw Exception('Simplified recognition error: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Check image generation status for a recognition
+  /// USAGE: Call this periodically to check if images are ready
+  /// RETURNS: Updated recognition data with current image status
+  Future<Map<String, dynamic>> checkRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      log('🔍 [SIMPLIFIED] Checking images for recognition: $recognitionId');
+      final response = await _dio.get(
+        '$_recognitionById/$recognitionId/images',
+      );
+
+      final result = response.data as Map<String, dynamic>;
+      log('📊 [SIMPLIFIED] Images status response received');
+      log('🔍 [SIMPLIFIED] Response keys: ${result.keys.toList()}');
+      log('🔍 [SIMPLIFIED] Full response: $result');
+
+      if (result.containsKey('ingredients')) {
+        final ingredients = result['ingredients'] as List;
+        log('🖼️ [SIMPLIFIED] Updated ${ingredients.length} ingredients');
+        int readyCount = 0;
+        for (int i = 0; i < ingredients.length; i++) {
+          final ingredient = ingredients[i] as Map<String, dynamic>;
+          final name = ingredient['name'] as String?;
+          final imagePath = ingredient['image_path'] as String?;
+          final imageStatus = ingredient['image_status'] as String?;
+          log('   ${i + 1}. $name:');
+          log('      📷 image_path: $imagePath');
+          log('      📊 image_status: $imageStatus');
+
+          if (imageStatus == 'ready' || imageStatus == 'generated') {
+            readyCount++;
+          }
+        }
+        log('✅ [SIMPLIFIED] $readyCount/${ingredients.length} images ready');
+      }
+
+      return result;
+    } catch (e) {
+      log('❌ [SIMPLIFIED] Check images error: $e');
+      throw Exception('Check images error: ${e.toString()}');
+    }
   }
 }

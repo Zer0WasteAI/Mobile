@@ -4,12 +4,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/recognition_provider.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/utils/recognition_to_inventory_converter.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
+import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart';
 
 class CameraRecognitionPage extends ConsumerStatefulWidget {
   const CameraRecognitionPage({super.key});
@@ -265,10 +267,60 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                 ),
               ),
 
+            // 🆕 UI for async polling progress
+            if (recognitionState.isPolling)
+              Card(
+                color: Colors.blue.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const LottieLoadingWidget.small(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  recognitionState.statusMessage ??
+                                      'Procesando imagen...',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Esto puede tardar hasta un minuto.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      LinearProgressIndicator(
+                        value: recognitionState.progressPercentage / 100.0,
+                        backgroundColor: Colors.blue.shade100,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.blue.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             const SizedBox(height: 8),
 
             // Results display
-            if (recognitionState.result != null)
+            if (recognitionState.result != null && !recognitionState.isPolling)
               Expanded(
                 child: Card(
                   child: Padding(
@@ -291,81 +343,95 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                               ),
                             ),
                             const Spacer(),
-                            if (recognitionState.taskId != null &&
-                                recognitionState.imageGenerationStatus ==
-                                    'generating')
-                              TextButton.icon(
-                                onPressed: () {
-                                  ref
-                                      .read(recognitionProvider.notifier)
-                                      .checkImageGenerationStatus();
-                                },
-                                icon: const Icon(Icons.refresh, size: 16),
-                                label: const Text('Verificar estado'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.blue,
-                                ),
-                              ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount:
-                                recognitionState.result!.recognizedItems.length,
-                            itemBuilder: (context, index) {
-                              final item =
+                        if (recognitionState.result!.recognizedItems.isEmpty)
+                          Expanded(
+                            child: Center(
+                              child: _buildNoResultsFound(
+                                context,
+                                recognitionNotifier,
+                              ),
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount:
                                   recognitionState
                                       .result!
-                                      .recognizedItems[index];
+                                      .recognizedItems
+                                      .length,
+                              itemBuilder: (context, index) {
+                                final item =
+                                    recognitionState
+                                        .result!
+                                        .recognizedItems[index];
 
-                              // 🆕 Detectar el tipo de resultado para obtener imageStatus
-                              String? imageStatus;
-                              if (recognitionState.result
-                                  is IngredientRecognitionResultModel) {
-                                final ingredients =
-                                    (recognitionState.result
-                                            as IngredientRecognitionResultModel)
-                                        .ingredients;
-                                if (index < ingredients.length) {
-                                  imageStatus = ingredients[index].imageStatus;
+                                // 🆕 Detectar el tipo de resultado para obtener imageStatus
+                                String? imageStatus;
+                                if (recognitionState.result
+                                    is IngredientRecognitionResultModel) {
+                                  final ingredients =
+                                      (recognitionState.result
+                                              as IngredientRecognitionResultModel)
+                                          .ingredients;
+                                  if (index < ingredients.length) {
+                                    imageStatus =
+                                        ingredients[index].imageStatus;
+                                  }
+                                } else if (recognitionState.result
+                                    is FoodRecognitionResultModel) {
+                                  final foods =
+                                      (recognitionState.result
+                                              as FoodRecognitionResultModel)
+                                          .foods;
+                                  if (index < foods.length) {
+                                    imageStatus = foods[index].imageStatus;
+                                  }
                                 }
-                              } else if (recognitionState.result
-                                  is FoodRecognitionResultModel) {
-                                final foods =
-                                    (recognitionState.result
-                                            as FoodRecognitionResultModel)
-                                        .foods;
-                                if (index < foods.length) {
-                                  imageStatus = foods[index].imageStatus;
-                                }
-                              }
 
-                              return _buildRecognitionItemCard(
-                                item,
-                                index,
-                                imageStatus,
-                                recognitionState.result,
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              recognitionNotifier.clearState();
-                              setState(() {
-                                _selectedImage = null;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                              foregroundColor: Colors.white,
+                                return _buildRecognitionItemCard(
+                                  item,
+                                  index,
+                                  imageStatus,
+                                  recognitionState.result,
+                                );
+                              },
                             ),
-                            child: const Text('Nuevo Análisis'),
                           ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _navigateToScanResults(),
+                                icon: const Icon(Icons.view_list_outlined),
+                                label: const Text('Ver Todos'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  recognitionNotifier.clearState();
+                                  setState(() {
+                                    _selectedImage = null;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('Nuevo Análisis'),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -374,6 +440,69 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNoResultsFound(
+    BuildContext context,
+    RecognitionNotifier notifier,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(Icons.search_off, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            'No se reconocieron ítems',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Prueba con otra imagen o agrega los productos manualmente.',
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              notifier.clearState();
+              GoRouter.of(context).push('/inventory/add');
+            },
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Agregar manualmente'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () {
+              notifier.clearState();
+              setState(() {
+                _selectedImage = null;
+              });
+              if (GoRouter.of(context).canPop()) {
+                GoRouter.of(context).pop();
+              } else {
+                GoRouter.of(context).go('/home');
+              }
+            },
+            icon: const Icon(Icons.arrow_back, size: 16),
+            label: const Text('Volver a intentar'),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
+          ),
+        ],
       ),
     );
   }
@@ -485,36 +614,99 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
     if (_selectedImage == null) return;
 
     final recognitionNotifier = ref.read(recognitionProvider.notifier);
-    final itemName = 'item_${DateTime.now().millisecondsSinceEpoch}';
 
-    if (_recognitionType == 'food') {
+    if (_recognitionType == 'ingredient') {
+      await recognitionNotifier.recognizeIngredientsAsync(_selectedImage!);
+    } else {
+      // Mantener el flujo antiguo para 'food' si es diferente
+      final itemName = 'item_${DateTime.now().millisecondsSinceEpoch}';
       await recognitionNotifier.uploadAndRecognizeFood(
         _selectedImage!,
         itemName,
       );
-    } else {
-      if (_useCompleteAnalysis) {
-        // Usar reconocimiento completo con datos ambientales
-        final imagePath = await recognitionNotifier.uploadImage(
-          imageFile: _selectedImage!,
-          itemName: itemName,
-          imageType: 'ingredient',
-        );
-
-        if (imagePath != null) {
-          await recognitionNotifier.recognizeIngredientsWithEnvironmentalImpact(
-            [imagePath],
-          );
-          _startImageGenerationMonitoring();
-        }
-      } else {
-        // Reconocimiento básico sin datos ambientales
-        await recognitionNotifier.uploadAndRecognizeIngredient(
-          _selectedImage!,
-          itemName,
-        );
-      }
     }
+  }
+
+  void _navigateToScanResults() {
+    final recognitionState = ref.read(recognitionProvider);
+
+    if (recognitionState.result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay resultados de reconocimiento disponibles'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Convert recognition results to format expected by ScanResultsScreen
+    List<Map<String, dynamic>> formattedResults = [];
+
+    if (recognitionState.result is IngredientRecognitionResultModel) {
+      final result =
+          recognitionState.result as IngredientRecognitionResultModel;
+      formattedResults =
+          result.ingredients.map((ingredient) {
+            return {
+              'name': ingredient.name,
+              'image_path':
+                  ingredient.imagePath, // This contains the generated image URL
+              'quantity': ingredient.quantity,
+              'expiration_date': ingredient.expirationDate,
+              'category': 'ingredient', // Default category for ingredients
+              'type_unit': ingredient.typeUnit,
+              'expiration_time': ingredient.expirationTime,
+              'time_unit': ingredient.timeUnit,
+              'storage_type': ingredient.storageType,
+              'tips': ingredient.tips,
+              'allergyAlert': ingredient.allergyAlert,
+              'allergens': ingredient.allergens,
+            };
+          }).toList();
+    } else if (recognitionState.result is FoodRecognitionResultModel) {
+      final result = recognitionState.result as FoodRecognitionResultModel;
+      formattedResults =
+          result.foods.map((food) {
+            return {
+              'name': food.name,
+              'image_path':
+                  food.imagePath, // This contains the generated image URL
+              'quantity': food.servingQuantity,
+              'expiration_date': food.expirationDate,
+              'category': food.category,
+              'type_unit': 'porciones', // Default unit for foods
+              'expiration_time': food.expirationTime,
+              'time_unit': food.timeUnit,
+              'storage_type': food.storageType,
+              'tips': food.tips,
+              'allergyAlert': false,
+              'allergens': const [],
+            };
+          }).toList();
+    }
+
+    if (formattedResults.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se encontraron elementos para mostrar'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Navigate to ScanResultsScreen
+    context.pushNamed(
+      'scan_results',
+      extra: {
+        'recognizedItemsJson': formattedResults,
+        'itemType':
+            _recognitionType == 'ingredient'
+                ? ScanItemType.ingredient
+                : ScanItemType.food,
+      },
+    );
   }
 
   Color _getConfidenceColor(double confidence) {
@@ -928,9 +1120,9 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                 ElevatedButton.icon(
                   onPressed: () => _addToInventory(item, index),
                   icon: const Icon(Icons.add_shopping_cart, size: 16),
-                  label: const Text('Agregar al Inventario'),
+                  label: const Text('Agregar Individual'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -989,26 +1181,26 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
   }
 
   // 🆕 NUEVO: Iniciar monitoreo automático de generación de imágenes
-  void _startImageGenerationMonitoring() {
+  /* void _startImageGenerationMonitoring() {
     // Verificar el estado cada 15 segundos durante los primeros 2 minutos
     Timer.periodic(const Duration(seconds: 15), (timer) {
       final recognitionState = ref.read(recognitionProvider);
 
       // Detener el timer si ya no hay task_id o si las imágenes ya están listas
       if (recognitionState.taskId == null ||
-          recognitionState.imageGenerationStatus == 'generated' ||
+          recognitionState.imageGenerationStatus == 'completed' ||
           recognitionState.imageGenerationStatus == 'failed') {
         timer.cancel();
         return;
       }
 
-      // Verificar estado de generación
-      ref.read(recognitionProvider.notifier).checkImageGenerationStatus();
+      // El polling ahora se maneja centralmente en el provider
+      // No es necesario llamar a checkImageGenerationStatus() desde aquí
 
       // Detener después de 2 minutos (8 intentos)
       if (timer.tick >= 8) {
         timer.cancel();
       }
     });
-  }
+  } */
 }

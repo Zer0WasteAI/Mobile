@@ -17,6 +17,7 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/simplified_recognition_screen.dart';
 import 'dart:io';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart'; // Import the new screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
@@ -285,6 +286,13 @@ class AppRouter {
               itemType: itemType,
             );
           },
+        ),
+        // ✨ NEW: Simplified Recognition Screen (for testing)
+        GoRoute(
+          path: SimplifiedRecognitionScreen.routeName,
+          name: 'simplifiedRecognition',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const SimplifiedRecognitionScreen(),
         ),
         // Add the route for AddInventoryItemScreen (top-level for simplicity now)
         GoRoute(

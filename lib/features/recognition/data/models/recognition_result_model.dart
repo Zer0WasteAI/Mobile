@@ -387,7 +387,7 @@ class BoundingBoxModel {
 @JsonSerializable()
 class IngredientRecognitionResultModel {
   final List<RecognizedIngredientModel> ingredients;
-  @JsonKey(name: 'recognition_id')
+  @JsonKey(name: 'recognition_id', defaultValue: '')
   final String recognitionId; // 🆕 ID único del reconocimiento
   final ImageGenerationStatusModel? images; // 🆕 Estado de generación asíncrona
   final String? message; // 🆕 Mensaje descriptivo del estado
@@ -402,7 +402,7 @@ class IngredientRecognitionResultModel {
 
   const IngredientRecognitionResultModel({
     required this.ingredients,
-    required this.recognitionId,
+    this.recognitionId = '',
     this.images,
     this.message,
     this.allergyAlerts = const [],
@@ -421,16 +421,19 @@ class IngredientRecognitionResultModel {
 
 @JsonSerializable()
 class RecognizedIngredientModel {
+  @JsonKey(defaultValue: '')
   final String name;
+  @JsonKey(defaultValue: 1.0)
   final double quantity;
-  @JsonKey(name: 'type_unit')
+  @JsonKey(name: 'type_unit', defaultValue: 'unidades')
   final String typeUnit;
-  @JsonKey(name: 'storage_type')
+  @JsonKey(name: 'storage_type', defaultValue: 'refrigerado')
   final String storageType;
-  @JsonKey(name: 'expiration_time')
+  @JsonKey(name: 'expiration_time', defaultValue: 7)
   final int expirationTime;
-  @JsonKey(name: 'time_unit')
+  @JsonKey(name: 'time_unit', defaultValue: 'días')
   final String timeUnit;
+  @JsonKey(defaultValue: '')
   final String tips;
   @JsonKey(name: 'image_path')
   final String? imagePath;
@@ -447,13 +450,13 @@ class RecognizedIngredientModel {
   final double? confidence;
 
   const RecognizedIngredientModel({
-    required this.name,
-    required this.quantity,
-    required this.typeUnit,
-    required this.storageType,
-    required this.expirationTime,
-    required this.timeUnit,
-    required this.tips,
+    this.name = '',
+    this.quantity = 1.0,
+    this.typeUnit = 'unidades',
+    this.storageType = 'refrigerado',
+    this.expirationTime = 7,
+    this.timeUnit = 'días',
+    this.tips = '',
     this.imagePath,
     this.imageStatus,
     this.expirationDate,
@@ -472,7 +475,7 @@ class RecognizedIngredientModel {
 @JsonSerializable()
 class FoodRecognitionResultModel {
   final List<RecognizedFoodModel> foods;
-  @JsonKey(name: 'recognition_id')
+  @JsonKey(name: 'recognition_id', defaultValue: '')
   final String recognitionId; // 🆕 ID único del reconocimiento
   final ImageGenerationStatusModel? images; // 🆕 Estado de generación asíncrona
   final String? message; // 🆕 Mensaje descriptivo del estado
@@ -487,7 +490,7 @@ class FoodRecognitionResultModel {
 
   const FoodRecognitionResultModel({
     required this.foods,
-    required this.recognitionId,
+    this.recognitionId = '',
     this.images,
     this.message,
     this.allergyAlerts = const [],
@@ -504,20 +507,25 @@ class FoodRecognitionResultModel {
 
 @JsonSerializable()
 class RecognizedFoodModel {
+  @JsonKey(defaultValue: '')
   final String name;
-  @JsonKey(name: 'main_ingredients')
+  @JsonKey(name: 'main_ingredients', defaultValue: [])
   final List<String> mainIngredients;
+  @JsonKey(defaultValue: 'general')
   final String category;
+  @JsonKey(defaultValue: 0)
   final int calories;
+  @JsonKey(defaultValue: '')
   final String description;
-  @JsonKey(name: 'storage_type')
+  @JsonKey(name: 'storage_type', defaultValue: 'refrigerado')
   final String storageType;
-  @JsonKey(name: 'expiration_time')
+  @JsonKey(name: 'expiration_time', defaultValue: 7)
   final int expirationTime;
-  @JsonKey(name: 'time_unit')
+  @JsonKey(name: 'time_unit', defaultValue: 'días')
   final String timeUnit;
+  @JsonKey(defaultValue: '')
   final String tips;
-  @JsonKey(name: 'serving_quantity')
+  @JsonKey(name: 'serving_quantity', defaultValue: 1.0)
   final double servingQuantity;
   @JsonKey(name: 'image_path')
   final String? imagePath;
@@ -534,16 +542,16 @@ class RecognizedFoodModel {
   final double? confidence;
 
   const RecognizedFoodModel({
-    required this.name,
-    required this.mainIngredients,
-    required this.category,
-    required this.calories,
-    required this.description,
-    required this.storageType,
-    required this.expirationTime,
-    required this.timeUnit,
-    required this.tips,
-    required this.servingQuantity,
+    this.name = '',
+    this.mainIngredients = const [],
+    this.category = 'general',
+    this.calories = 0,
+    this.description = '',
+    this.storageType = 'refrigerado',
+    this.expirationTime = 7,
+    this.timeUnit = 'días',
+    this.tips = '',
+    this.servingQuantity = 1.0,
     this.imagePath,
     this.imageStatus,
     this.expirationDate,
@@ -563,12 +571,12 @@ class RecognizedFoodModel {
 @JsonSerializable()
 class CompleteIngredientRecognitionResultModel {
   final List<CompleteRecognizedIngredientModel> ingredients;
-  @JsonKey(name: 'recognition_id')
+  @JsonKey(name: 'recognition_id', defaultValue: '')
   final String recognitionId;
 
   const CompleteIngredientRecognitionResultModel({
     required this.ingredients,
-    required this.recognitionId,
+    this.recognitionId = '',
   });
 
   factory CompleteIngredientRecognitionResultModel.fromJson(
@@ -582,32 +590,35 @@ class CompleteIngredientRecognitionResultModel {
 /// 🆕 NEW MODEL: Complete ingredient with environmental impact and utilization ideas
 @JsonSerializable()
 class CompleteRecognizedIngredientModel {
+  @JsonKey(defaultValue: '')
   final String name;
+  @JsonKey(defaultValue: 1.0)
   final double quantity;
-  @JsonKey(name: 'type_unit')
+  @JsonKey(name: 'type_unit', defaultValue: 'unidades')
   final String typeUnit;
-  @JsonKey(name: 'storage_type')
+  @JsonKey(name: 'storage_type', defaultValue: 'refrigerado')
   final String storageType;
-  @JsonKey(name: 'expiration_time')
+  @JsonKey(name: 'expiration_time', defaultValue: 7)
   final int expirationTime;
-  @JsonKey(name: 'time_unit')
+  @JsonKey(name: 'time_unit', defaultValue: 'días')
   final String timeUnit;
+  @JsonKey(defaultValue: '')
   final String tips;
   @JsonKey(name: 'image_path')
   final String? imagePath;
   @JsonKey(name: 'environmental_impact')
   final EnvironmentalImpactModel? environmentalImpact;
-  @JsonKey(name: 'utilization_ideas')
+  @JsonKey(name: 'utilization_ideas', defaultValue: [])
   final List<UtilizationIdeaModel> utilizationIdeas;
 
   const CompleteRecognizedIngredientModel({
-    required this.name,
-    required this.quantity,
-    required this.typeUnit,
-    required this.storageType,
-    required this.expirationTime,
-    required this.timeUnit,
-    required this.tips,
+    this.name = '',
+    this.quantity = 1.0,
+    this.typeUnit = 'unidades',
+    this.storageType = 'refrigerado',
+    this.expirationTime = 7,
+    this.timeUnit = 'días',
+    this.tips = '',
     this.imagePath,
     this.environmentalImpact,
     this.utilizationIdeas = const [],

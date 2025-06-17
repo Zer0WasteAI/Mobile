@@ -154,7 +154,7 @@ IngredientRecognitionResultModel _$IngredientRecognitionResultModelFromJson(
                 RecognizedIngredientModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
-  recognitionId: json['recognition_id'] as String,
+  recognitionId: json['recognition_id'] as String? ?? '',
   images:
       json['images'] == null
           ? null
@@ -188,13 +188,13 @@ Map<String, dynamic> _$IngredientRecognitionResultModelToJson(
 RecognizedIngredientModel _$RecognizedIngredientModelFromJson(
   Map<String, dynamic> json,
 ) => RecognizedIngredientModel(
-  name: json['name'] as String,
-  quantity: (json['quantity'] as num).toDouble(),
-  typeUnit: json['type_unit'] as String,
-  storageType: json['storage_type'] as String,
-  expirationTime: (json['expiration_time'] as num).toInt(),
-  timeUnit: json['time_unit'] as String,
-  tips: json['tips'] as String,
+  name: json['name'] as String? ?? '',
+  quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
+  typeUnit: json['type_unit'] as String? ?? 'unidades',
+  storageType: json['storage_type'] as String? ?? 'refrigerado',
+  expirationTime: (json['expiration_time'] as num?)?.toInt() ?? 7,
+  timeUnit: json['time_unit'] as String? ?? 'días',
+  tips: json['tips'] as String? ?? '',
   imagePath: json['image_path'] as String?,
   imageStatus: json['image_status'] as String?,
   expirationDate: json['expiration_date'] as String?,
@@ -232,7 +232,7 @@ FoodRecognitionResultModel _$FoodRecognitionResultModelFromJson(
       (json['foods'] as List<dynamic>)
           .map((e) => RecognizedFoodModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-  recognitionId: json['recognition_id'] as String,
+  recognitionId: json['recognition_id'] as String? ?? '',
   images:
       json['images'] == null
           ? null
@@ -265,19 +265,20 @@ Map<String, dynamic> _$FoodRecognitionResultModelToJson(
 
 RecognizedFoodModel _$RecognizedFoodModelFromJson(Map<String, dynamic> json) =>
     RecognizedFoodModel(
-      name: json['name'] as String,
+      name: json['name'] as String? ?? '',
       mainIngredients:
-          (json['main_ingredients'] as List<dynamic>)
-              .map((e) => e as String)
-              .toList(),
-      category: json['category'] as String,
-      calories: (json['calories'] as num).toInt(),
-      description: json['description'] as String,
-      storageType: json['storage_type'] as String,
-      expirationTime: (json['expiration_time'] as num).toInt(),
-      timeUnit: json['time_unit'] as String,
-      tips: json['tips'] as String,
-      servingQuantity: (json['serving_quantity'] as num).toDouble(),
+          (json['main_ingredients'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      category: json['category'] as String? ?? 'general',
+      calories: (json['calories'] as num?)?.toInt() ?? 0,
+      description: json['description'] as String? ?? '',
+      storageType: json['storage_type'] as String? ?? 'refrigerado',
+      expirationTime: (json['expiration_time'] as num?)?.toInt() ?? 7,
+      timeUnit: json['time_unit'] as String? ?? 'días',
+      tips: json['tips'] as String? ?? '',
+      servingQuantity: (json['serving_quantity'] as num?)?.toDouble() ?? 1.0,
       imagePath: json['image_path'] as String?,
       imageStatus: json['image_status'] as String?,
       expirationDate: json['expiration_date'] as String?,
@@ -324,7 +325,7 @@ _$CompleteIngredientRecognitionResultModelFromJson(Map<String, dynamic> json) =>
                 ),
               )
               .toList(),
-      recognitionId: json['recognition_id'] as String,
+      recognitionId: json['recognition_id'] as String? ?? '',
     );
 
 Map<String, dynamic> _$CompleteIngredientRecognitionResultModelToJson(
@@ -337,13 +338,13 @@ Map<String, dynamic> _$CompleteIngredientRecognitionResultModelToJson(
 CompleteRecognizedIngredientModel _$CompleteRecognizedIngredientModelFromJson(
   Map<String, dynamic> json,
 ) => CompleteRecognizedIngredientModel(
-  name: json['name'] as String,
-  quantity: (json['quantity'] as num).toDouble(),
-  typeUnit: json['type_unit'] as String,
-  storageType: json['storage_type'] as String,
-  expirationTime: (json['expiration_time'] as num).toInt(),
-  timeUnit: json['time_unit'] as String,
-  tips: json['tips'] as String,
+  name: json['name'] as String? ?? '',
+  quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
+  typeUnit: json['type_unit'] as String? ?? 'unidades',
+  storageType: json['storage_type'] as String? ?? 'refrigerado',
+  expirationTime: (json['expiration_time'] as num?)?.toInt() ?? 7,
+  timeUnit: json['time_unit'] as String? ?? 'días',
+  tips: json['tips'] as String? ?? '',
   imagePath: json['image_path'] as String?,
   environmentalImpact:
       json['environmental_impact'] == null
@@ -355,7 +356,7 @@ CompleteRecognizedIngredientModel _$CompleteRecognizedIngredientModelFromJson(
       (json['utilization_ideas'] as List<dynamic>?)
           ?.map((e) => UtilizationIdeaModel.fromJson(e as Map<String, dynamic>))
           .toList() ??
-      const [],
+      [],
 );
 
 Map<String, dynamic> _$CompleteRecognizedIngredientModelToJson(

@@ -71,7 +71,6 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     }
   }
 
-  @override
   Future<RecognitionImagesResponseModel> getRecognitionImages(
     String recognitionId,
   ) async {
@@ -128,13 +127,11 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> assignImage(String itemName) async {
+  Future<void> assignImage(String itemName, String imagePath) async {
     try {
-      return await _apiService.assignImage(itemName);
+      await _apiService.assignImage(itemName, imagePath);
     } catch (e) {
-      throw Exception(
-        'Image assignment failed: ${_apiService.getErrorMessage(e)}',
-      );
+      throw Exception('Image assignment failed: ${e.toString()}');
     }
   }
 
@@ -330,6 +327,54 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       throw Exception(
         'Failed to get image status: ${_apiService.getErrorMessage(e)}',
       );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> recognizeIngredientsAsync(File imageFile) async {
+    try {
+      return await _apiService.recognizeIngredientsAsync(imageFile);
+    } catch (e) {
+      throw Exception('Async ingredient recognition failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> checkRecognitionStatus(String taskId) async {
+    try {
+      return await _apiService.checkRecognitionStatus(taskId);
+    } catch (e) {
+      throw Exception('Check recognition status failed: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Simplified ingredient recognition with immediate response
+  @override
+  Future<IngredientRecognitionResultModel> recognizeIngredientsSimplified(
+    List<File> imageFiles,
+  ) async {
+    try {
+      final result = await _apiService.recognizeIngredientsSimplified(
+        imageFiles,
+      );
+      return IngredientRecognitionResultModel.fromJson(result);
+    } catch (e) {
+      throw Exception(
+        'Simplified ingredient recognition failed: ${e.toString()}',
+      );
+    }
+  }
+
+  /// ✨ NEW: Check image generation status for a recognition
+  @override
+  Future<IngredientRecognitionResultModel> checkRecognitionImages(
+    String recognitionId,
+  ) async {
+    try {
+      final result = await _apiService.checkRecognitionImages(recognitionId);
+      return IngredientRecognitionResultModel.fromJson(result);
+    } catch (e) {
+      throw Exception('Check recognition images failed: ${e.toString()}');
     }
   }
 }

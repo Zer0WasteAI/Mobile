@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
@@ -23,8 +25,10 @@ class RecognitionState {
   // 🆕 NUEVO: Campos para generación asíncrona de imágenes
   final String? recognitionId;
   final String? taskId;
-  final String? imageGenerationStatus; // generating, generated, failed
+  final String? imageGenerationStatus; // pending, processing, completed, failed
   final String? statusMessage;
+  final int progressPercentage;
+  final bool isPolling;
 
   const RecognitionState({
     this.isLoading = false,
@@ -37,6 +41,8 @@ class RecognitionState {
     this.taskId,
     this.imageGenerationStatus,
     this.statusMessage,
+    this.progressPercentage = 0,
+    this.isPolling = false,
   });
 
   RecognitionState copyWith({
@@ -50,6 +56,8 @@ class RecognitionState {
     String? taskId,
     String? imageGenerationStatus,
     String? statusMessage,
+    int? progressPercentage,
+    bool? isPolling,
   }) {
     return RecognitionState(
       isLoading: isLoading ?? this.isLoading,
@@ -63,6 +71,8 @@ class RecognitionState {
       imageGenerationStatus:
           imageGenerationStatus ?? this.imageGenerationStatus,
       statusMessage: statusMessage ?? this.statusMessage,
+      progressPercentage: progressPercentage ?? this.progressPercentage,
+      isPolling: isPolling ?? this.isPolling,
     );
   }
 }
@@ -70,8 +80,15 @@ class RecognitionState {
 // Recognition provider - 🆕 ACTUALIZADO con soporte para alertas de alergia
 class RecognitionNotifier extends StateNotifier<RecognitionState> {
   final RecognitionRepository _repository;
+  Timer? _pollingTimer;
 
   RecognitionNotifier(this._repository) : super(const RecognitionState());
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
 
   // Upload image and get path
   Future<String?> uploadImage({
@@ -202,33 +219,6 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     }
   }
 
-  // 🆕 NUEVO: Verificar estado de generación de imágenes
-  Future<void> checkImageGenerationStatus() async {
-    if (state.taskId == null) return;
-
-    try {
-      final statusResult = await _repository.getImageStatus(state.taskId);
-
-      final status = statusResult['status'] as String?;
-      final message = statusResult['message'] as String?;
-
-      state = state.copyWith(
-        imageGenerationStatus: status,
-        statusMessage: message,
-      );
-
-      // Si las imágenes ya están generadas, actualizar los elementos en result
-      if (status == 'generated' && state.result != null) {
-        _updateResultWithGeneratedImages(statusResult);
-      }
-    } catch (e) {
-      state = state.copyWith(
-        imageGenerationStatus: 'failed',
-        statusMessage: 'Error al verificar estado de imágenes: $e',
-      );
-    }
-  }
-
   // 🆕 NUEVO: Reconocimiento completo de ingredientes con impacto ambiental
   Future<void> recognizeIngredientsWithEnvironmentalImpact(
     List<String> imagePaths,
@@ -249,82 +239,6 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
     }
   }
 
-  // 🆕 NUEVO: Verificar estado específico de reconocimiento
-  Future<void> checkRecognitionImageStatus() async {
-    if (state.taskId == null) return;
-
-    try {
-      final statusResult = await _repository.getRecognitionImageStatus(
-        state.taskId!,
-      );
-
-      state = state.copyWith(
-        imageGenerationStatus: statusResult.status,
-        statusMessage: statusResult.message,
-      );
-
-      // Si las imágenes están listas, obtener resultados actualizados
-      if (statusResult.status == 'completed' && state.recognitionId != null) {
-        final imagesResult = await _repository.getRecognitionImages(
-          state.recognitionId!,
-        );
-        // Actualizar estado con las nuevas imágenes
-        state = state.copyWith(
-          statusMessage: 'Imágenes actualizadas disponibles',
-        );
-
-        // Actualizar el resultado con las nuevas imágenes
-        state = state.copyWith(result: imagesResult);
-      }
-    } catch (e) {
-      state = state.copyWith(
-        imageGenerationStatus: 'failed',
-        statusMessage: 'Error al verificar estado: $e',
-      );
-    }
-  }
-
-  // 🆕 NUEVO: Actualizar resultado con imágenes generadas
-  void _updateResultWithGeneratedImages(Map<String, dynamic> statusResult) {
-    final result = state.result;
-    if (result is IngredientRecognitionResultModel) {
-      // Actualizar image_status de los ingredientes
-      final updatedIngredients =
-          result.ingredients.map((ingredient) {
-            return RecognizedIngredientModel(
-              name: ingredient.name,
-              quantity: ingredient.quantity,
-              typeUnit: ingredient.typeUnit,
-              storageType: ingredient.storageType,
-              expirationTime: ingredient.expirationTime,
-              timeUnit: ingredient.timeUnit,
-              tips: ingredient.tips,
-              imagePath: ingredient.imagePath,
-              imageStatus: 'generated', // 🆕 Actualizar estado
-              expirationDate: ingredient.expirationDate,
-              addedAt: ingredient.addedAt,
-              allergyAlert: ingredient.allergyAlert,
-              allergens: ingredient.allergens,
-              confidence: ingredient.confidence,
-            );
-          }).toList();
-
-      final updatedResult = IngredientRecognitionResultModel(
-        ingredients: updatedIngredients,
-        recognitionId: result.recognitionId,
-        images: result.images?.copyWith(status: 'generated'),
-        message: '✅ Imágenes generadas exitosamente',
-        allergyAlerts: result.allergyAlerts,
-        hasAllergens: result.hasAllergens,
-        processingTime: result.processingTime,
-        totalDetected: result.totalDetected,
-      );
-
-      state = state.copyWith(result: updatedResult);
-    }
-    // Similar para FoodRecognitionResultModel si es necesario
-  }
-
   // 🆕 NUEVO: Limpiar las alertas de alergia
   void clearAllergyAlerts() {
     state = state.copyWith(allergyAlerts: [], hasAllergens: false);
@@ -338,6 +252,150 @@ class RecognitionNotifier extends StateNotifier<RecognitionState> {
   // Clear error
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  Future<void> recognizeIngredientsAsync(File imageFile) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final initialResponse = await _repository.recognizeIngredientsAsync(
+        imageFile,
+      );
+      final taskId = initialResponse['task_id'] as String?;
+
+      if (taskId == null) {
+        throw Exception("No se recibió un task_id del servidor.");
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        isPolling: true,
+        taskId: taskId,
+        imageGenerationStatus: initialResponse['status'] as String?,
+        statusMessage: initialResponse['message'] as String?,
+        progressPercentage: initialResponse['progress_percentage'] as int?,
+      );
+
+      _startPolling(taskId);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+        isPolling: false,
+      );
+    }
+  }
+
+  void _startPolling(String taskId) {
+    _pollingTimer?.cancel(); // Cancel any existing timer
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (!state.isPolling) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        log('🔄 [POLLING] Checking status for task: $taskId');
+        final statusResponse = await _repository.checkRecognitionStatus(taskId);
+        final status = statusResponse['status'] as String;
+
+        log(
+          '📊 [POLLING] Status: $status, Progress: ${statusResponse['progress_percentage']}%',
+        );
+
+        state = state.copyWith(
+          imageGenerationStatus: status,
+          progressPercentage: statusResponse['progress_percentage'] as int?,
+          statusMessage: statusResponse['current_step'] as String?,
+        );
+
+        if (status == 'completed' || status == 'failed') {
+          _pollingTimer?.cancel();
+          state = state.copyWith(isPolling: false);
+
+          if (status == 'completed') {
+            log('✅ [POLLING] Task completed! Processing result data...');
+            final resultData =
+                statusResponse['result_data'] as Map<String, dynamic>;
+            log('🔍 [POLLING] Result data keys: ${resultData.keys.toList()}');
+
+            // Add detailed JSON structure logging
+            log('📋 [POLLING] Full result data structure:');
+            log(resultData.toString());
+
+            try {
+              final recognitionResult =
+                  IngredientRecognitionResultModel.fromJson(resultData);
+
+              // Debug: Print image URLs
+              log(
+                '🖼️ [POLLING] Found ${recognitionResult.ingredients.length} ingredients:',
+              );
+              for (final ingredient in recognitionResult.ingredients) {
+                log(
+                  '   - ${ingredient.name}: ${ingredient.imagePath ?? "NO IMAGE"}',
+                );
+              }
+
+              state = state.copyWith(
+                result: recognitionResult,
+                allergyAlerts: recognitionResult.allergyAlerts,
+                hasAllergens: recognitionResult.hasAllergens,
+              );
+            } catch (parseError) {
+              log('❌ [POLLING] JSON parsing error: $parseError');
+              log(
+                '📋 [POLLING] Raw JSON being parsed: ${resultData.toString()}',
+              );
+
+              // Try to parse each ingredient individually to find the problem
+              if (resultData.containsKey('ingredients') &&
+                  resultData['ingredients'] is List) {
+                final ingredients = resultData['ingredients'] as List;
+                log(
+                  '🔍 [POLLING] Trying to parse ${ingredients.length} ingredients individually...',
+                );
+
+                for (int i = 0; i < ingredients.length; i++) {
+                  try {
+                    final ingredient = ingredients[i] as Map<String, dynamic>;
+                    log('   Ingredient $i: ${ingredient.toString()}');
+
+                    final parsed = RecognizedIngredientModel.fromJson(
+                      ingredient,
+                    );
+                    log(
+                      '   ✅ Ingredient $i parsed successfully: ${parsed.name}',
+                    );
+                  } catch (ingredientError) {
+                    log('   ❌ Ingredient $i failed: $ingredientError');
+                    log('   Raw data: ${ingredients[i].toString()}');
+                  }
+                }
+              }
+
+              state = state.copyWith(
+                error: "Error parsing result: $parseError",
+              );
+            }
+          } else {
+            log('❌ [POLLING] Task failed: ${statusResponse['error_message']}');
+            state = state.copyWith(
+              error:
+                  statusResponse['error_message'] as String? ??
+                  'La tarea de reconocimiento falló sin un mensaje de error.',
+            );
+          }
+        }
+      } catch (e) {
+        log('💥 [POLLING] Error during polling: $e');
+        _pollingTimer?.cancel();
+        state = state.copyWith(
+          isPolling: false,
+          error: "Error durante el sondeo: ${e.toString()}",
+        );
+      }
+    });
   }
 }
 

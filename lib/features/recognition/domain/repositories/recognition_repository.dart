@@ -1,10 +1,18 @@
 import 'dart:io';
+
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/models/recognition_result.dart';
 import 'package:zer0_waste_ai/features/recognition/domain/models/reference_image.dart';
 
 /// Repository for AI-powered food and ingredient recognition
 abstract class RecognitionRepository {
+  /// Upload an image to the backend
+  Future<ImageUploadResultModel> uploadImage({
+    required File imageFile,
+    required String itemName,
+    required String imageType,
+  });
+
   /// Recognize foods/dishes from image paths
   /// Returns FoodRecognitionResultModel with detailed food information including allergen alerts
   Future<FoodRecognitionResultModel> recognizeFoods(List<String> imagePaths);
@@ -21,32 +29,15 @@ abstract class RecognitionRepository {
     List<String> imagePaths,
   );
 
-  /// Check the status of image generation for recognition
-  /// Returns RecognitionImageStatusModel with progress and completion status
-  Future<RecognitionImageStatusModel> getRecognitionImageStatus(String taskId);
-
-  /// Get recognition results with updated image paths
-  /// Returns RecognitionImagesResponseModel with final image URLs
-  Future<RecognitionImagesResponseModel> getRecognitionImages(
-    String recognitionId,
-  );
-
   /// Batch recognition for mixed content (ingredients + foods)
   /// Returns general RecognitionResultModel for backward compatibility
   Future<RecognitionResultModel> recognizeBatch(List<String> imagePaths);
-
-  /// Upload an image to the backend
-  Future<ImageUploadResultModel> uploadImage({
-    required File imageFile,
-    required String itemName,
-    required String imageType,
-  });
 
   /// Search for similar images
   Future<List<SimilarImageModel>> searchSimilarImages(String itemName);
 
   /// Assign an image to an item
-  Future<Map<String, dynamic>> assignImage(String itemName);
+  Future<void> assignImage(String itemName, String imagePath);
 
   /// Recognize food in an image
   Future<RecognitionResult> recognizeFood(File imageFile);
@@ -93,4 +84,19 @@ abstract class RecognitionRepository {
   /// Check image processing status
   /// Monitor the status of background image generation tasks
   Future<Map<String, dynamic>> getImageStatus(String? taskId);
+
+  Future<RecognitionImageStatusModel> getRecognitionImageStatus(String taskId);
+
+  Future<Map<String, dynamic>> recognizeIngredientsAsync(File imageFile);
+  Future<Map<String, dynamic>> checkRecognitionStatus(String taskId);
+
+  /// ✨ NEW: Simplified ingredient recognition with immediate response
+  Future<IngredientRecognitionResultModel> recognizeIngredientsSimplified(
+    List<File> imageFiles,
+  );
+
+  /// ✨ NEW: Check image generation status for a recognition
+  Future<IngredientRecognitionResultModel> checkRecognitionImages(
+    String recognitionId,
+  );
 }

@@ -22,13 +22,8 @@ extension DateTimeExpirationFormatting on DateTime? {
     } else if (differenceInDays == 0) {
       // Check if it actually expired today based on time
       return expirationDate.isBefore(now) ? 'Vencido hoy' : 'Vence hoy';
-    } else if (differenceInDays == 1) {
-      return 'Vence mañana';
-    } else if (differenceInDays <= 5) {
-      // Example threshold for 'days'
-      return 'Vence en $differenceInDays días';
     } else {
-      // If further out, show the date
+      // For all future dates, show the specific date.
       return 'Vence el ${DateFormat('dd/MM/yyyy').format(expirationDate)}';
     }
   }
