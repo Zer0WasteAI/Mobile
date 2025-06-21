@@ -1111,21 +1111,33 @@ class ApiService {
   /// INFO: Generate recipes using current inventory items
   /// ADVICE: AI analyzes your inventory and suggests optimal recipes
   /// RETURNS: Complete response with generated_recipes, inventory_utilization, and images info
+  /// 🚀 OPTIMIZED: Increased timeout for complex AI operations
   Future<Map<String, dynamic>> generateRecipesFromInventory() async {
     try {
+      print('📡 API: Starting recipe generation from inventory...');
+
       // Use longer timeout for AI recipe generation operations
       final response = await _dio.post(
         _recipesGenerateFromInventory,
         data: {},
         options: Options(
           receiveTimeout: const Duration(
-            minutes: 2,
-          ), // 2 minutes for AI processing
-          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+            minutes: 4,
+          ), // 🚀 INCREASED: 4 minutes for complex AI processing
+          sendTimeout: const Duration(
+            minutes: 1,
+          ), // 🚀 INCREASED: 1 minute for upload
+          validateStatus: (status) {
+            // Accept 200-299 status codes
+            return status != null && status >= 200 && status < 300;
+          },
         ),
       );
+
+      print('✅ API: Recipe generation successful - ${response.statusCode}');
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      print('❌ API: Recipe generation error - $e');
       throw Exception('Generate recipes from inventory error: ${e.toString()}');
     }
   }

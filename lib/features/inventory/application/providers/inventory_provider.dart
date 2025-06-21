@@ -452,8 +452,8 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   // 🚀 CACHE: Track when data was last loaded
   DateTime? _lastLoadTime;
   static const Duration _cacheValidDuration = Duration(
-    minutes: 5,
-  ); // 5 minutes cache
+    seconds: 30,
+  ); // 30 seconds cache for immediate experience
 
   InventoryRealNotifier(this._backendNotifier) : super(const InventoryState()) {
     // DON'T auto-load on construction - let screens decide when to load
@@ -466,7 +466,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     final now = DateTime.now();
     final cacheAge = now.difference(_lastLoadTime!);
     final isValid = cacheAge < _cacheValidDuration;
-    log('📦 Cache check: age=${cacheAge.inMinutes}min, valid=$isValid');
+    log('📦 Cache check: age=${cacheAge.inSeconds}s, valid=$isValid');
     return isValid;
   }
 

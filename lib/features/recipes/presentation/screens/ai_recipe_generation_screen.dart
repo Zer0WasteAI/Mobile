@@ -34,9 +34,9 @@ class _AIRecipeGenerationScreenState
       duration: const Duration(seconds: 1),
     )..repeat();
 
-    // Auto-generate recipes from inventory after a short delay
+    // 🚀 OPTIMIZED: Smart auto-generation with cache check
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _generateFromInventory();
+      _smartGenerateFromInventory();
     });
   }
 
@@ -48,6 +48,27 @@ class _AIRecipeGenerationScreenState
     _dietaryController.dispose();
     _timeController.dispose();
     super.dispose();
+  }
+
+  // 🧠 Smart generation: only generate if not already done or error occurred
+  Future<void> _smartGenerateFromInventory() async {
+    final aiState = ref.read(aiRecipeProvider);
+
+    // ✅ CASE 1: Already has recipes - don't regenerate
+    if (aiState.recipes.isNotEmpty && !aiState.isGenerating) {
+      print('📦 Using existing recipes, skipping auto-generation');
+      return;
+    }
+
+    // ✅ CASE 2: Currently generating - don't start another
+    if (aiState.isGenerating) {
+      print('⏳ Recipe generation already in progress');
+      return;
+    }
+
+    // ✅ CASE 3: No recipes yet or error occurred - generate
+    print('🚀 Starting smart recipe generation from inventory');
+    await _generateFromInventory();
   }
 
   // Generar recetas desde inventario
@@ -303,15 +324,19 @@ class _AIRecipeGenerationScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                OutlinedButton.icon(
+                /*OutlinedButton.icon(
                   onPressed:
                       () => ref.read(aiRecipeProvider.notifier).clearError(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Reintentar'),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 12),*/
                 ElevatedButton.icon(
-                  onPressed: () => _generateFromInventory(),
+                  onPressed: () {
+                    // 🚀 Clear error and force regeneration
+                    ref.read(aiRecipeProvider.notifier).clearError();
+                    _generateFromInventory();
+                  },
                   icon: const Icon(Icons.auto_awesome),
                   label: const Text('Generar Nuevamente'),
                   style: ElevatedButton.styleFrom(
@@ -357,7 +382,11 @@ class _AIRecipeGenerationScreenState
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => _generateFromInventory(),
+            onPressed: () {
+              // 🚀 Clear state and force regeneration
+              ref.read(aiRecipeProvider.notifier).clearState();
+              _generateFromInventory();
+            },
             icon: const Icon(Icons.refresh),
             label: const Text('Intentar de Nuevo'),
             style: ElevatedButton.styleFrom(

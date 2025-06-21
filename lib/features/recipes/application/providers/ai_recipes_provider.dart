@@ -50,34 +50,66 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
   AIRecipeNotifier(this._recipeBackend) : super(const AIRecipeState());
 
   /// Generate recipes from current inventory using real AI backend
+  /// 🚀 OPTIMIZED: Anti-spam protection + retry with exponential backoff
   Future<void> generateRecipesFromInventory() async {
+    // ✅ ANTI-SPAM: Prevent multiple concurrent calls
+    if (state.isGenerating) {
+      print(
+        '🛡️ AI Recipe generation already in progress, skipping duplicate call',
+      );
+      return;
+    }
+
     state = state.copyWith(isGenerating: true, error: null);
 
-    try {
-      // Call real backend API - returns complete response with generated_recipes, inventory_utilization, and images info
-      final response = await _recipeBackend.generateRecipesFromInventory();
+    const maxRetries = 2;
+    const baseDelay = Duration(seconds: 2);
 
-      // Parse the complete response according to the new API format
-      final recipesData = response['generated_recipes'] as List? ?? [];
-      final recipes =
-          recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        print('🚀 AI Recipe generation attempt $attempt/$maxRetries');
 
-      state = state.copyWith(
-        isGenerating: false,
-        recipes: recipes,
-        hasGenerated: true,
-        // Capture inventory utilization info
-        totalRecipes: response['total_recipes']?.toString(),
-        inventoryUsage:
-            (response['inventory_utilization']?['utilization_percentage'])
-                ?.toString(),
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isGenerating: false,
-        error: e.toString(),
-        hasGenerated: true,
-      );
+        // Call real backend API - returns complete response with generated_recipes, inventory_utilization, and images info
+        final response = await _recipeBackend.generateRecipesFromInventory();
+
+        // Parse the complete response according to the new API format
+        final recipesData = response['generated_recipes'] as List? ?? [];
+        final recipes =
+            recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
+
+        state = state.copyWith(
+          isGenerating: false,
+          recipes: recipes,
+          hasGenerated: true,
+          // Capture inventory utilization info
+          totalRecipes: response['total_recipes']?.toString(),
+          inventoryUsage:
+              (response['inventory_utilization']?['utilization_percentage'])
+                  ?.toString(),
+        );
+
+        print('✅ AI Recipe generation successful on attempt $attempt');
+        return; // Success, exit retry loop
+      } catch (e) {
+        print('❌ AI Recipe generation attempt $attempt failed: $e');
+
+        // If this is the last attempt, set error state
+        if (attempt >= maxRetries) {
+          state = state.copyWith(
+            isGenerating: false,
+            error:
+                'No se pudieron generar las recetas después de $maxRetries intentos. Verifica tu conexión e intenta nuevamente.',
+            hasGenerated: true,
+          );
+          print('💥 AI Recipe generation failed after all retries');
+          return;
+        }
+
+        // Wait before retry with exponential backoff
+        final delay = Duration(seconds: baseDelay.inSeconds * attempt);
+        print('⏳ Waiting ${delay.inSeconds}s before retry...');
+        await Future.delayed(delay);
+      }
     }
   }
 
