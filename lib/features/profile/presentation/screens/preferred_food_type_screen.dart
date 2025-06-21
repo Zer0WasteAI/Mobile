@@ -14,10 +14,13 @@ import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 // --- Screen Widget ---
 
 class PreferredFoodTypeScreen extends ConsumerStatefulWidget {
-  const PreferredFoodTypeScreen({super.key});
+  const PreferredFoodTypeScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'preferred_food_type';
   static const String routePath = '/preferred-food-type';
+
+  /// Whether this screen was navigated from profile (for back navigation)
+  final bool fromProfile;
 
   @override
   ConsumerState<PreferredFoodTypeScreen> createState() =>
@@ -243,11 +246,17 @@ class _PreferredFoodTypeScreenState
                                       // Reset state to avoid keeping selections
                                       notifier.reset();
 
-                                      // Navigate to special diet selector - use go for better transitions
+                                      // Navigate based on context
                                       if (context.mounted) {
-                                        context.go(
-                                          SpecialDietSelectorScreen.routePath,
-                                        );
+                                        if (widget.fromProfile) {
+                                          // From profile - go back to profile
+                                          context.pop();
+                                        } else {
+                                          // From onboarding - continue to next step
+                                          context.go(
+                                            SpecialDietSelectorScreen.routePath,
+                                          );
+                                        }
                                       }
                                     } catch (e) {
                                       log(

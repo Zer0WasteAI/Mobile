@@ -55,10 +55,13 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
 /// USAGE: Used during user registration and initial preferences setup
 /// NOTE: For profile editing with persistence, use ProfileAllergySelectorScreen
 class AllergySelectorScreen extends ConsumerWidget {
-  const AllergySelectorScreen({super.key});
+  const AllergySelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'allergy_selector';
   static const String routePath = '/allergy-selector';
+
+  /// Whether this screen was navigated from profile (for back navigation)
+  final bool fromProfile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -276,11 +279,17 @@ class AllergySelectorScreen extends ConsumerWidget {
                                 '✅ Allergies saved to Firestore successfully',
                               );
 
-                              // Navigate to next screen
+                              // Navigate based on context
                               if (context.mounted) {
-                                context.go(
-                                  CookingLevelSelectorScreen.routePath,
-                                );
+                                if (fromProfile) {
+                                  // From profile - go back to profile
+                                  context.pop();
+                                } else {
+                                  // From onboarding - continue to next step
+                                  context.go(
+                                    CookingLevelSelectorScreen.routePath,
+                                  );
+                                }
                               }
                             } catch (e) {
                               log('❌ Error saving allergies: $e');

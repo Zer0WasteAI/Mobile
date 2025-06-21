@@ -18,6 +18,8 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_sc
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/screens/simplified_recognition_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/simplified_food_recognition_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/recognition_type_selector_screen.dart';
 import 'dart:io';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart'; // Import the new screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
@@ -33,10 +35,7 @@ import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_cooking_level_selector_screen.dart'; // Import profile cooking level screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_preferred_food_type_screen.dart'; // Import profile food type screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_allergy_selector_screen.dart'; // Import profile allergy screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_special_diet_selector_screen.dart'; // Import profile special diet screen
+// Profile-specific selector screens removed - now using unified screens with context parameter
 import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/units_screen.dart'; // Import units screen
@@ -81,15 +80,7 @@ const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
 const String allRecipesRouteName = AllRecipesScreen.routeName;
 
-// Profile-specific selector route names
-const String profileCookingLevelSelectorRouteName =
-    ProfileCookingLevelSelectorScreen.routeName;
-const String profilePreferredFoodTypeRouteName =
-    ProfilePreferredFoodTypeScreen.routeName;
-const String profileAllergySelectorRouteName =
-    ProfileAllergySelectorScreen.routeName;
-const String profileSpecialDietSelectorRouteName =
-    ProfileSpecialDietSelectorScreen.routeName;
+// Profile-specific selector route names removed - now using unified screens
 const String notificationsRouteName = NotificationsScreen.routeName;
 const String languageRouteName = LanguageScreen.routeName;
 const String unitsRouteName = UnitsScreen.routeName;
@@ -210,25 +201,41 @@ class AppRouter {
         GoRoute(
           path: AllergySelectorScreen.routePath,
           name: allergySelectorRouteName,
-          builder: (context, state) => const AllergySelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return AllergySelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Cooking Level Selector Screen route here (top-level)
         GoRoute(
           path: CookingLevelSelectorScreen.routePath,
           name: cookingLevelSelectorRouteName,
-          builder: (context, state) => const CookingLevelSelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return CookingLevelSelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Preferred Food Type Screen route here (top-level)
         GoRoute(
           path: PreferredFoodTypeScreen.routePath,
           name: preferredFoodTypeRouteName,
-          builder: (context, state) => const PreferredFoodTypeScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return PreferredFoodTypeScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Special Diet Selector Screen route here (top-level)
         GoRoute(
           path: SpecialDietSelectorScreen.routePath,
           name: specialDietSelectorRouteName,
-          builder: (context, state) => const SpecialDietSelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return SpecialDietSelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(
@@ -293,6 +300,20 @@ class AppRouter {
           name: 'simplifiedRecognition',
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const SimplifiedRecognitionScreen(),
+        ),
+        // ✨ NEW: Simplified Food Recognition Screen
+        GoRoute(
+          path: '/simplified-food-recognition',
+          name: 'simplifiedFoodRecognition',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const SimplifiedFoodRecognitionScreen(),
+        ),
+        // ✨ NEW: Recognition Type Selector Screen
+        GoRoute(
+          path: RecognitionTypeSelectorScreen.routePath,
+          name: RecognitionTypeSelectorScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const RecognitionTypeSelectorScreen(),
         ),
         // Add the route for AddInventoryItemScreen (top-level for simplicity now)
         GoRoute(
@@ -510,28 +531,7 @@ class AppRouter {
             ),
           ],
         ),
-        // Add the profile-specific preference screens routes
-        GoRoute(
-          path: ProfileCookingLevelSelectorScreen.routePath,
-          name: profileCookingLevelSelectorRouteName,
-          builder:
-              (context, state) => const ProfileCookingLevelSelectorScreen(),
-        ),
-        GoRoute(
-          path: ProfilePreferredFoodTypeScreen.routePath,
-          name: profilePreferredFoodTypeRouteName,
-          builder: (context, state) => const ProfilePreferredFoodTypeScreen(),
-        ),
-        GoRoute(
-          path: ProfileAllergySelectorScreen.routePath,
-          name: profileAllergySelectorRouteName,
-          builder: (context, state) => const ProfileAllergySelectorScreen(),
-        ),
-        GoRoute(
-          path: ProfileSpecialDietSelectorScreen.routePath,
-          name: profileSpecialDietSelectorRouteName,
-          builder: (context, state) => const ProfileSpecialDietSelectorScreen(),
-        ),
+        // Profile-specific preference screens routes removed - now using unified screens with context parameter
         // Add the notifications screen route
         GoRoute(
           path: NotificationsScreen.routePath,

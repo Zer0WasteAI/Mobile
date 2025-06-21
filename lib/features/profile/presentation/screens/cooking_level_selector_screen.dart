@@ -63,10 +63,13 @@ class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
 // --- Screen Widget ---
 
 class CookingLevelSelectorScreen extends ConsumerWidget {
-  const CookingLevelSelectorScreen({super.key});
+  const CookingLevelSelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'cooking_level_selector';
   static const String routePath = '/cooking-level-selector';
+
+  /// Whether this screen was navigated from profile (for back navigation)
+  final bool fromProfile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -234,10 +237,15 @@ class CookingLevelSelectorScreen extends ConsumerWidget {
                               // Reset state to avoid keeping selections
                               notifier.reset();
 
-                              // Navigate to the cooking level selector screen
+                              // Navigate based on context
                               if (context.mounted) {
-                                // Usar go en lugar de replace para transiciones más fluidas
-                                context.go(PreferredFoodTypeScreen.routePath);
+                                if (fromProfile) {
+                                  // From profile - go back to profile
+                                  context.pop();
+                                } else {
+                                  // From onboarding - continue to next step
+                                  context.go(PreferredFoodTypeScreen.routePath);
+                                }
                               }
                             } catch (e) {
                               log("Error guardando nivel de cocina: $e");

@@ -574,7 +574,7 @@ class ProfileScreen extends ConsumerWidget {
           value: getCookingLevelText(),
           iconColor: iconColors[0],
           bgColor: bgColors[0],
-          onTap: () => context.push('/profile/cooking-level-selector'),
+          onTap: () => context.go('/cooking-level-selector?from=profile'),
         ),
         _buildPreferenceGridItem(
           context,
@@ -583,7 +583,7 @@ class ProfileScreen extends ConsumerWidget {
           value: getFoodTypesText(),
           iconColor: iconColors[1],
           bgColor: bgColors[1],
-          onTap: () => context.push('/profile/preferred-food-type'),
+          onTap: () => context.go('/preferred-food-type?from=profile'),
         ),
         _buildPreferenceGridItem(
           context,
@@ -592,7 +592,7 @@ class ProfileScreen extends ConsumerWidget {
           value: getAllergiesText(),
           iconColor: iconColors[2],
           bgColor: bgColors[2],
-          onTap: () => context.push('/profile/allergy-selector'),
+          onTap: () => context.go('/allergy-selector?from=profile'),
         ),
         _buildPreferenceGridItem(
           context,
@@ -601,7 +601,7 @@ class ProfileScreen extends ConsumerWidget {
           value: getDietsText(),
           iconColor: iconColors[3],
           bgColor: bgColors[3],
-          onTap: () => context.push('/profile/special-diet-selector'),
+          onTap: () => context.go('/special-diet-selector?from=profile'),
         ),
       ],
     );

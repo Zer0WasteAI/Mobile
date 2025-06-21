@@ -15,10 +15,13 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 // ✅ RESOLVED: Route name already defined below as routeName and routePath constants
 
 class SpecialDietSelectorScreen extends ConsumerWidget {
-  const SpecialDietSelectorScreen({super.key});
+  const SpecialDietSelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'special_diet_selector';
   static const String routePath = '/special-diet-selector';
+
+  /// Whether this screen was navigated from profile (for back navigation)
+  final bool fromProfile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -226,9 +229,15 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                         log('✅ Initial preferences marked as completed');
                         log("Selected Diets on Continue: $selectedDiets");
 
-                        // Navigate to home
+                        // Navigate based on context
                         if (context.mounted) {
-                          context.go('/home');
+                          if (fromProfile) {
+                            // From profile - go back to profile
+                            context.pop();
+                          } else {
+                            // From onboarding - go to home (mark preferences completed)
+                            context.go('/home');
+                          }
                         }
                       } catch (e) {
                         log('❌ Error saving special diets: $e');

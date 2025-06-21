@@ -89,23 +89,6 @@ class QuickActionsWidget extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // ✨ TEST: Segunda fila con botón de prueba del reconocimiento simplificado
-            /*Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    context,
-                    icon: Icons.science,
-                    label: '🚀 Test\nSimplificado',
-                    color: Colors.purple,
-                    onTap: () => context.pushNamed('simplifiedRecognition'),
-                  ),
-                ),
-                const Expanded(child: SizedBox()), // Espacio vacío
-                const Expanded(child: SizedBox()), // Espacio vacío
-                const Expanded(child: SizedBox()), // Espacio vacío
-              ],
-            ),*/
           ],
         ),
       ),
