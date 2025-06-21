@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_backend_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
@@ -54,7 +56,7 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
   Future<void> generateRecipesFromInventory() async {
     // ✅ ANTI-SPAM: Prevent multiple concurrent calls
     if (state.isGenerating) {
-      print(
+      log(
         '🛡️ AI Recipe generation already in progress, skipping duplicate call',
       );
       return;
@@ -67,7 +69,7 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        print('🚀 AI Recipe generation attempt $attempt/$maxRetries');
+        log('🚀 AI Recipe generation attempt $attempt/$maxRetries');
 
         // Call real backend API - returns complete response with generated_recipes, inventory_utilization, and images info
         final response = await _recipeBackend.generateRecipesFromInventory();
@@ -88,10 +90,10 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
                   ?.toString(),
         );
 
-        print('✅ AI Recipe generation successful on attempt $attempt');
+        log('✅ AI Recipe generation successful on attempt $attempt');
         return; // Success, exit retry loop
       } catch (e) {
-        print('❌ AI Recipe generation attempt $attempt failed: $e');
+        log('❌ AI Recipe generation attempt $attempt failed: $e');
 
         // If this is the last attempt, set error state
         if (attempt >= maxRetries) {
@@ -101,13 +103,13 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
                 'No se pudieron generar las recetas después de $maxRetries intentos. Verifica tu conexión e intenta nuevamente.',
             hasGenerated: true,
           );
-          print('💥 AI Recipe generation failed after all retries');
+          log('💥 AI Recipe generation failed after all retries');
           return;
         }
 
         // Wait before retry with exponential backoff
         final delay = Duration(seconds: baseDelay.inSeconds * attempt);
-        print('⏳ Waiting ${delay.inSeconds}s before retry...');
+        log('⏳ Waiting ${delay.inSeconds}s before retry...');
         await Future.delayed(delay);
       }
     }

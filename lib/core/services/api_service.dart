@@ -12,8 +12,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// INFO: Complete API Service for ZeroWasteAI backend integration
-/// ADVICE: This service handles all 23 endpoints from the real API documentation
+/// COVERAGE: This service handles 67+ endpoints from the MCP backend
+/// FEATURES: JWT authentication, automatic token refresh, error handling, standardized timeouts
 /// WARNING: Always ensure proper error handling when using these methods
+/// LAST UPDATED: Corrected duplicates, standardized timeouts, fixed URL patterns
 class ApiService {
   static ApiService? _instance;
   static ApiService get instance => _instance ??= ApiService._internal();
@@ -119,6 +121,12 @@ class ApiService {
   // INFO: Secure Storage Keys for JWT tokens
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
+
+  // INFO: Standardized Timeout Constants
+  static const Duration _aiProcessingTimeout = Duration(minutes: 3);
+  static const Duration _uploadTimeout = Duration(minutes: 2);
+  // ignore: unused_field
+  static const Duration _standardTimeout = Duration(seconds: 30);
 
   ApiService._internal() {
     _initializeDio();
@@ -506,15 +514,13 @@ class ApiService {
   /// INFO: AI recognition of prepared foods/dishes
   Future<Map<String, dynamic>> recognizeFoods(List<String> imagePaths) async {
     try {
-      // Use longer timeout for AI recognition operations
+      // Use standardized timeout for AI recognition operations
       final response = await _dio.post(
         _recognitionFoods,
         data: {'images_paths': imagePaths},
         options: Options(
-          receiveTimeout: const Duration(
-            minutes: 3,
-          ), // 3 minutes for AI processing
-          sendTimeout: const Duration(minutes: 1), // 1 minute for upload
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
         ),
       );
       return response.data as Map<String, dynamic>;
@@ -603,8 +609,8 @@ class ApiService {
         _recognitionIngredientsComplete,
         data: {'images_paths': imagePaths},
         options: Options(
-          receiveTimeout: const Duration(minutes: 3),
-          sendTimeout: const Duration(minutes: 1),
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
         ),
       );
       return response.data as Map<String, dynamic>;
@@ -835,6 +841,7 @@ class ApiService {
 
   /// INFO: Add multiple ingredients to user's inventory (bulk operation)
   /// USAGE: Pass array of ingredient objects with name, quantity, expiry, etc.
+  /// ENDPOINT: POST /api/inventory/ingredients (for bulk ingredients)
   Future<Map<String, dynamic>> addIngredients(
     List<Map<String, dynamic>> ingredients,
   ) async {
@@ -849,8 +856,9 @@ class ApiService {
     }
   }
 
-  /// INFO: Add single item to inventory (as specified in README)
+  /// INFO: Add single item to inventory (general items)
   /// USAGE: Add individual item from recognition results to inventory
+  /// ENDPOINT: POST /api/inventory (for general items)
   Future<Map<String, dynamic>> addInventoryItem(
     Map<String, dynamic> item,
   ) async {
@@ -1045,6 +1053,25 @@ class ApiService {
     }
   }
 
+  /// INFO: Update expiration date for specific ingredient
+  /// USAGE: Update expiration date for ingredient by name
+  /// RETURNS: Updated ingredient data
+  Future<Map<String, dynamic>> updateIngredientExpirationDate(
+    String ingredientName,
+    String newExpirationDate,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(ingredientName);
+      final response = await _dio.put(
+        '$_inventoryIngredients/$encodedName/expiration',
+        data: {'expiration_date': newExpirationDate},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update ingredient expiration error: ${e.toString()}');
+    }
+  }
+
   /// INFO: Get simplified list of ingredient names
   /// USAGE: Quick access to all ingredient names in inventory
   Future<Map<String, dynamic>> getIngredientsList() async {
@@ -1056,8 +1083,9 @@ class ApiService {
     }
   }
 
-  /// INFO: Add single item with advanced options
+  /// INFO: Add single item with advanced options (PUT operation)
   /// USAGE: Add individual item with detailed configuration
+  /// ENDPOINT: PUT /api/inventory/add_item (for advanced item configuration)
   Future<Map<String, dynamic>> addSingleInventoryItem({
     required String itemType,
     required Map<String, dynamic> itemData,
@@ -1114,19 +1142,15 @@ class ApiService {
   /// 🚀 OPTIMIZED: Increased timeout for complex AI operations
   Future<Map<String, dynamic>> generateRecipesFromInventory() async {
     try {
-      print('📡 API: Starting recipe generation from inventory...');
+      log('📡 API: Starting recipe generation from inventory...');
 
-      // Use longer timeout for AI recipe generation operations
+      // Use standardized timeout for AI recipe generation operations
       final response = await _dio.post(
         _recipesGenerateFromInventory,
         data: {},
         options: Options(
-          receiveTimeout: const Duration(
-            minutes: 4,
-          ), // 🚀 INCREASED: 4 minutes for complex AI processing
-          sendTimeout: const Duration(
-            minutes: 1,
-          ), // 🚀 INCREASED: 1 minute for upload
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
           validateStatus: (status) {
             // Accept 200-299 status codes
             return status != null && status >= 200 && status < 300;
@@ -1134,10 +1158,10 @@ class ApiService {
         ),
       );
 
-      print('✅ API: Recipe generation successful - ${response.statusCode}');
+      log('✅ API: Recipe generation successful - ${response.statusCode}');
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      print('❌ API: Recipe generation error - $e');
+      log('❌ API: Recipe generation error - $e');
       throw Exception('Generate recipes from inventory error: ${e.toString()}');
     }
   }
@@ -1152,7 +1176,7 @@ class ApiService {
     int numRecipes = 2,
   }) async {
     try {
-      // Use longer timeout for AI recipe generation operations
+      // Use standardized timeout for AI recipe generation operations
       final response = await _dio.post(
         _recipesGenerateCustom,
         data: {
@@ -1162,10 +1186,8 @@ class ApiService {
           'num_recipes': numRecipes,
         },
         options: Options(
-          receiveTimeout: const Duration(
-            minutes: 2,
-          ), // 2 minutes for AI processing
-          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
         ),
       );
       return response.data as Map<String, dynamic>;
@@ -1227,6 +1249,28 @@ class ApiService {
     }
   }
 
+  /// INFO: Generate recipe based on specific ingredients list (used by inventory module)
+  /// USAGE: Generate recipe with specific ingredients from inventory
+  /// ENDPOINT: POST /api/recipes/generate
+  /// RETURNS: Generated recipe data
+  Future<Map<String, dynamic>> generateRecipe(
+    List<Map<String, dynamic>> ingredients,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _recipesGenerate,
+        data: {'ingredients': ingredients},
+        options: Options(
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
+        ),
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Generate recipe error: ${e.toString()}');
+    }
+  }
+
   // INFO: ===== MEAL PLANNING ENDPOINTS (8/8) =====
   // ADVICE: AI-powered meal planning and complete meal plan management
 
@@ -1236,15 +1280,13 @@ class ApiService {
     required List<Map<String, dynamic>> ingredients,
   }) async {
     try {
-      // Use longer timeout for AI meal planning operations
+      // Use standardized timeout for AI meal planning operations
       final response = await _dio.post(
         _planGenerate,
         data: {'ingredients': ingredients},
         options: Options(
-          receiveTimeout: const Duration(
-            minutes: 2,
-          ), // 2 minutes for AI processing
-          sendTimeout: const Duration(seconds: 30), // 30 seconds for upload
+          receiveTimeout: _aiProcessingTimeout,
+          sendTimeout: _uploadTimeout,
         ),
       );
       return response.data as Map<String, dynamic>;
@@ -1344,10 +1386,7 @@ class ApiService {
   /// RETURNS: Confirmation message
   Future<Map<String, dynamic>> deleteMealPlan(String date) async {
     try {
-      final response = await _dio.delete(
-        _planningDelete,
-        queryParameters: {'date': date},
-      );
+      final response = await _dio.delete('$_planningDelete/$date');
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Delete meal plan error: ${e.toString()}');
@@ -1417,31 +1456,17 @@ class ApiService {
     }
   }
 
-  // INFO: ===== RECIPE GENERATION ENDPOINTS (1/1) =====
-  // ADVICE: Generate recipes based on available inventory ingredients
+  // INFO: ===== ADDITIONAL RECOGNITION ENDPOINTS =====
 
-  /// INFO: Generate a recipe based on available inventory ingredients
-  /// USAGE: Send list of ingredients from user's inventory to get AI-generated recipe
-  /// ADVICE: Include all relevant ingredient details for better recipe generation
-  /// IMPORTANT: Ingredients should include quantity, type_unit, and expiration info
-  /// RETURNS: Complete recipe with ingredients list and cooking instructions
-  Future<Map<String, dynamic>> generateRecipe(
-    List<Map<String, dynamic>> ingredients,
-  ) async {
+  /// INFO: Get recognition task status by task ID
+  /// USAGE: Monitor the progress of async recognition tasks
+  /// RETURNS: Task status information including progress and results
+  Future<Map<String, dynamic>> getRecognitionStatus(String taskId) async {
     try {
-      final response = await _dio.post(
-        _recipesGenerate,
-        data: {'ingredients': ingredients},
-        options: Options(
-          sendTimeout: const Duration(
-            minutes: 2,
-          ), // AI generation can take time
-          receiveTimeout: const Duration(minutes: 2),
-        ),
-      );
+      final response = await _dio.get('$_recognitionStatus/$taskId');
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Generate recipe error: ${e.toString()}');
+      throw Exception('Get recognition status error: ${e.toString()}');
     }
   }
 

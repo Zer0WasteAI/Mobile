@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -56,18 +57,18 @@ class _AIRecipeGenerationScreenState
 
     // ✅ CASE 1: Already has recipes - don't regenerate
     if (aiState.recipes.isNotEmpty && !aiState.isGenerating) {
-      print('📦 Using existing recipes, skipping auto-generation');
+      log('📦 Using existing recipes, skipping auto-generation');
       return;
     }
 
     // ✅ CASE 2: Currently generating - don't start another
     if (aiState.isGenerating) {
-      print('⏳ Recipe generation already in progress');
+      log('⏳ Recipe generation already in progress');
       return;
     }
 
     // ✅ CASE 3: No recipes yet or error occurred - generate
-    print('🚀 Starting smart recipe generation from inventory');
+    log('🚀 Starting smart recipe generation from inventory');
     await _generateFromInventory();
   }
 
