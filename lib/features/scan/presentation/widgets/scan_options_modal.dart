@@ -92,7 +92,7 @@ class ScanOptionsModal extends ConsumerWidget {
               const SizedBox(height: 16),
 
               // Second row - AI Recognition option
-              _buildWideOptionButton(
+              /*_buildWideOptionButton(
                 context: context,
                 ref: ref,
                 icon: Icons.auto_awesome,
@@ -105,6 +105,7 @@ class ScanOptionsModal extends ConsumerWidget {
                   context.go('/recognition-selector');
                 },
               ),
+              */
             ],
           ),
           const SizedBox(height: 10), // Padding at the bottom

@@ -170,7 +170,7 @@ class ScanResultsScreen extends ConsumerWidget {
         iconTheme: IconThemeData(color: mainTextColor), // Back button color
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(), // Simple pop for now
+          onPressed: () => _handleBackNavigation(context),
         ),
       ),
       body: SafeArea(
@@ -410,7 +410,7 @@ class ScanResultsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: () {
-                context.pop();
+                _handleBackNavigation(context);
               },
               icon: const Icon(Icons.arrow_back, size: 20),
               label: const Text('Volver a intentar'),
@@ -1066,6 +1066,20 @@ class ScanResultsScreen extends ConsumerWidget {
           duration: Duration(seconds: 2),
         ),
       );
+    }
+  }
+
+  /// Handle back navigation safely - pop if possible, otherwise go to appropriate scan screen
+  void _handleBackNavigation(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      context.pop();
+    } else {
+      // If we can't pop, navigate back to the appropriate scan screen based on itemType
+      if (itemType == ScanItemType.food) {
+        context.go('/scan/add/food');
+      } else {
+        context.go('/scan/add/ingredient');
+      }
     }
   }
 }
