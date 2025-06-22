@@ -16,6 +16,7 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item_card.dart';
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'dart:developer';
 
@@ -44,38 +45,90 @@ class ScanResultsScreen extends ConsumerWidget {
       scanResultsProvider(initialJsonData).notifier,
     );
 
-    // Watch simplified recognition state for automatic image updates
-    final simplifiedState = ref.watch(simplifiedRecognitionProvider);
+    // Watch appropriate recognition state based on itemType
+    if (itemType == ScanItemType.ingredient) {
+      final simplifiedState = ref.watch(simplifiedRecognitionProvider);
 
-    // Initial sync after build is complete
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncImagesFromSimplifiedProvider(ref, simplifiedState, itemsNotifier);
-    });
+      // Initial sync after build is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncImagesFromIngredientProvider(ref, simplifiedState, itemsNotifier);
+      });
 
-    // Listen for changes in SimplifiedRecognitionProvider to sync images and show notifications
-    ref.listen(simplifiedRecognitionProvider, (previous, current) {
-      // Sync images when recognition results change
-      _syncImagesFromSimplifiedProvider(ref, current, itemsNotifier);
+      // Listen for changes in SimplifiedRecognitionProvider to sync images and show notifications
+      ref.listen(simplifiedRecognitionProvider, (previous, current) {
+        // Sync images when recognition results change
+        _syncImagesFromIngredientProvider(ref, current, itemsNotifier);
 
-      // Show notification when all images are ready
-      if (previous?.imagesStatus == 'generating' &&
-          current.imagesStatus == 'ready' &&
-          context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('¡Todas las imágenes están listas!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    });
+        // Show notification when all images are ready - with delay to ensure UI updates complete
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          // Wait for UI to complete the image updates before showing notification
+          Future.delayed(Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('¡Imágenes de ingredientes listas!'),
+                    ],
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          });
+        }
+      });
+    } else {
+      final foodState = ref.watch(simplifiedFoodRecognitionProvider);
+
+      // Initial sync after build is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncImagesFromFoodProvider(ref, foodState, itemsNotifier);
+      });
+
+      // Listen for changes in SimplifiedFoodRecognitionProvider to sync images and show notifications
+      ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
+        log('🎧 [FOOD LISTENER] State change detected');
+        log('   Previous status: ${previous?.imagesStatus}');
+        log('   Current status: ${current.imagesStatus}');
+        log('   Foods count: ${current.result?.foods.length ?? 0}');
+
+        // Sync images when recognition results change
+        _syncImagesFromFoodProvider(ref, current, itemsNotifier);
+
+        // Show notification when all images are ready - with delay to ensure UI updates complete
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          log('🎉 [FOOD LISTENER] Scheduling notification after UI sync...');
+
+          // Wait for UI to complete the image updates before showing notification
+          Future.delayed(Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              log('🎉 [FOOD LISTENER] Showing notification: Images ready!');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('¡Imágenes de comidas listas!'),
+                    ],
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          });
+        }
+      });
+    }
 
     // Determine if the add button should be enabled
     final bool canAdd = itemsState.any((item) => item.quantity > 0);
@@ -480,71 +533,82 @@ class ScanResultsScreen extends ConsumerWidget {
   }
 
   Widget _buildImageRefreshButton(WidgetRef ref, BuildContext context) {
-    final simplifiedState = ref.watch(simplifiedRecognitionProvider);
-    final simplifiedNotifier = ref.read(simplifiedRecognitionProvider.notifier);
+    // Watch appropriate provider based on itemType
+    if (itemType == ScanItemType.ingredient) {
+      final simplifiedState = ref.watch(simplifiedRecognitionProvider);
+      final simplifiedNotifier = ref.read(
+        simplifiedRecognitionProvider.notifier,
+      );
 
-    // Only show if we have a recognition ID (meaning we have active recognition results)
-    if (simplifiedState.recognitionId == null ||
-        simplifiedState.recognitionId!.isEmpty) {
-      return const SizedBox.shrink();
+      // Only show if we have a recognition ID (meaning we have active recognition results)
+      if (simplifiedState.recognitionId == null ||
+          simplifiedState.recognitionId!.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return _buildRefreshButtonWidget(
+        context,
+        ref,
+        isLoading: simplifiedState.isLoading,
+        imagesStatus: simplifiedState.imagesStatus,
+        onPressed: () {
+          // Trigger a manual check by clearing and re-syncing
+          _syncImagesFromIngredientProvider(
+            ref,
+            simplifiedState,
+            ref.read(scanResultsProvider(initialJsonData).notifier),
+          );
+          _showRefreshResult(context, simplifiedState.error);
+        },
+      );
+    } else {
+      final foodState = ref.watch(simplifiedFoodRecognitionProvider);
+
+      // Only show if we have a recognition ID (meaning we have active recognition results)
+      if (foodState.recognitionId == null || foodState.recognitionId!.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return _buildRefreshButtonWidget(
+        context,
+        ref,
+        isLoading: foodState.isLoading,
+        imagesStatus: foodState.imagesStatus,
+        onPressed: () {
+          // Trigger a manual check by clearing and re-syncing
+          _syncImagesFromFoodProvider(
+            ref,
+            foodState,
+            ref.read(scanResultsProvider(initialJsonData).notifier),
+          );
+          _showRefreshResult(context, foodState.error);
+        },
+      );
     }
+  }
 
+  Widget _buildRefreshButtonWidget(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isLoading,
+    required String? imagesStatus,
+    required VoidCallback onPressed,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              onPressed:
-                  simplifiedState.isLoading
-                      ? null
-                      : () async {
-                        await simplifiedNotifier.forceCheckImages();
-
-                        // Show appropriate message based on result
-                        if (context.mounted) {
-                          final newState = ref.read(
-                            simplifiedRecognitionProvider,
-                          );
-                          if (newState.error != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Row(
-                                  children: [
-                                    Icon(Icons.error, color: Colors.white),
-                                    SizedBox(width: 8),
-                                    Text('Error al actualizar imágenes'),
-                                  ],
-                                ),
-                                backgroundColor: Colors.red,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Row(
-                                  children: [
-                                    Icon(Icons.refresh, color: Colors.white),
-                                    SizedBox(width: 8),
-                                    Text('Imágenes actualizadas'),
-                                  ],
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        }
-                      },
+              onPressed: isLoading ? null : onPressed,
               icon:
-                  simplifiedState.isLoading
+                  isLoading
                       ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                      : simplifiedState.imagesStatus == 'generating'
+                      : imagesStatus == 'generating'
                       ? SizedBox(
                         width: 16,
                         height: 16,
@@ -555,9 +619,9 @@ class ScanResultsScreen extends ConsumerWidget {
                       )
                       : Icon(Icons.refresh),
               label: Text(
-                simplifiedState.isLoading
+                isLoading
                     ? 'Actualizando...'
-                    : simplifiedState.imagesStatus == 'generating'
+                    : imagesStatus == 'generating'
                     ? 'Generando automáticamente...'
                     : 'Actualizar imágenes',
                 style: GoogleFonts.inter(fontWeight: FontWeight.w500),
@@ -573,7 +637,15 @@ class ScanResultsScreen extends ConsumerWidget {
           SizedBox(width: 12),
           // Debug info button
           IconButton(
-            onPressed: () => _showImageDebugInfo(context, simplifiedState),
+            onPressed: () {
+              if (itemType == ScanItemType.ingredient) {
+                final state = ref.read(simplifiedRecognitionProvider);
+                _showImageDebugInfo(context, state);
+              } else {
+                final state = ref.read(simplifiedFoodRecognitionProvider);
+                _showFoodImageDebugInfo(context, state);
+              }
+            },
             icon: Icon(Icons.info_outline),
             tooltip: 'Info de imágenes',
           ),
@@ -628,6 +700,67 @@ class ScanResultsScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
+                    ],
+                  ] else ...[
+                    Text('No hay resultados disponibles'),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Cerrar'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showFoodImageDebugInfo(
+    BuildContext context,
+    SimplifiedFoodRecognitionState state,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('🔍 Debug - Imágenes de Comidas'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Recognition ID: ${state.recognitionId ?? "null"}'),
+                  Text('Estado: ${state.isLoading ? "Cargando" : "Listo"}'),
+                  SizedBox(height: 16),
+                  if (state.result != null) ...[
+                    Text('Tipo de resultado: ${state.result.runtimeType}'),
+                    SizedBox(height: 8),
+                    if (state.result is FoodRecognitionResultModel) ...[
+                      Text(
+                        'Comidas:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      ...(state.result as FoodRecognitionResultModel).foods.map(
+                        (food) => Padding(
+                          padding: EdgeInsets.only(left: 8, top: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('• ${food.name}'),
+                              Text(
+                                '  📷 Image: ${food.imagePath ?? "null"}',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                '  📊 Status: ${food.imageStatus ?? "null"}',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ] else ...[
                     Text('No hay resultados disponibles'),
@@ -753,8 +886,8 @@ class ScanResultsScreen extends ConsumerWidget {
     );
   }
 
-  /// Sync images from SimplifiedRecognitionProvider to scan results items
-  void _syncImagesFromSimplifiedProvider(
+  /// Sync images from SimplifiedRecognitionProvider to scan results items (for ingredients)
+  void _syncImagesFromIngredientProvider(
     WidgetRef ref,
     SimplifiedRecognitionState simplifiedState,
     dynamic itemsNotifier,
@@ -778,7 +911,7 @@ class ScanResultsScreen extends ConsumerWidget {
           ingredient.imagePath!.isNotEmpty &&
           currentItem.imageUrl != ingredient.imagePath) {
         log(
-          '🖼️ [SYNC] Updating image for ${currentItem.name}: ${ingredient.imagePath}',
+          '🖼️ [SYNC INGREDIENTS] Updating image for ${currentItem.name}: ${ingredient.imagePath}',
         );
 
         // Create updated item with new image URL using copyWith
@@ -789,6 +922,150 @@ class ScanResultsScreen extends ConsumerWidget {
         // Update the item in the provider
         itemsNotifier.updateItem(updatedItem);
       }
+    }
+  }
+
+  /// Sync images from SimplifiedFoodRecognitionProvider to scan results items (for foods)
+  void _syncImagesFromFoodProvider(
+    WidgetRef ref,
+    SimplifiedFoodRecognitionState foodState,
+    dynamic itemsNotifier,
+  ) {
+    log('🔄 [SYNC FOODS] Starting sync process...');
+
+    // Only sync if we have recognition results
+    if (foodState.result == null || foodState.result!.foods.isEmpty) {
+      log(
+        '❌ [SYNC FOODS] No results to sync (result: ${foodState.result}, foods: ${foodState.result?.foods.length})',
+      );
+      return;
+    }
+
+    final foods = foodState.result!.foods;
+    final currentItems = ref.read(scanResultsProvider(initialJsonData));
+
+    log(
+      '🔍 [SYNC FOODS] Found ${foods.length} foods and ${currentItems.length} current items',
+    );
+
+    // Try to match foods by name first, then by index as fallback
+    for (int i = 0; i < foods.length && i < currentItems.length; i++) {
+      final food = foods[i];
+
+      // Try to find matching item by name first
+      RecognizedItem? targetItem;
+      int targetIndex = -1;
+
+      // Look for exact name match
+      for (int j = 0; j < currentItems.length; j++) {
+        if (currentItems[j].name.toLowerCase().trim() ==
+            food.name.toLowerCase().trim()) {
+          targetItem = currentItems[j];
+          targetIndex = j;
+          break;
+        }
+      }
+
+      // If no name match, use index-based matching as fallback
+      if (targetItem == null && i < currentItems.length) {
+        targetItem = currentItems[i];
+        targetIndex = i;
+      }
+
+      if (targetItem == null) {
+        log('❌ [SYNC FOODS] No target item found for food: ${food.name}');
+        continue;
+      }
+
+      log(
+        '🔍 [SYNC FOODS] Food ${i + 1}: ${food.name} -> Item ${targetIndex + 1}: ${targetItem.name}',
+      );
+      log('   📷 Food imagePath: ${food.imagePath}');
+      log('   📊 Food imageStatus: ${food.imageStatus}');
+      log('   🎯 Current item imageUrl: ${targetItem.imageUrl}');
+      log('   🆔 Current item ID: ${targetItem.id}');
+
+      // Update image URL if it's different and not empty
+      if (food.imagePath != null &&
+          food.imagePath!.isNotEmpty &&
+          targetItem.imageUrl != food.imagePath) {
+        log(
+          '🖼️ [SYNC FOODS] Updating image for ${targetItem.name}: ${food.imagePath}',
+        );
+
+        // Create updated item with new image URL using copyWith
+        final updatedItem = targetItem.copyWith(
+          imageUrl: food.imagePath, // Update with new image
+        );
+
+        log(
+          '🔧 [SYNC FOODS] Created updated item with imageUrl: ${updatedItem.imageUrl}',
+        );
+
+        // Update the item in the provider
+        itemsNotifier.updateItem(updatedItem);
+        log('✅ [SYNC FOODS] Image updated successfully for ${targetItem.name}');
+
+        // Verify the update worked by reading the state again
+        final updatedItems = ref.read(scanResultsProvider(initialJsonData));
+        final verifyItem = updatedItems.firstWhere(
+          (item) => item.id == targetItem!.id,
+          orElse: () => targetItem!,
+        );
+        log(
+          '🔍 [SYNC FOODS] Verification - Item ${verifyItem.name} now has imageUrl: ${verifyItem.imageUrl}',
+        );
+      } else {
+        String reason = '';
+        if (food.imagePath == null) {
+          reason = 'imagePath is null';
+        } else if (food.imagePath!.isEmpty) {
+          reason = 'imagePath is empty';
+        } else if (targetItem.imageUrl == food.imagePath) {
+          reason = 'same image URL';
+        }
+
+        log(
+          '⏭️ [SYNC FOODS] No update needed for ${targetItem.name} ($reason)',
+        );
+      }
+    }
+
+    log('🏁 [SYNC FOODS] Sync process completed');
+  }
+
+  /// Show result message after manual refresh
+  void _showRefreshResult(BuildContext context, String? error) {
+    if (!context.mounted) return;
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Error al actualizar imágenes'),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.refresh, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Imágenes actualizadas'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 }

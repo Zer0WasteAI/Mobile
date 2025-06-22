@@ -229,9 +229,10 @@ FoodRecognitionResultModel _$FoodRecognitionResultModelFromJson(
   Map<String, dynamic> json,
 ) => FoodRecognitionResultModel(
   foods:
-      (json['foods'] as List<dynamic>)
-          .map((e) => RecognizedFoodModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      (json['foods'] as List<dynamic>?)
+          ?.map((e) => RecognizedFoodModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
   recognitionId: json['recognition_id'] as String? ?? '',
   images:
       json['images'] == null

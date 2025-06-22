@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/utils/recognition_to_inventory_converter.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
@@ -30,9 +31,20 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
   @override
   Widget build(BuildContext context) {
     final recognitionState = ref.watch(recognitionProvider);
-    final recognitionNotifier = ref.read(recognitionProvider.notifier);
+    final foodRecognitionState = ref.watch(simplifiedFoodRecognitionProvider);
 
-    // Listen for when all images are ready to show notification
+    // Determine which state to use based on recognition type
+    final isLoading =
+        _recognitionType == 'food'
+            ? foodRecognitionState.isLoading
+            : recognitionState.isLoading;
+
+    final hasResults =
+        _recognitionType == 'food'
+            ? foodRecognitionState.hasResults
+            : recognitionState.result != null;
+
+    // Listen for when all images are ready to show notification (ingredients)
     ref.listen(recognitionProvider, (previous, current) {
       if (previous?.imagesStatus == 'generating' &&
           current.imagesStatus == 'ready' &&
@@ -44,6 +56,27 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 8),
                 Text('¡Todas las imágenes están listas!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
+    // Listen for when food recognition completes
+    ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
+      if (previous?.imagesStatus == 'generating' &&
+          current.imagesStatus == 'ready' &&
+          context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('¡Imágenes de comidas listas!'),
               ],
             ),
             backgroundColor: Colors.green,
@@ -195,17 +228,14 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed:
-                              recognitionState.isLoading
-                                  ? null
-                                  : _recognizeImage,
+                          onPressed: isLoading ? null : _recognizeImage,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           child:
-                              recognitionState.isLoading
+                              isLoading
                                   ? const LottieLoadingWidget.small(
                                     message: 'Analizando...',
                                     showMessage: true,
@@ -251,7 +281,17 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                       ),
                       const SizedBox(height: 8),
                       TextButton(
-                        onPressed: () => recognitionNotifier.clearError(),
+                        onPressed: () {
+                          if (_recognitionType == 'ingredient') {
+                            ref.read(recognitionProvider.notifier).clearError();
+                          } else {
+                            ref
+                                .read(
+                                  simplifiedFoodRecognitionProvider.notifier,
+                                )
+                                .clearState();
+                          }
+                        },
                         child: const Text('Cerrar'),
                       ),
                     ],
@@ -341,7 +381,7 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
             const SizedBox(height: 8),
 
             // Results display
-            if (recognitionState.result != null && !recognitionState.isPolling)
+            if (hasResults && !isLoading)
               Expanded(
                 child: Card(
                   child: Padding(
@@ -369,12 +409,7 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                         const SizedBox(height: 16),
                         if (recognitionState.result!.recognizedItems.isEmpty)
                           Expanded(
-                            child: Center(
-                              child: _buildNoResultsFound(
-                                context,
-                                recognitionNotifier,
-                              ),
-                            ),
+                            child: Center(child: _buildNoResultsFound(context)),
                           )
                         else
                           Expanded(
@@ -440,7 +475,18 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  recognitionNotifier.clearState();
+                                  if (_recognitionType == 'ingredient') {
+                                    ref
+                                        .read(recognitionProvider.notifier)
+                                        .clearState();
+                                  } else {
+                                    ref
+                                        .read(
+                                          simplifiedFoodRecognitionProvider
+                                              .notifier,
+                                        )
+                                        .clearState();
+                                  }
                                   setState(() {
                                     _selectedImage = null;
                                   });
@@ -465,10 +511,7 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
     );
   }
 
-  Widget _buildNoResultsFound(
-    BuildContext context,
-    RecognitionNotifier notifier,
-  ) {
+  Widget _buildNoResultsFound(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -495,7 +538,13 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {
-              notifier.clearState();
+              if (_recognitionType == 'ingredient') {
+                ref.read(recognitionProvider.notifier).clearState();
+              } else {
+                ref
+                    .read(simplifiedFoodRecognitionProvider.notifier)
+                    .clearState();
+              }
               GoRouter.of(context).push('/inventory/add');
             },
             icon: const Icon(Icons.add_circle_outline),
@@ -509,7 +558,13 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: () {
-              notifier.clearState();
+              if (_recognitionType == 'ingredient') {
+                ref.read(recognitionProvider.notifier).clearState();
+              } else {
+                ref
+                    .read(simplifiedFoodRecognitionProvider.notifier)
+                    .clearState();
+              }
               setState(() {
                 _selectedImage = null;
               });
@@ -634,17 +689,15 @@ class _CameraRecognitionPageState extends ConsumerState<CameraRecognitionPage> {
   Future<void> _recognizeImage() async {
     if (_selectedImage == null) return;
 
-    final recognitionNotifier = ref.read(recognitionProvider.notifier);
-
     if (_recognitionType == 'ingredient') {
+      final recognitionNotifier = ref.read(recognitionProvider.notifier);
       await recognitionNotifier.recognizeIngredientsAsync(_selectedImage!);
     } else {
-      // Mantener el flujo antiguo para 'food' si es diferente
-      final itemName = 'item_${DateTime.now().millisecondsSinceEpoch}';
-      await recognitionNotifier.uploadAndRecognizeFood(
-        _selectedImage!,
-        itemName,
+      // Usar el provider específico para comidas
+      final foodRecognitionNotifier = ref.read(
+        simplifiedFoodRecognitionProvider.notifier,
       );
+      await foodRecognitionNotifier.recognizeFoods([_selectedImage!]);
     }
   }
 

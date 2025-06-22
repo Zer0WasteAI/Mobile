@@ -474,6 +474,7 @@ class RecognizedIngredientModel {
 
 @JsonSerializable()
 class FoodRecognitionResultModel {
+  @JsonKey(defaultValue: [])
   final List<RecognizedFoodModel> foods;
   @JsonKey(name: 'recognition_id', defaultValue: '')
   final String recognitionId; // 🆕 ID único del reconocimiento
@@ -499,10 +500,49 @@ class FoodRecognitionResultModel {
     this.totalDetected,
   });
 
-  factory FoodRecognitionResultModel.fromJson(Map<String, dynamic> json) =>
-      _$FoodRecognitionResultModelFromJson(json);
+  factory FoodRecognitionResultModel.fromJson(Map<String, dynamic> json) {
+    // Handle both 'foods' and 'ingredients' fields from API
+    List<dynamic> foodsData = [];
+
+    if (json['foods'] != null) {
+      foodsData = json['foods'] as List<dynamic>;
+    } else if (json['ingredients'] != null) {
+      // When checking image status, API returns foods as 'ingredients'
+      // This is a backend inconsistency - it should return 'foods' for food recognition
+      foodsData = json['ingredients'] as List<dynamic>;
+    }
+
+    // Create a modified json with consistent 'foods' field
+    final modifiedJson = Map<String, dynamic>.from(json);
+    modifiedJson['foods'] = foodsData;
+
+    return _$FoodRecognitionResultModelFromJson(modifiedJson);
+  }
 
   Map<String, dynamic> toJson() => _$FoodRecognitionResultModelToJson(this);
+
+  FoodRecognitionResultModel copyWith({
+    List<RecognizedFoodModel>? foods,
+    String? recognitionId,
+    ImageGenerationStatusModel? images,
+    String? message,
+    List<AllergyAlert>? allergyAlerts,
+    bool? hasAllergens,
+    String? processingTime,
+    int? totalDetected,
+    String? imagesStatus,
+  }) {
+    return FoodRecognitionResultModel(
+      foods: foods ?? this.foods,
+      recognitionId: recognitionId ?? this.recognitionId,
+      images: images ?? this.images,
+      message: message ?? this.message,
+      allergyAlerts: allergyAlerts ?? this.allergyAlerts,
+      hasAllergens: hasAllergens ?? this.hasAllergens,
+      processingTime: processingTime ?? this.processingTime,
+      totalDetected: totalDetected ?? this.totalDetected,
+    );
+  }
 }
 
 @JsonSerializable()
@@ -565,6 +605,46 @@ class RecognizedFoodModel {
       _$RecognizedFoodModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$RecognizedFoodModelToJson(this);
+
+  RecognizedFoodModel copyWith({
+    String? name,
+    List<String>? mainIngredients,
+    String? category,
+    int? calories,
+    String? description,
+    String? storageType,
+    int? expirationTime,
+    String? timeUnit,
+    String? tips,
+    double? servingQuantity,
+    String? imagePath,
+    String? imageStatus,
+    String? expirationDate,
+    String? addedAt,
+    bool? allergyAlert,
+    List<String>? allergens,
+    double? confidence,
+  }) {
+    return RecognizedFoodModel(
+      name: name ?? this.name,
+      mainIngredients: mainIngredients ?? this.mainIngredients,
+      category: category ?? this.category,
+      calories: calories ?? this.calories,
+      description: description ?? this.description,
+      storageType: storageType ?? this.storageType,
+      expirationTime: expirationTime ?? this.expirationTime,
+      timeUnit: timeUnit ?? this.timeUnit,
+      tips: tips ?? this.tips,
+      servingQuantity: servingQuantity ?? this.servingQuantity,
+      imagePath: imagePath ?? this.imagePath,
+      imageStatus: imageStatus ?? this.imageStatus,
+      expirationDate: expirationDate ?? this.expirationDate,
+      addedAt: addedAt ?? this.addedAt,
+      allergyAlert: allergyAlert ?? this.allergyAlert,
+      allergens: allergens ?? this.allergens,
+      confidence: confidence ?? this.confidence,
+    );
+  }
 }
 
 /// 🆕 NEW MODEL: For complete ingredient recognition with environmental impact

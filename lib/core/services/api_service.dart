@@ -2105,4 +2105,43 @@ class ApiService {
       throw Exception('Check food images error: ${e.toString()}');
     }
   }
+
+  /// ✨ NEW: Get food recognition by ID with updated images
+  /// USAGE: Call this to get the complete recognition data with updated images
+  /// RETURNS: Complete recognition result with updated image URLs
+  Future<Map<String, dynamic>> getFoodRecognitionById(
+    String recognitionId,
+  ) async {
+    try {
+      log(
+        '🔍 [SIMPLIFIED FOODS] Getting food recognition by ID: $recognitionId',
+      );
+      final response = await _dio.get('$_recognitionById/$recognitionId');
+
+      final result = response.data as Map<String, dynamic>;
+      log('📊 [SIMPLIFIED FOODS] Recognition data received');
+      log('🔍 [SIMPLIFIED FOODS] Response keys: ${result.keys.toList()}');
+
+      if (result.containsKey('foods')) {
+        final foods = result['foods'] as List;
+        log(
+          '🖼️ [SIMPLIFIED FOODS] Found ${foods.length} foods with updated data',
+        );
+        for (int i = 0; i < foods.length; i++) {
+          final food = foods[i] as Map<String, dynamic>;
+          final name = food['name'] as String?;
+          final imagePath = food['image_path'] as String?;
+          final imageStatus = food['image_status'] as String?;
+          log('   ${i + 1}. $name:');
+          log('      📷 image_path: $imagePath');
+          log('      📊 image_status: $imageStatus');
+        }
+      }
+
+      return result;
+    } catch (e) {
+      log('❌ [SIMPLIFIED FOODS] Get recognition by ID error: $e');
+      throw Exception('Get food recognition by ID error: ${e.toString()}');
+    }
+  }
 }

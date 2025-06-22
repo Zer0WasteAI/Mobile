@@ -174,11 +174,13 @@ class SimplifiedFoodRecognitionNotifier
     int ready = 0;
 
     for (final food in result.foods) {
-      final status = food.imageStatus;
-      if (status == 'generating' || status == null || status == '') {
-        generating++;
-      } else if (status == 'ready' || status == 'generated') {
+      // Check if food has a REAL image URL (not null, not empty, and not a placeholder)
+      if (food.imagePath != null &&
+          food.imagePath!.isNotEmpty &&
+          !food.imagePath!.contains('via.placeholder.com')) {
         ready++;
+      } else {
+        generating++;
       }
     }
 

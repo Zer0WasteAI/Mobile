@@ -724,9 +724,9 @@ class PlannerScreen extends ConsumerWidget {
     Color primaryColor,
   ) {
     return DayPlannerBuilder.buildDayPlanner(
-      context,
-      ref,
-      day,
+                                context,
+                                ref,
+                                day,
       textColor,
       primaryColor,
       _showAddMealDialog,
@@ -2874,8 +2874,8 @@ class PlannerScreen extends ConsumerWidget {
             currentDateKey: currentDateKey,
             currentDate: currentDate,
             onMoveMeal: (fromDate, toDate, mealToMove) {
-              ref
-                  .read(mealPlansProvider.notifier)
+                      ref
+                          .read(mealPlansProvider.notifier)
                   .moveMeal(fromDate, toDate, mealToMove);
             },
           ),
@@ -2898,9 +2898,9 @@ class PlannerScreen extends ConsumerWidget {
               final currentReminders = meal.reminders ?? [];
               final updatedReminders = [...currentReminders, reminderText];
               final updatedMeal = meal.copyWith(reminders: updatedReminders);
-              ref
-                  .read(mealPlansProvider.notifier)
-                  .editMeal(dateKey, meal, updatedMeal);
+                                  ref
+                                      .read(mealPlansProvider.notifier)
+                                      .editMeal(dateKey, meal, updatedMeal);
             },
           ),
     );

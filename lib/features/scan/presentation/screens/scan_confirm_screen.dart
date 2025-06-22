@@ -14,6 +14,7 @@ import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition
 import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
 import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 // --- Design Constants ---
@@ -101,7 +102,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     super.dispose();
   }
 
-  /// ✨ NEW: Simplified analysis method using the working simplified provider
+  /// ✨ NEW: Simplified analysis method using the correct provider based on originType
   Future<void> _analyzeImagesSimplified() async {
     final images = ref.read(_confirmImagesProvider(widget.initialImages));
 
@@ -126,7 +127,9 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
               children: [
                 LottieLoadingWidget.small(),
                 const SizedBox(height: 16),
-                const Text('Analizando imágenes con IA...'),
+                Text(
+                  'Analizando ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'} con IA...',
+                ),
                 const Text('Esto puede tardar unos segundos'),
               ],
             ),
@@ -134,36 +137,84 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     );
 
     try {
-      log('🚀 Starting simplified analysis with ${images.length} images');
-
-      // Use the simplified recognition provider that works
-      final simplifiedNotifier = ref.read(
-        simplifiedRecognitionProvider.notifier,
+      log(
+        '🚀 Starting ${widget.originType.name} analysis with ${images.length} images',
       );
-      await simplifiedNotifier.recognizeIngredients(images);
 
-      // Get the results from simplified provider
-      final simplifiedState = ref.read(simplifiedRecognitionProvider);
-
-      if (simplifiedState.error != null) {
-        throw Exception(simplifiedState.error!);
-      }
-
-      if (simplifiedState.result == null) {
-        throw Exception('No se recibieron resultados del reconocimiento');
-      }
-
-      // Close loading dialog
-      if (context.mounted) Navigator.of(context).pop();
-
-      log('✅ Simplified analysis completed!');
-
-      // Convert results to the format expected by ScanResultsScreen
       List<Map<String, dynamic>> formattedResults = [];
 
-      if (simplifiedState.result is IngredientRecognitionResultModel) {
+      if (widget.originType == ScanItemType.food) {
+        // Use food recognition provider
+        final foodNotifier = ref.read(
+          simplifiedFoodRecognitionProvider.notifier,
+      );
+        await foodNotifier.recognizeFoods(images);
+
+        // Get the results from food provider
+        final foodState = ref.read(simplifiedFoodRecognitionProvider);
+
+        if (foodState.error != null) {
+          throw Exception(foodState.error!);
+      }
+
+        if (foodState.result == null) {
+          throw Exception(
+            'No se recibieron resultados del reconocimiento de comidas',
+          );
+      }
+
+        // Convert food results to the format expected by ScanResultsScreen
+        formattedResults =
+            foodState.foods.map((food) {
+              return {
+                'name': food.name,
+                'image_path': food.imagePath ?? '',
+                'quantity': food.servingQuantity,
+                'expiration_date':
+                    food.expirationDate ??
+                    DateTime.now()
+                        .add(Duration(days: food.expirationTime))
+                        .toIso8601String(),
+                'confidence': food.confidence ?? 1.0,
+                'category': food.category,
+                'allergyAlert': food.allergyAlert,
+                'allergens': food.allergens,
+                'storage_type': food.storageType,
+                'tips': food.tips,
+                'type_unit': 'porciones',
+                'expiration_time': food.expirationTime,
+                'time_unit': food.timeUnit,
+                'added_at': food.addedAt,
+                'main_ingredients': food.mainIngredients,
+                'calories': food.calories,
+                'description': food.description,
+              };
+            }).toList();
+
+        log('✅ Food analysis completed! Found ${foodState.foods.length} foods');
+      } else {
+        // Use ingredient recognition provider
+        final ingredientNotifier = ref.read(
+          simplifiedRecognitionProvider.notifier,
+        );
+        await ingredientNotifier.recognizeIngredients(images);
+
+        // Get the results from ingredient provider
+        final ingredientState = ref.read(simplifiedRecognitionProvider);
+
+        if (ingredientState.error != null) {
+          throw Exception(ingredientState.error!);
+        }
+
+        if (ingredientState.result == null) {
+          throw Exception(
+            'No se recibieron resultados del reconocimiento de ingredientes',
+          );
+        }
+
+        if (ingredientState.result is IngredientRecognitionResultModel) {
         final result =
-            simplifiedState.result as IngredientRecognitionResultModel;
+              ingredientState.result as IngredientRecognitionResultModel;
 
         formattedResults =
             result.ingredients.map((ingredient) {
@@ -198,8 +249,18 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         }
       }
 
+        log(
+          '✅ Ingredient analysis completed! Found ${formattedResults.length} ingredients',
+        );
+      }
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
       if (formattedResults.isEmpty) {
-        throw Exception('No se encontraron ingredientes en las imágenes');
+        throw Exception(
+          'No se encontraron ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'} en las imágenes',
+        );
       }
 
       // Navigate to results screen
@@ -216,13 +277,15 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
       // Close loading dialog if still open
       if (context.mounted) Navigator.of(context).pop();
 
-      log('❌ Error in simplified analysis: $e');
+      log('❌ Error in ${widget.originType.name} analysis: $e');
 
       // Show error message
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al analizar imágenes: ${e.toString()}'),
+            content: Text(
+              'Error al analizar ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'}: ${e.toString()}',
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
@@ -587,6 +650,51 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     // Check if limit is reached to disable add button
     final bool canAddMore = images.length < ScanConfirmScreen.maxImages;
+
+    // ✨ Listen for image generation completion notifications
+    if (widget.originType == ScanItemType.ingredient) {
+      // Listen for ingredient image updates
+      ref.listen(simplifiedRecognitionProvider, (previous, current) {
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('¡Imágenes de ingredientes listas!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    } else {
+      // Listen for food image updates
+      ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('¡Imágenes de comidas listas!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,

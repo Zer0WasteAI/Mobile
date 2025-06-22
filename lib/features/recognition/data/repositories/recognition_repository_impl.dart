@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:zer0_waste_ai/core/services/api_service.dart';
@@ -397,12 +398,37 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     String recognitionId,
   ) async {
     try {
+      log(
+        '🔍 [SIMPLIFIED FOODS] Checking images for food recognition: $recognitionId',
+      );
       final result = await _apiService.checkFoodRecognitionImages(
         recognitionId,
       );
+      log('📊 [SIMPLIFIED FOODS] Images status response received');
+      log('📊 [SIMPLIFIED FOODS] Images status: ${result['images_status']}');
+      log('🔍 [SIMPLIFIED FOODS] Response keys: ${result.keys.toList()}');
+      log('🔍 [SIMPLIFIED FOODS] Full response: $result');
+
       return FoodRecognitionResultModel.fromJson(result);
     } catch (e) {
       throw Exception('Check food recognition images failed: ${e.toString()}');
+    }
+  }
+
+  /// ✨ NEW: Get food recognition by ID with updated images
+  Future<FoodRecognitionResultModel> getFoodRecognitionById(
+    String recognitionId,
+  ) async {
+    try {
+      log(
+        '🔍 [SIMPLIFIED FOODS] Getting food recognition by ID: $recognitionId',
+      );
+      final result = await _apiService.getFoodRecognitionById(recognitionId);
+      log('📊 [SIMPLIFIED FOODS] Food recognition data received');
+
+      return FoodRecognitionResultModel.fromJson(result);
+    } catch (e) {
+      throw Exception('Get food recognition by ID failed: ${e.toString()}');
     }
   }
 }

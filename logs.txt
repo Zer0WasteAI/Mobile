@@ -1,0 +1,540 @@
+Launching lib/main.dart on iPhone 16 in debug mode...
+Xcode build done.                                           47.4s
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+Connecting to VM Service at ws://127.0.0.1:54804/p384u7rILhk=/ws
+Connected to the VM Service.
+flutter: Hive initialized successfully
+[GoRouter] setting initial location /splash
+[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /splash
+[GoRouter] Full paths for routes:
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/units (UnitsScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeDetail => /recipes/detail
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             units => /units
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
+[GoRouter] Using MaterialApp configuration
+[log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[GoRouter] going to /login
+[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /login
+flutter: 🔧 UserProfileProvider: Auth state changed
+flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafa Pres
+flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
+flutter: 🔧 Preferences loaded:
+flutter:   - cookingLevel: intermediate
+flutter:   - allergies: [Pescado, Soya]
+flutter:   - specialDiets: [Sin lácteos]
+flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
+[log] ✅ User document found in Firestore
+[log] 🔧 cookingLevel: intermediate
+[log] 🔧 allergies: [Pescado, Soya]
+[log] 🔧 specialDiets: [Sin lácteos]
+[log] 🔧 preferredFoodTypes: [Alemana, Tailandesa]
+[log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
+[GoRouter] setting initial location /splash
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /splash
+[log] 🔄 Redirecting to home - user has completed preferences
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[GoRouter] Using MaterialApp configuration
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+[GoRouter] Full paths for routes:
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/units (UnitsScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeDetail => /recipes/detail
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             units => /units
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
+[GoRouter] redirecting to RouteMatchList#41bb6(uri: /home, matches: [ShellRouteMatch#4926b(route: ShellRoute#e8c30(navigatorKey: [LabeledGlobalKey<NavigatorState>#9ab64]))])
+[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
+[log] API Request: GET /api/recipes/saved
+[log] API Request: GET /api/planning/all
+[log] API Request: GET /api/environmental_savings/calculations
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] API Response: 200 /api/recipes/saved
+[log] API Response: 200 /api/environmental_savings/calculations
+[log] API Response: 200 /api/planning/all
+[GoRouter] going to /scan/add/food
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/add/food
+[log] Picked 3 images from gallery.
+[log] Attempting navigation to /scan/confirm from ScanItemType.food with 3 images.
+[GoRouter] going to /scan/confirm
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/confirm
+[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
+[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
+[log] 🚀 Starting food analysis with 3 images
+[log] 🚀 [SIMPLIFIED FOODS] Starting recognition with 3 images
+[log] 🚀 [SIMPLIFIED FOODS] Starting recognition with 3 images
+[log] 📤 [SIMPLIFIED FOODS] Uploading image 1/3
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED FOODS] Uploading image 2/3
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED FOODS] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/c9ac88f3355d474db96ce1b37c14262d.jpg?Expires=1751221473&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=GGTy7mdkwHvnIpTGMCiPmEWqYZIXUinR4XFzt7k7lqrwucHUcLF0gwKlXJIWT9l7itkpNmYe1wpsnVfwr%2B8KEIyU706YhVCRJtpz8goTD6SWhgsRv0V3Dol%2FTPjxiP4BEuZ47BEOhhFB2EMHZA%2FEtQX0HxsRx%2B6LR91Rh57UaHqT4H%2BGroE3oC%2Fty%2FSsnbXq%2FdGnEDZ2wMgo5QSQYl1J5b%2BYzk4uF3m0wv6sDTu2dfNEBZTJQoooyJ4zHTwgO%2Fv1C6XKw9R1yQFjIWoviF8Aqg98JLrtd2oOdg2xjONxuelDEObFzKU58lTYXTwIjvjBMG%2BBJYSKCRzHghnCYeOZLA%3D%3D
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED FOODS] Uploading image 3/3
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED FOODS] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/788b70b6c8a24e46894960110d93ed83.jpg?Expires=1751221474&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=ShDTGZGcqGKEi0kXm6JX5X%2FDiluhCb7XbKwuXVI0g7ryYpi05gAlxTeFZxy3b2u%2B0m3HFyeCHAzcJfCC4nEeou9ZWh%2FNsOC7rHwCQj7l5T9l3F%2FBXtbCDXDWI7ogeJKkb8sKUPtqzsGgros1%2FSqMbHqnRTDSanFtDO%2F5KN7I85kVf0gm67WuWko8%2BslzPlXZTFTv3qTa1q%2BplGydYeTz2GBGIONG7ZSKwXpTSVl4DVzbIVYC8G6SplXkGAu6tUFJzpQxqJvZUZ4XlWQo3EMiCTlSA1PvMJb3x1mF47U0VY3YJEyS2HvRsiev49mZVpQlw25NjU1m3lDnKTJe7AqULg%3D%3D
+[log] API Response: 201 /api/image_management/upload_image
+[log] 🔄 [SIMPLIFIED FOODS] Starting recognition with 3 URLs...
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recognition/foods
+[log] API Request: POST /api/recognition/foods
+[log] ✅ [SIMPLIFIED FOODS] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/41a6c8d796614589a9a990c473d58340.jpg?Expires=1751221476&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YLlGmHU5bAgR5rTFnN%2BW0Sct8X3bInogwNoU8Xn8ys4giPGr5hzvn09jVi6j5wKZl7YuRekeCKJpE56nKLOp48Rs9QC0E6%2FF9qVtC3NiZWOYZHL3evBYiQZxVvy5gIk91mMoR6TftjHhj1T25yyjjDWDIvAnzakG5sfLe4f6dNyw11NL%2F2hIQfn8rbSX4dgnk1vjh8tte6uojN2iUE%2B%2Bl%2F2WzfSWCmVFrQ%2BT17VkwiWs%2F3yC%2BFPgK6oRspRFIp7wtnsFO6%2BiU5fKVbQ4WSuZ%2F45BB2am2GIIM4wsF4UotgrnwDpjyNVoe4tUzKWzsWAFgLW5NCUH0lpM1ToVd8WACg%3D%3D
+[log] API Response: 200 /api/recognition/foods
+[log] ✅ [SIMPLIFIED FOODS] Recognition completed successfully!
+[log] 📋 [SIMPLIFIED FOODS] Response keys: [foods, images_status, message, recognition_id]
+[log] 🖼️ [SIMPLIFIED FOODS] Found 2 foods
+[log]    1. Pollo en salsa con polenta: null (status: null)
+[log]    2. Ñoquis al horno con salsa de tomate y mozzarella: null (status: null)
+[log] ✅ [SIMPLIFIED FOODS] Recognition completed!
+[log] 📋 [SIMPLIFIED FOODS] Recognition ID: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🖼️ [SIMPLIFIED FOODS] Found 2 foods
+[log] 🎨 [SIMPLIFIED FOODS] Images: 0 ready, 2 generating
+[log] ✅ Food analysis completed! Found 2 foods
+[GoRouter] going to /scan/results
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
+[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
+[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
+flutter: 🔍 DEBUG RecognizedItem.fromJson - id: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+flutter: 🔍 DEBUG RecognizedItem.fromJson - json: {name: Pollo en salsa con polenta, image_path: , quantity: 1.0, expiration_date: 2025-06-25T18:24:44.669346+00:00, confidence: 1.0, category: Plato principal, allergyAlert: false, allergens: [], storage_type: Refrigerado, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente., type_unit: porciones, expiration_time: 3, time_unit: Días, added_at: 2025-06-22T18:24:44.669346+00:00, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], calories: 550, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco.}
+flutter: 🔍 DEBUG RecognizedItem.fromJson - expiryDate: 2025-06-25T18:24:44.669346+00:00
+flutter: 🔍 DEBUG RecognizedItem.fromJson - id: f9bf6294-f281-4467-a6ef-9533d21a280e
+flutter: 🔍 DEBUG RecognizedItem.fromJson - json: {name: Ñoquis al horno con salsa de tomate y mozzarella, image_path: , quantity: 1.0, expiration_date: 2025-06-24T18:24:44.669346+00:00, confidence: 1.0, category: Plato principal, allergyAlert: false, allergens: [], storage_type: Refrigerado, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros., type_unit: porciones, expiration_time: 2, time_unit: Días, added_at: 2025-06-22T18:24:44.669346+00:00, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], calories: 600, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca.}
+flutter: 🔍 DEBUG RecognizedItem.fromJson - expiryDate: 2025-06-24T18:24:44.669346+00:00
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log] 🎨 [SIMPLIFIED FOODS] Starting image polling for: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🎧 [FOOD LISTENER] State change detected
+[log]    Previous status: generating
+[log]    Current status: generating
+[log]    Foods count: 2
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
+[log]    📷 Food imagePath: null
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log] 🔍 [SIMPLIFIED FOODS] Checking images for: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🔍 [SIMPLIFIED FOODS] Checking images for food recognition: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🔍 [SIMPLIFIED FOODS] Checking images for food recognition: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
+[log] API Request: GET /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
+[log] API Response: 200 /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
+[log] 📊 [SIMPLIFIED FOODS] Images status response received
+[log] 🖼️ [SIMPLIFIED FOODS] Updated 2 foods
+[log]    1. Pollo en salsa con polenta:
+[log]       📊 image_status: null
+[log]    2. Ñoquis al horno con salsa de tomate y mozzarella:
+[log]       📊 image_status: null
+[log] ✅ [SIMPLIFIED FOODS] 0/2 images ready
+[log] 📊 [SIMPLIFIED FOODS] Images status response received
+[log] 📊 [SIMPLIFIED FOODS] Images status: generating
+[log] 🎨 [SIMPLIFIED FOODS] Images: 2 ready, 0 generating
+[log] 📊 [SIMPLIFIED FOODS] Images status: ready
+[log] 🎧 [FOOD LISTENER] State change detected
+[log]    Previous status: generating
+[log]    Current status: ready
+[log]    Foods count: 2
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ✅ [SYNC FOODS] Image updated successfully for Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🎯 Current item imageUrl:
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ✅ [SYNC FOODS] Image updated successfully for Ñoquis al horno con salsa de tomate y mozzarella
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🎉 [FOOD LISTENER] Scheduling notification after UI sync...
+[log] 🔍 [SIMPLIFIED FOODS] Updated foods:
+[log]    1. Pollo en salsa con polenta:
+[log]       📊 imageStatus: null
+[log]       🔗 hasImage: true
+[log]    2. Ñoquis al horno con salsa de tomate y mozzarella:
+[log]       📊 imageStatus: null
+[log]       🔗 hasImage: true
+[log] ✅ [SIMPLIFIED FOODS] All images ready! Stopping polling.
+[log] 🎧 [FOOD LISTENER] State change detected
+[log]    Previous status: ready
+[log]    Current status: ready
+[log]    Foods count: 2
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔍 [SIMPLIFIED FOODS] Response keys: [foods, images_generating, images_ready, images_status, last_updated, message, progress_percentage, recognition_id, recognition_type, total_foods, total_items]
+[log] 🔍 [SIMPLIFIED FOODS] Full response: {foods: [{added_at: 2025-06-22T18:24:44.669346+00:00, calories: 550, category: Plato principal, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco., expiration_date: 2025-06-25T18:24:44.669346+00:00, expiration_time: 3, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], name: Pollo en salsa con polenta, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente.}, {added_at: 2025-06-22T18:24:44.669346+00:00, calories: 600, category: Plato principal, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca., expiration_date: 2025-06-24T18:24:44.669346+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], name: Ñoquis al horno con salsa de tomate y mozzarella, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros.}], images_generating: 0, images_ready: 0, images_status: generating, last_updated: 2025-06-22T18:24:45, message: 🎨 Generando imágenes... 0/2 listas (foods), progress_percentage: 0, recognition_id: 4d213151-a9dd-4a21-a4e9-24d0c69f071d, recognition_type: foods, total_foods: 2, total_items: 2}
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    📊 Food imageStatus: null
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🔍 [SIMPLIFIED FOODS] Response keys: [foods, images_generating, images_ready, images_status, last_updated, message, progress_percentage, recognition_id, recognition_type, total_foods, total_items]
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔍 [SIMPLIFIED FOODS] Full response: {foods: [{added_at: 2025-06-22T18:24:44.669346+00:00, calories: 550, category: Plato principal, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco., expiration_date: 2025-06-25T18:24:44.669346+00:00, expiration_time: 3, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], name: Pollo en salsa con polenta, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente.}, {added_at: 2025-06-22T18:24:44.669346+00:00, calories: 600, category: Plato principal, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca., expiration_date: 2025-06-24T18:24:44.669346+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], name: Ñoquis al horno con salsa de tomate y mozzarella, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros.}], images_generating: 0, images_ready: 0, images_status: generating, last_updated: 2025-06-22T18:24:45, message: 🎨 Generando imágenes... 0/2 listas (foods), progress_percentage: 0, recognition_id: 4d213151-a9dd-4a21-a4e9-24d0c69f071d, recognition_type: foods, total_foods: 2, total_items: 2}
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🖼️ [SYNC FOODS] Updating image for Pollo en salsa con polenta: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔧 [SYNC FOODS] Created updated item with imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Verification - Item Pollo en salsa con polenta now has imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🖼️ [SYNC FOODS] Updating image for Ñoquis al horno con salsa de tomate y mozzarella: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🔧 [SYNC FOODS] Created updated item with imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🔍 [SYNC FOODS] Verification - Item Ñoquis al horno con salsa de tomate y mozzarella now has imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🎉 [FOOD LISTENER] Showing notification: Images ready!
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log] 🔄 [SYNC FOODS] Starting sync process...
+[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
+[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
+[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
+[log]    📊 Food imageStatus: null
+[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
+[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
+[log] 🏁 [SYNC FOODS] Sync process completed
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
+[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
+[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
+Reloaded 1 of 2326 libraries in 1,085ms (compile: 158 ms, reload: 332 ms, reassemble: 249 ms).
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
+<inspected variable>
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
+[GoRouter] popping /scan/results
+
+════════ Exception caught by gesture ═══════════════════════════════════════════
+The following GoError was thrown while handling a gesture:
+There is nothing to pop
+
+When the exception was thrown, this was the stack:
+#0      GoRouterDelegate.pop (package:go_router/src/delegate.dart:101:7)
+#1      GoRouter.pop (package:go_router/src/router.dart:504:20)
+#2      GoRouterHelper.pop (package:go_router/src/misc/extensions.dart:74:65)
+#3      ScanResultsScreen._buildNoResultsFound.<anonymous closure> (package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart:413:25)
+#4      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1203:21)
+#5      GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:345:24)
+#6      TapGestureRecognizer.handleTapUp (package:flutter/src/gestures/tap.dart:737:11)
+#7      BaseTapGestureRecognizer._checkUp (package:flutter/src/gestures/tap.dart:362:5)
+#8      BaseTapGestureRecognizer.handlePrimaryPointer (package:flutter/src/gestures/tap.dart:293:7)
+#9      PrimaryPointerGestureRecognizer.handleEvent (package:flutter/src/gestures/recognizer.dart:706:9)
+#10     PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:97:12)
+#11     PointerRouter._dispatchEventToRoutes.<anonymous closure> (package:flutter/src/gestures/pointer_router.dart:143:9)
+#12     _LinkedHashMapMixin.forEach (dart:_compact_hash:764:13)
+#13     PointerRouter._dispatchEventToRoutes (package:flutter/src/gestures/pointer_router.dart:141:18)
+#14     PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:131:7)
+#15     GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:530:19)
+#16     GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:499:22)
+#17     RendererBinding.dispatchEvent (package:flutter/src/rendering/binding.dart:473:11)
+#18     GestureBinding._handlePointerEventImmediately (package:flutter/src/gestures/binding.dart:437:7)
+#19     GestureBinding.handlePointerEvent (package:flutter/src/gestures/binding.dart:394:5)
+#20     GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:341:7)
+#21     GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:308:9)
+#22     _invoke1 (dart:ui/hooks.dart:347:13)
+#23     PlatformDispatcher._dispatchPointerDataPacket (dart:ui/platform_dispatcher.dart:467:7)
+#24     _dispatchPointerDataPacket (dart:ui/hooks.dart:282:31)
+
+Handler: "onTap"
+Recognizer: TapGestureRecognizer#0bfab
+    debugOwner: GestureDetector
+    state: possible
+    won arena
+    finalPosition: Offset(194.0, 619.7)
+    finalLocalPosition: Offset(88.8, 33.2)
+    button: 1
+    sent tap down
+════════════════════════════════════════════════════════════════════════════════
