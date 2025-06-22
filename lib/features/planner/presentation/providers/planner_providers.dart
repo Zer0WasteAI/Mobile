@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 import 'package:intl/intl.dart';
 
 /// Proveedor para la comida seleccionada

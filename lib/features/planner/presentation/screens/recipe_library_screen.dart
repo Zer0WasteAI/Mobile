@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/create_recipe_screen.dart';
 import 'package:intl/intl.dart';
@@ -713,7 +715,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
+                                color: const Color(
+                                  0xFF00BFA5,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: const Color(
@@ -820,7 +824,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: recipe.type.color.withValues(alpha: 0.1),
+                                    color: recipe.type.color.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -867,7 +873,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                           decoration: BoxDecoration(
                             color:
                                 selectedDate.day == today.day
-                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
+                                    ? const Color(
+                                      0xFF00BFA5,
+                                    ).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -926,7 +934,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                             color:
                                 selectedDate.day ==
                                         today.add(Duration(days: 1)).day
-                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
+                                    ? const Color(
+                                      0xFF00BFA5,
+                                    ).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -999,7 +1009,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                 selectedDate.day != today.day &&
                                         selectedDate.day !=
                                             today.add(Duration(days: 1)).day
-                                    ? const Color(0xFF00BFA5).withValues(alpha: 0.1)
+                                    ? const Color(
+                                      0xFF00BFA5,
+                                    ).withValues(alpha: 0.1)
                                     : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
@@ -1473,7 +1485,9 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
                                   }
                                 },
                                 backgroundColor: Colors.grey.shade100,
-                                selectedColor: type.color.withValues(alpha: 0.2),
+                                selectedColor: type.color.withValues(
+                                  alpha: 0.2,
+                                ),
                                 labelStyle: GoogleFonts.inter(
                                   color:
                                       isSelected
