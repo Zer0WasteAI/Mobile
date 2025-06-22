@@ -168,10 +168,15 @@ class ScanResultsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent, // Make AppBar transparent
         elevation: 0,
         iconTheme: IconThemeData(color: mainTextColor), // Back button color
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => _handleBackNavigation(context),
-        ),
+        leading:
+            itemsState.isEmpty
+                ? null
+                : IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => _handleBackNavigation(context),
+                ),
+        automaticallyImplyLeading:
+            itemsState.isNotEmpty, // Only show back button if we have items
       ),
       body: SafeArea(
         child: Column(
@@ -185,7 +190,7 @@ class ScanResultsScreen extends ConsumerWidget {
             Expanded(
               child:
                   itemsState.isEmpty
-                      ? _buildNoResultsFound(context)
+                      ? _buildNoResultsFound(context, itemType)
                       : ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
@@ -218,7 +223,11 @@ class ScanResultsScreen extends ConsumerWidget {
                     FontAwesomeIcons.squarePlus,
                     size: 20,
                   ), // Cart icon
-                  label: const Text('Agregar al inventario'),
+                  label: Text(
+                    itemType == ScanItemType.food
+                        ? 'Agregar comidas al inventario'
+                        : 'Agregar ingredientes al inventario',
+                  ),
                   onPressed:
                       canAdd
                           ? () async {
@@ -307,8 +316,10 @@ class ScanResultsScreen extends ConsumerWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text(
-                                      'Ingredientes agregados al inventario exitosamente',
+                                    content: Text(
+                                      itemType == ScanItemType.food
+                                          ? 'Comidas agregadas al inventario exitosamente'
+                                          : 'Ingredientes agregados al inventario exitosamente',
                                     ),
                                     backgroundColor: primaryColor,
                                   ),
@@ -355,7 +366,7 @@ class ScanResultsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNoResultsFound(BuildContext context) {
+  Widget _buildNoResultsFound(BuildContext context, ScanItemType itemType) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -370,7 +381,9 @@ class ScanResultsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'No se reconocieron ítems',
+              itemType == ScanItemType.food
+                  ? 'No se reconocieron comidas'
+                  : 'No se reconocieron ingredientes',
               style: GoogleFonts.inter(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -380,7 +393,9 @@ class ScanResultsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Prueba con otra imagen o agrega los productos manualmente para continuar.',
+              itemType == ScanItemType.food
+                  ? 'Prueba con otra imagen o agrega las comidas manualmente para continuar.'
+                  : 'Prueba con otra imagen o agrega los ingredientes manualmente para continuar.',
               style: GoogleFonts.inter(
                 fontSize: 16,
                 color: const Color(0xFF70605A),
@@ -388,12 +403,17 @@ class ScanResultsScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
+            // Primary action - highlighted
             ElevatedButton.icon(
               onPressed: () {
                 context.push(AddInventoryItemScreen.routePath);
               },
               icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Agregar manualmente'),
+              label: Text(
+                itemType == ScanItemType.food
+                    ? 'Agregar comidas manualmente'
+                    : 'Agregar ingredientes manualmente',
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00B894),
                 foregroundColor: Colors.white,
@@ -408,17 +428,42 @@ class ScanResultsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            TextButton.icon(
+            // Secondary action - outlined style for consistency
+            OutlinedButton.icon(
               onPressed: () {
                 _handleBackNavigation(context);
               },
               icon: const Icon(Icons.arrow_back, size: 20),
               label: const Text('Volver a intentar'),
-              style: TextButton.styleFrom(
+              style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF70605A),
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                side: BorderSide(
+                  color: const Color(0xFF70605A).withValues(alpha: 0.3),
+                ),
                 textStyle: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Tertiary action - text button for less emphasis
+            TextButton.icon(
+              onPressed: () {
+                context.go('/home');
+              },
+              icon: const Icon(Icons.home, size: 18),
+              label: const Text('Regresar al inicio'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF70605A).withValues(alpha: 0.7),
+                minimumSize: const Size(double.infinity, 44),
+                textStyle: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -533,6 +578,14 @@ class ScanResultsScreen extends ConsumerWidget {
   }
 
   Widget _buildImageRefreshButton(WidgetRef ref, BuildContext context) {
+    // Get current items to check if we have any recognized items
+    final itemsState = ref.watch(scanResultsProvider(initialJsonData));
+
+    // Don't show refresh button if no items were recognized
+    if (itemsState.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     // Watch appropriate provider based on itemType
     if (itemType == ScanItemType.ingredient) {
       final simplifiedState = ref.watch(simplifiedRecognitionProvider);
@@ -634,147 +687,8 @@ class ScanResultsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          SizedBox(width: 12),
-          // Debug info button
-          IconButton(
-            onPressed: () {
-              if (itemType == ScanItemType.ingredient) {
-                final state = ref.read(simplifiedRecognitionProvider);
-                _showImageDebugInfo(context, state);
-              } else {
-                final state = ref.read(simplifiedFoodRecognitionProvider);
-                _showFoodImageDebugInfo(context, state);
-              }
-            },
-            icon: Icon(Icons.info_outline),
-            tooltip: 'Info de imágenes',
-          ),
         ],
       ),
-    );
-  }
-
-  void _showImageDebugInfo(
-    BuildContext context,
-    SimplifiedRecognitionState state,
-  ) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('🔍 Debug - Imágenes'),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Recognition ID: ${state.recognitionId ?? "null"}'),
-                  Text('Estado: ${state.isLoading ? "Cargando" : "Listo"}'),
-                  SizedBox(height: 16),
-                  if (state.result != null) ...[
-                    Text('Tipo de resultado: ${state.result.runtimeType}'),
-                    SizedBox(height: 8),
-                    if (state.result is IngredientRecognitionResultModel) ...[
-                      Text(
-                        'Ingredientes:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      ...(state.result as IngredientRecognitionResultModel)
-                          .ingredients
-                          .map(
-                            (ingredient) => Padding(
-                              padding: EdgeInsets.only(left: 8, top: 4),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('• ${ingredient.name}'),
-                                  Text(
-                                    '  📷 Image: ${ingredient.imagePath ?? "null"}',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Text(
-                                    '  📊 Status: ${ingredient.imageStatus ?? "null"}',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                    ],
-                  ] else ...[
-                    Text('No hay resultados disponibles'),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Cerrar'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showFoodImageDebugInfo(
-    BuildContext context,
-    SimplifiedFoodRecognitionState state,
-  ) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('🔍 Debug - Imágenes de Comidas'),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Recognition ID: ${state.recognitionId ?? "null"}'),
-                  Text('Estado: ${state.isLoading ? "Cargando" : "Listo"}'),
-                  SizedBox(height: 16),
-                  if (state.result != null) ...[
-                    Text('Tipo de resultado: ${state.result.runtimeType}'),
-                    SizedBox(height: 8),
-                    if (state.result is FoodRecognitionResultModel) ...[
-                      Text(
-                        'Comidas:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      ...(state.result as FoodRecognitionResultModel).foods.map(
-                        (food) => Padding(
-                          padding: EdgeInsets.only(left: 8, top: 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('• ${food.name}'),
-                              Text(
-                                '  📷 Image: ${food.imagePath ?? "null"}',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                '  📊 Status: ${food.imageStatus ?? "null"}',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ] else ...[
-                    Text('No hay resultados disponibles'),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Cerrar'),
-              ),
-            ],
-          ),
     );
   }
 

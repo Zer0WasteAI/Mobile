@@ -212,11 +212,23 @@ class AppBottomAppBar extends ConsumerWidget {
     return Expanded(
       child: InkWell(
         onTap: () {
-          // Avoiding redirect if it's already the current path
-          if (currentPath != path) {
-            ref.read(currentNavigationProvider.notifier).state = path;
-            context.go(path);
+          print('🏠 Navigation button tapped: $label -> $path');
+          print('📍 Current path: $currentPath');
+          print('🔄 Scan flow active: $isScanFlowActive');
+
+          // Always navigate to ensure we get out of any scan flow
+          ref.read(currentNavigationProvider.notifier).state = path;
+          context.go(path);
+
+          // Close any open modals
+          if (ref.read(isScanModalOpenProvider)) {
+            ref.read(isScanModalOpenProvider.notifier).state = false;
           }
+          if (ref.read(isMoreMenuOpenProvider)) {
+            ref.read(isMoreMenuOpenProvider.notifier).state = false;
+          }
+
+          print('✅ Navigation completed to: $path');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

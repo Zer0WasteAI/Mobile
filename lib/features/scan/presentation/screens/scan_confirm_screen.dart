@@ -16,6 +16,7 @@ import 'package:zer0_waste_ai/features/recognition/data/models/recognition_resul
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/awesome_loading_dialog.dart';
 
 // --- Design Constants ---
 const Color _screenBackgroundColor = Color(0xFFFAF9F6);
@@ -116,24 +117,10 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
       return;
     }
 
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LottieLoadingWidget.small(),
-                const SizedBox(height: 16),
-                Text(
-                  'Analizando ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'} con IA...',
-                ),
-                const Text('Esto puede tardar unos segundos'),
-              ],
-            ),
-          ),
+    // Show awesome loading dialog ✨
+    showAIAnalysisDialog(
+      context,
+      itemType: widget.originType == ScanItemType.food ? 'food' : 'ingredient',
     );
 
     try {
@@ -147,7 +134,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         // Use food recognition provider
         final foodNotifier = ref.read(
           simplifiedFoodRecognitionProvider.notifier,
-      );
+        );
         await foodNotifier.recognizeFoods(images);
 
         // Get the results from food provider
@@ -155,13 +142,13 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
 
         if (foodState.error != null) {
           throw Exception(foodState.error!);
-      }
+        }
 
         if (foodState.result == null) {
           throw Exception(
             'No se recibieron resultados del reconocimiento de comidas',
           );
-      }
+        }
 
         // Convert food results to the format expected by ScanResultsScreen
         formattedResults =
@@ -213,41 +200,41 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         }
 
         if (ingredientState.result is IngredientRecognitionResultModel) {
-        final result =
+          final result =
               ingredientState.result as IngredientRecognitionResultModel;
 
-        formattedResults =
-            result.ingredients.map((ingredient) {
-              return {
-                'name': ingredient.name,
-                'image_path': ingredient.imagePath ?? '',
-                'quantity': ingredient.quantity,
-                'expiration_date':
-                    ingredient.expirationDate ??
-                    DateTime.now()
-                        .add(Duration(days: ingredient.expirationTime))
-                        .toIso8601String(),
-                'confidence': ingredient.confidence ?? 1.0,
-                'category': 'ingredient',
-                'allergyAlert': ingredient.allergyAlert,
-                'allergens': ingredient.allergens,
-                'storage_type': ingredient.storageType,
-                'tips': ingredient.tips,
-                'type_unit': ingredient.typeUnit,
-                'expiration_time': ingredient.expirationTime,
-                'time_unit': ingredient.timeUnit,
-                'added_at': ingredient.addedAt,
-              };
-            }).toList();
+          formattedResults =
+              result.ingredients.map((ingredient) {
+                return {
+                  'name': ingredient.name,
+                  'image_path': ingredient.imagePath ?? '',
+                  'quantity': ingredient.quantity,
+                  'expiration_date':
+                      ingredient.expirationDate ??
+                      DateTime.now()
+                          .add(Duration(days: ingredient.expirationTime))
+                          .toIso8601String(),
+                  'confidence': ingredient.confidence ?? 1.0,
+                  'category': 'ingredient',
+                  'allergyAlert': ingredient.allergyAlert,
+                  'allergens': ingredient.allergens,
+                  'storage_type': ingredient.storageType,
+                  'tips': ingredient.tips,
+                  'type_unit': ingredient.typeUnit,
+                  'expiration_time': ingredient.expirationTime,
+                  'time_unit': ingredient.timeUnit,
+                  'added_at': ingredient.addedAt,
+                };
+              }).toList();
 
-        // Log allergy alerts if any
-        if (result.hasAllergens && result.allergyAlerts.isNotEmpty) {
-          log('⚠️ ALLERGY ALERTS DETECTED:');
-          for (final alert in result.allergyAlerts) {
-            log('  - ${alert.item}: ${alert.message}');
+          // Log allergy alerts if any
+          if (result.hasAllergens && result.allergyAlerts.isNotEmpty) {
+            log('⚠️ ALLERGY ALERTS DETECTED:');
+            for (final alert in result.allergyAlerts) {
+              log('  - ${alert.item}: ${alert.message}');
+            }
           }
         }
-      }
 
         log(
           '✅ Ingredient analysis completed! Found ${formattedResults.length} ingredients',
