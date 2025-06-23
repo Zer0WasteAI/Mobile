@@ -71,6 +71,13 @@ class RecipeBackendNotifier {
     return await _repository.getAllRecipes();
   }
 
+  /// INFO: Get default/curated recipes available for all users
+  /// USAGE: Retrieve curated recipe collection with optional category filter
+  /// RETURNS: Array of default recipes with count
+  Future<Map<String, dynamic>> getDefaultRecipes({String? category}) async {
+    return await _repository.getDefaultRecipes(category: category);
+  }
+
   /// INFO: Delete a user's saved recipe
   /// USAGE: Remove recipe from user's collection by title
   /// RETURNS: Confirmation message

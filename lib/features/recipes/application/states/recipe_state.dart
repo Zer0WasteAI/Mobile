@@ -27,6 +27,7 @@ abstract class RecipeState with _$RecipeState {
   const factory RecipeState({
     @Default(false) bool isLoading,
     @Default([]) List<Recipe> recipes,
+    @Default([]) List<Recipe> allRecipes, // Store all recipes for filtering
     String? errorMessage,
     // Smart mode specific
     int? expiringIngredientsUsedCount,

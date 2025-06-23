@@ -12,6 +12,7 @@ class DialogHelper {
     IconData? icon,
     Color? iconColor,
     String? emoji,
+    String? imageUrl,
   }) async {
     return showDialog<void>(
       context: context,
@@ -22,6 +23,7 @@ class DialogHelper {
           icon: icon,
           iconColor: iconColor,
           emoji: emoji,
+          imageUrl: imageUrl,
           content: Text(
             message,
             style: TextStyle(
@@ -50,6 +52,7 @@ class DialogHelper {
     IconData? icon,
     Color? iconColor,
     String? emoji,
+    String? imageUrl,
   }) async {
     final result = await showDialog<bool>(
       context: context,
@@ -60,6 +63,7 @@ class DialogHelper {
           icon: icon,
           iconColor: iconColor,
           emoji: emoji,
+          imageUrl: imageUrl,
           content: Text(
             message,
             style: TextStyle(

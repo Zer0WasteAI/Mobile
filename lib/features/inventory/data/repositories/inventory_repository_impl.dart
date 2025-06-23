@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/repositories/inventory_repository.dart';
 
@@ -108,14 +110,14 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
   @override
   Future<void> deleteInventoryItem(String itemId) async {
-    print('🗑️ REPOSITORY: Starting deleteInventoryItem for ID: $itemId');
+    log('🗑️ REPOSITORY: Starting deleteInventoryItem for ID: $itemId');
     try {
       // INFO: Universal method for deleting any inventory item by ID
-      print('🗑️ REPOSITORY: Calling API service deleteInventoryItem');
+      log('🗑️ REPOSITORY: Calling API service deleteInventoryItem');
       final result = await _apiService.deleteInventoryItem(itemId);
-      print('🗑️ REPOSITORY: API call successful, result: $result');
+      log('🗑️ REPOSITORY: API call successful, result: $result');
     } catch (e) {
-      print('🗑️ REPOSITORY: API call failed: $e');
+      log('🗑️ REPOSITORY: API call failed: $e');
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to delete inventory item: ${_apiService.getErrorMessage(e)}',
@@ -226,6 +228,19 @@ class InventoryRepositoryImpl implements InventoryRepository {
     } catch (e) {
       throw Exception(
         'Failed to add ingredients from recognition: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> addFoodsFromRecognition(
+    List<Map<String, dynamic>> foods,
+  ) async {
+    try {
+      return await _apiService.addFoodsFromRecognition(foods);
+    } catch (e) {
+      throw Exception(
+        'Failed to add foods from recognition: ${_apiService.getErrorMessage(e)}',
       );
     }
   }

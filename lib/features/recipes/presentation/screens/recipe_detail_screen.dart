@@ -33,19 +33,26 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Inicializar la disponibilidad de ingredientes
+    // No llamar a ref.watch aquí
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Inicializar la disponibilidad de ingredientes aquí
     _checkIngredientAvailability();
   }
 
   // Verifica qué ingredientes están disponibles en el inventario
   void _checkIngredientAvailability() {
-    final inventoryState = ref.watch(inventoryRealProvider);
+    final inventoryState = ref.read(inventoryRealProvider);
     final List<dynamic> recipeIngredients = widget.recipe['ingredients'] ?? [];
 
     final availableIngredients = <String>{};
 
     for (var ingredient in recipeIngredients) {
-      String ingredientName = ingredient.toString().toLowerCase();
+      final ingredientInfo = _parseIngredientSimple(ingredient);
+      String ingredientName = (ingredientInfo['name'] ?? '').toLowerCase();
       // Verificar si algún item del inventario contiene este ingrediente
       bool isAvailable = inventoryState.items.any(
         (item) =>
@@ -53,7 +60,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ingredientName.contains(item.name.toLowerCase()),
       );
       if (isAvailable) {
-        availableIngredients.add(ingredient.toString());
+        availableIngredients.add(ingredientInfo['name'] ?? '');
       }
     }
 
@@ -445,56 +452,101 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   ),
                 ),
               ...ingredients.map((ingredient) {
+                final ingredientInfo = _parseIngredientSimple(ingredient);
+                final ingredientKey = ingredientInfo['name'] ?? '';
+
                 bool isAvailable =
                     _showIngredientCheck
-                        ? (_ingredientAvailability[ingredient.toString()] ??
-                            false)
+                        ? (_ingredientAvailability[ingredientKey] ?? false)
                         : true;
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color:
+                          isAvailable && _showIngredientCheck
+                              ? Colors.green.withValues(alpha: 0.3)
+                              : Colors.grey.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
                   child: Row(
                     children: [
+                      // Availability indicator
                       if (_showIngredientCheck)
                         Container(
                           width: 24,
                           height: 24,
-                          margin: const EdgeInsets.only(right: 8),
+                          margin: const EdgeInsets.only(right: 12),
                           decoration: BoxDecoration(
                             color:
                                 isAvailable
-                                    ? Colors.green.withValues(alpha: 0.1)
-                                    : Colors.red.withValues(alpha: 0.1),
+                                    ? Colors.green.withValues(alpha: 0.15)
+                                    : Colors.red.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isAvailable ? Icons.check : Icons.close,
+                            isAvailable ? Icons.check_circle : Icons.cancel,
                             color: isAvailable ? Colors.green : Colors.red,
                             size: 16,
                           ),
                         ),
-                      Text(
-                        '• ',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
+
+                      // Ingredient icon
+                      Container(
+                        width: 32,
+                        height: 32,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.restaurant,
                           color: primaryColor,
-                          fontWeight: FontWeight.bold,
+                          size: 16,
                         ),
                       ),
+
+                      // Ingredient details
                       Expanded(
-                        child: Text(
-                          ingredient.toString(),
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            color:
-                                _showIngredientCheck && !isAvailable
-                                    ? Colors.grey
-                                    : textColor,
-                            decoration:
-                                _showIngredientCheck && !isAvailable
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ingredientInfo['name'] ?? 'Ingrediente',
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    _showIngredientCheck && !isAvailable
+                                        ? Colors.grey
+                                        : textColor,
+                                decoration:
+                                    _showIngredientCheck && !isAvailable
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                              ),
+                            ),
+                            if ((ingredientInfo['quantity'] ?? '').isNotEmpty)
+                              const SizedBox(height: 2),
+                            if ((ingredientInfo['quantity'] ?? '').isNotEmpty)
+                              Text(
+                                '${ingredientInfo['quantity']} ${ingredientInfo['unit']}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color:
+                                      _showIngredientCheck && !isAvailable
+                                          ? Colors.grey.withValues(alpha: 0.7)
+                                          : textColor.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -888,11 +940,18 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
   void _completeRecipe() async {
     final recipeName = widget.recipe['name'] ?? 'una receta';
+    final recipeUid = widget.recipe['uid'];
+
     try {
       final impactService = ref.read(impact.impactCalculationServiceProvider);
 
       // 1. Create the impact calculation record
-      await impactService.calculateFromTitle(recipeName);
+      // Try with UID first (more reliable), fallback to title if no UID
+      if (recipeUid != null && recipeUid.toString().trim().isNotEmpty) {
+        await impactService.calculateFromUid(recipeUid.toString());
+      } else {
+        await impactService.calculateFromTitle(recipeName);
+      }
 
       // 2. Consume ingredients from inventory
       _consumeIngredientsFromInventory(ref);
@@ -910,7 +969,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           title: '¡Receta Completada!',
           message:
               'Hemos registrado el impacto ambiental y actualizado tu inventario.',
-          emoji: '🎉',
+          imageUrl: 'assets/icons/home/image_motivational.png',
         );
         context.pop(true); // Pop screen and signal success
       }
@@ -1009,5 +1068,40 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     };
 
     return tagLabels[tag] ?? tag;
+  }
+
+  // Función simple para parsear ingredientes
+  Map<String, String> _parseIngredientSimple(dynamic ingredient) {
+    if (ingredient is String) {
+      // Si es un string que parece JSON, extraer el nombre
+      if (ingredient.contains('name:')) {
+        final nameMatch = RegExp(r'name:\s*([^,}]+)').firstMatch(ingredient);
+        final quantityMatch = RegExp(
+          r'quantity:\s*([^,}]+)',
+        ).firstMatch(ingredient);
+        final unitMatch = RegExp(r'unit:\s*([^,}]+)').firstMatch(ingredient);
+
+        String name = nameMatch?.group(1)?.trim() ?? ingredient;
+        String quantity = quantityMatch?.group(1)?.trim() ?? '';
+        String unit = unitMatch?.group(1)?.trim() ?? '';
+
+        // Limpiar comillas y espacios
+        name = name.replaceAll(RegExp(r'["\s]+'), ' ').trim();
+        quantity = quantity.replaceAll(RegExp(r'["\s]+'), ' ').trim();
+        unit = unit.replaceAll(RegExp(r'["\s]+'), ' ').trim();
+
+        return {'name': name, 'quantity': quantity, 'unit': unit};
+      } else {
+        return {'name': ingredient, 'quantity': '', 'unit': ''};
+      }
+    } else if (ingredient is Map) {
+      return {
+        'name': ingredient['name']?.toString() ?? 'Ingrediente',
+        'quantity': ingredient['quantity']?.toString() ?? '',
+        'unit': ingredient['unit']?.toString() ?? '',
+      };
+    } else {
+      return {'name': ingredient.toString(), 'quantity': '', 'unit': ''};
+    }
   }
 }

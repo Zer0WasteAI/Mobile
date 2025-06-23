@@ -50,6 +50,7 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
       state = state.copyWith(
         isLoading: false,
         recipes: stateRecipes,
+        allRecipes: stateRecipes, // Store all recipes for filtering
         expiringIngredientsUsedCount:
             _mode == RecipeMode.smartFromInventory
                 ? _extractExpiringIngredientsCount(apiResponse)
@@ -63,6 +64,25 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
     }
   }
 
+  // Parse ingredient names from API response (handles both String and Map formats)
+  List<String> _parseIngredientNames(dynamic ingredientsData) {
+    if (ingredientsData == null) return [];
+    
+    final List<dynamic> ingredients = ingredientsData is List 
+        ? ingredientsData 
+        : [];
+    
+    return ingredients.map((ingredient) {
+      if (ingredient is String) {
+        return ingredient;
+      } else if (ingredient is Map<String, dynamic>) {
+        return ingredient['name']?.toString() ?? ingredient.toString();
+      } else {
+        return ingredient.toString();
+      }
+    }).where((name) => name.isNotEmpty).toList();
+  }
+
   // Parse API response to Recipe objects
   List<state_lib.Recipe> _parseApiRecipes(Map<String, dynamic> apiResponse) {
     final List<dynamic> recipesData =
@@ -74,7 +94,7 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
         name: recipeData['title'] ?? recipeData['name'] ?? '',
         description: recipeData['description'] ?? '',
         emoji: _getRecipeEmoji(recipeData['category'] ?? ''),
-        ingredients: List<String>.from(recipeData['ingredients'] ?? []),
+        ingredients: _parseIngredientNames(recipeData['ingredients']),
         requiredIngredientsCount:
             (recipeData['ingredients'] as List?)?.length ?? 0,
         availableIngredientsCount: _calculateAvailableIngredients(
@@ -294,14 +314,186 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
 
   // Apply both filters and search query to recipes
   void _applyFiltersAndSearch() {
-    // This would filter the recipes based on selected filters and search query
-    // For now, we'll just update the loading state
-    state = state.copyWith(isLoading: true);
-
-    // In a real implementation, you'd filter the recipes here
-
-    // ✅ UPDATED: Immediate response without artificial delay
-    state = state.copyWith(isLoading: false);
+    final allRecipes = state.allRecipes.isNotEmpty ? state.allRecipes : state.recipes;
+    
+    // Store all recipes if not already stored
+    if (state.allRecipes.isEmpty && state.recipes.isNotEmpty) {
+      state = state.copyWith(allRecipes: state.recipes);
+    }
+    
+    List<state_lib.Recipe> filteredRecipes = List.from(allRecipes);
+    
+    // Apply search query filter
+    if (state.searchQuery.isNotEmpty) {
+      final query = state.searchQuery.toLowerCase();
+      filteredRecipes = filteredRecipes.where((recipe) {
+        return recipe.name.toLowerCase().contains(query) ||
+               recipe.description.toLowerCase().contains(query) ||
+               recipe.ingredients.any((ingredient) => 
+                 ingredient.toLowerCase().contains(query));
+      }).toList();
+    }
+    
+    // Apply category filters
+    if (state.selectedFilters.isNotEmpty) {
+      filteredRecipes = filteredRecipes.where((recipe) {
+        return _recipeMatchesFilters(recipe, state.selectedFilters);
+      }).toList();
+    }
+    
+    // Apply "only with my ingredients" filter
+    if (state.showOnlyWithMyIngredients) {
+      filteredRecipes = filteredRecipes.where((recipe) {
+        return recipe.availableIngredientsCount != null &&
+               recipe.requiredIngredientsCount != null &&
+               recipe.availableIngredientsCount! >= recipe.requiredIngredientsCount! * 0.7;
+      }).toList();
+    }
+    
+    state = state.copyWith(recipes: filteredRecipes);
+  }
+  
+  // Check if a recipe matches the selected filters
+  bool _recipeMatchesFilters(state_lib.Recipe recipe, Map<String, Set<String>> filters) {
+    for (final filterEntry in filters.entries) {
+      final category = filterEntry.key;
+      final selectedValues = filterEntry.value;
+      
+      if (selectedValues.isEmpty) continue;
+      
+      bool categoryMatches = false;
+      
+      switch (category) {
+        case 'Tipo de receta':
+          // Map recipe categories to filter values
+          categoryMatches = _checkRecipeTypeFilter(recipe, selectedValues);
+          break;
+        case 'Dificultad':
+          // For now, assume all recipes are "facil" (easy)
+          categoryMatches = selectedValues.contains('facil');
+          break;
+        case 'Tiempo de preparación':
+          // For now, assume all recipes are medium time (15-30 min)
+          categoryMatches = selectedValues.contains('medium_time');
+          break;
+        case 'Tipo de dieta':
+          // Check diet type based on ingredients
+          categoryMatches = _checkDietTypeFilter(recipe, selectedValues);
+          break;
+        case 'Sostenibilidad':
+          // Check sustainability based on recipe properties
+          categoryMatches = _checkSustainabilityFilter(recipe, selectedValues);
+          break;
+        default:
+          categoryMatches = true; // Unknown category, don't filter
+      }
+      
+      if (!categoryMatches) {
+        return false; // Recipe doesn't match this filter category
+      }
+    }
+    
+    return true; // Recipe matches all filter categories
+  }
+  
+  bool _checkRecipeTypeFilter(state_lib.Recipe recipe, Set<String> selectedValues) {
+    // Determine recipe type based on name and ingredients
+    final recipeName = recipe.name.toLowerCase();
+    final ingredients = recipe.ingredients.map((i) => i.toLowerCase()).toList();
+    
+    for (final value in selectedValues) {
+      switch (value) {
+        case 'entrada':
+          if (recipeName.contains('ensalada') || recipeName.contains('entrada') ||
+              recipeName.contains('aperitivo')) return true;
+          break;
+        case 'fondo':
+          if (recipeName.contains('pasta') || recipeName.contains('pollo') ||
+              recipeName.contains('carne') || recipeName.contains('arroz') ||
+              recipeName.contains('curry') || recipeName.contains('guiso')) return true;
+          break;
+        case 'postre':
+          if (recipeName.contains('postre') || recipeName.contains('dulce') ||
+              recipeName.contains('torta') || recipeName.contains('helado')) return true;
+          break;
+        case 'bebida':
+          if (recipeName.contains('jugo') || recipeName.contains('batido') ||
+              recipeName.contains('smoothie') || recipeName.contains('bebida')) return true;
+          break;
+        case 'snack':
+          if (recipeName.contains('snack') || recipeName.contains('bocadito') ||
+              recipeName.contains('aperitivo')) return true;
+          break;
+      }
+    }
+    
+    // If no specific type matches, consider it as "fondo" (main dish) by default
+    return selectedValues.contains('fondo');
+  }
+  
+  bool _checkDietTypeFilter(state_lib.Recipe recipe, Set<String> selectedValues) {
+    final ingredients = recipe.ingredients.map((i) => i.toLowerCase()).toList();
+    
+    for (final value in selectedValues) {
+      switch (value) {
+        case 'vegana':
+          // Check if recipe contains no animal products
+          final animalProducts = ['pollo', 'carne', 'pescado', 'huevo', 'leche', 'queso', 'mantequilla'];
+          if (!ingredients.any((ingredient) => 
+              animalProducts.any((animal) => ingredient.contains(animal)))) {
+            return true;
+          }
+          break;
+        case 'vegetariana':
+          // Check if recipe contains no meat but may have dairy/eggs
+          final meatProducts = ['pollo', 'carne', 'pescado', 'cerdo', 'res'];
+          if (!ingredients.any((ingredient) => 
+              meatProducts.any((meat) => ingredient.contains(meat)))) {
+            return true;
+          }
+          break;
+        case 'sin_gluten':
+          // Check if recipe contains no gluten
+          final glutenProducts = ['harina', 'trigo', 'pasta', 'pan', 'avena'];
+          if (!ingredients.any((ingredient) => 
+              glutenProducts.any((gluten) => ingredient.contains(gluten)))) {
+            return true;
+          }
+          break;
+        case 'sin_lactosa':
+          // Check if recipe contains no dairy
+          final dairyProducts = ['leche', 'queso', 'mantequilla', 'crema', 'yogurt'];
+          if (!ingredients.any((ingredient) => 
+              dairyProducts.any((dairy) => ingredient.contains(dairy)))) {
+            return true;
+          }
+          break;
+      }
+    }
+    
+    return false;
+  }
+  
+  bool _checkSustainabilityFilter(state_lib.Recipe recipe, Set<String> selectedValues) {
+    for (final value in selectedValues) {
+      switch (value) {
+        case 'sobrantes':
+          // Check if recipe uses expiring items or common leftover ingredients
+          if (recipe.usesExpiringItems) return true;
+          break;
+        case 'bajo_impacto':
+          // Consider vegetarian recipes as lower environmental impact
+          final ingredients = recipe.ingredients.map((i) => i.toLowerCase()).toList();
+          final meatProducts = ['pollo', 'carne', 'pescado', 'cerdo', 'res'];
+          if (!ingredients.any((ingredient) => 
+              meatProducts.any((meat) => ingredient.contains(meat)))) {
+            return true;
+          }
+          break;
+      }
+    }
+    
+    return false;
   }
 
   void retryLoad() {

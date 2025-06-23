@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:zer0_waste_ai/features/inventory/data/repositories/inventory_repository_impl.dart';
@@ -78,12 +80,12 @@ class InventoryBackendNotifier {
   /// INFO: Delete inventory item by ID (universal method for foods/ingredients)
   /// USAGE: Delete any inventory item using its unique ID from the backend
   Future<void> deleteInventoryItem(String itemId) async {
-    print('🗑️ BACKEND: Starting deleteInventoryItem for ID: $itemId');
+    log('🗑️ BACKEND: Starting deleteInventoryItem for ID: $itemId');
     try {
       await _repository.deleteInventoryItem(itemId);
-      print('🗑️ BACKEND: Successfully deleted item: $itemId');
+      log('🗑️ BACKEND: Successfully deleted item: $itemId');
     } catch (e) {
-      print('🗑️ BACKEND: Error deleting item: $e');
+      log('🗑️ BACKEND: Error deleting item: $e');
       rethrow;
     }
   }
@@ -154,6 +156,14 @@ class InventoryBackendNotifier {
     List<Map<String, dynamic>> ingredients,
   ) async {
     return await _repository.addIngredientsFromRecognition(ingredients);
+  }
+
+  /// INFO: Add foods from recognition results
+  /// USAGE: Add foods directly from AI recognition
+  Future<Map<String, dynamic>> addFoodsFromRecognition(
+    List<Map<String, dynamic>> foods,
+  ) async {
+    return await _repository.addFoodsFromRecognition(foods);
   }
 
   /// INFO: Update ingredient quantity only

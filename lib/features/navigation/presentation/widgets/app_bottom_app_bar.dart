@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -212,9 +214,9 @@ class AppBottomAppBar extends ConsumerWidget {
     return Expanded(
       child: InkWell(
         onTap: () {
-          print('🏠 Navigation button tapped: $label -> $path');
-          print('📍 Current path: $currentPath');
-          print('🔄 Scan flow active: $isScanFlowActive');
+          log('🏠 Navigation button tapped: $label -> $path');
+          log('📍 Current path: $currentPath');
+          log('🔄 Scan flow active: $isScanFlowActive');
 
           // Always navigate to ensure we get out of any scan flow
           ref.read(currentNavigationProvider.notifier).state = path;
@@ -228,7 +230,7 @@ class AppBottomAppBar extends ConsumerWidget {
             ref.read(isMoreMenuOpenProvider.notifier).state = false;
           }
 
-          print('✅ Navigation completed to: $path');
+          log('✅ Navigation completed to: $path');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

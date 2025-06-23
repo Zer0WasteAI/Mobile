@@ -188,7 +188,8 @@ as bool,
 /// @nodoc
 mixin _$RecipeState implements DiagnosticableTreeMixin {
 
- bool get isLoading; List<Recipe> get recipes; String? get errorMessage;// Smart mode specific
+ bool get isLoading; List<Recipe> get recipes; List<Recipe> get allRecipes;// Store all recipes for filtering
+ String? get errorMessage;// Smart mode specific
  int? get expiringIngredientsUsedCount;// Explore mode specific
  String get searchQuery; bool get showOnlyWithMyIngredients;// Map of category value to Set of selected filter values
 // e.g., {"Tipo de receta": {"entrada", "postre"}, "Tiempo de preparación": {"short_time"}}
@@ -204,21 +205,21 @@ $RecipeStateCopyWith<RecipeState> get copyWith => _$RecipeStateCopyWithImpl<Reci
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'RecipeState'))
-    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('recipes', recipes))..add(DiagnosticsProperty('errorMessage', errorMessage))..add(DiagnosticsProperty('expiringIngredientsUsedCount', expiringIngredientsUsedCount))..add(DiagnosticsProperty('searchQuery', searchQuery))..add(DiagnosticsProperty('showOnlyWithMyIngredients', showOnlyWithMyIngredients))..add(DiagnosticsProperty('selectedFilters', selectedFilters));
+    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('recipes', recipes))..add(DiagnosticsProperty('allRecipes', allRecipes))..add(DiagnosticsProperty('errorMessage', errorMessage))..add(DiagnosticsProperty('expiringIngredientsUsedCount', expiringIngredientsUsedCount))..add(DiagnosticsProperty('searchQuery', searchQuery))..add(DiagnosticsProperty('showOnlyWithMyIngredients', showOnlyWithMyIngredients))..add(DiagnosticsProperty('selectedFilters', selectedFilters));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecipeState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.recipes, recipes)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.expiringIngredientsUsedCount, expiringIngredientsUsedCount) || other.expiringIngredientsUsedCount == expiringIngredientsUsedCount)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.showOnlyWithMyIngredients, showOnlyWithMyIngredients) || other.showOnlyWithMyIngredients == showOnlyWithMyIngredients)&&const DeepCollectionEquality().equals(other.selectedFilters, selectedFilters));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecipeState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.recipes, recipes)&&const DeepCollectionEquality().equals(other.allRecipes, allRecipes)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.expiringIngredientsUsedCount, expiringIngredientsUsedCount) || other.expiringIngredientsUsedCount == expiringIngredientsUsedCount)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.showOnlyWithMyIngredients, showOnlyWithMyIngredients) || other.showOnlyWithMyIngredients == showOnlyWithMyIngredients)&&const DeepCollectionEquality().equals(other.selectedFilters, selectedFilters));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,const DeepCollectionEquality().hash(recipes),errorMessage,expiringIngredientsUsedCount,searchQuery,showOnlyWithMyIngredients,const DeepCollectionEquality().hash(selectedFilters));
+int get hashCode => Object.hash(runtimeType,isLoading,const DeepCollectionEquality().hash(recipes),const DeepCollectionEquality().hash(allRecipes),errorMessage,expiringIngredientsUsedCount,searchQuery,showOnlyWithMyIngredients,const DeepCollectionEquality().hash(selectedFilters));
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'RecipeState(isLoading: $isLoading, recipes: $recipes, errorMessage: $errorMessage, expiringIngredientsUsedCount: $expiringIngredientsUsedCount, searchQuery: $searchQuery, showOnlyWithMyIngredients: $showOnlyWithMyIngredients, selectedFilters: $selectedFilters)';
+  return 'RecipeState(isLoading: $isLoading, recipes: $recipes, allRecipes: $allRecipes, errorMessage: $errorMessage, expiringIngredientsUsedCount: $expiringIngredientsUsedCount, searchQuery: $searchQuery, showOnlyWithMyIngredients: $showOnlyWithMyIngredients, selectedFilters: $selectedFilters)';
 }
 
 
@@ -229,7 +230,7 @@ abstract mixin class $RecipeStateCopyWith<$Res>  {
   factory $RecipeStateCopyWith(RecipeState value, $Res Function(RecipeState) _then) = _$RecipeStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, List<Recipe> recipes, String? errorMessage, int? expiringIngredientsUsedCount, String searchQuery, bool showOnlyWithMyIngredients, Map<String, Set<String>> selectedFilters
+ bool isLoading, List<Recipe> recipes, List<Recipe> allRecipes, String? errorMessage, int? expiringIngredientsUsedCount, String searchQuery, bool showOnlyWithMyIngredients, Map<String, Set<String>> selectedFilters
 });
 
 
@@ -246,10 +247,11 @@ class _$RecipeStateCopyWithImpl<$Res>
 
 /// Create a copy of RecipeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? recipes = null,Object? errorMessage = freezed,Object? expiringIngredientsUsedCount = freezed,Object? searchQuery = null,Object? showOnlyWithMyIngredients = null,Object? selectedFilters = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? recipes = null,Object? allRecipes = null,Object? errorMessage = freezed,Object? expiringIngredientsUsedCount = freezed,Object? searchQuery = null,Object? showOnlyWithMyIngredients = null,Object? selectedFilters = null,}) {
   return _then(_self.copyWith(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,recipes: null == recipes ? _self.recipes : recipes // ignore: cast_nullable_to_non_nullable
+as List<Recipe>,allRecipes: null == allRecipes ? _self.allRecipes : allRecipes // ignore: cast_nullable_to_non_nullable
 as List<Recipe>,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,expiringIngredientsUsedCount: freezed == expiringIngredientsUsedCount ? _self.expiringIngredientsUsedCount : expiringIngredientsUsedCount // ignore: cast_nullable_to_non_nullable
 as int?,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery // ignore: cast_nullable_to_non_nullable
@@ -266,7 +268,7 @@ as Map<String, Set<String>>,
 
 
 class _RecipeState with DiagnosticableTreeMixin implements RecipeState {
-  const _RecipeState({this.isLoading = false, final  List<Recipe> recipes = const [], this.errorMessage, this.expiringIngredientsUsedCount, this.searchQuery = '', this.showOnlyWithMyIngredients = false, final  Map<String, Set<String>> selectedFilters = const {}}): _recipes = recipes,_selectedFilters = selectedFilters;
+  const _RecipeState({this.isLoading = false, final  List<Recipe> recipes = const [], final  List<Recipe> allRecipes = const [], this.errorMessage, this.expiringIngredientsUsedCount, this.searchQuery = '', this.showOnlyWithMyIngredients = false, final  Map<String, Set<String>> selectedFilters = const {}}): _recipes = recipes,_allRecipes = allRecipes,_selectedFilters = selectedFilters;
   
 
 @override@JsonKey() final  bool isLoading;
@@ -277,6 +279,14 @@ class _RecipeState with DiagnosticableTreeMixin implements RecipeState {
   return EqualUnmodifiableListView(_recipes);
 }
 
+ final  List<Recipe> _allRecipes;
+@override@JsonKey() List<Recipe> get allRecipes {
+  if (_allRecipes is EqualUnmodifiableListView) return _allRecipes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allRecipes);
+}
+
+// Store all recipes for filtering
 @override final  String? errorMessage;
 // Smart mode specific
 @override final  int? expiringIngredientsUsedCount;
@@ -306,21 +316,21 @@ _$RecipeStateCopyWith<_RecipeState> get copyWith => __$RecipeStateCopyWithImpl<_
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'RecipeState'))
-    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('recipes', recipes))..add(DiagnosticsProperty('errorMessage', errorMessage))..add(DiagnosticsProperty('expiringIngredientsUsedCount', expiringIngredientsUsedCount))..add(DiagnosticsProperty('searchQuery', searchQuery))..add(DiagnosticsProperty('showOnlyWithMyIngredients', showOnlyWithMyIngredients))..add(DiagnosticsProperty('selectedFilters', selectedFilters));
+    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('recipes', recipes))..add(DiagnosticsProperty('allRecipes', allRecipes))..add(DiagnosticsProperty('errorMessage', errorMessage))..add(DiagnosticsProperty('expiringIngredientsUsedCount', expiringIngredientsUsedCount))..add(DiagnosticsProperty('searchQuery', searchQuery))..add(DiagnosticsProperty('showOnlyWithMyIngredients', showOnlyWithMyIngredients))..add(DiagnosticsProperty('selectedFilters', selectedFilters));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecipeState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other._recipes, _recipes)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.expiringIngredientsUsedCount, expiringIngredientsUsedCount) || other.expiringIngredientsUsedCount == expiringIngredientsUsedCount)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.showOnlyWithMyIngredients, showOnlyWithMyIngredients) || other.showOnlyWithMyIngredients == showOnlyWithMyIngredients)&&const DeepCollectionEquality().equals(other._selectedFilters, _selectedFilters));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecipeState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other._recipes, _recipes)&&const DeepCollectionEquality().equals(other._allRecipes, _allRecipes)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.expiringIngredientsUsedCount, expiringIngredientsUsedCount) || other.expiringIngredientsUsedCount == expiringIngredientsUsedCount)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.showOnlyWithMyIngredients, showOnlyWithMyIngredients) || other.showOnlyWithMyIngredients == showOnlyWithMyIngredients)&&const DeepCollectionEquality().equals(other._selectedFilters, _selectedFilters));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,const DeepCollectionEquality().hash(_recipes),errorMessage,expiringIngredientsUsedCount,searchQuery,showOnlyWithMyIngredients,const DeepCollectionEquality().hash(_selectedFilters));
+int get hashCode => Object.hash(runtimeType,isLoading,const DeepCollectionEquality().hash(_recipes),const DeepCollectionEquality().hash(_allRecipes),errorMessage,expiringIngredientsUsedCount,searchQuery,showOnlyWithMyIngredients,const DeepCollectionEquality().hash(_selectedFilters));
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'RecipeState(isLoading: $isLoading, recipes: $recipes, errorMessage: $errorMessage, expiringIngredientsUsedCount: $expiringIngredientsUsedCount, searchQuery: $searchQuery, showOnlyWithMyIngredients: $showOnlyWithMyIngredients, selectedFilters: $selectedFilters)';
+  return 'RecipeState(isLoading: $isLoading, recipes: $recipes, allRecipes: $allRecipes, errorMessage: $errorMessage, expiringIngredientsUsedCount: $expiringIngredientsUsedCount, searchQuery: $searchQuery, showOnlyWithMyIngredients: $showOnlyWithMyIngredients, selectedFilters: $selectedFilters)';
 }
 
 
@@ -331,7 +341,7 @@ abstract mixin class _$RecipeStateCopyWith<$Res> implements $RecipeStateCopyWith
   factory _$RecipeStateCopyWith(_RecipeState value, $Res Function(_RecipeState) _then) = __$RecipeStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, List<Recipe> recipes, String? errorMessage, int? expiringIngredientsUsedCount, String searchQuery, bool showOnlyWithMyIngredients, Map<String, Set<String>> selectedFilters
+ bool isLoading, List<Recipe> recipes, List<Recipe> allRecipes, String? errorMessage, int? expiringIngredientsUsedCount, String searchQuery, bool showOnlyWithMyIngredients, Map<String, Set<String>> selectedFilters
 });
 
 
@@ -348,10 +358,11 @@ class __$RecipeStateCopyWithImpl<$Res>
 
 /// Create a copy of RecipeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? recipes = null,Object? errorMessage = freezed,Object? expiringIngredientsUsedCount = freezed,Object? searchQuery = null,Object? showOnlyWithMyIngredients = null,Object? selectedFilters = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? recipes = null,Object? allRecipes = null,Object? errorMessage = freezed,Object? expiringIngredientsUsedCount = freezed,Object? searchQuery = null,Object? showOnlyWithMyIngredients = null,Object? selectedFilters = null,}) {
   return _then(_RecipeState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,recipes: null == recipes ? _self._recipes : recipes // ignore: cast_nullable_to_non_nullable
+as List<Recipe>,allRecipes: null == allRecipes ? _self._allRecipes : allRecipes // ignore: cast_nullable_to_non_nullable
 as List<Recipe>,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,expiringIngredientsUsedCount: freezed == expiringIngredientsUsedCount ? _self.expiringIngredientsUsedCount : expiringIngredientsUsedCount // ignore: cast_nullable_to_non_nullable
 as int?,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery // ignore: cast_nullable_to_non_nullable

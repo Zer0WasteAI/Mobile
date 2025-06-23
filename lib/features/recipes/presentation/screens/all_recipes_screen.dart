@@ -25,16 +25,10 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
   bool _isLoading = true;
   List<Recipe> _allRecipes = [];
   String? _error;
+  bool _showDefaultRecipes =
+      false; // Toggle between all recipes and default recipes
 
-  final List<String> _categories = [
-    'Todas',
-    'Destacados',
-    'Vegetarianas',
-    'Saludables',
-    'Rápidas y Fáciles',
-    'Postres',
-    'Principales',
-  ];
+  List<String> _categories = ['Todas']; // Will be populated from backend
 
   @override
   void initState() {
@@ -50,14 +44,33 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
 
     try {
       final recipeBackend = ref.read(recipeBackendProvider);
-      final response = await recipeBackend.getAllRecipes();
+      final Map<String, dynamic> response;
+
+      if (_showDefaultRecipes) {
+        // Load default/curated recipes
+        final categoryFilter =
+            _selectedCategory == 'Todas' ? null : _selectedCategory;
+        response = await recipeBackend.getDefaultRecipes(
+          category: categoryFilter,
+        );
+      } else {
+        // Load all recipes (existing behavior)
+        response = await recipeBackend.getAllRecipes();
+      }
 
       final recipesData = response['recipes'] as List? ?? [];
       final recipes =
           recipesData.map((data) => _parseRecipeFromAPI(data)).toList();
 
+      // Extract unique categories from recipes
+      final Set<String> uniqueCategories = {'Todas'};
+      for (final recipe in recipes) {
+        uniqueCategories.addAll(recipe.categories);
+      }
+
       setState(() {
         _allRecipes = recipes;
+        _categories = uniqueCategories.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -176,7 +189,7 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Todas las Recetas',
+              _showDefaultRecipes ? 'Recetas por Defecto' : 'Todas las Recetas',
               style: GoogleFonts.inter(
                 color: textColor,
                 fontWeight: FontWeight.bold,
@@ -205,9 +218,37 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
+          // Recipe type toggle
           Container(
             padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _showDefaultRecipes ? 'Recetas Curadas' : 'Todas las Recetas',
+                  style: GoogleFonts.inter(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                Switch(
+                  value: _showDefaultRecipes,
+                  onChanged: (value) {
+                    setState(() {
+                      _showDefaultRecipes = value;
+                    });
+                    _loadAllRecipes(); // Reload recipes when toggling
+                  },
+                  activeColor: Colors.green.shade600,
+                ),
+              ],
+            ),
+          ),
+
+          // Search bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               onChanged: (value) {
                 setState(() {
@@ -231,6 +272,8 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
               ),
             ),
           ),
+
+          const SizedBox(height: 8),
 
           // Category filter
           Container(

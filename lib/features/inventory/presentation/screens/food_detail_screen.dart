@@ -146,7 +146,9 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
             builder:
                 (context) => FoodConsumedScreen(
                   foodName: widget.foodName,
-                  foodEmoji: '🍽️',
+                  foodImageUrl:
+                      _foodDetail?.imagePath ??
+                      'assets/icons/home/eco_coin.png',
                   co2Saved: co2Saved,
                   waterSaved: waterSaved,
                 ),

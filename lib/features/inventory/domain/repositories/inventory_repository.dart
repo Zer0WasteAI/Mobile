@@ -91,6 +91,12 @@ abstract class InventoryRepository {
     List<Map<String, dynamic>> ingredients,
   );
 
+  /// INFO: Add foods from recognition results
+  /// USAGE: Add foods directly from AI recognition
+  Future<Map<String, dynamic>> addFoodsFromRecognition(
+    List<Map<String, dynamic>> foods,
+  );
+
   /// INFO: Update ingredient quantity only
   /// USAGE: Quick quantity update for specific ingredient stack
   Future<Map<String, dynamic>> updateIngredientQuantity(

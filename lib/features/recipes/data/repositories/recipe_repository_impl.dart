@@ -88,6 +88,19 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> getDefaultRecipes({String? category}) async {
+    try {
+      // INFO: Retrieve curated default recipes with optional category filter
+      return await _apiService.getDefaultRecipes(category: category);
+    } catch (e) {
+      // INFO: Convert API errors to domain-friendly error messages
+      throw Exception(
+        'Failed to get default recipes: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
   Future<Map<String, dynamic>> deleteRecipe(String recipeTitle) async {
     try {
       // INFO: Delete a user's saved recipe by title

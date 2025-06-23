@@ -623,13 +623,30 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final ingredientsData =
-          items.map((item) => _convertItemToAPI(item)).toList();
-      await _backendNotifier.addIngredients(ingredientsData);
+      // Separate ingredients from foods
+      final ingredients = items.where((item) => item.category == ItemCategory.ingredient).toList();
+      final foods = items.where((item) => item.category == ItemCategory.food).toList();
+      
+      log('🍃 Adding ${ingredients.length} ingredients and ${foods.length} foods to backend');
+      
+      // Add ingredients if any
+      if (ingredients.isNotEmpty) {
+        final ingredientsData = ingredients.map((item) => _convertItemToAPI(item)).toList();
+        await _backendNotifier.addIngredients(ingredientsData);
+        log('✅ Ingredients added successfully');
+      }
+      
+      // Add foods if any
+      if (foods.isNotEmpty) {
+        final foodsData = foods.map((item) => _convertItemToAPI(item)).toList();
+        await _backendNotifier.addFoodsFromRecognition(foodsData);
+        log('✅ Foods added successfully');
+      }
 
       // Reload inventory after adding
       await loadInventoryFromBackend();
     } catch (e) {
+      log('❌ Error adding items to backend: $e');
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -1054,6 +1071,29 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Failed to add ingredients: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Add foods from recognition results
+  Future<void> addFoodsFromRecognition(
+    List<Map<String, dynamic>> foods,
+  ) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _backendNotifier.addFoodsFromRecognition(
+        foods,
+      );
+      log('✅ Foods added from recognition: $result');
+
+      // Reload inventory to show new items
+      await loadInventoryFromBackend();
+    } catch (e) {
+      log('❌ Failed to add foods from recognition: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to add foods: ${e.toString()}',
       );
     }
   }

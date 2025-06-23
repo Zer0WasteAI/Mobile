@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: unused_local_variable, unused_field
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +22,7 @@ import 'dart:developer';
 // Assume Uuid instance is available or create one
 final _uuid = Uuid();
 
-class ScanResultsScreen extends ConsumerWidget {
+class ScanResultsScreen extends ConsumerStatefulWidget {
   // Now expects the raw JSON data list and itemType
   final List<Map<String, dynamic>> initialJsonData;
   final ScanItemType itemType;
@@ -33,19 +33,59 @@ class ScanResultsScreen extends ConsumerWidget {
     required this.itemType,
   });
 
+  @override
+  ConsumerState<ScanResultsScreen> createState() => _ScanResultsScreenState();
+}
+
+class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
+    with TickerProviderStateMixin {
+  // Animation states
+  bool _isLoading = false;
+  bool _isSuccess = false;
+  late AnimationController _animationController;
+  late AnimationController _successController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _successAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _successController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _successAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _successController.dispose();
+    super.dispose();
+  }
+
   static const String routeName = 'scan_results';
   static const String routePath = '/scan/results';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // Use the family provider, passing the initial JSON data list
-    final itemsState = ref.watch(scanResultsProvider(initialJsonData));
+    final itemsState = ref.watch(scanResultsProvider(widget.initialJsonData));
     final itemsNotifier = ref.read(
-      scanResultsProvider(initialJsonData).notifier,
+      scanResultsProvider(widget.initialJsonData).notifier,
     );
 
     // Watch appropriate recognition state based on itemType
-    if (itemType == ScanItemType.ingredient) {
+    if (widget.itemType == ScanItemType.ingredient) {
       final simplifiedState = ref.watch(simplifiedRecognitionProvider);
 
       // Initial sync after build is complete
@@ -143,7 +183,7 @@ class ScanResultsScreen extends ConsumerWidget {
     final Color secondaryTextColor = const Color(0xFF70605A);
 
     final String title =
-        itemType == ScanItemType.food
+        widget.itemType == ScanItemType.food
             ? "Comidas Reconocidas"
             : "Ingredientes Reconocidos";
 
@@ -189,7 +229,7 @@ class ScanResultsScreen extends ConsumerWidget {
             Expanded(
               child:
                   itemsState.isEmpty
-                      ? _buildNoResultsFound(context, itemType)
+                      ? _buildNoResultsFound(context, widget.itemType)
                       : ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
@@ -217,149 +257,11 @@ class ScanResultsScreen extends ConsumerWidget {
               ? null
               : Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-                child: ElevatedButton.icon(
-                  icon: const Icon(
-                    FontAwesomeIcons.squarePlus,
-                    size: 20,
-                  ), // Cart icon
-                  label: Text(
-                    itemType == ScanItemType.food
-                        ? 'Agregar comidas al inventario'
-                        : 'Agregar ingredientes al inventario',
-                  ),
-                  onPressed:
-                      canAdd
-                          ? () async {
-                            final itemsToAddRaw = itemsNotifier.getItemsToAdd();
-
-                            // Map RecognizedItem to InventoryItem
-                            final List<InventoryItem> itemsToAddInventory =
-                                itemsToAddRaw.map((recognizedItem) {
-                                  // Determine category based on ScanItemType
-                                  final ItemCategory category =
-                                      itemType == ScanItemType.food
-                                          ? ItemCategory.food
-                                          : ItemCategory.ingredient;
-
-                                  // Parse storage type from recognition result
-                                  StorageType storageType =
-                                      StorageType.dry; // default
-                                  if (recognizedItem.storageType != null) {
-                                    switch (recognizedItem.storageType
-                                        ?.toLowerCase()) {
-                                      case 'refrigerated':
-                                      case 'refrigerado':
-                                        storageType = StorageType.refrigerated;
-                                        break;
-                                      case 'frozen':
-                                      case 'congelado':
-                                        storageType = StorageType.frozen;
-                                        break;
-                                      case 'dry':
-                                      case 'seco':
-                                        storageType = StorageType.dry;
-                                        break;
-                                      default:
-                                        storageType = StorageType.dry;
-                                    }
-                                  }
-
-                                  // Parse expiration date from recognition result
-                                  DateTime? expirationDate;
-                                  if (recognizedItem.expiryDate != null &&
-                                      recognizedItem.expiryDate!.isNotEmpty) {
-                                    try {
-                                      expirationDate = DateTime.parse(
-                                        recognizedItem.expiryDate!,
-                                      );
-                                    } catch (e) {
-                                      log(
-                                        'Error parsing expiration date: ${recognizedItem.expiryDate} - $e',
-                                      );
-                                      expirationDate = null;
-                                    }
-                                  }
-
-                                  return InventoryItem(
-                                    id: _uuid.v4(), // Generate a unique ID
-                                    name: recognizedItem.name,
-                                    image:
-                                        recognizedItem.name.isNotEmpty
-                                            ? recognizedItem.name[0]
-                                            : '❓', // Use first letter or default emoji
-                                    quantity:
-                                        recognizedItem.quantity.toDouble(),
-                                    category: category,
-                                    storageType:
-                                        storageType, // Use parsed storage type
-                                    addedDate: DateTime.now(),
-                                    unitType:
-                                        recognizedItem.typeUnit ??
-                                        'unidades', // Use recognition unit type
-                                    expirationDate:
-                                        expirationDate, // Use parsed expiration date
-                                    tips:
-                                        recognizedItem
-                                            .tips, // Use recognition tips
-                                    // imageUrl: recognizedItem.imageUrl, // Use this if actual image URL available
-                                  );
-                                }).toList();
-
-                            try {
-                              // Use real backend inventory provider to add items
-                              await ref
-                                  .read(inventoryRealProvider.notifier)
-                                  .addIngredientsToBackend(itemsToAddInventory);
-
-                              // Show success feedback
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      itemType == ScanItemType.food
-                                          ? 'Comidas agregadas al inventario exitosamente'
-                                          : 'Ingredientes agregados al inventario exitosamente',
-                                    ),
-                                    backgroundColor: primaryColor,
-                                  ),
-                                );
-
-                                // Navigate to inventory screen
-                                context.go('/inventory');
-                              }
-                            } catch (e) {
-                              // Show error feedback
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error al agregar al inventario: ${e.toString()}',
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            }
-                          }
-                          : null, // Disable button if no items have quantity > 0
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: onPrimaryColor,
-                    disabledBackgroundColor: primaryColor.withValues(
-                      alpha: 0.5,
-                    ),
-                    minimumSize: const Size(
-                      double.infinity,
-                      52, // Set a fixed height
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    textStyle: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                child: _buildAnimatedAddButton(
+                  canAdd,
+                  itemsNotifier,
+                  primaryColor,
+                  onPrimaryColor,
                 ),
               ),
     );
@@ -380,7 +282,7 @@ class ScanResultsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              itemType == ScanItemType.food
+              widget.itemType == ScanItemType.food
                   ? 'No se reconocieron comidas'
                   : 'No se reconocieron ingredientes',
               style: GoogleFonts.inter(
@@ -392,7 +294,7 @@ class ScanResultsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              itemType == ScanItemType.food
+              widget.itemType == ScanItemType.food
                   ? 'Prueba con otra imagen o agrega las comidas manualmente para continuar.'
                   : 'Prueba con otra imagen o agrega los ingredientes manualmente para continuar.',
               style: GoogleFonts.inter(
@@ -409,7 +311,7 @@ class ScanResultsScreen extends ConsumerWidget {
               },
               icon: const Icon(Icons.add_circle_outline),
               label: Text(
-                itemType == ScanItemType.food
+                widget.itemType == ScanItemType.food
                     ? 'Agregar comidas manualmente'
                     : 'Agregar ingredientes manualmente',
               ),
@@ -578,7 +480,7 @@ class ScanResultsScreen extends ConsumerWidget {
 
   Widget _buildImageRefreshButton(WidgetRef ref, BuildContext context) {
     // Get current items to check if we have any recognized items
-    final itemsState = ref.watch(scanResultsProvider(initialJsonData));
+    final itemsState = ref.watch(scanResultsProvider(widget.initialJsonData));
 
     // Don't show refresh button if no items were recognized
     if (itemsState.isEmpty) {
@@ -586,7 +488,7 @@ class ScanResultsScreen extends ConsumerWidget {
     }
 
     // Watch appropriate provider based on itemType
-    if (itemType == ScanItemType.ingredient) {
+    if (widget.itemType == ScanItemType.ingredient) {
       final simplifiedState = ref.watch(simplifiedRecognitionProvider);
       final simplifiedNotifier = ref.read(
         simplifiedRecognitionProvider.notifier,
@@ -608,7 +510,7 @@ class ScanResultsScreen extends ConsumerWidget {
           _syncImagesFromIngredientProvider(
             ref,
             simplifiedState,
-            ref.read(scanResultsProvider(initialJsonData).notifier),
+            ref.read(scanResultsProvider(widget.initialJsonData).notifier),
           );
           _showRefreshResult(context, simplifiedState.error);
         },
@@ -631,7 +533,7 @@ class ScanResultsScreen extends ConsumerWidget {
           _syncImagesFromFoodProvider(
             ref,
             foodState,
-            ref.read(scanResultsProvider(initialJsonData).notifier),
+            ref.read(scanResultsProvider(widget.initialJsonData).notifier),
           );
           _showRefreshResult(context, foodState.error);
         },
@@ -812,7 +714,7 @@ class ScanResultsScreen extends ConsumerWidget {
     }
 
     final ingredients = simplifiedState.result!.ingredients;
-    final currentItems = ref.read(scanResultsProvider(initialJsonData));
+    final currentItems = ref.read(scanResultsProvider(widget.initialJsonData));
 
     // Update items with images from SimplifiedRecognitionProvider
     for (int i = 0; i < ingredients.length && i < currentItems.length; i++) {
@@ -855,7 +757,7 @@ class ScanResultsScreen extends ConsumerWidget {
     }
 
     final foods = foodState.result!.foods;
-    final currentItems = ref.read(scanResultsProvider(initialJsonData));
+    final currentItems = ref.read(scanResultsProvider(widget.initialJsonData));
 
     log(
       '🔍 [SYNC FOODS] Found ${foods.length} foods and ${currentItems.length} current items',
@@ -920,7 +822,9 @@ class ScanResultsScreen extends ConsumerWidget {
         log('✅ [SYNC FOODS] Image updated successfully for ${targetItem.name}');
 
         // Verify the update worked by reading the state again
-        final updatedItems = ref.read(scanResultsProvider(initialJsonData));
+        final updatedItems = ref.read(
+          scanResultsProvider(widget.initialJsonData),
+        );
         final verifyItem = updatedItems.firstWhere(
           (item) => item.id == targetItem!.id,
           orElse: () => targetItem!,
@@ -988,10 +892,280 @@ class ScanResultsScreen extends ConsumerWidget {
       context.pop();
     } else {
       // If we can't pop, navigate back to the appropriate scan screen based on itemType
-      if (itemType == ScanItemType.food) {
+      if (widget.itemType == ScanItemType.food) {
         context.go('/scan/add/food');
       } else {
         context.go('/scan/add/ingredient');
+      }
+    }
+  }
+
+  // Animated add button with cool loading and success states
+  Widget _buildAnimatedAddButton(
+    bool canAdd,
+    dynamic itemsNotifier,
+    Color primaryColor,
+    Color onPrimaryColor,
+  ) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_animationController, _successController]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            height: 52,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient:
+                  _isSuccess
+                      ? const LinearGradient(
+                        colors: [Color(0xFF00B894), Color(0xFF00A085)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                      : LinearGradient(
+                        colors:
+                            canAdd
+                                ? [
+                                  primaryColor,
+                                  primaryColor.withValues(alpha: 0.8),
+                                ]
+                                : [
+                                  primaryColor.withValues(alpha: 0.5),
+                                  primaryColor.withValues(alpha: 0.3),
+                                ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+              boxShadow:
+                  canAdd && !_isLoading
+                      ? [
+                        BoxShadow(
+                          color: primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                      : null,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap:
+                    canAdd && !_isLoading
+                        ? () => _handleAddToInventory(itemsNotifier)
+                        : null,
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildButtonContent(onPrimaryColor),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildButtonContent(Color onPrimaryColor) {
+    if (_isSuccess) {
+      return Transform.scale(
+        scale: _successAnimation.value,
+        child: Row(
+          key: const ValueKey('success'),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              '¡Agregado con éxito!',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_isLoading) {
+      return Row(
+        key: const ValueKey('loading'),
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(onPrimaryColor),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Agregando al inventario...',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: onPrimaryColor,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      key: const ValueKey('normal'),
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(FontAwesomeIcons.squarePlus, size: 20, color: onPrimaryColor),
+        const SizedBox(width: 12),
+        Text(
+          widget.itemType == ScanItemType.food
+              ? 'Agregar comidas al inventario'
+              : 'Agregar ingredientes al inventario',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: onPrimaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAddToInventory(dynamic itemsNotifier) async {
+    // Start loading animation
+    setState(() {
+      _isLoading = true;
+    });
+    _animationController.forward();
+
+    try {
+      final itemsToAddRaw = itemsNotifier.getItemsToAdd();
+
+      // Map RecognizedItem to InventoryItem
+      final List<InventoryItem> itemsToAddInventory =
+          itemsToAddRaw.map((recognizedItem) {
+            // Determine category based on ScanItemType
+            final ItemCategory category =
+                widget.itemType == ScanItemType.food
+                    ? ItemCategory.food
+                    : ItemCategory.ingredient;
+
+            // Parse storage type from recognition result
+            StorageType storageType = StorageType.dry; // default
+            if (recognizedItem.storageType != null) {
+              switch (recognizedItem.storageType?.toLowerCase()) {
+                case 'refrigerated':
+                case 'refrigerado':
+                  storageType = StorageType.refrigerated;
+                  break;
+                case 'frozen':
+                case 'congelado':
+                  storageType = StorageType.frozen;
+                  break;
+                case 'dry':
+                case 'seco':
+                  storageType = StorageType.dry;
+                  break;
+                default:
+                  storageType = StorageType.dry;
+              }
+            }
+
+            // Parse expiration date from recognition result
+            DateTime? expirationDate;
+            if (recognizedItem.expiryDate != null &&
+                recognizedItem.expiryDate!.isNotEmpty) {
+              try {
+                expirationDate = DateTime.parse(recognizedItem.expiryDate!);
+              } catch (e) {
+                log(
+                  'Error parsing expiration date: ${recognizedItem.expiryDate} - $e',
+                );
+                expirationDate = null;
+              }
+            }
+
+            return InventoryItem(
+              id: _uuid.v4(), // Generate a unique ID
+              name: recognizedItem.name,
+              image:
+                  recognizedItem.name.isNotEmpty
+                      ? recognizedItem.name[0]
+                      : '❓', // Use first letter or default emoji
+              quantity: recognizedItem.quantity.toDouble(),
+              category: category,
+              storageType: storageType, // Use parsed storage type
+              addedDate: DateTime.now(),
+              unitType:
+                  recognizedItem.typeUnit ??
+                  'unidades', // Use recognition unit type
+              expirationDate: expirationDate, // Use parsed expiration date
+              tips: recognizedItem.tips, // Use recognition tips
+              // imageUrl: recognizedItem.imageUrl, // Use this if actual image URL available
+            );
+          }).toList();
+
+      // Add to backend
+      await ref
+          .read(inventoryRealProvider.notifier)
+          .addIngredientsToBackend(itemsToAddInventory);
+
+      // Show success state
+      setState(() {
+        _isLoading = false;
+        _isSuccess = true;
+      });
+      _animationController.reverse();
+      _successController.forward();
+
+      // Wait for success animation
+      await Future.delayed(const Duration(milliseconds: 1200));
+
+      // Navigate to inventory
+      if (context.mounted) {
+        context.go('/inventory');
+      }
+    } catch (e) {
+      // Reset states on error
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+      });
+      _animationController.reverse();
+
+      // Show error feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Error al agregar al inventario: ${e.toString()}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     }
   }

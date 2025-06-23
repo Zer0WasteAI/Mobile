@@ -71,7 +71,7 @@ const String ingredientDetailRouteName = 'ingredientDetail';
 const String foodDetailRouteName = 'foodDetail';
 const String addScanItemRouteName = 'addScanItem';
 const String scanConfirmRouteName = ScanConfirmScreen.routeName;
-const String scanResultsRouteName = ScanResultsScreen.routeName;
+const String scanResultsRouteName = 'scan_results';
 const String allergySelectorRouteName = AllergySelectorScreen.routeName;
 const String cookingLevelSelectorRouteName =
     CookingLevelSelectorScreen.routeName;
@@ -272,7 +272,7 @@ class AppRouter {
         ),
         // Add the ScanResultsScreen route
         GoRoute(
-          path: ScanResultsScreen.routePath,
+          path: '/scan/results',
           name: scanResultsRouteName,
           builder: (context, state) {
             // Extract data passed from ScanConfirmScreen (or analysis step)

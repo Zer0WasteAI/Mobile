@@ -131,7 +131,11 @@ class RecipeFilterBottomSheet extends HookWidget {
                   // Cancel button
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
+                      },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: secondaryTextColor,
                         side: BorderSide(color: secondaryTextColor),
@@ -156,7 +160,9 @@ class RecipeFilterBottomSheet extends HookWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         onApply(selectedFilters.value);
-                        Navigator.pop(context);
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,

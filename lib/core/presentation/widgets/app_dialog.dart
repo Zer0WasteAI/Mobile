@@ -27,6 +27,9 @@ class AppDialog extends StatelessWidget {
   /// Emoji o imagen opcional para mostrar encima del título
   final String? emoji;
 
+  /// URL de imagen opcional para mostrar encima del título
+  final String? imageUrl;
+
   /// Título secundario o subtítulo opcional
   final String? subtitle;
 
@@ -42,6 +45,7 @@ class AppDialog extends StatelessWidget {
     this.icon,
     this.iconColor,
     this.emoji,
+    this.imageUrl,
     this.subtitle,
     this.constrainWidth = true,
   });
@@ -54,17 +58,86 @@ class AppDialog extends StatelessWidget {
 
     // Colores configurados según el tema
     final backgroundColor =
-        isDark
-            ? colorScheme.surfaceContainerHigh
-            : Colors.white;
+        isDark ? colorScheme.surfaceContainerHigh : Colors.white;
     final textColor = colorScheme.onSurface;
     final secondaryTextColor = colorScheme.onSurfaceVariant;
 
     Widget dialogContent = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Emoji o ícono en la parte superior
-        if (emoji != null) ...[
+        // Imagen, emoji o ícono en la parte superior
+        if (imageUrl != null) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child:
+                imageUrl!.startsWith('assets/')
+                    ? Image.asset(
+                      imageUrl!,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Placeholder si la imagen falla
+                        return Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.image,
+                            size: 32,
+                            color: colorScheme.primary,
+                          ),
+                        );
+                      },
+                    )
+                    : Image.network(
+                      imageUrl!,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Placeholder si la imagen falla
+                        return Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.image,
+                            size: 32,
+                            color: colorScheme.primary,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value:
+                                  loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+          ),
+          const SizedBox(height: 12.0),
+        ] else if (emoji != null) ...[
           Text(emoji!, style: const TextStyle(fontSize: 42)),
           const SizedBox(height: 12.0),
         ] else if (icon != null) ...[

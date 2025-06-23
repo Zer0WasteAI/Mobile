@@ -5,14 +5,14 @@ import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 
 class FoodConsumedScreen extends ConsumerStatefulWidget {
   final String foodName;
-  final String foodEmoji;
+  final String? foodImageUrl;
   final double co2Saved;
   final int waterSaved;
 
   const FoodConsumedScreen({
     super.key,
     required this.foodName,
-    required this.foodEmoji,
+    this.foodImageUrl,
     required this.co2Saved,
     required this.waterSaved,
   });
@@ -75,13 +75,111 @@ class _FoodConsumedScreenState extends ConsumerState<FoodConsumedScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Emoji animado
+              // Imagen animada
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: Text(
-                  widget.foodEmoji,
-                  style: const TextStyle(fontSize: 120),
-                ),
+                child:
+                    widget.foodImageUrl != null
+                        ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child:
+                              widget.foodImageUrl!.startsWith('assets/')
+                                  ? Image.asset(
+                                    widget.foodImageUrl!,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: primaryColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.restaurant,
+                                          size: 60,
+                                          color: primaryColor,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                  : Image.network(
+                                    widget.foodImageUrl!,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: primaryColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.restaurant,
+                                          size: 60,
+                                          color: primaryColor,
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder: (
+                                      context,
+                                      child,
+                                      loadingProgress,
+                                    ) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: primaryColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value:
+                                                loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                        )
+                        : Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            Icons.restaurant,
+                            size: 60,
+                            color: primaryColor,
+                          ),
+                        ),
               ),
 
               const SizedBox(height: 32),

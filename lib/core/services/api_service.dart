@@ -64,6 +64,8 @@ class ApiService {
   static const String _inventoryFoodDetail = '/api/inventory/foods';
   static const String _inventoryFromRecognition =
       '/api/inventory/ingredients/from-recognition';
+  static const String _inventoryFoodsFromRecognition =
+      '/api/inventory/foods/from-recognition';
   static const String _inventoryAddItem = '/api/inventory/add_item';
   static const String _inventoryUploadImage = '/api/inventory/upload_image';
   static const String _inventoryIngredientsList =
@@ -77,6 +79,7 @@ class ApiService {
   static const String _recipesSave = '/api/recipes/save';
   static const String _recipesSaved = '/api/recipes/saved';
   static const String _recipesAll = '/api/recipes/all';
+  static const String _recipesDefault = '/api/recipes/default';
   static const String _recipesDelete = '/api/recipes/delete';
 
   // INFO: NEW - Admin endpoints (5 endpoints)
@@ -945,34 +948,34 @@ class ApiService {
     String name,
     String addedAt,
   ) async {
-    print('🗑️ API: Starting DELETE ingredient request');
-    print('🗑️ API: Name: "$name"');
-    print('🗑️ API: AddedAt: "$addedAt"');
+    log('🗑️ API: Starting DELETE ingredient request');
+    log('🗑️ API: Name: "$name"');
+    log('🗑️ API: AddedAt: "$addedAt"');
 
     // Ensure proper URL encoding
     final encodedName = Uri.encodeComponent(name);
     final encodedTimestamp = Uri.encodeComponent(addedAt);
     final endpoint = '$_inventoryIngredients/$encodedName/$encodedTimestamp';
 
-    print('🗑️ API: Encoded endpoint: $endpoint');
+    log('🗑️ API: Encoded endpoint: $endpoint');
 
     try {
       final response = await _dio.delete(endpoint);
-      print('🗑️ API: DELETE request successful');
-      print('🗑️ API: Response status: ${response.statusCode}');
-      print('🗑️ API: Response data: ${response.data}');
+      log('🗑️ API: DELETE request successful');
+      log('🗑️ API: Response status: ${response.statusCode}');
+      log('🗑️ API: Response data: ${response.data}');
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      print('🗑️ API: DELETE request failed: $e');
-      print('🗑️ API: Error type: ${e.runtimeType}');
+      log('🗑️ API: DELETE request failed: $e');
+      log('🗑️ API: Error type: ${e.runtimeType}');
 
       if (e is DioException) {
-        print('🗑️ API: DioException details:');
-        print('  - Status code: ${e.response?.statusCode}');
-        print('  - Response data: ${e.response?.data}');
-        print('  - Message: ${e.message}');
-        print('  - Request URL: ${e.requestOptions.uri}');
+        log('🗑️ API: DioException details:');
+        log('  - Status code: ${e.response?.statusCode}');
+        log('  - Response data: ${e.response?.data}');
+        log('  - Message: ${e.message}');
+        log('  - Request URL: ${e.requestOptions.uri}');
       }
 
       throw Exception('Delete ingredient error: ${e.toString()}');
@@ -999,25 +1002,25 @@ class ApiService {
   /// INFO: Delete item by ID (as specified in README.md)
   /// USAGE: Delete any inventory item using its unique ID
   Future<Map<String, dynamic>> deleteInventoryItem(String itemId) async {
-    print('🗑️ API: Starting DELETE request for item: $itemId');
-    print('🗑️ API: Endpoint: $_inventoryItems/$itemId');
+    log('🗑️ API: Starting DELETE request for item: $itemId');
+    log('🗑️ API: Endpoint: $_inventoryItems/$itemId');
 
     try {
       final response = await _dio.delete('$_inventoryItems/$itemId');
-      print('🗑️ API: DELETE request successful');
-      print('🗑️ API: Response status: ${response.statusCode}');
-      print('🗑️ API: Response data: ${response.data}');
+      log('🗑️ API: DELETE request successful');
+      log('🗑️ API: Response status: ${response.statusCode}');
+      log('🗑️ API: Response data: ${response.data}');
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      print('🗑️ API: DELETE request failed: $e');
-      print('🗑️ API: Error type: ${e.runtimeType}');
+      log('🗑️ API: DELETE request failed: $e');
+      log('🗑️ API: Error type: ${e.runtimeType}');
 
       if (e is DioException) {
-        print('🗑️ API: DioException details:');
-        print('  - Status code: ${e.response?.statusCode}');
-        print('  - Response data: ${e.response?.data}');
-        print('  - Message: ${e.message}');
+        log('🗑️ API: DioException details:');
+        log('  - Status code: ${e.response?.statusCode}');
+        log('  - Response data: ${e.response?.data}');
+        log('  - Message: ${e.message}');
       }
 
       throw Exception('Delete inventory item error: ${e.toString()}');
@@ -1061,6 +1064,22 @@ class ApiService {
       throw Exception(
         'Add ingredients from recognition error: ${e.toString()}',
       );
+    }
+  }
+
+  /// USAGE: Add foods directly from AI recognition
+  /// NEW: Specific endpoint for adding recognized foods to inventory
+  Future<Map<String, dynamic>> addFoodsFromRecognition(
+    List<Map<String, dynamic>> foods,
+  ) async {
+    try {
+      final response = await _dio.post(
+        _inventoryFoodsFromRecognition, // Use specific foods endpoint
+        data: {'foods': foods},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Add foods from recognition error: ${e.toString()}');
     }
   }
 
@@ -1323,6 +1342,27 @@ class ApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Get all recipes error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Get default/curated recipes available to all users
+  /// USAGE: Retrieve curated recipe collection, optionally filtered by category
+  /// RETURNS: Array of default recipes with categories summary
+  /// NOTE: This endpoint does NOT require authentication
+  Future<Map<String, dynamic>> getDefaultRecipes({String? category}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (category != null && category.isNotEmpty) {
+        queryParams['category'] = category;
+      }
+
+      final response = await _dio.get(
+        _recipesDefault,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Get default recipes error: ${e.toString()}');
     }
   }
 

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 class UrlEncodingHelper {
   /// Converts names with special characters to URL-safe format
   static String encodeItemName(String itemName) {
@@ -44,11 +46,11 @@ class UrlEncodingHelper {
   /// Debug helper to log encoding transformations
   static void debugEncoding(String originalName) {
     if (originalName.contains('/')) {
-      print(
+      log(
         '⚠️  WARNING: Ingredient name contains "/" - will be encoded to "_SLASH_"',
       );
-      print('   Original: "$originalName"');
-      print('   Encoded: "${encodeItemName(originalName)}"');
+      log('   Original: "$originalName"');
+      log('   Encoded: "${encodeItemName(originalName)}"');
     }
   }
 }

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
@@ -18,9 +17,7 @@ import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_
 import 'package:go_router/go_router.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for date formatting extension
-import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/snackbar_wrapper.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/mark_consumed_dialog.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
@@ -893,7 +890,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     WidgetRef ref,
   ) async {
     // Log para debug
-    print(
+    log(
       '🗑️ DEBUG: Showing delete dialog for item: ${item.name} (ID: ${item.id})',
     );
 
@@ -977,7 +974,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
               actions: [
                 TextButton(
                   onPressed: () {
-                    print('🗑️ DEBUG: User cancelled deletion');
+                    log('🗑️ DEBUG: User cancelled deletion');
                     Navigator.of(dialogContext).pop(false);
                   },
                   child: Text(
@@ -990,7 +987,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    print('🗑️ DEBUG: User confirmed deletion');
+                    log('🗑️ DEBUG: User confirmed deletion');
                     Navigator.of(dialogContext).pop(true);
                   },
                   style: ElevatedButton.styleFrom(
@@ -1011,11 +1008,11 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         ) ??
         false;
 
-    print('🗑️ DEBUG: Dialog result: $confirmed');
+    log('🗑️ DEBUG: Dialog result: $confirmed');
 
     if (confirmed) {
-      print('🗑️ DEBUG: Confirmed is true, proceeding with deletion...');
-      print('🗑️ DEBUG: Starting deletion process for item: ${item.id}');
+      log('🗑️ DEBUG: Confirmed is true, proceeding with deletion...');
+      log('🗑️ DEBUG: Starting deletion process for item: ${item.id}');
 
       // Show enhanced loading dialog using captured navigator
       navigator.push(
@@ -1024,7 +1021,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           barrierColor: Colors.black54,
           barrierDismissible: false,
           pageBuilder:
-              (context, _, __) => AlertDialog(
+              (context, _, _) => AlertDialog(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -1045,19 +1042,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       );
 
       try {
-        print('🗑️ DEBUG: Calling removeItem for ID: ${item.id}');
-        print(
+        log('🗑️ DEBUG: Calling removeItem for ID: ${item.id}');
+        log(
           '🗑️ DEBUG: Provider state before removal: ${ref.read(inventoryRealProvider).items.length} items',
         );
 
         // Use the correct provider with backend synchronization
         await ref.read(inventoryRealProvider.notifier).removeItem(item.id);
 
-        print('🗑️ DEBUG: removeItem call completed successfully');
-        print(
+        log('🗑️ DEBUG: removeItem call completed successfully');
+        log(
           '🗑️ DEBUG: Provider state after removal: ${ref.read(inventoryRealProvider).items.length} items',
         );
-        print('🗑️ DEBUG: Item successfully removed from backend');
+        log('🗑️ DEBUG: Item successfully removed from backend');
 
         // Hide loading dialog
         navigator.pop();
@@ -1089,7 +1086,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           ),
         );
       } catch (e) {
-        print('🗑️ ERROR: Failed to delete item: $e');
+        log('🗑️ ERROR: Failed to delete item: $e');
 
         // Hide loading dialog
         navigator.pop();
