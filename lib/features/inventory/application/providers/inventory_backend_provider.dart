@@ -78,7 +78,14 @@ class InventoryBackendNotifier {
   /// INFO: Delete inventory item by ID (universal method for foods/ingredients)
   /// USAGE: Delete any inventory item using its unique ID from the backend
   Future<void> deleteInventoryItem(String itemId) async {
-    await _repository.deleteInventoryItem(itemId);
+    print('🗑️ BACKEND: Starting deleteInventoryItem for ID: $itemId');
+    try {
+      await _repository.deleteInventoryItem(itemId);
+      print('🗑️ BACKEND: Successfully deleted item: $itemId');
+    } catch (e) {
+      print('🗑️ BACKEND: Error deleting item: $e');
+      rethrow;
+    }
   }
 
   /// INFO: Get ingredients expiring within specified days from backend
@@ -161,6 +168,16 @@ class InventoryBackendNotifier {
       addedAt,
       newQuantity,
     );
+  }
+
+  /// INFO: Update food quantity only
+  /// USAGE: Quick quantity update for specific food stack
+  Future<Map<String, dynamic>> updateFoodQuantity(
+    String foodName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    return await _repository.updateFoodQuantity(foodName, addedAt, newQuantity);
   }
 
   /// INFO: Delete complete ingredient (all stacks)

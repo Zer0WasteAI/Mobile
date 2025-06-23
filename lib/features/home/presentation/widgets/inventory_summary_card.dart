@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
 import 'package:go_router/go_router.dart'; // Import GoRouter
 
@@ -24,6 +25,8 @@ class InventorySummaryCard extends ConsumerWidget {
         isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
 
     final summary = ref.watch(inventorySummaryProvider);
+    final inventoryState = ref.watch(inventoryStateProvider);
+    final isLoading = inventoryState.isLoading;
 
     return Card(
       elevation: isDark ? 1 : 2, // Less elevation in dark mode
@@ -43,29 +46,51 @@ class InventorySummaryCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Ingredientes activos: ${summary.activeItems}',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: mainTextColor, // Use theme color
-                    ),
+                  Row(
+                    children: [
+                      if (isLoading) ...[
+                        SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              primaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: Text(
+                          isLoading
+                              ? 'Cargando inventario...'
+                              : 'Ingredientes activos: ${summary.activeItems}',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: mainTextColor, // Use theme color
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Próximos a vencer: ${summary.expiringSoonItems}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color:
-                          summary.expiringSoonItems > 0
-                              ? expiringSoonColor // Use theme warning color
-                              : secondaryTextColor, // Use theme color
-                      fontWeight:
-                          summary.expiringSoonItems > 0
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                  if (!isLoading)
+                    Text(
+                      'Próximos a vencer: ${summary.expiringSoonItems}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color:
+                            summary.expiringSoonItems > 0
+                                ? expiringSoonColor // Use theme warning color
+                                : secondaryTextColor, // Use theme color
+                        fontWeight:
+                            summary.expiringSoonItems > 0
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

@@ -160,6 +160,7 @@ class ScanOptionsModal extends ConsumerWidget {
     );
   }
 
+  // ignore: unused_element
   Widget _buildWideOptionButton({
     required BuildContext context,
     required WidgetRef ref,

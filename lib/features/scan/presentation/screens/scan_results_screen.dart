@@ -17,7 +17,6 @@ import 'package:zer0_waste_ai/features/scan/presentation/widgets/recognized_item
 import 'package:zer0_waste_ai/features/scan/domain/models/recognized_item.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
 import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
-import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
 import 'dart:developer';
 
 // Assume Uuid instance is available or create one

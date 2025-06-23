@@ -1,12 +1,11 @@
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           47.4s
+Xcode build done.                                           50.3s
 [ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
 [ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-Connecting to VM Service at ws://127.0.0.1:54804/p384u7rILhk=/ws
+Connecting to VM Service at ws://127.0.0.1:62145/A14duPonyrY=/ws
 Connected to the VM Service.
 flutter: Hive initialized successfully
 [GoRouter] setting initial location /splash
-[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /splash
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
            ├─/onboarding (OnboardingScreen)
@@ -84,29 +83,24 @@ flutter: Hive initialized successfully
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
+[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /splash
 [GoRouter] Using MaterialApp configuration
 [log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log] 🛑 Stopped proactive token refresh mechanism
+[log] 🔄 Starting proactive token refresh mechanism...
 [GoRouter] going to /login
 [log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /login
-flutter: 🔧 UserProfileProvider: Auth state changed
-flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafa Pres
-flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
-flutter: 🔧 Preferences loaded:
-flutter:   - cookingLevel: intermediate
-flutter:   - allergies: [Pescado, Soya]
-flutter:   - specialDiets: [Sin lácteos]
-flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] ✅ User document found in Firestore
 [log] 🔧 cookingLevel: intermediate
 [log] 🔧 allergies: [Pescado, Soya]
 [log] 🔧 specialDiets: [Sin lácteos]
 [log] 🔧 preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
+[log] 🛑 Stopped proactive token refresh mechanism
+[log] 🔄 Starting proactive token refresh mechanism...
 [GoRouter] setting initial location /splash
 [log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /splash
 [log] 🔄 Redirecting to home - user has completed preferences
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[GoRouter] Using MaterialApp configuration
 [log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
@@ -185,7 +179,17 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
-[GoRouter] redirecting to RouteMatchList#41bb6(uri: /home, matches: [ShellRouteMatch#4926b(route: ShellRoute#e8c30(navigatorKey: [LabeledGlobalKey<NavigatorState>#9ab64]))])
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[GoRouter] Using MaterialApp configuration
+[GoRouter] redirecting to RouteMatchList#6f479(uri: /home, matches: [ShellRouteMatch#5c12d(route: ShellRoute#b54b3(navigatorKey: [LabeledGlobalKey<NavigatorState>#05ebe]))])
+flutter: 🔧 UserProfileProvider: Auth state changed
+flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafa Pres
+flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
+flutter: 🔧 Preferences loaded:
+flutter:   - cookingLevel: intermediate
+flutter:   - allergies: [Pescado, Soya]
+flutter:   - specialDiets: [Sin lácteos]
+flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔧 InventoryRealNotifier initialized (cache-optimized)
 [log] User data refreshed from Firestore
 [GoRouter] going to /home
@@ -206,335 +210,646 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/recipes/saved
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
 [log] API Request: GET /api/recipes/saved
-[log] API Request: GET /api/planning/all
 [log] API Request: GET /api/environmental_savings/calculations
+[log] API Request: GET /api/planning/all
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] API Response: 200 /api/recipes/saved
+[log] 🔄 ApiService: 401 detected for /api/planning/all - initiating token recovery...
+[log] 🔄 Step 1: Attempting normal token refresh...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 ApiService: 401 detected for /api/recipes/saved - initiating token recovery...
+[log] 🔄 Step 1: Attempting normal token refresh...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 ApiService: 401 detected for /api/environmental_savings/calculations - initiating token recovery...
+[log] 🔄 Step 1: Attempting normal token refresh...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
+[log] API Request: POST /api/auth/refresh
+[log] API Request: POST /api/auth/refresh
+[log] 🗑️ Clearing stored JWT tokens...
+[log] 🗑️ Clearing stored JWT tokens...
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] 🔄 Step 2: Attempting auto-relogin...
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] ✅ JWT tokens cleared from secure storage
+[log] 🔄 Step 2: Attempting auto-relogin...
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] ✅ JWT tokens cleared from secure storage
+[log] 🔄 Step 2: Attempting auto-relogin...
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
+[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
+[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
+[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] API Request: POST /api/auth/firebase-signin
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
+[log] API Request: GET /api/environmental_savings/calculations
 [log] API Response: 200 /api/environmental_savings/calculations
+[log] ✅ ApiService: Auto-relogin successful - request retried
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
+[log] API Request: GET /api/recipes/saved
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] API Request: GET /api/planning/all
+[log] API Response: 200 /api/recipes/saved
+[log] ✅ ApiService: Auto-relogin successful - request retried
 [log] API Response: 200 /api/planning/all
-[GoRouter] going to /scan/add/food
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/add/food
+[log] ✅ ApiService: Auto-relogin successful - request retried
+[GoRouter] going to /inventory
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /inventory
+[log] 🌐 Cache invalid or empty, loading fresh data
+[log] 🔄 DEBUG - Starting loadCompleteInventoryFromBackend
+[log] 📡 DEBUG - Calling backend getInventoryComplete
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/inventory/complete
+[log] API Request: GET /api/inventory/complete
+[log] API Response: 200 /api/inventory/complete
+[log] 🔧 DEBUG - Parsing complete inventory data
+[log] 🔍 DEBUG - Ingredients found: 2
+[log] 🔍 DEBUG - Food items found: 0
+[log] 🔍 DEBUG - Processing ingredient: Gnocchi al Forno
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Gnocchi al Forno
+[log] ✅ DEBUG - Created stack item: Gnocchi al Forno - 1.0 porciones
+[log] ✅ DEBUG - Created 1 items from ingredient Gnocchi al Forno
+[log] 🔍 DEBUG - Processing ingredient: Pollo en Salsa con Polenta
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pollo en Salsa con Polenta
+[log] ✅ DEBUG - Created stack item: Pollo en Salsa con Polenta - 1.0 porciones
+[log] ✅ DEBUG - Created 1 items from ingredient Pollo en Salsa con Polenta
+[log] 🔍 DEBUG - Final items count: 2
+[log] 🔍 DEBUG - Final items: [Gnocchi al Forno (1.0 porciones), Pollo en Salsa con Polenta (1.0 porciones)]
+[log] 🔧 DEBUG - Parsing completed, 2 items created
+[log] ✅ DEBUG - loadCompleteInventoryFromBackend completed successfully
+[log] 📋 Smart loading completed: 2 items synced to UI
+[log] initState: IDs destacados encontrados: 2
+[log] initState: Haciendo scroll al último elemento de la lista
+[log] 📡 DEBUG - Complete inventory response received: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
+[log] 🔍 DEBUG - Raw API response: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
+[log] Intentando hacer scroll al final de 2 elementos
+[log] Usando maxScrollExtent para scroll: 0.0
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+flutter: 🏠 Navigation button tapped: Inicio -> /home
+flutter: 📍 Current path: /inventory
+flutter: 🔄 Scan flow active: false
+flutter: ✅ Navigation completed to: /home
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] API Request: GET /api/planning/all
+[log] API Response: 200 /api/planning/all
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+Reloaded 1 of 2328 libraries in 2,638ms (compile: 1049 ms, reload: 220 ms, reassemble: 772 ms).
+[GoRouter] going to /scan/add/ingredient
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/add/ingredient
+Reloaded 1 of 2328 libraries in 1,175ms (compile: 565 ms, reload: 229 ms, reassemble: 121 ms).
+Reloaded 1 of 2328 libraries in 378ms (compile: 53 ms, reload: 120 ms, reassemble: 133 ms).
+Reloaded 1 of 2328 libraries in 798ms (compile: 176 ms, reload: 167 ms, reassemble: 175 ms).
+Reloaded 1 of 2328 libraries in 717ms (compile: 103 ms, reload: 250 ms, reassemble: 195 ms).
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+Reloaded 7 of 2328 libraries in 1,128ms (compile: 464 ms, reload: 229 ms, reassemble: 205 ms).
+Reloaded 7 of 2328 libraries in 750ms (compile: 177 ms, reload: 184 ms, reassemble: 117 ms).
 [log] Picked 3 images from gallery.
-[log] Attempting navigation to /scan/confirm from ScanItemType.food with 3 images.
+[log] Attempting navigation to /scan/confirm from ScanItemType.ingredient with 3 images.
 [GoRouter] going to /scan/confirm
 [log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/confirm
 [GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
 [GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[log] 🚀 Starting food analysis with 3 images
-[log] 🚀 [SIMPLIFIED FOODS] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED FOODS] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED FOODS] Uploading image 1/3
+[log] 🚀 Starting ingredient analysis with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 📤 [SIMPLIFIED] Uploading image 1/3
+[log] ⚠️ No access token found in secure storage
+[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626379 (2025-06-22 16:06:19.000)
+[log]    - iat (issued at): 1750622779 (2025-06-22 15:06:19.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
+[log] API Request: POST /api/image_management/upload_image
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED] Uploading image 2/3
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
 [log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/234cb98c290b4762baf32bd77c7ad56c.jpg?Expires=1751227583&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=lVCAE9sQb3CxRMSZTwZFrLSWYKXp%2FPeE8LGEOKdToeKRAX0RZGO1J7Cjtshizpven7KS2ajhibiORvnoPdZQ9x8LW3geSiOQ1WJ1I%2FhUOITCE7YL%2FpJpJAyydWRb%2FqGdPgX6XZU79tuNBDtyqNC8HZN2%2Fo6SLUeCWJlygTTTPj6hOspYVsDA5F%2BrkTeCTxfuc2b4%2Bg53DO6VynzXwiG2iYPA5npyrjwm801FhuT0esoOIVqohdbm4J9jMyaMekV8qvwhWfU6XTb%2BbuGPtuPF8e9Ik7cdX1sBQYfSC47F%2F4WvH%2BGHSsIUhmhL2YzxR3U4Kzf9HHhlXUPliSaYTbzt4w%3D%3D
 [log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED FOODS] Uploading image 2/3
+[log] 📤 [SIMPLIFIED] Uploading image 3/3
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
 [log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED FOODS] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/c9ac88f3355d474db96ce1b37c14262d.jpg?Expires=1751221473&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=GGTy7mdkwHvnIpTGMCiPmEWqYZIXUinR4XFzt7k7lqrwucHUcLF0gwKlXJIWT9l7itkpNmYe1wpsnVfwr%2B8KEIyU706YhVCRJtpz8goTD6SWhgsRv0V3Dol%2FTPjxiP4BEuZ47BEOhhFB2EMHZA%2FEtQX0HxsRx%2B6LR91Rh57UaHqT4H%2BGroE3oC%2Fty%2FSsnbXq%2FdGnEDZ2wMgo5QSQYl1J5b%2BYzk4uF3m0wv6sDTu2dfNEBZTJQoooyJ4zHTwgO%2Fv1C6XKw9R1yQFjIWoviF8Aqg98JLrtd2oOdg2xjONxuelDEObFzKU58lTYXTwIjvjBMG%2BBJYSKCRzHghnCYeOZLA%3D%3D
+[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/bc7502f8faef4bce95f6cc9921e450ac.jpg?Expires=1751227585&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gcfhe2Nr8NBSWxnB9PzR8%2BVcnF1WDKISEZeD%2FcETZiRZSP4n2eyiTfWBKNAj%2FqwaTHTPs79KtvVdORXarcg0PE03x5P%2FgpdH1VQa1DiuI1wjEcoXhZiPsAaWP5Pflx5oWH0WOv2PrCXc3YZF1BL66Z6wGcCZbXUTGZ0PjZMaWJJo2Pegu8Ivw%2Fj3iAQGvu1hSOuMp2HAD76jx5TDmASaOG5xFJftxFrSP2BJHA3uuA0P56lr%2B%2BFJKMV8o9rgdGz8kKscLf38LrGagieBNfezrGYO5iWtrMYuFrsiy3X2U6e6%2BXFTy24nnPKVCWorteqojIs6wEAJvg0Tt1guJdNtpA%3D%3D
 [log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED FOODS] Uploading image 3/3
+[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
+[log] API Request: POST /api/recognition/ingredients
+[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/27297f29acee4cb194e568aadd627d19.jpg?Expires=1751227587&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CPQpY44lUwCQe89iz%2BuPtMvG5XI1uoRDhCss%2Fl6IvvFQAss5X%2FvBGyjNcC8Hs%2BPMlz9x7b7LUaVXrSwV1yobj%2FghIdnPb963vKwYFv4JmaKYKb6L8GkUUJ6PGWCSJgMfDCDgR84YJdtAeiOCwaQnKLvmrdctrNcZYGSPmGg5HBGuvrCOD8voTwk0bL6MacXLuWKYH9In38Nm7ykkp7MyG%2FT8jAysBi5dhutzU%2FC%2FBVTSQPwAJwSHu6U8H%2BytDJ8%2FvaPN7O9WoIHkA5ARzZHTJ421bY0Q689nLOJYEkx%2Bz5mSb4ARNkFAUtElxkBjKESfnmKbaATB5eNsssQ6V2OmGQ%3D%3D
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+[log] API Error: 500 /api/recognition/ingredients
+[log] Error Data: {error: unsupported type for timedelta days component: NoneType, error_type: TypeError, traceback: Traceback (most recent call last):
+        File "/app/src/interface/controllers/recognition_controller.py", line 210, in recognize_ingredients
+          expiration_date = calculator_service.calculate_expiration_date(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/app/src/infrastructure/inventory/inventory_calcularor_impl.py", line 30, in calculate_expiration_date
+          result = added_at + relativedelta(years=time_value)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/usr/local/lib/python3.11/site-packages/dateutil/relativedelta.py", line 177, in __init__
+          self.years = int(years)
+                       ^^^^^^^^^^
+      TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "/app/src/interface/controllers/recognition_controller.py", line 218, in recognize_ingredients
+          fallback_date = current_time + timedelta(days=ingredient.get("expiration_time", 7))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      TypeError: unsupported type for timedelta days component: NoneType
+      }
+[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] ⚠️ No refresh token found in secure storage
+[log] ❌ No refresh token available for refresh
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+[log] 🚀 Starting ingredient analysis with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 📤 [SIMPLIFIED] Uploading image 1/3
+[log] ⚠️ No access token found in secure storage
+[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626629 (2025-06-22 16:10:29.000)
+[log]    - iat (issued at): 1750623029 (2025-06-22 15:10:29.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] ⚠️ No refresh token found in secure storage
+[log] ❌ No refresh token available for refresh
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
+[log] API Request: POST /api/image_management/upload_image
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED] Uploading image 2/3
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
 [log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED FOODS] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/788b70b6c8a24e46894960110d93ed83.jpg?Expires=1751221474&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=ShDTGZGcqGKEi0kXm6JX5X%2FDiluhCb7XbKwuXVI0g7ryYpi05gAlxTeFZxy3b2u%2B0m3HFyeCHAzcJfCC4nEeou9ZWh%2FNsOC7rHwCQj7l5T9l3F%2FBXtbCDXDWI7ogeJKkb8sKUPtqzsGgros1%2FSqMbHqnRTDSanFtDO%2F5KN7I85kVf0gm67WuWko8%2BslzPlXZTFTv3qTa1q%2BplGydYeTz2GBGIONG7ZSKwXpTSVl4DVzbIVYC8G6SplXkGAu6tUFJzpQxqJvZUZ4XlWQo3EMiCTlSA1PvMJb3x1mF47U0VY3YJEyS2HvRsiev49mZVpQlw25NjU1m3lDnKTJe7AqULg%3D%3D
+[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/1279bafdf9e14e159199edfe2f6ba0c2.jpg?Expires=1751227835&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=bNrJCbn3f9MhBOLGm9NmzAn%2BXzMJCstsDtpYHV8OozK%2FyyF%2Bg5G0SV3TxBBTy1%2Fmp6pFSGGKOOQwaD78xQIhzi%2F3trHqkDMSLOft%2F3G2CSLLTS7Trrgk54KHz5z%2B8MT9emLQJSeMEHv6ensT0BJThovyC2Ca7ybWuGummhIVUVFJym4ADojfb66PTNQIAvreUhFZsJsCZlUHIfr7Ygk4pKAh%2FXL9XQGJEbQ%2F2GFOqxuilUcEQR7H9FKyN6z9VK5I2t46aLFmWytva6qLGTdXG1RsDqxu3crxKd26td51OJYQKz8glirzfQCKCk31SnVeZztu%2FX00vqbok6bLLV9SwA%3D%3D
 [log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED FOODS] Starting recognition with 3 URLs...
+[log] 📤 [SIMPLIFIED] Uploading image 3/3
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/foods
-[log] API Request: POST /api/recognition/foods
-[log] ✅ [SIMPLIFIED FOODS] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/food/41a6c8d796614589a9a990c473d58340.jpg?Expires=1751221476&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YLlGmHU5bAgR5rTFnN%2BW0Sct8X3bInogwNoU8Xn8ys4giPGr5hzvn09jVi6j5wKZl7YuRekeCKJpE56nKLOp48Rs9QC0E6%2FF9qVtC3NiZWOYZHL3evBYiQZxVvy5gIk91mMoR6TftjHhj1T25yyjjDWDIvAnzakG5sfLe4f6dNyw11NL%2F2hIQfn8rbSX4dgnk1vjh8tte6uojN2iUE%2B%2Bl%2F2WzfSWCmVFrQ%2BT17VkwiWs%2F3yC%2BFPgK6oRspRFIp7wtnsFO6%2BiU5fKVbQ4WSuZ%2F45BB2am2GIIM4wsF4UotgrnwDpjyNVoe4tUzKWzsWAFgLW5NCUH0lpM1ToVd8WACg%3D%3D
-[log] API Response: 200 /api/recognition/foods
-[log] ✅ [SIMPLIFIED FOODS] Recognition completed successfully!
-[log] 📋 [SIMPLIFIED FOODS] Response keys: [foods, images_status, message, recognition_id]
-[log] 🖼️ [SIMPLIFIED FOODS] Found 2 foods
-[log]    1. Pollo en salsa con polenta: null (status: null)
-[log]    2. Ñoquis al horno con salsa de tomate y mozzarella: null (status: null)
-[log] ✅ [SIMPLIFIED FOODS] Recognition completed!
-[log] 📋 [SIMPLIFIED FOODS] Recognition ID: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
-[log] 🖼️ [SIMPLIFIED FOODS] Found 2 foods
-[log] 🎨 [SIMPLIFIED FOODS] Images: 0 ready, 2 generating
-[log] ✅ Food analysis completed! Found 2 foods
-[GoRouter] going to /scan/results
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-flutter: 🔍 DEBUG RecognizedItem.fromJson - id: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-flutter: 🔍 DEBUG RecognizedItem.fromJson - json: {name: Pollo en salsa con polenta, image_path: , quantity: 1.0, expiration_date: 2025-06-25T18:24:44.669346+00:00, confidence: 1.0, category: Plato principal, allergyAlert: false, allergens: [], storage_type: Refrigerado, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente., type_unit: porciones, expiration_time: 3, time_unit: Días, added_at: 2025-06-22T18:24:44.669346+00:00, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], calories: 550, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco.}
-flutter: 🔍 DEBUG RecognizedItem.fromJson - expiryDate: 2025-06-25T18:24:44.669346+00:00
-flutter: 🔍 DEBUG RecognizedItem.fromJson - id: f9bf6294-f281-4467-a6ef-9533d21a280e
-flutter: 🔍 DEBUG RecognizedItem.fromJson - json: {name: Ñoquis al horno con salsa de tomate y mozzarella, image_path: , quantity: 1.0, expiration_date: 2025-06-24T18:24:44.669346+00:00, confidence: 1.0, category: Plato principal, allergyAlert: false, allergens: [], storage_type: Refrigerado, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros., type_unit: porciones, expiration_time: 2, time_unit: Días, added_at: 2025-06-22T18:24:44.669346+00:00, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], calories: 600, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca.}
-flutter: 🔍 DEBUG RecognizedItem.fromJson - expiryDate: 2025-06-24T18:24:44.669346+00:00
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log] 🎨 [SIMPLIFIED FOODS] Starting image polling for: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
-[log] 🎧 [FOOD LISTENER] State change detected
-[log]    Previous status: generating
-[log]    Current status: generating
-[log]    Foods count: 2
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (imagePath is null)
-[log]    📷 Food imagePath: null
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (imagePath is null)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log] 🔍 [SIMPLIFIED FOODS] Checking images for: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
-[log] 🔍 [SIMPLIFIED FOODS] Checking images for food recognition: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
-[log] 🔍 [SIMPLIFIED FOODS] Checking images for food recognition: 4d213151-a9dd-4a21-a4e9-24d0c69f071d
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/17e735e959354a19b40317370dd0f924.jpg?Expires=1751227837&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=E%2BgsNWB9GC4ZdXDAEclsOoCt8%2FNjoztAuDfVV85o3v55XpONW%2Btf6ZVMD0MVWzuhTK8cbxgbE4GE5fNq2W8KXEIBwWiwCMXj7MrR%2FpHeYTQiT18AlsSvvxijM09i%2BgiNWIis%2FrMVfeD2jllNIgjSTM%2BCbv5JLa%2BzJvW%2BNKRUJqgo5W6fEaIc8jkHRgKM%2BWF8q03smNilLHsvYWhoA30ZlgXCwDzAXs2upS6%2FFF%2BoZleaZIIWTpiGfelrl9qhYnbn7FKS%2Bj0iaQJSum8Y1To%2FvePFnrf%2FyPcQd%2FFNUVfhh7QkTbQRxhR2iBEGI3bYHy6Kz5Qdixz9smrfVTvPE0P3xw%3D%3D
+[log] API Response: 201 /api/image_management/upload_image
+[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
-[log] API Request: GET /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
-[log] API Response: 200 /api/recognition/recognition/4d213151-a9dd-4a21-a4e9-24d0c69f071d/images
-[log] 📊 [SIMPLIFIED FOODS] Images status response received
-[log] 🖼️ [SIMPLIFIED FOODS] Updated 2 foods
-[log]    1. Pollo en salsa con polenta:
-[log]       📊 image_status: null
-[log]    2. Ñoquis al horno con salsa de tomate y mozzarella:
-[log]       📊 image_status: null
-[log] ✅ [SIMPLIFIED FOODS] 0/2 images ready
-[log] 📊 [SIMPLIFIED FOODS] Images status response received
-[log] 📊 [SIMPLIFIED FOODS] Images status: generating
-[log] 🎨 [SIMPLIFIED FOODS] Images: 2 ready, 0 generating
-[log] 📊 [SIMPLIFIED FOODS] Images status: ready
-[log] 🎧 [FOOD LISTENER] State change detected
-[log]    Previous status: generating
-[log]    Current status: ready
-[log]    Foods count: 2
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ✅ [SYNC FOODS] Image updated successfully for Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🎯 Current item imageUrl:
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ✅ [SYNC FOODS] Image updated successfully for Ñoquis al horno con salsa de tomate y mozzarella
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🎉 [FOOD LISTENER] Scheduling notification after UI sync...
-[log] 🔍 [SIMPLIFIED FOODS] Updated foods:
-[log]    1. Pollo en salsa con polenta:
-[log]       📊 imageStatus: null
+[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
+[log] API Request: POST /api/recognition/ingredients
+[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/ca4adbc86f744b62b7f2886dac4ea96c.jpg?Expires=1751227839&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=o6wtX6e22xaXE6rewZ2dccJbAo6SOdSCdWRuD3yVoQWxl7fwu0AfOg18zzxk2A1stWdYRHwKB8jZOJP%2FyurbK57wlUHa5UDbSoOl12ir8nCh1pxqaFceWEKNXk3QMXV9QuptXpzQuyntvJ%2B3HRNKORPGYh%2BIdlqsXA9ifLJc%2BDQW5rzq3p%2F2dJLTYXUJvfsywsQPHq3mFu2mGCz4slGS3xRBx4%2F0Dzx8VmD0OJqqhnGBj%2F1cQi5ydhCj441xQruMWEauyoLSlXiCJj8LLKfZJ4VUCRowV5wn8e8cbik8c7d3f0tZZ7u3t0kD3UMgCHt3Its%2FDcMV4vdjMyKVDPutJw%3D%3D
+[log] API Error: 500 /api/recognition/ingredients
+[log] Error Data: {error: name 'timedelta' is not defined, error_type: NameError, traceback: Traceback (most recent call last):
+        File "/app/src/interface/controllers/recognition_controller.py", line 224, in recognize_ingredients
+          fallback_date = current_time + timedelta(days=7)
+                                         ^^^^^^^^^
+      NameError: name 'timedelta' is not defined
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "/app/src/interface/controllers/recognition_controller.py", line 232, in recognize_ingredients
+          fallback_date = current_time + timedelta(days=7)
+                                         ^^^^^^^^^
+      NameError: name 'timedelta' is not defined
+      }
+[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+[log] 🚀 Starting ingredient analysis with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
+[log] 📤 [SIMPLIFIED] Uploading image 1/3
+[log] ⚠️ No access token found in secure storage
+[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1750626779 (2025-06-22 16:12:59.000)
+[log]    - iat (issued at): 1750623179 (2025-06-22 15:12:59.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
+[log] API Request: POST /api/image_management/upload_image
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED] Uploading image 2/3
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/a92e07fde4544fbc9c3855ba79885d5b.jpg?Expires=1751227997&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=KkzPWugcHtGHGneJPJHgNID8Bd1jEqQMory2WAwque21fzVnIi6aaN5JpOW38T10xgH0W4aHub0kH%2F6FdgNI5AVC9C8Ew6fH7kEkn0BuyVf%2BWIcZExqPR3orkxFKIBq8ayOGtBuI5yU0Jn8OSLh%2BJcUuDBPH6myA1MID%2BeyjhZGhu6xvpT9PXtcvsCGJbreWJtsaSAeAxVdhNKKa64mS%2BCP0kzuEEsZLA318tHfrOa697kSIPrfDSVh4lV6HSAq85%2FAieQ%2FK342sBgt6tfkxS78fl75qLj2N04axcMS2TVwlW1c%2BaihoCjh2gav3%2FKldzD96zPzIWW7Gvy7hvNYIQw%3D%3D
+[log] API Response: 201 /api/image_management/upload_image
+[log] 📤 [SIMPLIFIED] Uploading image 3/3
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
+[log] API Request: POST /api/image_management/upload_image
+[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/19123d3bb6524efcbe21e216197d21b7.jpg?Expires=1751227999&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gEFBOJCs%2F5DERaXJKC2zIkphcVN2LV4smPS6dZAUTCbN4%2BdkQza7CKxGwNZVC6ZHIoCntfroBHwIwatpBx8%2BYIKTqAnthD8fbVSuaqn8weUuNN0ZH0bG0efUgVeqZRY8pJIUhSywdSXgNshYsAP2cOrLkd15AMth6UlALm7D8cJQc5Sede%2FVmD4jLb8q69tgXY6RZ47WoNc%2FrBE1DxJgaLujDSgV%2BFby4X%2FAteZgXb12eOC9HLojWOnigI5rSMBDE9nXj71x5dqfp0JiaQkQw9NL82i9NpSLO1gQD0Kyj%2FIsRVmrfTv0HNjramobJ4miCl0cjakF8b3XXd4Sq7EYlg%3D%3D
+[log] API Response: 201 /api/image_management/upload_image
+[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
+[log] API Request: POST /api/recognition/ingredients
+[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/7e946a47475048589a953b61bb5f250e.jpg?Expires=1751228003&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=sdocgTDv2F%2BeQzvgvPhv0C96wW5n2%2B3o68NoHyGi61wNXxA9KMgv9heVZnFO4IiPqfuw8m1kPZ4%2BDItdadTFPLGN9jlEt7cIvEMCllWz8AsFU%2F8NIkuRnzYLTcRXcm7Sq85qh3CeclcnbUuJEP8%2BlWxlf9vFG36EKeVdA1HpawWRfXUZPrHk%2FV%2Bkt7Iuv3Het8QG1GSl7yxHtSOah37VSBJwO0egaFxcNSVkhqDaIOIiyTD3Cpng4IAQhKsxITF69ctr9N%2Bgnmd%2Bh4kgAW5IEyau%2BHslB9cIfr0%2F4wSoR67RmEWpreFhk5T198IbdSBTtoEZqrn20OaRLbYasXKLIQ%3D%3D
+[log] API Response: 200 /api/recognition/ingredients
+[log] ✅ [SIMPLIFIED] Recognition completed successfully!
+[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
+[log]    1. Pescado blanco: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    2. Limones: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    3. Cebolla roja: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    4. Tomate: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    5. Ají limo / Rocoto: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    6. Cilantro: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log]    7. Sal: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
+[log] ✅ [SIMPLIFIED] Recognition completed!
+[log] 📋 [SIMPLIFIED] Recognition ID: e4150bea-8bc8-4064-b125-869b3d88c48f
+[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
+[log] 🎨 [SIMPLIFIED] Images: 0 ready, 7 generating
+[log] 📋 [SIMPLIFIED] Response keys: [allergy_alerts, has_allergens, images_check_url, images_status, ingredients, message, recognition_id]
+[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] 🎨 [SIMPLIFIED] Starting image polling for: e4150bea-8bc8-4064-b125-869b3d88c48f
+[log] 🔍 [SIMPLIFIED] Checking images for: e4150bea-8bc8-4064-b125-869b3d88c48f
+[log] 🔍 [SIMPLIFIED] Checking images for recognition: e4150bea-8bc8-4064-b125-869b3d88c48f
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
+[log] API Request: GET /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
+[log] API Response: 200 /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
+[log] 📊 [SIMPLIFIED] Images status response received
+[log] 🖼️ [SIMPLIFIED] Updated 7 ingredients
+[log]    1. Pescado blanco:
+[log]       📊 image_status: ready
+[log]    2. Limones:
+[log]       📊 image_status: ready
+[log]    3. Cebolla roja:
+[log]       📊 image_status: ready
+[log]    4. Tomate:
+[log]       📊 image_status: ready
+[log]    5. Ají limo / Rocoto:
+[log]       📊 image_status: ready
+[log]    6. Cilantro:
+[log]       📊 image_status: ready
+[log]    7. Sal:
+[log]       📊 image_status: ready
+[log] ✅ [SIMPLIFIED] 7/7 images ready
+[log] 🎨 [SIMPLIFIED] Images: 7 ready, 0 generating
+[log] 📊 [SIMPLIFIED] Images status: ready
+[log] 🔍 [SIMPLIFIED] Updated ingredients:
+[log]    1. Pescado blanco:
+[log]       📊 imageStatus: ready
 [log]       🔗 hasImage: true
-[log]    2. Ñoquis al horno con salsa de tomate y mozzarella:
-[log]       📊 imageStatus: null
+[log]    2. Limones:
+[log]       📊 imageStatus: ready
 [log]       🔗 hasImage: true
-[log] ✅ [SIMPLIFIED FOODS] All images ready! Stopping polling.
-[log] 🎧 [FOOD LISTENER] State change detected
-[log]    Previous status: ready
-[log]    Current status: ready
-[log]    Foods count: 2
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔍 [SIMPLIFIED FOODS] Response keys: [foods, images_generating, images_ready, images_status, last_updated, message, progress_percentage, recognition_id, recognition_type, total_foods, total_items]
-[log] 🔍 [SIMPLIFIED FOODS] Full response: {foods: [{added_at: 2025-06-22T18:24:44.669346+00:00, calories: 550, category: Plato principal, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco., expiration_date: 2025-06-25T18:24:44.669346+00:00, expiration_time: 3, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], name: Pollo en salsa con polenta, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente.}, {added_at: 2025-06-22T18:24:44.669346+00:00, calories: 600, category: Plato principal, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca., expiration_date: 2025-06-24T18:24:44.669346+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], name: Ñoquis al horno con salsa de tomate y mozzarella, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros.}], images_generating: 0, images_ready: 0, images_status: generating, last_updated: 2025-06-22T18:24:45, message: 🎨 Generando imágenes... 0/2 listas (foods), progress_percentage: 0, recognition_id: 4d213151-a9dd-4a21-a4e9-24d0c69f071d, recognition_type: foods, total_foods: 2, total_items: 2}
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    📊 Food imageStatus: null
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🔍 [SIMPLIFIED FOODS] Response keys: [foods, images_generating, images_ready, images_status, last_updated, message, progress_percentage, recognition_id, recognition_type, total_foods, total_items]
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔍 [SIMPLIFIED FOODS] Full response: {foods: [{added_at: 2025-06-22T18:24:44.669346+00:00, calories: 550, category: Plato principal, description: Un reconfortante plato de pollo deshilachado cocido en una sabrosa salsa de tomate, servido sobre una cremosa polenta. Decorado con perejil fresco., expiration_date: 2025-06-25T18:24:44.669346+00:00, expiration_time: 3, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D, main_ingredients: [pollo deshilachado, salsa de tomate, polenta cremosa, perejil], name: Pollo en salsa con polenta, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Mantener bien tapado en el refrigerador. Recalentar suavemente.}, {added_at: 2025-06-22T18:24:44.669346+00:00, calories: 600, category: Plato principal, description: Ñoquis de patata tiernos horneados en una rica salsa de tomate, cubiertos con mozzarella derretida y hojas de albahaca fresca., expiration_date: 2025-06-24T18:24:44.669346+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D, main_ingredients: [ñoquis de patata, salsa de tomate, mozzarella, albahaca], name: Ñoquis al horno con salsa de tomate y mozzarella, serving_quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Se puede recalentar en el horno o microondas. Evitar recalentar en exceso para que los ñoquis no se pongan duros.}], images_generating: 0, images_ready: 0, images_status: generating, last_updated: 2025-06-22T18:24:45, message: 🎨 Generando imágenes... 0/2 listas (foods), progress_percentage: 0, recognition_id: 4d213151-a9dd-4a21-a4e9-24d0c69f071d, recognition_type: foods, total_foods: 2, total_items: 2}
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🖼️ [SYNC FOODS] Updating image for Pollo en salsa con polenta: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔧 [SYNC FOODS] Created updated item with imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Verification - Item Pollo en salsa con polenta now has imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🖼️ [SYNC FOODS] Updating image for Ñoquis al horno con salsa de tomate y mozzarella: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🔧 [SYNC FOODS] Created updated item with imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🔍 [SYNC FOODS] Verification - Item Ñoquis al horno con salsa de tomate y mozzarella now has imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🎉 [FOOD LISTENER] Showing notification: Images ready!
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log] 🔄 [SYNC FOODS] Starting sync process...
-[log] 🔍 [SYNC FOODS] Found 2 foods and 2 current items
-[log] 🔍 [SYNC FOODS] Food 1: Pollo en salsa con polenta -> Item 1: Pollo en salsa con polenta
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: 8e05ed79-4a8a-4585-88a9-6fdd48ee11b5
-[log] ⏭️ [SYNC FOODS] No update needed for Pollo en salsa con polenta (same image URL)
-[log]    📊 Food imageStatus: null
-[log]    🆔 Current item ID: f9bf6294-f281-4467-a6ef-9533d21a280e
-[log] ⏭️ [SYNC FOODS] No update needed for Ñoquis al horno con salsa de tomate y mozzarella (same image URL)
-[log] 🏁 [SYNC FOODS] Sync process completed
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/pollo_en_salsa_con_polenta.jpg?Expires=1751221486&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IOHsanbUyA7CTyWyjka14UBdFADijwmetBSzRIiVDIHxl75Q%2F8j%2BAhn%2Fn0HGFTOcYUsW6Mstrksz3U6wuD3oHw%2FFwqBc%2F3MoSo16a6FyjtKAy3yOZtaJZyP9rCd10x7LiR7slwB5sMeMsiHYqVCvstLtY3UXPeo%2FuIMZ7R3Ye67p1Bgh8Dtx09hGSplsLaeeXDzBUbxMmN2N6njpwPTYBruKKdvngpDh%2FiF%2Faf9SY%2Fo4zy8SnI8cNGIotoDQmt%2F%2Fg3bTbY9OgxXS6LbFgH3jI%2B4cGsavBiUOsYrL2Ge1pO0c3aswXOxPbDj21xlYZ8r7UOSG5UCYSRvT82C6X7mnRA%3D%3D
-[log] 🔍 [SYNC FOODS] Food 2: Ñoquis al horno con salsa de tomate y mozzarella -> Item 2: Ñoquis al horno con salsa de tomate y mozzarella
-[log]    📷 Food imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-[log]    🎯 Current item imageUrl: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/foods/noquis_al_horno_con_salsa_de_tomate_y_mozzarella.jpg?Expires=1751221487&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=qDkBEKHM%2Bx9uqfFubF7F2lYGF7ex8WA%2FXSYvDt19lYGLMT0hsV0FRKWSBWm0JgLcBIIzC%2BL4W8FobjZnQrtgCm9KbZpB0XyGRWcU1860vrgh0vLAhBEBz2xqirMAxmPgAA7XKY%2FDBgOk1T4Ap9hpkZXRvcOt4mzNW%2BN5klWzoO6xrQaB8KtGQfDSCg3TRj1LxQqwR%2BAS0Sgezu9d6qFPyb4efvChvJx0GGIkub2Ue2XNLaN5kTJk36k8x%2BSAHusCXnJSbidFtTo1t%2BWHyG7qyzPmlf1uMvh%2Fqnb7KOToTxBHBoqNgfEX77AYMviNAqqkgn6hTqq4MvzVpDRE89U5fQ%3D%3D
-Reloaded 1 of 2326 libraries in 1,085ms (compile: 158 ms, reload: 332 ms, reassemble: 249 ms).
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
-<inspected variable>
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/results
-[GoRouter] popping /scan/results
-
-════════ Exception caught by gesture ═══════════════════════════════════════════
-The following GoError was thrown while handling a gesture:
-There is nothing to pop
-
-When the exception was thrown, this was the stack:
-#0      GoRouterDelegate.pop (package:go_router/src/delegate.dart:101:7)
-#1      GoRouter.pop (package:go_router/src/router.dart:504:20)
-#2      GoRouterHelper.pop (package:go_router/src/misc/extensions.dart:74:65)
-#3      ScanResultsScreen._buildNoResultsFound.<anonymous closure> (package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart:413:25)
-#4      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1203:21)
-#5      GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:345:24)
-#6      TapGestureRecognizer.handleTapUp (package:flutter/src/gestures/tap.dart:737:11)
-#7      BaseTapGestureRecognizer._checkUp (package:flutter/src/gestures/tap.dart:362:5)
-#8      BaseTapGestureRecognizer.handlePrimaryPointer (package:flutter/src/gestures/tap.dart:293:7)
-#9      PrimaryPointerGestureRecognizer.handleEvent (package:flutter/src/gestures/recognizer.dart:706:9)
-#10     PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:97:12)
-#11     PointerRouter._dispatchEventToRoutes.<anonymous closure> (package:flutter/src/gestures/pointer_router.dart:143:9)
-#12     _LinkedHashMapMixin.forEach (dart:_compact_hash:764:13)
-#13     PointerRouter._dispatchEventToRoutes (package:flutter/src/gestures/pointer_router.dart:141:18)
-#14     PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:131:7)
-#15     GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:530:19)
-#16     GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:499:22)
-#17     RendererBinding.dispatchEvent (package:flutter/src/rendering/binding.dart:473:11)
-#18     GestureBinding._handlePointerEventImmediately (package:flutter/src/gestures/binding.dart:437:7)
-#19     GestureBinding.handlePointerEvent (package:flutter/src/gestures/binding.dart:394:5)
-#20     GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:341:7)
-#21     GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:308:9)
-#22     _invoke1 (dart:ui/hooks.dart:347:13)
-#23     PlatformDispatcher._dispatchPointerDataPacket (dart:ui/platform_dispatcher.dart:467:7)
-#24     _dispatchPointerDataPacket (dart:ui/hooks.dart:282:31)
-
-Handler: "onTap"
-Recognizer: TapGestureRecognizer#0bfab
-    debugOwner: GestureDetector
-    state: possible
-    won arena
-    finalPosition: Offset(194.0, 619.7)
-    finalLocalPosition: Offset(88.8, 33.2)
-    button: 1
-    sent tap down
-════════════════════════════════════════════════════════════════════════════════
+[log]    3. Cebolla roja:
+[log]       📊 imageStatus: ready
+[log]       🔗 hasImage: true
+[log]    4. Tomate:
+[log]       📊 imageStatus: ready
+[log]       🔗 hasImage: true
+[log]    5. Ají limo / Rocoto:
+[log]       📊 imageStatus: ready
+[log]       🔗 hasImage: true
+[log]    6. Cilantro:
+[log]       📊 imageStatus: ready
+[log]       🔗 hasImage: true
+[log]    7. Sal:
+[log]       📊 imageStatus: ready
+[log]       🔗 hasImage: true
+[log] ✅ [SIMPLIFIED] All images ready! Stopping polling.
+[log] 🔍 [SIMPLIFIED] Response keys: [images_generating, images_ready, images_status, ingredients, last_updated, message, progress_percentage, recognition_id, recognition_type, total_ingredients, total_items]
+[log] 🔍 [SIMPLIFIED] Full response: {images_generating: 0, images_ready: 7, images_status: ready, ingredients: [{added_at: 2025-06-22T20:13:37.906929+00:00, description: Cubos pequeños de pescado blanco fresco, de color rosado pálido, con una textura firme y ligeramente translúcida., expiration_date: 2025-06-24T20:13:37.906929+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D, image_status: ready, name: Pescado blanco, quantity: 300, storage_type: Refrigerado, time_unit: Días, tips: Mantener en el refrigerador en un recipiente hermético, idealmente sobre una cama de hielo para conservar su frescura., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Limones verdes, de tamaño mediano, con cáscara lisa y brillante. Se observan varios cortados por la mitad, listos para exprimir., expiration_date: 2025-07-06T20:13:37.906929+00:00, expiration_time: 14, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D, image_status: ready, name: Limones, quantity: 10, storage_type: Ambiente, time_unit: Días, tips: Guardar en un lugar fresco y seco. Para prolongar su vida útil, se pueden refrigerar en una bolsa plástica perforada., type_unit: unidades}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Cebolla roja finamente picada en brunoise, de color morado intenso y textura crujiente., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D, image_status: ready, name: Cebolla roja, quantity: 150, storage_type: Ambiente, time_unit: Días, tips: Almacenar en un lugar fresco y oscuro. Una vez picada, es mejor usarla pronto o guardarla en un recipiente hermético en el refrigerador por no más de 2-3 días., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Tomates rojos, cortados en cubos pequeños (brunoise), de pulpa jugosa y color vibrante., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D, image_status: ready, name: Tomate, quantity: 200, storage_type: Ambiente, time_unit: Días, tips: Conservar a temperatura ambiente lejos de la luz solar directa. Si están muy maduros, refrigerar en una bolsa de papel., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Trozos pequeños de ají limo o rocoto, de color verde y rojo, picados finamente. Se aprecian semillas y venas, indicando su picor., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D, image_status: ready, name: Ají limo / Rocoto, quantity: 50, storage_type: Refrigerado, time_unit: Días, tips: Guardar en un recipiente hermético en el refrigerador. Para un almacenamiento más prolongado, se pueden congelar picados., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Manojo de cilantro fresco, con hojas verdes vibrantes y tallos tiernos., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D, image_status: ready, name: Cilantro, quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Guardar las hojas y tallos en un recipiente con un poco de agua en la base, cubiertos con una bolsa plástica en el refrigerador., type_unit: manojo}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Sal fina en un pequeño recipiente., expiration_date: 2026-06-22T20:13:37.906929+00:00, expiration_time: 365, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D, image_status: ready, name: Sal, quantity: 1, storage_type: Ambiente, time_unit: Días, tips: Mantener en un recipiente hermético en un lugar seco para evitar que se apelmace., type_unit: pizca}], last_updated: 2025-06-22T20:13:38, message: ✅ Todas las imágenes están listas (ingredients), progress_percentage: 100, recognition_id: e4150bea-8bc8-4064-b125-869b3d88c48f, recognition_type: ingredients, total_ingredients: 7, total_items: 7}
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
+[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
+[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure
+[log] 🔍 SecureTokenService: Checking for valid tokens...
+[log] ✅ SecureTokenService: Valid tokens found
+[log] ⚠️ Access token is expired - refresh needed
+[log] 🔍 SecureTokenService: Checking if tokens need refresh...
+[log] ⚠️ No expiration time found - refresh recommended
+[log] 🔄 Proactively refreshing tokens...
+[log] 🔄 AuthRepository: Starting token refresh process...
+[log] 🔄 Initiating token refresh...
+[log] ⚠️ No refresh token found in secure storage
+[log] ❌ No refresh token available for refresh
+[log] ❌ Token refresh failed - no new access token received
+[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
+[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] User data refreshed from Firestore
+[log] ✅ Auto-relogin successful after refresh failure

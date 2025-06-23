@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
@@ -46,14 +47,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     super.initState();
     _searchController = TextEditingController();
     _searchController.addListener(() {
+      // Sync search query to both providers
       ref
           .read(inventoryProvider.notifier)
+          .setSearchQuery(_searchController.text);
+      ref
+          .read(inventoryRealProvider.notifier)
           .setSearchQuery(_searchController.text);
     });
 
     // Initialize TabController
     final initialFilterStatus =
-        ref.read(inventoryProvider).expirationStatusFilter;
+        ref.read(inventoryRealProvider).expirationStatusFilter;
     final initialTabIndex = ExpirationStatus.values.indexOf(
       initialFilterStatus,
     );
@@ -250,8 +255,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final inventoryState = ref.watch(inventoryProvider);
-    final filteredItems = ref.watch(filteredSortedInventoryProvider);
+    final inventoryState = ref.watch(inventoryRealProvider);
+    final filteredItems = ref.watch(filteredSortedInventoryRealProvider);
     final recentlyAddedIds = inventoryState.recentlyAddedIds;
     final inventoryNotifier = ref.read(inventoryProvider.notifier);
 
@@ -321,8 +326,12 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           }).toList(),
       onTap: (index) {
         final selectedStatus = ExpirationStatus.values[index];
+        // Sync expiration filter to both providers
         ref
             .read(inventoryProvider.notifier)
+            .setExpirationStatusFilter(selectedStatus);
+        ref
+            .read(inventoryRealProvider.notifier)
             .setExpirationStatusFilter(selectedStatus);
       },
     );
@@ -516,7 +525,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             ),
                             onPressed: () {
                               final currentFilters = ref.read(
-                                inventoryProvider,
+                                inventoryRealProvider,
                               );
                               showModalBottomSheet(
                                 context: context,
@@ -539,15 +548,46 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                         sortCriteria,
                                         required bool sortAscending,
                                       }) {
-                                        final notifier = ref.read(
+                                        // Apply filters to both providers to keep them in sync
+                                        final uiNotifier = ref.read(
                                           inventoryProvider.notifier,
                                         );
-                                        notifier.setCategoryFilter(category);
-                                        notifier.setStorageFilter(storageTypes);
-                                        notifier.setSortCriteria(sortCriteria);
-                                        notifier.setSortDirection(
+                                        final realNotifier = ref.read(
+                                          inventoryRealProvider.notifier,
+                                        );
+
+                                        // Apply to UI provider (for filter counting)
+                                        uiNotifier.setCategoryFilter(category);
+                                        uiNotifier.setStorageFilter(
+                                          storageTypes,
+                                        );
+                                        uiNotifier.setSortCriteria(
+                                          sortCriteria,
+                                        );
+                                        uiNotifier.setSortDirection(
                                           sortAscending,
                                         );
+
+                                        // Apply to real provider (for actual filtering)
+                                        try {
+                                          realNotifier.setCategoryFilter(
+                                            category,
+                                          );
+                                          realNotifier.setStorageFilter(
+                                            storageTypes,
+                                          );
+                                          realNotifier.setSortCriteria(
+                                            sortCriteria,
+                                          );
+                                          realNotifier.setSortDirection(
+                                            sortAscending,
+                                          );
+                                        } catch (e) {
+                                          // Methods might not exist in real provider, that's ok
+                                          log(
+                                            'Some filter methods not available in real provider: $e',
+                                          );
+                                        }
                                       },
                                     ),
                               );
@@ -692,19 +732,41 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      inventoryState.searchQuery.isNotEmpty ||
-                              inventoryState.categoryFilter !=
-                                  ItemCategory.all ||
-                              inventoryState.storageFilter.isNotEmpty
-                          ? 'No hay ítems que coincidan con los filtros.'
-                          : 'Tu inventario está vacío.\n¡Agrega algunos ítems!',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        color: secondaryTextColor,
-                        fontSize: 16,
-                      ),
-                    ),
+                    child:
+                        inventoryState.isLoading
+                            ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Cargando inventario...',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    color: secondaryTextColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            )
+                            : Text(
+                              inventoryState.searchQuery.isNotEmpty ||
+                                      inventoryState.categoryFilter !=
+                                          ItemCategory.all ||
+                                      inventoryState.storageFilter.isNotEmpty
+                                  ? 'No hay ítems que coincidan con los filtros.'
+                                  : 'Tu inventario está vacío.\n¡Agrega algunos ítems!',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: secondaryTextColor,
+                                fontSize: 16,
+                              ),
+                            ),
                   ),
                 ),
               )
@@ -830,49 +892,241 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     InventoryItem item,
     WidgetRef ref,
   ) async {
-    final bool confirmed = await DialogHelper.showConfirmation(
-      context: context,
-      title: 'Eliminar ${item.name}',
-      message:
-          '¿Estás seguro de que quieres eliminar este elemento del inventario?',
-      confirmText: 'Eliminar',
-      cancelText: 'Cancelar',
-      icon: Icons.delete_outline,
-      iconColor: Theme.of(context).colorScheme.error,
+    // Log para debug
+    print(
+      '🗑️ DEBUG: Showing delete dialog for item: ${item.name} (ID: ${item.id})',
     );
 
-    if (confirmed && context.mounted) {
-      // Show loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+    // Capture references BEFORE showing dialog to avoid context issues
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    final bool confirmed =
+        await showDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Eliminar ${item.name}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '¿Estás seguro de que quieres eliminar este elemento del inventario?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Esta acción no se puede deshacer',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    print('🗑️ DEBUG: User cancelled deletion');
+                    Navigator.of(dialogContext).pop(false);
+                  },
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    print('🗑️ DEBUG: User confirmed deletion');
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Eliminar',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    print('🗑️ DEBUG: Dialog result: $confirmed');
+
+    if (confirmed) {
+      print('🗑️ DEBUG: Confirmed is true, proceeding with deletion...');
+      print('🗑️ DEBUG: Starting deletion process for item: ${item.id}');
+
+      // Show enhanced loading dialog using captured navigator
+      navigator.push(
+        PageRouteBuilder(
+          opaque: false,
+          barrierColor: Colors.black54,
+          barrierDismissible: false,
+          pageBuilder:
+              (context, _, __) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Eliminando ${item.name}...',
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+        ),
       );
 
       try {
+        print('🗑️ DEBUG: Calling removeItem for ID: ${item.id}');
+        print(
+          '🗑️ DEBUG: Provider state before removal: ${ref.read(inventoryRealProvider).items.length} items',
+        );
+
         // Use the correct provider with backend synchronization
         await ref.read(inventoryRealProvider.notifier).removeItem(item.id);
 
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Hide loading
-          // Usar wrapper seguro para SnackBar
-          showSimpleSnackBar(
-            context,
-            '✅ ${item.name} eliminado del inventario',
-          );
-        }
+        print('🗑️ DEBUG: removeItem call completed successfully');
+        print(
+          '🗑️ DEBUG: Provider state after removal: ${ref.read(inventoryRealProvider).items.length} items',
+        );
+        print('🗑️ DEBUG: Item successfully removed from backend');
+
+        // Hide loading dialog
+        navigator.pop();
+
+        // Show success message using captured scaffold messenger
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${item.name} eliminado del inventario',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
       } catch (e) {
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Hide loading
-          showSimpleSnackBar(context, '❌ Error: ${e.toString()}');
-        }
+        print('🗑️ ERROR: Failed to delete item: $e');
+
+        // Hide loading dialog
+        navigator.pop();
+
+        // Show error message using captured scaffold messenger
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Error al eliminar: ${e.toString()}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
       }
     }
   }
 
   // Función para contar los filtros activos
   int _getActiveFiltersCount(WidgetRef ref) {
-    final inventoryState = ref.read(inventoryProvider);
+    final inventoryState = ref.read(inventoryRealProvider);
     int count = 0;
 
     // Categoría (si no es 'Todos')
@@ -910,7 +1164,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       if (!mounted) return;
 
       // Obtener los elementos filtrados
-      final filteredItems = ref.read(filteredSortedInventoryProvider);
+      final filteredItems = ref.read(filteredSortedInventoryRealProvider);
 
       if (filteredItems.isEmpty) {
         log('La lista está vacía, no se puede hacer scroll');
@@ -988,7 +1242,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       if (!mounted) return;
 
       // Obtener los elementos filtrados más actualizados
-      final filteredItems = ref.read(filteredSortedInventoryProvider);
+      final filteredItems = ref.read(filteredSortedInventoryRealProvider);
 
       log('Intentando hacer scroll al ítem: $itemId');
       log('Total de ítems en la lista: ${filteredItems.length}');
@@ -1081,7 +1335,7 @@ Future<void> showQuantityEditDialog(
 ) async {
   // Use a consistent key based on item ID instead of creating a new GlobalKey each time
   final formKey = GlobalKey<FormState>(debugLabel: 'editQuantity_${item.id}');
-  final inventoryNotifier = ref.read(inventoryProvider.notifier);
+  final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
 
   // Format initial quantity for display based on unit type
   final TextEditingController quantityController = TextEditingController(
@@ -1290,7 +1544,9 @@ Future<void> showQuantityEditDialog(
                   try {
                     await ref
                         .read(inventoryRealProvider.notifier)
-                        .updateIngredientQuantityQuick(item.id, newQuantity);
+                        .updateItemQuantityQuick(item.id, newQuantity);
+
+                    // No need for manual sync since we're using inventoryRealProvider directly
 
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1444,10 +1700,19 @@ Future<void> showBatchSelectorDialog(
                           return InkWell(
                             onTap: () {
                               if (!isCurrentlySelected) {
-                                inventoryNotifier.setUserSelectedBatch(
-                                  currentDisplayBatch.name,
-                                  batch.id,
-                                );
+                                // Update both providers to keep them in sync
+                                ref
+                                    .read(inventoryProvider.notifier)
+                                    .setUserSelectedBatch(
+                                      currentDisplayBatch.name,
+                                      batch.id,
+                                    );
+                                ref
+                                    .read(inventoryRealProvider.notifier)
+                                    .setUserSelectedBatch(
+                                      currentDisplayBatch.name,
+                                      batch.id,
+                                    );
                                 Navigator.of(dialogContext).pop();
                               }
                             },

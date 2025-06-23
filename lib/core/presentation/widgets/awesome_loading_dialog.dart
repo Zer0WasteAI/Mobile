@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'lottie_loading_widget.dart';
 
 /// ✨ Awesome loading dialog with enhanced visual effects
@@ -22,11 +21,10 @@ class AwesomeLoadingDialog extends StatefulWidget {
   /// Factory for AI analysis
   const AwesomeLoadingDialog.aiAnalysis({
     super.key,
-    required String itemType,
+    required String this.itemType,
     this.onCancel,
   }) : title = 'Analizando con IA 🤖',
        subtitle = 'Procesando tus imágenes...',
-       itemType = itemType,
        showProgressIndicator = true;
 
   @override

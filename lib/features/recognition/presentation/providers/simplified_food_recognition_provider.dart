@@ -97,11 +97,22 @@ class SimplifiedFoodRecognitionNotifier
       }
     } catch (e) {
       log('❌ [SIMPLIFIED FOODS] Recognition error: $e');
-      state = state.copyWith(
-        isLoading: false,
-        currentStep: '',
-        error: e.toString(),
-      );
+
+      // Handle authentication errors specifically
+      final errorString = e.toString();
+      if (errorString.contains('401') || errorString.contains('unauthorized')) {
+        state = state.copyWith(
+          isLoading: false,
+          currentStep: '',
+          error: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          currentStep: '',
+          error: errorString,
+        );
+      }
     }
   }
 

@@ -108,10 +108,14 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
   @override
   Future<void> deleteInventoryItem(String itemId) async {
+    print('🗑️ REPOSITORY: Starting deleteInventoryItem for ID: $itemId');
     try {
       // INFO: Universal method for deleting any inventory item by ID
-      await _apiService.deleteInventoryItem(itemId);
+      print('🗑️ REPOSITORY: Calling API service deleteInventoryItem');
+      final result = await _apiService.deleteInventoryItem(itemId);
+      print('🗑️ REPOSITORY: API call successful, result: $result');
     } catch (e) {
+      print('🗑️ REPOSITORY: API call failed: $e');
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
         'Failed to delete inventory item: ${_apiService.getErrorMessage(e)}',
@@ -241,6 +245,25 @@ class InventoryRepositoryImpl implements InventoryRepository {
     } catch (e) {
       throw Exception(
         'Failed to update ingredient quantity: ${_apiService.getErrorMessage(e)}',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateFoodQuantity(
+    String foodName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    try {
+      return await _apiService.updateFoodQuantity(
+        foodName,
+        addedAt,
+        newQuantity,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to update food quantity: ${_apiService.getErrorMessage(e)}',
       );
     }
   }

@@ -99,6 +99,14 @@ abstract class InventoryRepository {
     double newQuantity,
   );
 
+  /// INFO: Update food quantity only
+  /// USAGE: Quick quantity update for specific food stack
+  Future<Map<String, dynamic>> updateFoodQuantity(
+    String foodName,
+    String addedAt,
+    double newQuantity,
+  );
+
   /// INFO: Delete complete ingredient (all stacks)
   /// USAGE: Remove all stacks of an ingredient from inventory
   Future<Map<String, dynamic>> deleteCompleteIngredient(String ingredientName);

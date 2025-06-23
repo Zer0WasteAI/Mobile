@@ -194,13 +194,8 @@ class ApiService {
               return handler.reject(error);
             }
 
-            // Skip automatic retry for image upload endpoints - they handle their own retries
-            if (error.requestOptions.path == _imageUpload) {
-              log(
-                '🔄 ApiService: Skipping automatic retry for image upload - handled by method',
-              );
-              return handler.reject(error);
-            }
+            // NOTE: Previously skipped image upload endpoints, but this caused 401 errors
+            // Now all endpoints get automatic token refresh for better user experience
 
             log(
               '🔄 ApiService: 401 detected for ${error.requestOptions.path} - initiating token recovery...',
@@ -211,14 +206,32 @@ class ApiService {
               log('🔄 Step 1: Attempting normal token refresh...');
               final newAccessToken = await refreshTokens();
               if (newAccessToken != null) {
-                // INFO: Recreate request options to avoid FormData finalization issue
-                final newOptions = _recreateRequestOptions(
-                  error.requestOptions,
-                );
-                newOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-                final response = await _dio.fetch(newOptions);
-                log('✅ ApiService: Token refresh successful - request retried');
-                return handler.resolve(response);
+                try {
+                  // INFO: Recreate request options to avoid FormData finalization issue
+                  final newOptions = _recreateRequestOptions(
+                    error.requestOptions,
+                  );
+                  newOptions.headers['Authorization'] =
+                      'Bearer $newAccessToken';
+                  final response = await _dio.fetch(newOptions);
+                  log(
+                    '✅ ApiService: Token refresh successful - request retried',
+                  );
+                  return handler.resolve(response);
+                } catch (recreateError) {
+                  log(
+                    '❌ ApiService: Cannot recreate request (likely FormData finalized): $recreateError',
+                  );
+                  // If we can't recreate the request, show user-friendly error
+                  final friendlyError = DioException(
+                    requestOptions: error.requestOptions,
+                    response: error.response,
+                    type: DioExceptionType.unknown,
+                    error:
+                        'Tu sesión expiró durante la subida. Por favor, intenta nuevamente.',
+                  );
+                  return handler.reject(friendlyError);
+                }
               }
             } catch (refreshError) {
               log('❌ ApiService: Token refresh failed: $refreshError');
@@ -230,14 +243,31 @@ class ApiService {
             if (reloginSuccess) {
               final newToken = await getAccessToken();
               if (newToken != null) {
-                // INFO: Recreate request options to avoid FormData finalization issue
-                final newOptions = _recreateRequestOptions(
-                  error.requestOptions,
-                );
-                newOptions.headers['Authorization'] = 'Bearer $newToken';
-                final response = await _dio.fetch(newOptions);
-                log('✅ ApiService: Auto-relogin successful - request retried');
-                return handler.resolve(response);
+                try {
+                  // INFO: Recreate request options to avoid FormData finalization issue
+                  final newOptions = _recreateRequestOptions(
+                    error.requestOptions,
+                  );
+                  newOptions.headers['Authorization'] = 'Bearer $newToken';
+                  final response = await _dio.fetch(newOptions);
+                  log(
+                    '✅ ApiService: Auto-relogin successful - request retried',
+                  );
+                  return handler.resolve(response);
+                } catch (recreateError) {
+                  log(
+                    '❌ ApiService: Cannot recreate request after auto-relogin: $recreateError',
+                  );
+                  // If we can't recreate the request, show user-friendly error
+                  final friendlyError = DioException(
+                    requestOptions: error.requestOptions,
+                    response: error.response,
+                    type: DioExceptionType.unknown,
+                    error:
+                        'Tu sesión expiró durante la subida. Por favor, intenta nuevamente.',
+                  );
+                  return handler.reject(friendlyError);
+                }
               }
             }
 
@@ -285,6 +315,7 @@ class ApiService {
     log('🔐 Storing JWT tokens securely...');
     await _secureStorage.write(key: _accessTokenKey, value: accessToken);
     await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+
     log('✅ JWT tokens stored successfully in secure storage');
   }
 
@@ -914,12 +945,36 @@ class ApiService {
     String name,
     String addedAt,
   ) async {
+    print('🗑️ API: Starting DELETE ingredient request');
+    print('🗑️ API: Name: "$name"');
+    print('🗑️ API: AddedAt: "$addedAt"');
+
+    // Ensure proper URL encoding
+    final encodedName = Uri.encodeComponent(name);
+    final encodedTimestamp = Uri.encodeComponent(addedAt);
+    final endpoint = '$_inventoryIngredients/$encodedName/$encodedTimestamp';
+
+    print('🗑️ API: Encoded endpoint: $endpoint');
+
     try {
-      final response = await _dio.delete(
-        '$_inventoryIngredients/$name/$addedAt',
-      );
+      final response = await _dio.delete(endpoint);
+      print('🗑️ API: DELETE request successful');
+      print('🗑️ API: Response status: ${response.statusCode}');
+      print('🗑️ API: Response data: ${response.data}');
+
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      print('🗑️ API: DELETE request failed: $e');
+      print('🗑️ API: Error type: ${e.runtimeType}');
+
+      if (e is DioException) {
+        print('🗑️ API: DioException details:');
+        print('  - Status code: ${e.response?.statusCode}');
+        print('  - Response data: ${e.response?.data}');
+        print('  - Message: ${e.message}');
+        print('  - Request URL: ${e.requestOptions.uri}');
+      }
+
       throw Exception('Delete ingredient error: ${e.toString()}');
     }
   }
@@ -944,10 +999,27 @@ class ApiService {
   /// INFO: Delete item by ID (as specified in README.md)
   /// USAGE: Delete any inventory item using its unique ID
   Future<Map<String, dynamic>> deleteInventoryItem(String itemId) async {
+    print('🗑️ API: Starting DELETE request for item: $itemId');
+    print('🗑️ API: Endpoint: $_inventoryItems/$itemId');
+
     try {
       final response = await _dio.delete('$_inventoryItems/$itemId');
+      print('🗑️ API: DELETE request successful');
+      print('🗑️ API: Response status: ${response.statusCode}');
+      print('🗑️ API: Response data: ${response.data}');
+
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      print('🗑️ API: DELETE request failed: $e');
+      print('🗑️ API: Error type: ${e.runtimeType}');
+
+      if (e is DioException) {
+        print('🗑️ API: DioException details:');
+        print('  - Status code: ${e.response?.statusCode}');
+        print('  - Response data: ${e.response?.data}');
+        print('  - Message: ${e.message}');
+      }
+
       throw Exception('Delete inventory item error: ${e.toString()}');
     }
   }
@@ -1004,11 +1076,31 @@ class ApiService {
       final encodedDate = Uri.encodeComponent(addedAt);
       final response = await _dio.patch(
         '$_inventoryIngredients/$encodedName/$encodedDate/quantity',
-        data: {'new_quantity': newQuantity},
+        data: {'quantity': newQuantity},
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Update ingredient quantity error: ${e.toString()}');
+    }
+  }
+
+  /// INFO: Update food quantity only
+  /// USAGE: Quick quantity update for specific food stack
+  Future<Map<String, dynamic>> updateFoodQuantity(
+    String foodName,
+    String addedAt,
+    double newQuantity,
+  ) async {
+    try {
+      final encodedName = Uri.encodeComponent(foodName);
+      final encodedDate = Uri.encodeComponent(addedAt);
+      final response = await _dio.patch(
+        '$_inventoryFoodDetail/$encodedName/$encodedDate/quantity',
+        data: {'serving_quantity': newQuantity},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Update food quantity error: ${e.toString()}');
     }
   }
 
@@ -1731,6 +1823,8 @@ class ApiService {
       requestEncoder: options.requestEncoder,
       responseDecoder: options.responseDecoder,
       listFormat: options.listFormat,
+      sendTimeout: options.sendTimeout,
+      receiveTimeout: options.receiveTimeout,
     );
 
     // If the original request had FormData, try to recreate it
@@ -1744,21 +1838,28 @@ class ApiService {
           newFormData.fields.add(MapEntry(field.key, field.value));
         }
 
-        // Try to clone files
+        // Try to recreate files - this is tricky with MultipartFile
         for (final fileEntry in originalFormData.files) {
-          final clonedFile = fileEntry.value.clone();
-          newFormData.files.add(MapEntry(fileEntry.key, clonedFile));
+          try {
+            // Try to clone the file if possible
+            final clonedFile = fileEntry.value.clone();
+            newFormData.files.add(MapEntry(fileEntry.key, clonedFile));
+          } catch (cloneError) {
+            log('⚠️ Could not clone file ${fileEntry.key}: $cloneError');
+            // If cloning fails, we can't recreate the FormData properly
+            // Return null to indicate the request cannot be retried
+            log('❌ Cannot retry FormData request - file already finalized');
+            throw Exception('Cannot retry multipart request - file finalized');
+          }
         }
 
         newOptions.data = newFormData;
         log('🔧 FormData recreated successfully for retry request');
       } catch (e) {
         log('❌ Failed to recreate FormData: $e');
-        log('⚠️ Returning original request options - retry may fail');
-        // Return original request options - this will likely fail with the
-        // "MultipartFile already finalized" error, but that's better than
-        // creating an invalid request
-        return options;
+        // For FormData requests that can't be recreated, we need to fail gracefully
+        // This prevents infinite retry loops with finalized files
+        throw Exception('Cannot retry request with finalized FormData: $e');
       }
     } else {
       newOptions.data = options.data;

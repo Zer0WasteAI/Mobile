@@ -394,6 +394,13 @@ class _MarkConsumedDialogState extends ConsumerState<MarkConsumedDialog> {
                     : _recipeController.text.trim(),
           );
 
+      // 🔄 SYNC: Update UI provider with the new data from real provider
+      final realItems = ref.read(inventoryRealProvider).items;
+      ref.read(inventoryProvider.notifier).clearAllItems();
+      if (realItems.isNotEmpty) {
+        ref.read(inventoryProvider.notifier).addItems(realItems);
+      }
+
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(

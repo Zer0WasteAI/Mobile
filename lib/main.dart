@@ -4,9 +4,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:zer0_waste_ai/core/theme/theme.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/injection_container.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:developer';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +63,8 @@ class _MyAppState extends ConsumerState<MyApp> {
       if (next.value != null) {
         // Si hay un usuario autenticado, cargar sus preferencias
         ref.read(userPreferencesProvider.notifier).loadUserPreferences();
+        // 🚀 PROACTIVE: Load inventory immediately when user logs in
+        _loadInventoryProactively();
       } else {
         // Si no hay usuario o se cerró sesión, resetear el estado
         ref.read(userPreferencesProvider.notifier).reset();
@@ -72,7 +76,23 @@ class _MyAppState extends ConsumerState<MyApp> {
     if (authState.value != null) {
       // Si ya hay un usuario autenticado al inicio, cargar sus preferencias
       ref.read(userPreferencesProvider.notifier).loadUserPreferences();
+      // 🚀 PROACTIVE: Load inventory immediately at app start
+      _loadInventoryProactively();
     }
+  }
+
+  /// 🚀 Load inventory proactively in background for better UX
+  void _loadInventoryProactively() {
+    // Use Future.microtask to avoid blocking the UI thread
+    Future.microtask(() async {
+      try {
+        log('🚀 Proactively loading inventory for better UX...');
+        await ref.read(inventoryRealProvider.notifier).loadInventoryIfNeeded();
+        log('✅ Proactive inventory loading completed');
+      } catch (e) {
+        log('⚠️ Proactive inventory loading failed (non-critical): $e');
+      }
+    });
   }
 
   @override

@@ -9,6 +9,7 @@ import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.da
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
+import 'package:zer0_waste_ai/core/utils/url_encoding_helper.dart';
 import 'package:uuid/uuid.dart'; // For generating unique IDs
 import 'package:collection/collection.dart'; // For groupBy
 
@@ -408,6 +409,13 @@ final filteredSortedInventoryProvider = Provider<List<DisplayBatchInfo>>((ref) {
         }
         break;
     }
+
+    // 🔧 STABLE SORT: If primary comparison is equal, use name as secondary sort
+    // This prevents items from jumping positions when batch selection changes
+    if (comparison == 0) {
+      comparison = a.name.compareTo(b.name);
+    }
+
     return inventoryState.sortAscending ? comparison : -comparison;
   });
 
@@ -484,9 +492,17 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       return;
     }
 
-    // Load fresh data
+    // Load fresh data - use fast endpoint for initial load
     log('🌐 Cache invalid or empty, loading fresh data');
-    await loadCompleteInventoryFromBackend();
+    if (state.items.isEmpty) {
+      // First load: use fast endpoint
+      log('🚀 First load - using fast endpoint');
+      await loadInventoryFromBackend();
+    } else {
+      // Subsequent loads: use complete endpoint for enhanced data
+      log('🔄 Subsequent load - using complete endpoint');
+      await loadCompleteInventoryFromBackend();
+    }
   }
 
   // Helper methods for quantity logic (shared with local notifier)
@@ -514,6 +530,44 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       default:
         return 1.0;
     }
+  }
+
+  /// Set user selected batch for an ingredient (UI state management)
+  void setUserSelectedBatch(String ingredientName, String batchId) {
+    final lowerCaseName = ingredientName.toLowerCase();
+    final currentOverrides = Map<String, String>.from(
+      state.userSelectedBatchOverrides,
+    );
+
+    // Update or add the override for this ingredient
+    currentOverrides[lowerCaseName] = batchId;
+
+    state = state.copyWith(userSelectedBatchOverrides: currentOverrides);
+  }
+
+  /// Filter and sorting methods (mirrored from InventoryNotifier for UI consistency)
+  void setCategoryFilter(ItemCategory category) {
+    state = state.copyWith(categoryFilter: category);
+  }
+
+  void setStorageFilter(Set<StorageType> storageTypes) {
+    state = state.copyWith(storageFilter: storageTypes);
+  }
+
+  void setSortCriteria(InventorySortCriteria criteria) {
+    state = state.copyWith(sortCriteria: criteria);
+  }
+
+  void setSortDirection(bool ascending) {
+    state = state.copyWith(sortAscending: ascending);
+  }
+
+  void setSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  void setExpirationStatusFilter(ExpirationStatus status) {
+    state = state.copyWith(expirationStatusFilter: status);
   }
 
   /// Load inventory from real backend
@@ -604,9 +658,10 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   Future<void> updateIngredientInBackend(InventoryItem item) async {
     try {
       final updateData = _convertItemToAPI(item);
+      final safeIngredientName = UrlEncodingHelper.encodeItemName(item.name);
       await _backendNotifier.updateIngredient(
-        item.name,
-        item.addedDate.toIso8601String(),
+        safeIngredientName,
+        _formatTimestampForBackend(item.addedDate),
         updateData,
       );
 
@@ -620,9 +675,10 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   /// Delete ingredient from real backend
   Future<void> deleteIngredientFromBackend(InventoryItem item) async {
     try {
+      final safeIngredientName = UrlEncodingHelper.encodeItemName(item.name);
       await _backendNotifier.deleteIngredient(
-        item.name,
-        item.addedDate.toIso8601String(),
+        safeIngredientName,
+        _formatTimestampForBackend(item.addedDate),
       );
 
       // Reload inventory after deleting
@@ -664,26 +720,112 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     state = state.copyWith(errorMessage: null);
   }
 
+  /// Format DateTime to backend-compatible timestamp format
+  /// CRITICAL: Preserves local time, does NOT convert to UTC
+  /// Backend expects the exact timestamp from the database (local time with Z suffix)
+  String _formatTimestampForBackend(DateTime dateTime) {
+    final formattedTimestamp = UrlEncodingHelper.formatTimestamp(dateTime);
+
+    log('🔍 DEBUG - Original DateTime: $dateTime');
+    log('🔍 DEBUG - Formatted timestamp (LOCAL + Z): $formattedTimestamp');
+
+    // ✅ VALIDATION: Check if this looks like UTC conversion (for debugging)
+    if (formattedTimestamp.contains('01:29:12') ||
+        formattedTimestamp.contains('2025-06-23T01:')) {
+      log(
+        '🚨 WARNING: Timestamp looks like UTC conversion! This will cause 404',
+      );
+      log('   └─ Expected: 2025-06-22T20:29:12.000Z');
+      log('   └─ Got: $formattedTimestamp');
+    }
+
+    return formattedTimestamp;
+  }
+
+  /// Parse timestamp from API response preserving local time
+  /// CRITICAL: Ensures we don't lose the original timestamp format
+  DateTime _parseTimestampFromAPI(String timestampStr) {
+    log('🔍 DEBUG - Parsing timestamp from API: $timestampStr');
+
+    // Parse the timestamp - Dart will handle the Z suffix correctly
+    DateTime parsed = DateTime.parse(timestampStr);
+
+    // If the original had Z (UTC), convert to local to preserve the time values
+    // This ensures that 2025-06-22T20:29:12.000Z stays as 20:29:12 local time
+    if (timestampStr.endsWith('Z')) {
+      parsed = parsed.toLocal();
+      log('🔍 DEBUG - Converted UTC timestamp to local: $parsed');
+    }
+
+    return parsed;
+  }
+
   /// Remove item from inventory (with backend synchronization)
-  /// Uses the universal DELETE /api/inventory/items/:id endpoint
+  /// Uses the correct DELETE endpoints based on item type
   Future<void> removeItem(String itemId) async {
+    log('🗑️ PROVIDER: Starting removeItem for ID: $itemId');
+    log('🗑️ PROVIDER: Current items count: ${state.items.length}');
+
+    // Find item to remove for logging
+    final itemToRemove =
+        state.items.where((item) => item.id == itemId).firstOrNull;
+    if (itemToRemove == null) {
+      log('🗑️ PROVIDER: ERROR - Item not found in state: $itemId');
+      return;
+    }
+    log('🗑️ PROVIDER: Found item to remove: ${itemToRemove.name}');
+    log('🗑️ PROVIDER: Item category: ${itemToRemove.category}');
+    log(
+      '🗑️ PROVIDER: Item addedDate: ${itemToRemove.addedDate.toIso8601String()}',
+    );
+
     // 1. Remove from local state immediately for responsiveness
     final updatedItems =
         state.items.where((item) => item.id != itemId).toList();
     state = state.copyWith(items: updatedItems);
+    log('🗑️ PROVIDER: Updated local state, new count: ${updatedItems.length}');
 
     try {
-      // 2. Sync with backend using the universal deletion endpoint
-      await _backendNotifier.deleteInventoryItem(itemId);
-      log('✅ Item deleted from backend successfully: $itemId');
+      // 2. Use the correct endpoint - for now, both ingredients and foods use the same endpoint
+      log('🗑️ PROVIDER: Calling deleteIngredient for: ${itemToRemove.name}');
+
+      // 🔥 CRITICAL: Encode ingredient name to handle special characters like "/"
+      String safeIngredientName = UrlEncodingHelper.encodeItemName(
+        itemToRemove.name,
+      );
+
+      // Format timestamp to match backend expectations (must end with Z)
+      String formattedTimestamp = _formatTimestampForBackend(
+        itemToRemove.addedDate,
+      );
+
+      // Debug encoding transformation
+      UrlEncodingHelper.debugEncoding(itemToRemove.name);
+
+      log(
+        '🗑️ PROVIDER: Using name: "${itemToRemove.name}" -> "$safeIngredientName" and addedDate: "$formattedTimestamp"',
+      );
+
+      await _backendNotifier.deleteIngredient(
+        safeIngredientName, // Use encoded name
+        formattedTimestamp,
+      );
+      log(
+        '✅ PROVIDER: Item deleted from backend successfully: $itemId (${itemToRemove.category})',
+      );
     } catch (e) {
-      log('❌ Failed to delete item from backend: $e');
+      log('❌ PROVIDER: Failed to delete item from backend: $e');
+      log('❌ PROVIDER: Error type: ${e.runtimeType}');
+      log('❌ PROVIDER: Full error: ${e.toString()}');
 
       // 3. Restore item if backend deletion failed
+      log('🗑️ PROVIDER: Reloading inventory to restore state...');
       await loadInventoryFromBackend(); // Reload to restore accurate state
       state = state.copyWith(
         errorMessage: 'Failed to delete item: ${e.toString()}',
       );
+      log('🗑️ PROVIDER: State restored after backend failure');
+      rethrow; // Re-throw to let UI handle the error
     }
   }
 
@@ -724,8 +866,9 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
     }
   }
 
-  /// Quick update ingredient quantity using PATCH endpoint (faster)
-  Future<void> updateIngredientQuantityQuick(
+  /// Quick update item quantity using PATCH endpoint (faster)
+  /// Works for both ingredients and foods
+  Future<void> updateItemQuantityQuick(
     String itemId,
     double newQuantity,
   ) async {
@@ -745,22 +888,50 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
           }).toList();
       state = state.copyWith(items: updatedItems);
 
-      // 2. Use the new quick quantity update endpoint
-      await _backendNotifier.updateIngredientQuantity(
-        originalItem.name,
-        originalItem.addedDate.toIso8601String(),
-        clampedQuantity,
-      );
-
-      log('✅ Ingredient quantity updated quickly: $itemId -> $clampedQuantity');
+      // 2. Use the appropriate endpoint based on item category
+      if (originalItem.category == ItemCategory.ingredient) {
+        final safeIngredientName = UrlEncodingHelper.encodeItemName(
+          originalItem.name,
+        );
+        await _backendNotifier.updateIngredientQuantity(
+          safeIngredientName,
+          _formatTimestampForBackend(originalItem.addedDate),
+          clampedQuantity,
+        );
+        log(
+          '✅ Ingredient quantity updated quickly: $itemId -> $clampedQuantity',
+        );
+      } else if (originalItem.category == ItemCategory.food) {
+        final safeFoodName = UrlEncodingHelper.encodeItemName(
+          originalItem.name,
+        );
+        await _backendNotifier.updateFoodQuantity(
+          safeFoodName,
+          _formatTimestampForBackend(originalItem.addedDate),
+          clampedQuantity,
+        );
+        log('✅ Food quantity updated quickly: $itemId -> $clampedQuantity');
+      } else {
+        throw Exception('Unknown item category: ${originalItem.category}');
+      }
     } catch (e) {
-      log('❌ Failed to update ingredient quantity quickly: $e');
+      log('❌ Failed to update item quantity quickly: $e');
       state = state.copyWith(
         errorMessage: 'Failed to update quantity: ${e.toString()}',
       );
       // Reload to restore accurate state
       await loadInventoryFromBackend();
     }
+  }
+
+  /// Quick update ingredient quantity using PATCH endpoint (faster)
+  /// DEPRECATED: Use updateItemQuantityQuick instead
+  @Deprecated('Use updateItemQuantityQuick instead')
+  Future<void> updateIngredientQuantityQuick(
+    String itemId,
+    double newQuantity,
+  ) async {
+    return updateItemQuantityQuick(itemId, newQuantity);
   }
 
   /// Update expiration date in backend (async operation)
@@ -832,9 +1003,12 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       final originalItem = state.items.firstWhere((item) => item.id == itemId);
 
       // Call the backend to mark as consumed
-      final result = await _backendNotifier.markIngredientConsumed(
+      final safeIngredientName = UrlEncodingHelper.encodeItemName(
         originalItem.name,
-        originalItem.addedDate.toIso8601String(),
+      );
+      final result = await _backendNotifier.markIngredientConsumed(
+        safeIngredientName,
+        _formatTimestampForBackend(originalItem.addedDate),
         consumedQuantity: consumedQuantity,
         consumptionReason: consumptionReason,
         recipeUsed: recipeUsed,
@@ -971,6 +1145,9 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         final addedAtStr = stackData['added_at'];
         final expirationDateStr = stackData['expiration_date'];
 
+        // DEBUG: Log original timestamp from API
+        log('🔍 DEBUG - Original timestamp from API: $addedAtStr');
+
         // Create unique ID for each stack
         final stackId = '${name.toLowerCase().replaceAll(' ', '_')}_stack_$i';
 
@@ -988,10 +1165,20 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
           storageType: storageType,
           category: ItemCategory.ingredient,
           addedDate:
-              addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+              addedAtStr != null
+                  ? _parseTimestampFromAPI(addedAtStr)
+                  : DateTime.now(),
           tips: tips,
           description: 'Lote ${i + 1}',
         );
+
+        // DEBUG: Log how the timestamp will be formatted for backend
+        if (addedAtStr != null) {
+          final formattedForBackend = _formatTimestampForBackend(
+            item.addedDate,
+          );
+          log('🔍 DEBUG - Formatted for backend: $formattedForBackend');
+        }
 
         items.add(item);
         log(
@@ -1029,6 +1216,9 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         final addedAtStr = stackData['added_at'];
         final expirationDateStr = stackData['expiration_date'];
 
+        // DEBUG: Log original timestamp from API
+        log('🔍 DEBUG - Original food timestamp from API: $addedAtStr');
+
         // Create unique ID for each stack
         final stackId =
             '${name.toLowerCase().replaceAll(' ', '_')}_food_stack_$i';
@@ -1047,10 +1237,20 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
           storageType: storageType,
           category: ItemCategory.food,
           addedDate:
-              addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+              addedAtStr != null
+                  ? _parseTimestampFromAPI(addedAtStr)
+                  : DateTime.now(),
           tips: tips,
           description: 'Lote ${i + 1}',
         );
+
+        // DEBUG: Log how the timestamp will be formatted for backend
+        if (addedAtStr != null) {
+          final formattedForBackend = _formatTimestampForBackend(
+            item.addedDate,
+          );
+          log('🔍 DEBUG - Food formatted for backend: $formattedForBackend');
+        }
 
         items.add(item);
         log(
@@ -1111,7 +1311,9 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         storageType: storageType,
         category: ItemCategory.ingredient, // Default to ingredient
         addedDate:
-            addedAtStr != null ? DateTime.parse(addedAtStr) : DateTime.now(),
+            addedAtStr != null
+                ? _parseTimestampFromAPI(addedAtStr)
+                : DateTime.now(),
         tips: tips,
         // Additional metadata (could be used for displaying confidence, etc.)
         description:
@@ -1406,6 +1608,13 @@ final filteredSortedInventoryRealProvider = Provider<List<DisplayBatchInfo>>((
         }
         break;
     }
+
+    // 🔧 STABLE SORT: If primary comparison is equal, use name as secondary sort
+    // This prevents items from jumping positions when batch selection changes
+    if (comparison == 0) {
+      comparison = a.name.compareTo(b.name);
+    }
+
     return inventoryState.sortAscending ? comparison : -comparison;
   });
 
