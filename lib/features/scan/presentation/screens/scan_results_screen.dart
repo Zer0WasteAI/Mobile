@@ -1052,7 +1052,7 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
 
       // Map RecognizedItem to InventoryItem
       final List<InventoryItem> itemsToAddInventory =
-          itemsToAddRaw.map((recognizedItem) {
+          itemsToAddRaw.map<InventoryItem>((recognizedItem) {
             // Determine category based on ScanItemType
             final ItemCategory category =
                 widget.itemType == ScanItemType.food
@@ -1114,11 +1114,21 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
             );
           }).toList();
 
-      // Add to backend
-      await ref
-          .read(inventoryRealProvider.notifier)
-          .addIngredientsToBackend(itemsToAddInventory);
-
+      // Add to backend one by one to avoid type casting issues
+      for (final item in itemsToAddInventory) {
+        final itemData = {
+          'name': item.name,
+          'quantity': item.quantity,
+          'type_unit': item.unitType,
+          'storage_type': item.storageType.name,
+          'expiration_date': item.expirationDate?.toIso8601String(),
+          'tips': item.tips,
+        };
+        
+        await ref
+            .read(inventoryRealProvider.notifier)
+            .addSingleItemToInventory(itemData);
+      }
       // Show success state
       setState(() {
         _isLoading = false;

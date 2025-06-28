@@ -44,6 +44,8 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_poli
 import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/my_recipes_screen.dart'; // Import MyRecipesScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recipe_generation_screen.dart'; // Import CustomRecipeGenerationScreen
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
@@ -403,6 +405,20 @@ class AppRouter {
             }
             return RecipeDetailScreen(recipe: recipe);
           },
+        ),
+        // Route for My Recipes Screen
+        GoRoute(
+          path: MyRecipesScreen.routePath,
+          name: MyRecipesScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const MyRecipesScreen(),
+        ),
+        // Route for Custom Recipe Generation Screen
+        GoRoute(
+          path: CustomRecipeGenerationScreen.routePath,
+          name: CustomRecipeGenerationScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const CustomRecipeGenerationScreen(),
         ),
         // Route for Impact Panel
         GoRoute(

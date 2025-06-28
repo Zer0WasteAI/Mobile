@@ -1,48 +1,38 @@
-// ignore_for_file: unused_element, avoid_unnecessary_containers
-
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-class RecipeScreen extends ConsumerStatefulWidget {
-  final RecipeMode mode;
+class MyRecipesScreen extends ConsumerStatefulWidget {
+  const MyRecipesScreen({super.key});
 
-  const RecipeScreen({required this.mode, super.key});
+  static const String routeName = 'my-recipes';
+  static const String routePath = '/recipes/my-recipes';
 
   @override
-  ConsumerState<RecipeScreen> createState() => _RecipeScreenState();
+  ConsumerState<MyRecipesScreen> createState() => _MyRecipesScreenState();
 }
 
-class _RecipeScreenState extends ConsumerState<RecipeScreen>
+class _MyRecipesScreenState extends ConsumerState<MyRecipesScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  String _screenTitle = 'Generar Recetas';
-
-  // Variables para el tab de Mis Recetas
   String _searchQuery = '';
+  SortCriteria _sortBy = SortCriteria.name;
+  bool _ascending = true;
+  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      final newTitle =
-          _tabController.index == 0 ? 'Generar Recetas' : 'Mis Recetas';
-      if (_screenTitle != newTitle) {
-        setState(() {
-          _screenTitle = newTitle;
-        });
-      }
-    });
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
 
     // Load favorite recipes on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -52,97 +42,146 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-
-    // Theme-aware colors
-    final Color scaffoldBackgroundColor =
-        isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final Color primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color mainTextColor =
-        isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final Color secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final isDark = theme.brightness == Brightness.dark;
 
     final favoritesState = ref.watch(favoriteRecipesProvider);
+    final isGenerating = ref.watch(isGeneratingRecipesProvider);
+
+    // Theme colors
+    final primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final backgroundColor =
+        isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
+    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+
+    // Get filtered and sorted recipes
+    List<Recipe> displayedRecipes = _getFilteredAndSortedRecipes();
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _screenTitle,
+              'Mis Recetas',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: mainTextColor,
+                color: textColor,
               ),
             ),
-            if (_tabController.index == 1)
-              Text(
-                '${favoritesState.favoriteCount} recetas guardadas',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: secondaryTextColor,
-                ),
-              ),
+            Text(
+              '${favoritesState.favoriteCount} recetas guardadas',
+              style: GoogleFonts.inter(fontSize: 14, color: secondaryTextColor),
+            ),
           ],
         ),
-        centerTitle: true,
-        backgroundColor: scaffoldBackgroundColor,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: mainTextColor),
         actions: [
-          if (_tabController.index == 1 &&
-              favoritesState.favoriteCount > 0) ...[
+          if (favoritesState.favoriteCount > 0) ...[
+            // Sort menu
+            PopupMenuButton<SortCriteria>(
+              icon: Icon(Icons.sort, color: textColor),
+              onSelected: (SortCriteria criteria) {
+                setState(() {
+                  if (_sortBy == criteria) {
+                    _ascending = !_ascending;
+                  } else {
+                    _sortBy = criteria;
+                    _ascending = true;
+                  }
+                });
+              },
+              itemBuilder:
+                  (context) => [
+                    PopupMenuItem(
+                      value: SortCriteria.name,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.sort_by_alpha,
+                            size: 20,
+                            color:
+                                _sortBy == SortCriteria.name
+                                    ? primaryColor
+                                    : Colors.grey,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Por nombre'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: SortCriteria.cookingTime,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 20,
+                            color:
+                                _sortBy == SortCriteria.cookingTime
+                                    ? primaryColor
+                                    : Colors.grey,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Por tiempo'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: SortCriteria.difficulty,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.trending_up,
+                            size: 20,
+                            color:
+                                _sortBy == SortCriteria.difficulty
+                                    ? primaryColor
+                                    : Colors.grey,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Por dificultad'),
+                        ],
+                      ),
+                    ),
+                  ],
+            ),
             IconButton(
-              icon: Icon(Icons.refresh, color: mainTextColor),
+              icon: Icon(Icons.refresh, color: textColor),
               onPressed: () async {
                 await ref.read(favoriteRecipesProvider.notifier).refresh();
               },
             ),
           ],
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: primaryColor,
-          unselectedLabelColor: secondaryTextColor,
-          indicatorColor: primaryColor,
-          indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: GoogleFonts.inter(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-          unselectedLabelStyle: GoogleFonts.inter(
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          tabs: const [Tab(text: 'Generar'), Tab(text: 'Mis Recetas')],
-        ),
       ),
       body: Column(
         children: [
-          // Search bar solo para el tab de Mis Recetas
-          if (_tabController.index == 1 && favoritesState.favoriteCount > 0)
+          // Search bar
+          if (favoritesState.favoriteCount > 0)
             Container(
               padding: const EdgeInsets.all(16),
-              color: isDark ? AppColors.darkSurface : Colors.white,
+              color: cardColor,
               child: TextField(
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
                   });
                 },
-                style: GoogleFonts.inter(color: mainTextColor),
+                style: GoogleFonts.inter(color: textColor),
                 decoration: InputDecoration(
                   hintText: 'Buscar en tus recetas...',
                   hintStyle: GoogleFonts.inter(color: secondaryTextColor),
@@ -164,26 +203,15 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
 
           // Content
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildGenerateTab(
-                  context,
-                  ref,
-                  isDark,
-                  primaryColor,
-                  mainTextColor,
-                  secondaryTextColor,
-                ),
-                _buildMyRecipesTab(
-                  context,
-                  ref,
-                  isDark,
-                  primaryColor,
-                  mainTextColor,
-                  secondaryTextColor,
-                ),
-              ],
+            child: _buildContent(
+              favoritesState,
+              displayedRecipes,
+              isGenerating,
+              cardColor,
+              primaryColor,
+              textColor,
+              secondaryTextColor,
+              isDark,
             ),
           ),
         ],
@@ -191,134 +219,16 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     );
   }
 
-  // Build method for Generate Tab - shows recipe generation options
-  Widget _buildGenerateTab(
-    BuildContext context,
-    WidgetRef ref,
-    bool isDark,
+  Widget _buildContent(
+    FavoriteRecipesState favoritesState,
+    List<Recipe> displayedRecipes,
+    bool isGenerating,
+    Color cardColor,
     Color primaryColor,
-    Color mainTextColor,
+    Color textColor,
     Color secondaryTextColor,
-  ) {
-    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-
-          // Welcome section
-          Text(
-            '¡Genera recetas increíbles!',
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: mainTextColor,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          Text(
-            'Descubre nuevas recetas personalizadas según tus ingredientes y preferencias.',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: secondaryTextColor,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // Generation options
-          _buildGenerationOption(
-            icon: Icons.kitchen,
-            title: 'Generar con mi inventario',
-            subtitle: 'Usa los ingredientes que tienes disponibles',
-            description:
-                'Genera recetas inteligentes basadas en los ingredientes de tu inventario',
-            primaryColor: primaryColor,
-            textColor: mainTextColor,
-            secondaryTextColor: secondaryTextColor,
-            cardColor: cardColor,
-            isDark: isDark,
-            onTap: () => _generateFromInventory(ref, context),
-          ),
-          const SizedBox(height: 20),
-
-          _buildGenerationOption(
-            icon: Icons.tune,
-            title: 'Generar receta personalizada',
-            subtitle: 'Elige ingredientes específicos y preferencias',
-            description:
-                'Personaliza completamente tu receta con ingredientes, tipo de cocina y restricciones dietéticas',
-            primaryColor: primaryColor,
-            textColor: mainTextColor,
-            secondaryTextColor: secondaryTextColor,
-            cardColor: cardColor,
-            isDark: isDark,
-            onTap: () => _generateCustomRecipe(),
-          ),
-
-          const SizedBox(height: 40),
-
-          // Features section
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.auto_awesome, color: primaryColor, size: 24),
-                    const SizedBox(width: 12),
-                    Text(
-                      'IA Inteligente',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: mainTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Nuestro sistema de IA analiza tus ingredientes y crea recetas deliciosas y nutritivas adaptadas a ti.',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: secondaryTextColor,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build method for My Recipes Tab - shows user's saved recipes
-  Widget _buildMyRecipesTab(
-    BuildContext context,
-    WidgetRef ref,
     bool isDark,
-    Color primaryColor,
-    Color mainTextColor,
-    Color secondaryTextColor,
   ) {
-    final favoritesState = ref.watch(favoriteRecipesProvider);
-    final isGenerating = ref.watch(isGeneratingRecipesProvider);
-    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-
-    // Get filtered and sorted recipes
-    List<Recipe> displayedRecipes = _getFilteredAndSortedRecipes();
-
     // Loading state
     if (favoritesState.isLoading) {
       return Center(
@@ -353,7 +263,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: mainTextColor,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -390,7 +300,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     if (favoritesState.favoriteCount == 0 && !isGenerating) {
       return _buildEmptyState(
         primaryColor,
-        mainTextColor,
+        textColor,
         secondaryTextColor,
         isDark,
       );
@@ -411,7 +321,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
             recipe,
             cardColor,
             primaryColor,
-            mainTextColor,
+            textColor,
             secondaryTextColor,
             isDark,
           );
@@ -468,7 +378,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
           const SizedBox(height: 40),
 
           // Generation options
-          _buildEmptyStateGenerationOption(
+          _buildGenerationOption(
             icon: Icons.kitchen,
             title: 'Generar con mi inventario',
             subtitle: 'Usa los ingredientes que tienes disponibles',
@@ -476,17 +386,11 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
             textColor: textColor,
             secondaryTextColor: secondaryTextColor,
             isDark: isDark,
-            onTap: () {
-              // Cambiar al tab de generar y ejecutar la acción
-              _tabController.animateTo(0);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                _generateFromInventory(ref, context);
-              });
-            },
+            onTap: () => _generateFromInventory(),
           ),
           const SizedBox(height: 16),
 
-          _buildEmptyStateGenerationOption(
+          _buildGenerationOption(
             icon: Icons.tune,
             title: 'Generar receta personalizada',
             subtitle: 'Elige ingredientes específicos y preferencias',
@@ -494,20 +398,14 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
             textColor: textColor,
             secondaryTextColor: secondaryTextColor,
             isDark: isDark,
-            onTap: () {
-              // Cambiar al tab de generar y ejecutar la acción
-              _tabController.animateTo(0);
-              Future.delayed(const Duration(milliseconds: 300), () {
-                _generateCustomRecipe();
-              });
-            },
+            onTap: () => _generateCustomRecipe(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyStateGenerationOption({
+  Widget _buildGenerationOption({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -769,7 +667,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
   List<Recipe> _getFilteredAndSortedRecipes() {
     final favoriteRecipes = ref
         .read(favoriteRecipesProvider.notifier)
-        .getSortedFavorites(ascending: true);
+        .getSortedFavorites(sortBy: _sortBy, ascending: _ascending);
 
     if (_searchQuery.isEmpty) {
       return favoriteRecipes;
@@ -778,6 +676,52 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
     return ref
         .read(favoriteRecipesProvider.notifier)
         .searchFavorites(_searchQuery);
+  }
+
+  void _generateFromInventory() async {
+    try {
+      // Show loading indicator in navigation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text('Generando recetas con tu inventario...'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      await ref.read(aiRecipeProvider.notifier).generateRecipesFromInventory();
+
+      // Navigate to AI generation screen to show results
+      if (mounted) {
+        GoRouter.of(context).go('/recipes/ai-generation');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al generar recetas: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _generateCustomRecipe() {
+    // Navigate to custom recipe generation screen
+    GoRouter.of(context).go('/recipes/custom-generation');
   }
 
   void _showDeleteRecipeDialog(Recipe recipe) {
@@ -835,143 +779,5 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
             ],
           ),
     );
-  }
-
-  Widget _buildGenerationOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String description,
-    required Color primaryColor,
-    required Color textColor,
-    required Color secondaryTextColor,
-    required Color cardColor,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.1 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(icon, color: primaryColor, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: textColor,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            subtitle,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: secondaryTextColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      color: secondaryTextColor,
-                      size: 18,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  description,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: secondaryTextColor,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _generateFromInventory(WidgetRef ref, BuildContext context) async {
-    try {
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text('Generando recetas con tu inventario...'),
-            ],
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-
-      // Navigate to AI generation screen to show results using root navigator
-      if (mounted) {
-        GoRouter.of(context).go('/recipes/ai-generation');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al generar recetas: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _generateCustomRecipe() {
-    // Navigate to custom recipe generation screen using root navigator
-    GoRouter.of(context).go('/recipes/custom-generation');
   }
 }

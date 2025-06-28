@@ -118,10 +118,17 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     }
 
     // Show awesome loading dialog ✨
-    showAIAnalysisDialog(
-      context,
-      itemType: widget.originType == ScanItemType.food ? 'food' : 'ingredient',
-    );
+    bool dialogShown = false;
+    try {
+      showAIAnalysisDialog(
+        context,
+        itemType:
+            widget.originType == ScanItemType.food ? 'food' : 'ingredient',
+      );
+      dialogShown = true;
+    } catch (e) {
+      log('Error showing dialog: $e');
+    }
 
     try {
       log(
@@ -242,7 +249,14 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
       }
 
       // Close loading dialog
-      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted && dialogShown && Navigator.of(context).canPop()) {
+        try {
+          Navigator.of(context).pop();
+          dialogShown = false;
+        } catch (e) {
+          log('Error closing dialog: $e');
+        }
+      }
 
       if (formattedResults.isEmpty) {
         throw Exception(
@@ -262,7 +276,14 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
       }
     } catch (e) {
       // Close loading dialog if still open
-      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted && dialogShown && Navigator.of(context).canPop()) {
+        try {
+          Navigator.of(context).pop();
+          dialogShown = false;
+        } catch (e) {
+          log('Error closing dialog in catch: $e');
+        }
+      }
 
       log('❌ Error in ${widget.originType.name} analysis: $e');
 

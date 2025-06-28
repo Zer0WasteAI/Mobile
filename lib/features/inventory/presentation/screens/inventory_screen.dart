@@ -19,6 +19,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for date formatting extension
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/mark_consumed_dialog.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -687,6 +688,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         ),
                         label: const Text('Generar receta'),
                         onPressed: () {
+                          // Clear AI recipe state to force regeneration
+                          ref.read(aiRecipeProvider.notifier).clearState();
                           context.pushNamed('AIRecipeGenerationScreen');
                         },
                         style: OutlinedButton.styleFrom(

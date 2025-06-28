@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
@@ -34,7 +35,7 @@ class WelcomeHeader extends ConsumerWidget {
       child: SafeArea(
         bottom: false,
         child: authState.when(
-      data: (user) {
+          data: (user) {
             if (user == null) {
               return _buildLoadingState(textColor, secondaryTextColor);
             }
@@ -46,14 +47,14 @@ class WelcomeHeader extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-                    // Saludo personalizado
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    // Saludo personalizado
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             _getGreeting(),
                             style: GoogleFonts.inter(
                               fontSize: 16,
@@ -64,9 +65,9 @@ class WelcomeHeader extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             firstName,
-                      style: GoogleFonts.inter(
+                            style: GoogleFonts.inter(
                               fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                               color: textColor,
                             ),
                           ),
@@ -75,51 +76,62 @@ class WelcomeHeader extends ConsumerWidget {
                     ),
 
                     // Avatar del usuario
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color:
-                            isDark
-                                ? AppColors.darkPrimary.withValues(alpha: 0.2)
-                                : AppColors.lightPrimary.withValues(alpha: 0.2),
-                        border: Border.all(
+                    InkWell(
+                      onTap: () {
+                        // Navigate to profile screen
+                        context.go('/profile');
+                      },
+                      borderRadius: BorderRadius.circular(
+                        24,
+                      ), // Circular ripple effect
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           color:
                               isDark
-                                  ? AppColors.darkPrimary
-                                  : AppColors.lightPrimary,
-                          width: 2,
+                                  ? AppColors.darkPrimary.withValues(alpha: 0.2)
+                                  : AppColors.lightPrimary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                          border: Border.all(
+                            color:
+                                isDark
+                                    ? AppColors.darkPrimary
+                                    : AppColors.lightPrimary,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child:
-                          user.photoURL != null
-                              ? ClipOval(
-                                child: Image.network(
-                                  user.photoURL!,
-                                  width: 48,
-                                  height: 48,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      color:
-                                          isDark
-                                              ? AppColors.darkPrimary
-                                              : AppColors.lightPrimary,
-                                      size: 24,
-                                    );
-                                  },
+                        child:
+                            user.photoURL != null
+                                ? ClipOval(
+                                  child: Image.network(
+                                    user.photoURL!,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.person,
+                                        color:
+                                            isDark
+                                                ? AppColors.darkPrimary
+                                                : AppColors.lightPrimary,
+                                        size: 24,
+                                      );
+                                    },
+                                  ),
+                                )
+                                : Icon(
+                                  Icons.person,
+                                  color:
+                                      isDark
+                                          ? AppColors.darkPrimary
+                                          : AppColors.lightPrimary,
+                                  size: 24,
                                 ),
-                              )
-                              : Icon(
-                                Icons.person,
-                                color:
-                                    isDark
-                                        ? AppColors.darkPrimary
-                                        : AppColors.lightPrimary,
-                                size: 24,
-                              ),
+                      ),
                     ),
                   ],
                 ),
@@ -161,12 +173,12 @@ class WelcomeHeader extends ConsumerWidget {
                             fontSize: 14,
                             color: textColor,
                             fontWeight: FontWeight.w500,
-                    ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
               ],
             );
           },
@@ -183,38 +195,38 @@ class WelcomeHeader extends ConsumerWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
                     height: 16,
                     width: 80,
-                      decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                       color: secondaryTextColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   const SizedBox(height: 8),
-                    Container(
+                  Container(
                     height: 28,
                     width: 120,
-                      decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                       color: textColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
-                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
             Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: secondaryTextColor.withValues(alpha: 0.3),
-          ),
+              ),
             ),
           ],
         ),
@@ -233,24 +245,24 @@ class WelcomeHeader extends ConsumerWidget {
   Widget _buildErrorState(Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      children: [
         Text(
           'Error al cargar',
-                          style: GoogleFonts.inter(
+          style: GoogleFonts.inter(
             fontSize: 16,
-                            color: textColor,
+            color: textColor,
             fontWeight: FontWeight.w500,
-            ),
           ),
+        ),
         const SizedBox(height: 8),
-            Text(
+        Text(
           'No se pudo cargar la información del usuario',
-              style: GoogleFonts.inter(
-                fontSize: 14,
+          style: GoogleFonts.inter(
+            fontSize: 14,
             color: textColor.withValues(alpha: 0.7),
-              ),
-            ),
-          ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'failures.dart';
 import 'exceptions.dart';
+import 'dart:developer';
 
 /// Manejador centralizado de errores
 ///
@@ -191,5 +192,212 @@ class ErrorHandler {
     }
 
     return false;
+  }
+
+  /// Converts any error into a user-friendly message for UI display
+  /// This is the main method that should be used throughout the app
+  static String getDisplayMessage(dynamic error) {
+    return getUserFriendlyMessage(error);
+  }
+
+  /// Converts any error into a user-friendly message
+  /// Technical details are logged separately for developers
+  static String getUserFriendlyMessage(dynamic error) {
+    // Log technical details for developers
+    log('🔍 ErrorHandler - Technical Details: $error');
+
+    if (error == null) {
+      return 'Ocurrió un problema inesperado. Por favor, intenta nuevamente.';
+    }
+
+    String errorString = error.toString();
+
+    // Log the raw error string
+    log('🔍 ErrorHandler - Raw error string: $errorString');
+
+    // Handle common error patterns
+    if (errorString.contains('Exception:')) {
+      errorString = errorString.replaceAll('Exception:', '').trim();
+    }
+
+    // Check for specific error patterns and provide appropriate messages
+    if (_isConnectionError(errorString)) {
+      return 'No se pudo conectar al servidor. Verifica tu conexión a internet e intenta nuevamente.';
+    }
+
+    if (_isAuthenticationError(errorString)) {
+      return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+    }
+
+    if (_isValidationError(errorString)) {
+      return 'Algunos datos no son válidos. Por favor, revisa la información e intenta nuevamente.';
+    }
+
+    if (_isServerError(errorString)) {
+      return 'Ocurrió un problema en nuestros servidores. Estamos trabajando para solucionarlo.';
+    }
+
+    if (_isTimeoutError(errorString)) {
+      return 'La operación está tardando demasiado. Por favor, intenta nuevamente.';
+    }
+
+    if (_isNotFoundError(errorString)) {
+      return 'El contenido que buscas no está disponible en este momento.';
+    }
+
+    // If error looks technical (contains code references), provide generic message
+    if (_isTechnicalError(errorString)) {
+      log(
+        '🔍 ErrorHandler - Detected technical error, providing generic message',
+      );
+      return 'Ocurrió un problema inesperado. Por favor, intenta nuevamente.';
+    }
+
+    // If error is already user-friendly (short and without technical terms), return it
+    if (_isUserFriendly(errorString)) {
+      return errorString;
+    }
+
+    // Default fallback message
+    return 'Ocurrió un problema inesperado. Por favor, intenta nuevamente.';
+  }
+
+  // Private helper methods to detect error types
+
+  static bool _isConnectionError(String error) {
+    final connectionKeywords = [
+      'connection',
+      'network',
+      'internet',
+      'timeout',
+      'conectar',
+      'conexión',
+      'red',
+      'no se pudo conectar',
+      'verifica tu conexión',
+      'error de conexión',
+      'socketexception',
+      'httpclientexception',
+    ];
+
+    return connectionKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isAuthenticationError(String error) {
+    final authKeywords = [
+      'unauthorized',
+      'authentication',
+      'token',
+      'expired',
+      'sesión',
+      'login',
+      'auth',
+      'no autorizado',
+      'tu sesión ha expirado',
+      'inicia sesión',
+    ];
+
+    return authKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isValidationError(String error) {
+    final validationKeywords = [
+      'validation',
+      'invalid',
+      'required',
+      'format',
+      'validación',
+      'inválido',
+      'requerido',
+      'formato',
+      'datos no válidos',
+      'revisa la información',
+    ];
+
+    return validationKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isServerError(String error) {
+    final serverKeywords = [
+      'server error',
+      'internal server',
+      'servidor',
+      'error del servidor',
+      'problema en nuestros servidores',
+      '500',
+      '502',
+      '503',
+      '504',
+    ];
+
+    return serverKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isTimeoutError(String error) {
+    final timeoutKeywords = [
+      'timeout',
+      'time out',
+      'tardando',
+      'demasiado tiempo',
+      'está tardando',
+    ];
+
+    return timeoutKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isNotFoundError(String error) {
+    final notFoundKeywords = [
+      'not found',
+      'no encontr',
+      'no está disponible',
+      'no existe',
+      '404',
+    ];
+
+    return notFoundKeywords.any(
+      (keyword) => error.toLowerCase().contains(keyword.toLowerCase()),
+    );
+  }
+
+  static bool _isTechnicalError(String error) {
+    final technicalIndicators = [
+      'dart:',
+      'package:',
+      'stack trace',
+      'exception:',
+      'error:',
+      'at line',
+      'lib/',
+      'flutter/',
+      'dioexception',
+      'httpexception',
+      'formatexception',
+    ];
+
+    return technicalIndicators.any(
+          (indicator) => error.toLowerCase().contains(indicator.toLowerCase()),
+        ) ||
+        error.length > 200; // Very long errors are likely technical
+  }
+
+  static bool _isUserFriendly(String error) {
+    // Consider an error user-friendly if it's:
+    // - Not too long (< 150 characters)
+    // - Doesn't contain technical terms
+    // - Is in Spanish and sounds conversational
+    return error.length < 150 &&
+        !_isTechnicalError(error) &&
+        !error.contains('Exception') &&
+        !error.contains('Error:');
   }
 }

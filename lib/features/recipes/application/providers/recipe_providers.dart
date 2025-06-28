@@ -399,30 +399,41 @@ class RecipeController extends StateNotifier<state_lib.RecipeState> {
   bool _checkRecipeTypeFilter(state_lib.Recipe recipe, Set<String> selectedValues) {
     // Determine recipe type based on name and ingredients
     final recipeName = recipe.name.toLowerCase();
+    // ignore: unused_local_variable
     final ingredients = recipe.ingredients.map((i) => i.toLowerCase()).toList();
     
     for (final value in selectedValues) {
       switch (value) {
         case 'entrada':
           if (recipeName.contains('ensalada') || recipeName.contains('entrada') ||
-              recipeName.contains('aperitivo')) return true;
+              recipeName.contains('aperitivo')) {
+            return true;
+          }
           break;
         case 'fondo':
           if (recipeName.contains('pasta') || recipeName.contains('pollo') ||
               recipeName.contains('carne') || recipeName.contains('arroz') ||
-              recipeName.contains('curry') || recipeName.contains('guiso')) return true;
+              recipeName.contains('curry') || recipeName.contains('guiso')) {
+            return true;
+          }
           break;
         case 'postre':
           if (recipeName.contains('postre') || recipeName.contains('dulce') ||
-              recipeName.contains('torta') || recipeName.contains('helado')) return true;
+              recipeName.contains('torta') || recipeName.contains('helado')) {
+            return true;
+          }
           break;
         case 'bebida':
           if (recipeName.contains('jugo') || recipeName.contains('batido') ||
-              recipeName.contains('smoothie') || recipeName.contains('bebida')) return true;
+              recipeName.contains('smoothie') || recipeName.contains('bebida')) {
+            return true;
+          }
           break;
         case 'snack':
           if (recipeName.contains('snack') || recipeName.contains('bocadito') ||
-              recipeName.contains('aperitivo')) return true;
+              recipeName.contains('aperitivo')) {
+            return true;
+          }
           break;
       }
     }

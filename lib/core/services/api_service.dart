@@ -188,7 +188,7 @@ class ApiService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          // INFO: Automatic token refresh on 401 errors
+          // INFO: Automatic token refresh on 401 errors ONLY
           if (error.response?.statusCode == 401) {
             // WARNING: Don't retry for auth endpoints to avoid infinite loops
             if (error.requestOptions.path == _authRefresh ||
@@ -196,9 +196,6 @@ class ApiService {
               await clearTokens();
               return handler.reject(error);
             }
-
-            // NOTE: Previously skipped image upload endpoints, but this caused 401 errors
-            // Now all endpoints get automatic token refresh for better user experience
 
             log(
               '🔄 ApiService: 401 detected for ${error.requestOptions.path} - initiating token recovery...',
@@ -222,25 +219,27 @@ class ApiService {
                   );
                   return handler.resolve(response);
                 } catch (recreateError) {
-                  log(
-                    '❌ ApiService: Cannot recreate request (likely FormData finalized): $recreateError',
-                  );
-                  // If we can't recreate the request, show user-friendly error
-                  final friendlyError = DioException(
-                    requestOptions: error.requestOptions,
-                    response: error.response,
-                    type: DioExceptionType.unknown,
-                    error:
-                        'Tu sesión expiró durante la subida. Por favor, intenta nuevamente.',
-                  );
-                  return handler.reject(friendlyError);
+                  // Check if the retry error is also a 401 (token still invalid)
+                  if (recreateError is DioException &&
+                      recreateError.response?.statusCode == 401) {
+                    log(
+                      '🔄 ApiService: Retry still got 401 - trying auto-relogin...',
+                    );
+                    // Continue to auto-relogin step
+                  } else {
+                    // If it's not a 401, it means token refresh worked but there's another error
+                    log(
+                      '✅ ApiService: Token refresh succeeded, but request failed for other reason: $recreateError',
+                    );
+                    return handler.reject(recreateError as DioException);
+                  }
                 }
               }
             } catch (refreshError) {
               log('❌ ApiService: Token refresh failed: $refreshError');
             }
 
-            // Step 2: Try auto-relogin if refresh failed
+            // Step 2: Try auto-relogin if refresh failed or retry still got 401
             log('🔄 Step 2: Attempting auto-relogin...');
             final reloginSuccess = await _performAutoRelogin();
             if (reloginSuccess) {
@@ -261,15 +260,21 @@ class ApiService {
                   log(
                     '❌ ApiService: Cannot recreate request after auto-relogin: $recreateError',
                   );
-                  // If we can't recreate the request, show user-friendly error
-                  final friendlyError = DioException(
-                    requestOptions: error.requestOptions,
-                    response: error.response,
-                    type: DioExceptionType.unknown,
-                    error:
-                        'Tu sesión expiró durante la subida. Por favor, intenta nuevamente.',
-                  );
-                  return handler.reject(friendlyError);
+                  // Check if it's a FormData issue vs other errors
+                  if (recreateError.toString().contains('FormData') ||
+                      recreateError.toString().contains('finalized')) {
+                    final friendlyError = DioException(
+                      requestOptions: error.requestOptions,
+                      response: error.response,
+                      type: DioExceptionType.unknown,
+                      error:
+                          'Tu sesión expiró durante la operación. Por favor, intenta nuevamente desde el inicio.',
+                    );
+                    return handler.reject(friendlyError);
+                  } else {
+                    // Pass through other errors as-is (404, 500, etc.)
+                    return handler.reject(recreateError as DioException);
+                  }
                 }
               }
             }
@@ -277,6 +282,7 @@ class ApiService {
             log('❌ ApiService: Both refresh and auto-relogin failed');
             await clearTokens();
           }
+          // INFO: For non-401 errors, pass them through without token refresh attempts
           handler.next(error);
         },
       ),
@@ -1677,6 +1683,22 @@ class ApiService {
       return response.data;
     } on DioException catch (e) {
       log('Error calculating impact from title: $e');
+
+      // Handle specific case when recipe is not found
+      if (e.response?.statusCode == 404) {
+        final errorData = e.response?.data as Map<String, dynamic>?;
+        if (errorData != null && errorData.containsKey('error')) {
+          final errorMessage = errorData['error'] as String;
+          log('🔍 Recipe not found in database: $errorMessage');
+          throw Exception(
+            'Esta receta no está disponible para el cálculo de impacto ambiental. Es posible que sea una receta personalizada.',
+          );
+        }
+        throw Exception(
+          'Esta receta no está disponible para el cálculo de impacto ambiental.',
+        );
+      }
+
       throw Exception(getErrorMessage(e));
     }
   }
@@ -1751,44 +1773,128 @@ class ApiService {
   // INFO: Helper and Error Handling
   // INFO: =================================================================
 
-  /// INFO: Extract meaningful error messages from API responses
-  /// USAGE: Use in catch blocks to get user-friendly error messages
+  /// INFO: Extract user-friendly error messages from API responses
+  /// USAGE: Use in catch blocks to get clean, user-friendly error messages
+  /// LOGS: Technical details are logged separately for debugging
   String getErrorMessage(dynamic error) {
+    // Log technical details for developers
+    log('🔍 Technical Error Details: $error');
+
     if (error is DioException) {
+      // Log additional technical info
+      log('🔍 DioException Type: ${error.type}');
+      log('🔍 Status Code: ${error.response?.statusCode}');
+      log('🔍 Response Data: ${error.response?.data}');
+      log('🔍 Request Path: ${error.requestOptions.path}');
+
+      // Check for specific server error messages first
       if (error.response?.data is Map) {
         final errorData = error.response!.data as Map<String, dynamic>;
+
+        // Look for server-provided error message
+        String? serverMessage;
         if (errorData.containsKey('error')) {
-          return errorData['error'] as String;
+          serverMessage = errorData['error'] as String?;
+        } else if (errorData.containsKey('message')) {
+          serverMessage = errorData['message'] as String?;
         }
-        if (errorData.containsKey('message')) {
-          return errorData['message'] as String;
+
+        if (serverMessage != null && serverMessage.isNotEmpty) {
+          log('🔍 Server Message: $serverMessage');
+
+          // Convert technical server messages to user-friendly ones
+          if (serverMessage.toLowerCase().contains('not found') ||
+              serverMessage.toLowerCase().contains('no encontr')) {
+            return 'El elemento que buscas no está disponible en este momento.';
+          }
+
+          if (serverMessage.toLowerCase().contains('expired') ||
+              serverMessage.toLowerCase().contains('invalid token') ||
+              serverMessage.toLowerCase().contains('unauthorized')) {
+            return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+          }
+
+          if (serverMessage.toLowerCase().contains('validation') ||
+              serverMessage.toLowerCase().contains('invalid') ||
+              serverMessage.toLowerCase().contains('required')) {
+            return 'Algunos datos no son válidos. Por favor, revisa la información e intenta nuevamente.';
+          }
+
+          // If server message is already user-friendly, return it
+          if (!serverMessage.contains('Exception') &&
+              !serverMessage.contains('Error:') &&
+              !serverMessage.contains('Stack trace') &&
+              serverMessage.length < 100) {
+            return serverMessage;
+          }
         }
       }
 
-      // INFO: Provide user-friendly messages for common HTTP status codes
+      // Handle different types of connection errors
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+          return 'La conexión está tardando demasiado. Verifica tu internet e intenta nuevamente.';
+        case DioExceptionType.sendTimeout:
+          return 'Error al enviar datos. Verifica tu conexión e intenta nuevamente.';
+        case DioExceptionType.receiveTimeout:
+          return 'El servidor está tardando en responder. Intenta nuevamente en unos momentos.';
+        case DioExceptionType.connectionError:
+          return 'No se pudo conectar al servidor. Verifica tu conexión a internet.';
+        case DioExceptionType.cancel:
+          return 'La operación fue cancelada.';
+        default:
+          break;
+      }
+
+      // Handle HTTP status codes with user-friendly messages
       switch (error.response?.statusCode) {
         case 400:
-          return 'Datos de solicitud inválidos';
+          return 'Los datos enviados no son válidos. Por favor, revisa la información.';
         case 401:
-          return 'No autorizado. Por favor, inicia sesión nuevamente';
+          return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
         case 403:
-          return 'Acceso denegado';
+          return 'No tienes permisos para realizar esta acción.';
         case 404:
-          return 'Recurso no encontrado';
+          return 'El contenido que buscas no está disponible en este momento.';
         case 409:
-          return 'Conflicto: el recurso ya existe';
+          return 'Ya existe un elemento similar. Por favor, verifica la información.';
+        case 422:
+          return 'Algunos datos no son correctos. Por favor, revisa la información.';
         case 429:
-          return 'Demasiadas solicitudes. Intenta de nuevo más tarde';
+          return 'Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.';
         case 500:
+          return 'Ocurrió un problema en nuestros servidores. Estamos trabajando para solucionarlo.';
         case 502:
+          return 'El servidor no está disponible temporalmente. Intenta nuevamente en unos minutos.';
         case 503:
+          return 'El servicio no está disponible en este momento. Intenta más tarde.';
         case 504:
-          return 'Error del servidor. Intenta de nuevo más tarde';
+          return 'El servidor está tardando en responder. Intenta nuevamente.';
         default:
-          return 'Error de conexión';
+          return 'Ocurrió un problema de conexión. Verifica tu internet e intenta nuevamente.';
       }
     }
-    return error.toString();
+
+    // For non-DioException errors, provide a generic friendly message
+    String errorString = error.toString();
+    log('🔍 Non-DioException Error: $errorString');
+
+    // Filter out technical details from generic errors
+    if (errorString.contains('Exception:')) {
+      errorString = errorString.replaceAll('Exception:', '').trim();
+    }
+
+    // If it still looks technical, provide a generic message
+    if (errorString.contains('Stack trace') ||
+        errorString.contains('dart:') ||
+        errorString.contains('package:') ||
+        errorString.length > 200) {
+      return 'Ocurrió un problema inesperado. Por favor, intenta nuevamente.';
+    }
+
+    return errorString.isNotEmpty
+        ? errorString
+        : 'Ocurrió un problema inesperado. Por favor, intenta nuevamente.';
   }
 
   /// INFO: Check if the error is due to rate limiting

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'dart:developer';
+import 'package:zer0_waste_ai/core/error/error_handler.dart';
 
 import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 
@@ -194,7 +195,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           ),
           child: const Icon(Icons.arrow_back, color: Colors.white),
         ),
-        onPressed: () => context.go('/home'),
+        onPressed: () => context.pop(),
       ),
       actions: [
         IconButton(
@@ -938,6 +939,66 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     );
   }
 
+  void _showContinueWithoutImpactDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Receta Personalizada'),
+            content: const Text(
+              'Esta receta no está disponible para el cálculo de impacto ambiental. Es posible que sea una receta personalizada que no está en nuestra base de datos.\n\n¿Te gustaría continuar y marcar la receta como completada sin calcular el impacto ambiental?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _completeRecipeWithoutImpact();
+                },
+                child: const Text('Continuar'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _completeRecipeWithoutImpact() async {
+    try {
+      // Only consume ingredients from inventory, skip impact calculation
+      _consumeIngredientsFromInventory(ref);
+
+      // Invalidate inventory provider to refresh UI
+      ref.invalidate(inventoryRealProvider);
+
+      // Show success feedback and pop
+      if (mounted) {
+        await DialogHelper.showAlert(
+          context: context,
+          title: '¡Receta Completada!',
+          message:
+              'Hemos actualizado tu inventario. El impacto ambiental no se pudo calcular para esta receta.',
+          imageUrl: 'assets/icons/home/image_motivational.png',
+        );
+        context.pop(true); // Pop screen and signal success
+      }
+    } catch (e) {
+      log('Failed to complete recipe without impact: $e');
+      if (mounted) {
+        String userFriendlyMessage = ErrorHandler.getDisplayMessage(e);
+        DialogHelper.showAlert(
+          context: context,
+          title: 'Error',
+          message: userFriendlyMessage,
+          icon: Icons.error,
+          iconColor: Colors.red,
+        );
+      }
+    }
+  }
+
   void _completeRecipe() async {
     final recipeName = widget.recipe['name'] ?? 'una receta';
     final recipeUid = widget.recipe['uid'];
@@ -976,10 +1037,23 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     } catch (e) {
       log('Failed to complete recipe flow: $e');
       if (mounted) {
+        // Check for specific impact calculation error first
+        String errorString = e.toString();
+        if (errorString.contains(
+          'no está disponible para el cálculo de impacto ambiental',
+        )) {
+          // Show dialog with option to continue without impact calculation
+          _showContinueWithoutImpactDialog();
+          return;
+        }
+
+        // Use ErrorHandler for all other errors
+        String userFriendlyMessage = ErrorHandler.getDisplayMessage(e);
+
         DialogHelper.showAlert(
           context: context,
           title: 'Error',
-          message: 'No pudimos completar la acción. Inténtalo de nuevo.',
+          message: userFriendlyMessage,
           icon: Icons.error,
           iconColor: Colors.red,
         );
