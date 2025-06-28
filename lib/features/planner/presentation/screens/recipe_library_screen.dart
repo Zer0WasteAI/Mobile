@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
+
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/create_recipe_screen.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/widgets/safe_navigation_buttons.dart';
 
@@ -14,7 +14,7 @@ import '../widgets/recipe_library/recipe_filter_manager.dart';
 import '../widgets/recipe_library/ai_suggestion_manager.dart';
 
 /// Refactored Recipe Library Screen with extracted components
-/// 
+///
 /// This screen now delegates complex logic to specialized managers:
 /// - RecipeCardBuilder: Handles recipe cards and grids
 /// - RecipeDialogManager: Manages all dialogs
@@ -77,15 +77,17 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
 
   void _applyInitialMealTypeFilter() {
     final currentFilters = ref.read(recipeFiltersProvider);
-    ref.read(recipeFiltersProvider.notifier).state = 
-        currentFilters.copyWith(mealType: widget.initialMealType);
+    ref.read(recipeFiltersProvider.notifier).state = currentFilters.copyWith(
+      mealType: widget.initialMealType,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final textColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
+    final textColor =
+        Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black87;
     final primaryColor = const Color(0xFF00BFA5);
 
     final recipes = ref.watch(filteredRecipesProvider);
@@ -111,8 +113,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
           const SizedBox(height: 8),
 
           // Filter panel
-          if (_showFilterPanel) 
-            RecipeFilterManager.buildFilterPanel(ref),
+          if (_showFilterPanel) RecipeFilterManager.buildFilterPanel(ref),
 
           // Active filters display
           RecipeFilterManager.buildActiveFilters(ref),
@@ -166,16 +167,17 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
       leading: SafeBackButton(iconColor: textColor),
       backgroundColor: Colors.transparent,
       elevation: 0,
-      title: widget.selectionMode
-          ? Text(
-              'Seleccionar receta',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            )
-          : null,
+      title:
+          widget.selectionMode
+              ? Text(
+                'Seleccionar receta',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              )
+              : null,
       actions: [
         // Filter toggle button
         IconButton(
@@ -183,7 +185,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
           onPressed: _toggleFilterPanel,
           tooltip: 'Filtros',
         ),
-        
+
         // Create recipe button (only in normal mode)
         if (!widget.selectionMode)
           IconButton(
@@ -250,9 +252,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
       },
       backgroundColor: primaryColor,
       tooltip: widget.selectionMode ? 'Volver' : 'Generar con IA',
-      child: Icon(
-        widget.selectionMode ? Icons.arrow_back : Icons.auto_awesome,
-      ),
+      child: Icon(widget.selectionMode ? Icons.arrow_back : Icons.auto_awesome),
     );
   }
 
@@ -267,9 +267,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   void _navigateToCreateRecipe() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CreateRecipeScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CreateRecipeScreen()),
     );
   }
 }

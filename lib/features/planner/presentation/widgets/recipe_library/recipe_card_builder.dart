@@ -9,11 +9,11 @@ import 'recipe_dialog_manager.dart';
 class RecipeCardBuilder {
   /// Build a grid view of recipe cards
   static Widget buildRecipeGrid(
-    List<MealPlan> recipes, 
-    WidgetRef ref,
-    {bool selectionMode = false,
-    Function(MealPlan)? onRecipeSelected}
-  ) {
+    List<MealPlan> recipes,
+    WidgetRef ref, {
+    bool selectionMode = false,
+    Function(MealPlan)? onRecipeSelected,
+  }) {
     if (recipes.isEmpty) {
       return _buildEmptyState(
         'No se encontraron recetas',
@@ -33,7 +33,7 @@ class RecipeCardBuilder {
       itemBuilder: (context, index) {
         final recipe = recipes[index];
         return buildRecipeCard(
-          recipe, 
+          recipe,
           ref,
           selectionMode: selectionMode,
           onRecipeSelected: onRecipeSelected,
@@ -44,11 +44,11 @@ class RecipeCardBuilder {
 
   /// Build a single recipe card
   static Widget buildRecipeCard(
-    MealPlan recipe, 
-    WidgetRef ref,
-    {bool selectionMode = false,
-    Function(MealPlan)? onRecipeSelected}
-  ) {
+    MealPlan recipe,
+    WidgetRef ref, {
+    bool selectionMode = false,
+    Function(MealPlan)? onRecipeSelected,
+  }) {
     return GestureDetector(
       onTap: () {
         // Si estamos en modo selección, llamar al callback con la receta seleccionada
@@ -77,12 +77,10 @@ class RecipeCardBuilder {
           children: [
             // Recipe image and type badge
             _buildRecipeHeader(recipe, ref),
-            
+
             // Recipe content
-            Expanded(
-              child: _buildRecipeContent(recipe, ref),
-            ),
-            
+            Expanded(child: _buildRecipeContent(recipe, ref)),
+
             // Recipe actions
             _buildRecipeActions(recipe, ref, selectionMode),
           ],
@@ -97,11 +95,7 @@ class RecipeCardBuilder {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             title,
@@ -139,28 +133,19 @@ class RecipeCardBuilder {
           width: double.infinity,
           decoration: BoxDecoration(
             color: recipe.type.color.withValues(alpha: 0.1),
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Center(
-            child: Icon(
-              recipe.type.icon,
-              size: 40,
-              color: recipe.type.color,
-            ),
+            child: Icon(recipe.type.icon, size: 40, color: recipe.type.color),
           ),
         ),
-        
+
         // Type badge
         Positioned(
           top: 8,
           left: 8,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: recipe.type.color,
               borderRadius: BorderRadius.circular(12),
@@ -175,13 +160,9 @@ class RecipeCardBuilder {
             ),
           ),
         ),
-        
+
         // Favorite button
-        Positioned(
-          top: 8,
-          right: 8,
-          child: _buildFavoriteButton(recipe, ref),
-        ),
+        Positioned(top: 8, right: 8, child: _buildFavoriteButton(recipe, ref)),
       ],
     );
   }
@@ -204,12 +185,14 @@ class RecipeCardBuilder {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          
+
           const SizedBox(height: 6),
-          
+
           // Recipe description or category
           Text(
-            recipe.description ?? 'Deliciosa receta casera',
+            recipe.dietaryTags.isNotEmpty
+                ? recipe.dietaryTags.first
+                : 'Deliciosa receta casera',
             style: GoogleFonts.inter(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -218,9 +201,9 @@ class RecipeCardBuilder {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          
+
           const Spacer(),
-          
+
           // Recipe stats
           _buildRecipeStats(recipe),
         ],
@@ -233,28 +216,24 @@ class RecipeCardBuilder {
     return Row(
       children: [
         // Cooking time
-        _buildStatItem(
-          Icons.access_time,
-          recipe.cookingTime != null ? '${recipe.cookingTime}min' : '30min',
-        ),
-        
+        _buildStatItem(Icons.access_time, '${recipe.prepTimeMinutes}min'),
+
         const SizedBox(width: 12),
-        
+
         // Servings
         _buildStatItem(
           Icons.people,
-          recipe.servings != null ? '${recipe.servings}' : '2',
+          '2', // Default servings since not available in model
         ),
-        
+
         const Spacer(),
-        
+
         // Calories
-        if (recipe.calories != null)
-          _buildStatItem(
-            Icons.local_fire_department,
-            '${recipe.calories}',
-            color: Colors.orange,
-          ),
+        _buildStatItem(
+          Icons.local_fire_department,
+          '${recipe.calories}',
+          color: Colors.orange,
+        ),
       ],
     );
   }
@@ -264,11 +243,7 @@ class RecipeCardBuilder {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 12,
-          color: color ?? Colors.grey.shade600,
-        ),
+        Icon(icon, size: 12, color: color ?? Colors.grey.shade600),
         const SizedBox(width: 2),
         Text(
           value,
@@ -285,7 +260,7 @@ class RecipeCardBuilder {
   /// Build favorite button
   static Widget _buildFavoriteButton(MealPlan recipe, WidgetRef ref) {
     final isFavorite = ref.watch(favoriteRecipesProvider).contains(recipe);
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
@@ -294,9 +269,9 @@ class RecipeCardBuilder {
       child: IconButton(
         onPressed: () {
           if (isFavorite) {
-            ref.read(favoriteRecipesProvider.notifier).removeFavorite(recipe);
+            ref.read(favoriteRecipesProvider).remove(recipe);
           } else {
-            ref.read(favoriteRecipesProvider.notifier).addFavorite(recipe);
+            ref.read(favoriteRecipesProvider).add(recipe);
           }
         },
         icon: Icon(
@@ -305,19 +280,16 @@ class RecipeCardBuilder {
           size: 18,
         ),
         padding: const EdgeInsets.all(4),
-        constraints: const BoxConstraints(
-          minWidth: 28,
-          minHeight: 28,
-        ),
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
       ),
     );
   }
 
   /// Build recipe actions (bottom section)
   static Widget _buildRecipeActions(
-    MealPlan recipe, 
-    WidgetRef ref, 
-    bool selectionMode
+    MealPlan recipe,
+    WidgetRef ref,
+    bool selectionMode,
   ) {
     if (selectionMode) {
       return Container(
@@ -350,12 +322,7 @@ class RecipeCardBuilder {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
       ),
       child: Row(
         children: [
@@ -365,35 +332,19 @@ class RecipeCardBuilder {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  recipe.difficulty ?? 'Fácil',
+                  recipe.difficulty,
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                     color: _getDifficultyColor(recipe.difficulty),
                   ),
                 ),
-                if (recipe.rating != null)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        size: 10,
-                        color: Colors.amber,
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        recipe.rating!.toStringAsFixed(1),
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
+                // Rating removed as it's not available in MealPlan model
+                const SizedBox(height: 4),
               ],
             ),
           ),
-          
+
           // Add to plan button
           GestureDetector(
             onTap: () {
@@ -401,19 +352,12 @@ class RecipeCardBuilder {
               RecipeDialogManager.showAddToPlanDialog(context, recipe, ref);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFF00BFA5),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(
-                Icons.add,
-                size: 16,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.add, size: 16, color: Colors.white),
             ),
           ),
         ],

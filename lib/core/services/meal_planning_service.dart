@@ -7,7 +7,8 @@ import 'auth_service.dart';
 /// Service for meal planning operations
 class MealPlanningService {
   static MealPlanningService? _instance;
-  static MealPlanningService get instance => _instance ??= MealPlanningService._internal();
+  static MealPlanningService get instance =>
+      _instance ??= MealPlanningService._internal();
 
   late final Dio _dio;
   final AuthService _authService = AuthService.instance;
@@ -105,7 +106,8 @@ class MealPlanningService {
           'ingredients': ingredients,
           if (days != null) 'days': days,
           if (mealTypes != null) 'meal_types': mealTypes,
-          if (dietaryRestrictions != null) 'dietary_restrictions': dietaryRestrictions,
+          if (dietaryRestrictions != null)
+            'dietary_restrictions': dietaryRestrictions,
           if (caloriesPerDay != null) 'calories_per_day': caloriesPerDay,
         },
         options: Options(
@@ -137,9 +139,10 @@ class MealPlanningService {
         data: {
           'ingredients': ingredients,
           'days': 7,
-          'meal_types': includeSnacks 
-            ? ['breakfast', 'lunch', 'dinner', 'snack']
-            : ['breakfast', 'lunch', 'dinner'],
+          'meal_types':
+              includeSnacks
+                  ? ['breakfast', 'lunch', 'dinner', 'snack']
+                  : ['breakfast', 'lunch', 'dinner'],
           if (preferences != null) 'preferences': preferences,
           if (caloriesPerDay != null) 'calories_per_day': caloriesPerDay,
         },
@@ -303,10 +306,7 @@ class MealPlanningService {
 
       final response = await _dio.get(
         _planningAll,
-        queryParameters: {
-          'start_date': startDate,
-          'end_date': endDate,
-        },
+        queryParameters: {'start_date': startDate, 'end_date': endDate},
       );
 
       log('✅ Meal plans for date range retrieved successfully');
@@ -384,10 +384,7 @@ class MealPlanningService {
       final meals = sourcePlan['meals'] as Map<String, dynamic>;
 
       // Save to the new date
-      final result = await saveMealPlan(
-        date: toDate,
-        meals: meals,
-      );
+      final result = await saveMealPlan(date: toDate, meals: meals);
 
       log('✅ Meal plan copied successfully');
       return result;
@@ -402,13 +399,8 @@ class MealPlanningService {
   /// Format date to YYYY-MM-DD
   String _formatDate(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'
-           '${date.month.toString().padLeft(2, '0')}-'
-           '${date.day.toString().padLeft(2, '0')}';
-  }
-
-  /// Parse date string to DateTime
-  DateTime _parseDate(String dateString) {
-    return DateTime.parse(dateString);
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
   }
 
   /// Get today's date formatted

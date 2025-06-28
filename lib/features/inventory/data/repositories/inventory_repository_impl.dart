@@ -144,7 +144,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
   ) async {
     try {
       // INFO: Get comprehensive ingredient details including AI-generated insights
-      return await _apiService.getIngredientDetail(ingredientName);
+      // Use current time as addedAt since it's required by the API
+      final currentTime = DateTime.now().toIso8601String();
+      return await _apiService.getIngredientDetail(ingredientName, currentTime);
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
@@ -199,7 +201,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
     try {
       // INFO: Generate AI-powered recipe based on available ingredients
       // IMPORTANT: Include all relevant ingredient details for better recipe generation
-      return await _apiService.generateRecipe(ingredients);
+      final ingredientNames =
+          ingredients.map((i) => i['name'] as String? ?? '').toList();
+      return await _apiService.generateRecipe(ingredients: ingredientNames);
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(
@@ -224,7 +228,18 @@ class InventoryRepositoryImpl implements InventoryRepository {
     List<Map<String, dynamic>> ingredients,
   ) async {
     try {
-      return await _apiService.addIngredientsFromRecognition(ingredients);
+      // Extract recognition ID and ingredient names from the data
+      final recognitionId =
+          ingredients.isNotEmpty
+              ? (ingredients.first['recognitionId'] as String? ?? 'default')
+              : 'default';
+      final ingredientNames =
+          ingredients.map((i) => i['name'] as String? ?? '').toList();
+
+      return await _apiService.addIngredientsFromRecognition(
+        recognitionId,
+        ingredientNames,
+      );
     } catch (e) {
       throw Exception(
         'Failed to add ingredients from recognition: ${_apiService.getErrorMessage(e)}',
@@ -237,7 +252,17 @@ class InventoryRepositoryImpl implements InventoryRepository {
     List<Map<String, dynamic>> foods,
   ) async {
     try {
-      return await _apiService.addFoodsFromRecognition(foods);
+      // Extract recognition ID and food names from the data
+      final recognitionId =
+          foods.isNotEmpty
+              ? (foods.first['recognitionId'] as String? ?? 'default')
+              : 'default';
+      final foodNames = foods.map((f) => f['name'] as String? ?? '').toList();
+
+      return await _apiService.addFoodsFromRecognition(
+        recognitionId,
+        foodNames,
+      );
     } catch (e) {
       throw Exception(
         'Failed to add foods from recognition: ${_apiService.getErrorMessage(e)}',
@@ -256,6 +281,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         ingredientName,
         addedAt,
         newQuantity,
+        'pieces', // Default unit
       );
     } catch (e) {
       throw Exception(
@@ -275,6 +301,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         foodName,
         addedAt,
         newQuantity,
+        'portions', // Default unit
       );
     } catch (e) {
       throw Exception(
@@ -288,7 +315,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String ingredientName,
   ) async {
     try {
-      return await _apiService.deleteCompleteIngredient(ingredientName);
+      return await _apiService.deleteCompleteIngredient(
+        ingredientName,
+        DateTime.now().toIso8601String(), // Current time as addedAt
+      );
     } catch (e) {
       throw Exception(
         'Failed to delete complete ingredient: ${_apiService.getErrorMessage(e)}',
@@ -308,9 +338,8 @@ class InventoryRepositoryImpl implements InventoryRepository {
       return await _apiService.markIngredientConsumed(
         ingredientName,
         addedAt,
-        consumedQuantity: consumedQuantity,
-        consumptionReason: consumptionReason,
-        recipeUsed: recipeUsed,
+        consumedQuantity,
+        'pieces', // Default unit
       );
     } catch (e) {
       throw Exception(
@@ -337,8 +366,11 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }) async {
     try {
       return await _apiService.addSingleInventoryItem(
-        itemType: itemType,
-        itemData: itemData,
+        name: itemData['name'] as String,
+        category: itemData['category'] as String,
+        quantity: itemData['quantity'] as double?,
+        unit: itemData['unit'] as String?,
+        expirationDate: itemData['expirationDate'] as String?,
       );
     } catch (e) {
       throw Exception(

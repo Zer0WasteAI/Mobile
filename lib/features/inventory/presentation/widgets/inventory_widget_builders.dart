@@ -6,7 +6,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
+
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_item_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'inventory_dialog_manager.dart';
@@ -22,15 +22,12 @@ class InventoryWidgetBuilders {
   ) {
     final theme = Theme.of(ref.context);
     final bool isDark = theme.brightness == Brightness.dark;
-    final Color searchBarIconColor = isDark 
-        ? AppColors.darkMainText 
-        : AppColors.lightMainText;
-    final Color secondaryTextColor = isDark 
-        ? AppColors.darkSecondaryText 
-        : AppColors.lightSecondaryText;
-    final Color mainTextColor = isDark 
-        ? AppColors.darkMainText 
-        : AppColors.lightMainText;
+    final Color searchBarIconColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -41,14 +38,12 @@ class InventoryWidgetBuilders {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Buscar alimentos',
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: searchBarIconColor,
-                ),
+                prefixIcon: Icon(Icons.search, color: searchBarIconColor),
                 filled: true,
-                fillColor: isDark
-                    ? AppColors.darkSurface
-                    : AppColors.lightFormBackground,
+                fillColor:
+                    isDark
+                        ? AppColors.darkSurface
+                        : AppColors.lightFormBackground,
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 14.0,
                   horizontal: 16.0,
@@ -57,9 +52,7 @@ class InventoryWidgetBuilders {
                   borderRadius: BorderRadius.circular(16.0),
                   borderSide: BorderSide.none,
                 ),
-                hintStyle: GoogleFonts.inter(
-                  color: secondaryTextColor,
-                ),
+                hintStyle: GoogleFonts.inter(color: secondaryTextColor),
               ),
               style: GoogleFonts.inter(color: mainTextColor),
               focusNode: searchFocusNode,
@@ -131,15 +124,12 @@ class InventoryWidgetBuilders {
     final theme = Theme.of(ref.context);
     final textTheme = theme.textTheme;
     final bool isDark = theme.brightness == Brightness.dark;
-    final Color mainTextColor = isDark 
-        ? AppColors.darkMainText 
-        : AppColors.lightMainText;
-    final Color secondaryTextColor = isDark 
-        ? AppColors.darkSecondaryText 
-        : AppColors.lightSecondaryText;
-    final Color errorColor = isDark 
-        ? AppColors.darkError 
-        : AppColors.lightError;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final Color errorColor =
+        isDark ? AppColors.darkError : AppColors.lightError;
 
     return Column(
       children: [
@@ -151,11 +141,6 @@ class InventoryWidgetBuilders {
               Consumer(
                 builder: (context, ref, _) {
                   final totalCount = ref.watch(totalItemCountProvider);
-                  final expiringSoonCount = ref.watch(expiringSoonCountProvider);
-                  final expiredCount = ref.watch(expiredCountProvider);
-                  final Color warningTextColor = isDark
-                      ? AppColors.warningTextDark
-                      : AppColors.warningTextLight;
 
                   if (totalCount == 0) {
                     return const SizedBox(width: 0);
@@ -217,16 +202,11 @@ class InventoryWidgetBuilders {
             if (!isExpanded || totalCount == 0) {
               return const SizedBox.shrink();
             }
-            final Color warningTextColor = isDark
-                ? AppColors.warningTextDark
-                : AppColors.warningTextLight;
+            final Color warningTextColor =
+                isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
 
             return Padding(
-              padding: const EdgeInsets.only(
-                top: 4.0,
-                bottom: 8.0,
-                left: 4.0,
-              ),
+              padding: const EdgeInsets.only(top: 4.0, bottom: 8.0, left: 4.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -289,17 +269,13 @@ class InventoryWidgetBuilders {
     final theme = Theme.of(ref.context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color primaryColor = AppColors.lightPrimary;
-    final Color cardBackgroundColor = isDark 
-        ? AppColors.darkSurface 
-        : AppColors.lightFormBackground;
+    final Color cardBackgroundColor =
+        isDark ? AppColors.darkSurface : AppColors.lightFormBackground;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: OutlinedButton.icon(
-        icon: const Icon(
-          Icons.restaurant_menu_outlined,
-          size: 20,
-        ),
+        icon: const Icon(Icons.restaurant_menu_outlined, size: 20),
         label: const Text('Generar receta'),
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
@@ -344,9 +320,10 @@ class InventoryWidgetBuilders {
             fontWeight: FontWeight.normal,
             fontSize: 14,
           ),
-          tabs: ExpirationStatus.values.map((status) {
-            return Tab(text: status.displayName);
-          }).toList(),
+          tabs:
+              ExpirationStatus.values.map((status) {
+                return Tab(text: status.displayName);
+              }).toList(),
         ),
         backgroundColor: scaffoldBackgroundColor,
       ),
@@ -365,69 +342,66 @@ class InventoryWidgetBuilders {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final displayBatchInfo = filteredItems[index];
-          final item = displayBatchInfo.displayBatch;
-          final recentlyAddedIds = ref.watch(inventoryProvider).recentlyAddedIds;
-          final isHighlighted = recentlyAddedIds.contains(item.id);
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final displayBatchInfo = filteredItems[index];
+        final item = displayBatchInfo.displayBatch;
+        final recentlyAddedIds = ref.watch(inventoryProvider).recentlyAddedIds;
+        final isHighlighted = recentlyAddedIds.contains(item.id);
 
-          return Slidable(
-            key: ValueKey(item.id),
-            endActionPane: ActionPane(
-              motion: const ScrollMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) {
-                    InventoryDialogManager.showMarkConsumedDialog(
-                      context,
-                      item,
-                      ref,
-                    );
-                  },
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  icon: Icons.restaurant,
-                  label: 'Consumir',
-                ),
-                SlidableAction(
-                  onPressed: (context) {
-                    InventoryDialogManager.showQuantityEditDialog(
-                      context,
-                      item,
-                      ref,
-                    );
-                  },
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  icon: Icons.edit,
-                  label: 'Editar',
-                ),
-                SlidableAction(
-                  onPressed: (context) {
-                    InventoryDialogManager.showDeleteConfirmationDialog(
-                      context,
-                      item,
-                      ref,
-                    );
-                  },
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  icon: Icons.delete,
-                  label: 'Eliminar',
-                ),
-              ],
-            ),
-            child: InventoryItemCard(
-              key: ValueKey('${item.id}_${item.quantity}'),
-              item: item,
-              allBatchesForIngredient: displayBatchInfo.allBatchesForIngredient,
-              isHighlighted: isHighlighted,
-            ),
-          );
-        },
-        childCount: filteredItems.length,
-      ),
+        return Slidable(
+          key: ValueKey(item.id),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                onPressed: (context) {
+                  InventoryDialogManager.showMarkConsumedDialog(
+                    context,
+                    item,
+                    ref,
+                  );
+                },
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                icon: Icons.restaurant,
+                label: 'Consumir',
+              ),
+              SlidableAction(
+                onPressed: (context) {
+                  InventoryDialogManager.showQuantityEditDialog(
+                    context,
+                    item,
+                    ref,
+                  );
+                },
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: 'Editar',
+              ),
+              SlidableAction(
+                onPressed: (context) {
+                  InventoryDialogManager.showDeleteConfirmationDialog(
+                    context,
+                    item,
+                    ref,
+                  );
+                },
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: 'Eliminar',
+              ),
+            ],
+          ),
+          child: InventoryItemCard(
+            key: ValueKey('${item.id}_${item.quantity}'),
+            item: item,
+            allBatchesForIngredient: displayBatchInfo.allBatchesForIngredient,
+            isHighlighted: isHighlighted,
+          ),
+        );
+      }, childCount: filteredItems.length),
     );
   }
 
@@ -437,33 +411,33 @@ class InventoryWidgetBuilders {
     final theme = Theme.of(ref.context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color primaryColor = AppColors.lightPrimary;
-    final Color secondaryTextColor = isDark 
-        ? AppColors.darkSecondaryText 
-        : AppColors.lightSecondaryText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     return SliverFillRemaining(
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: inventoryState.isLoading
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Cargando inventario...',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        color: secondaryTextColor,
+          child:
+              inventoryState.isLoading
+                  ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                       ),
-                    ),
-                  ],
-                )
-              : _buildFilterBasedEmptyMessage(inventoryState, ref),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Cargando inventario...',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                    ],
+                  )
+                  : _buildFilterBasedEmptyMessage(inventoryState, ref),
         ),
       ),
     );
@@ -476,25 +450,25 @@ class InventoryWidgetBuilders {
   ) {
     final theme = Theme.of(ref.context);
     final bool isDark = theme.brightness == Brightness.dark;
-    final Color mainTextColor = isDark 
-        ? AppColors.darkMainText 
-        : AppColors.lightMainText;
-    final Color secondaryTextColor = isDark 
-        ? AppColors.darkSecondaryText 
-        : AppColors.lightSecondaryText;
+    final Color mainTextColor =
+        isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     bool hasActiveFilters = false;
     String filterDescription = '';
 
     if (inventoryState.categoryFilter != ItemCategory.all) {
       hasActiveFilters = true;
-      filterDescription += 'categoría: ${inventoryState.categoryFilter.displayName}';
+      filterDescription +=
+          'categoría: ${inventoryState.categoryFilter.displayName}';
     }
 
     if (inventoryState.storageFilter.isNotEmpty) {
       hasActiveFilters = true;
       if (filterDescription.isNotEmpty) filterDescription += ', ';
-      filterDescription += 'ubicación: ${inventoryState.storageFilter.map((s) => s.toString()).join(', ')}';
+      filterDescription +=
+          'ubicación: ${inventoryState.storageFilter.map((s) => s.toString()).join(', ')}';
     }
 
     if (inventoryState.searchQuery.isNotEmpty) {
@@ -525,10 +499,7 @@ class InventoryWidgetBuilders {
           Text(
             'Con los filtros aplicados: $filterDescription',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: secondaryTextColor,
-            ),
+            style: GoogleFonts.inter(fontSize: 16, color: secondaryTextColor),
           ),
           const SizedBox(height: 24),
           TextButton(
@@ -571,10 +542,7 @@ class InventoryWidgetBuilders {
           Text(
             'Comienza agregando alimentos desde la pantalla de reconocimiento',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: secondaryTextColor,
-            ),
+            style: GoogleFonts.inter(fontSize: 16, color: secondaryTextColor),
           ),
         ],
       );

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
-import 'recipe_card_builder.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 
 /// Manager for AI recipe suggestions and related functionality
 class AiSuggestionManager {
@@ -15,19 +14,19 @@ class AiSuggestionManager {
         children: [
           // Header
           _buildSuggestionsHeader(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Suggestions based on inventory
           _buildInventoryBasedSuggestions(ref),
-          
+
           const SizedBox(height: 24),
-          
+
           // Trending recipes
           _buildTrendingRecipes(ref),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick suggestions
           _buildQuickSuggestions(ref),
         ],
@@ -67,10 +66,7 @@ class AiSuggestionManager {
         const SizedBox(height: 8),
         Text(
           'Recetas personalizadas basadas en tus preferencias y disponibilidad',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
+          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade600),
         ),
       ],
     );
@@ -83,11 +79,7 @@ class AiSuggestionManager {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.kitchen,
-              size: 16,
-              color: Colors.grey.shade600,
-            ),
+            Icon(Icons.kitchen, size: 16, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Text(
               'Basado en tu inventario',
@@ -99,17 +91,16 @@ class AiSuggestionManager {
           ],
         ),
         const SizedBox(height: 12),
-        
+
         // Check if user has inventory items
         Consumer(
           builder: (context, ref, child) {
-            // This would normally check the inventory provider
-            final hasInventory = true; // Placeholder
-            
-            if (!hasInventory) {
+            final totalInventoryCount = ref.watch(totalItemCountProvider);
+
+            if (totalInventoryCount == 0) {
               return _buildNoInventoryCard(ref);
             }
-            
+
             return _buildInventorySuggestionsList(ref);
           },
         ),
@@ -124,11 +115,7 @@ class AiSuggestionManager {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.trending_up,
-              size: 16,
-              color: Colors.grey.shade600,
-            ),
+            Icon(Icons.trending_up, size: 16, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Text(
               'Tendencias',
@@ -140,7 +127,7 @@ class AiSuggestionManager {
           ],
         ),
         const SizedBox(height: 12),
-        
+
         SizedBox(
           height: 200,
           child: ListView.builder(
@@ -187,35 +174,121 @@ class AiSuggestionManager {
       children: [
         Text(
           'Sugerencias rápidas',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        
+
         Column(
-          children: quickSuggestions.map((suggestion) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: _buildQuickSuggestionCard(suggestion, ref),
-            );
-          }).toList(),
+          children:
+              quickSuggestions.map((suggestion) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: _buildQuickSuggestionCard(suggestion, ref),
+                );
+              }).toList(),
         ),
       ],
     );
   }
 
-  /// Build no inventory card
+  /// Build inventory suggestions list
+  static Widget _buildInventorySuggestionsList(WidgetRef ref) {
+    // This would normally get suggestions based on user's inventory
+    final suggestions = _getMockInventorySuggestions();
+
+    return Column(
+      children:
+          suggestions.map((suggestion) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  // Recipe type icon
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: suggestion['color'].withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      suggestion['icon'] as IconData,
+                      color: suggestion['color'] as Color,
+                      size: 20,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Recipe info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          suggestion['title'] as String,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          suggestion['ingredients'] as String,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Generate button
+                  GestureDetector(
+                    onTap: () {
+                      // Generate recipe based on suggestion
+                      _generateRecipeFromSuggestion(suggestion, ref);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00BFA5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Generar',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+    );
+  }
+
+  /// Build no inventory card when user has no items
   static Widget _buildNoInventoryCard(WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [
@@ -235,125 +308,32 @@ class AiSuggestionManager {
           ),
           const SizedBox(height: 4),
           Text(
-            'Agrega ingredientes a tu inventario para recibir sugerencias personalizadas',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            'Agrega ingredientes a tu inventario para recibir sugerencias personalizadas basadas en lo que tienes disponible',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
-              // Navigate to inventory
+              // Navigate to inventory screen
+              // This would normally use Navigator or go_router
             },
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(
+              'Ir al Inventario',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00BFA5),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            child: Text(
-              'Ir al Inventario',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  /// Build inventory suggestions list
-  static Widget _buildInventorySuggestionsList(WidgetRef ref) {
-    // This would normally get suggestions based on user's inventory
-    final suggestions = _getMockInventorySuggestions();
-    
-    return Column(
-      children: suggestions.map((suggestion) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Recipe type icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: suggestion['color'].withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  suggestion['icon'] as IconData,
-                  color: suggestion['color'] as Color,
-                  size: 20,
-                ),
-              ),
-              
-              const SizedBox(width: 12),
-              
-              // Recipe info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      suggestion['title'] as String,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      suggestion['ingredients'] as String,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Generate button
-              GestureDetector(
-                onTap: () {
-                  // Generate recipe based on suggestion
-                  _generateRecipeFromSuggestion(suggestion, ref);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00BFA5),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Generar',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 
@@ -362,7 +342,7 @@ class AiSuggestionManager {
     // Mock trending recipes
     final trendingRecipes = _getMockTrendingRecipes();
     final recipe = trendingRecipes[index % trendingRecipes.length];
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -395,7 +375,7 @@ class AiSuggestionManager {
               ),
             ),
           ),
-          
+
           // Recipe info
           Padding(
             padding: const EdgeInsets.all(12),
@@ -414,11 +394,7 @@ class AiSuggestionManager {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.trending_up,
-                      size: 12,
-                      color: Colors.orange,
-                    ),
+                    Icon(Icons.trending_up, size: 12, color: Colors.orange),
                     const SizedBox(width: 4),
                     Text(
                       '${recipe['popularity']}% popular',
@@ -439,8 +415,8 @@ class AiSuggestionManager {
 
   /// Build quick suggestion card
   static Widget _buildQuickSuggestionCard(
-    Map<String, dynamic> suggestion, 
-    WidgetRef ref
+    Map<String, dynamic> suggestion,
+    WidgetRef ref,
   ) {
     return GestureDetector(
       onTap: () {
@@ -452,9 +428,7 @@ class AiSuggestionManager {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
           children: [
@@ -471,9 +445,9 @@ class AiSuggestionManager {
                 size: 18,
               ),
             ),
-            
+
             const SizedBox(width: 12),
-            
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,7 +469,7 @@ class AiSuggestionManager {
                 ],
               ),
             ),
-            
+
             Icon(
               Icons.arrow_forward_ios,
               size: 14,
@@ -570,20 +544,20 @@ class AiSuggestionManager {
   // Action methods
 
   static void _generateRecipeFromSuggestion(
-    Map<String, dynamic> suggestion, 
-    WidgetRef ref
+    Map<String, dynamic> suggestion,
+    WidgetRef ref,
   ) {
     // This would trigger AI recipe generation based on the suggestion
     // For now, just show a placeholder
   }
 
   static void _applyQuickFilter(
-    Map<String, dynamic> suggestion, 
-    WidgetRef ref
+    Map<String, dynamic> suggestion,
+    WidgetRef ref,
   ) {
     // This would apply the quick filter to the recipe list
     final title = suggestion['title'] as String;
-    
+
     // Apply different filters based on the suggestion type
     switch (title) {
       case 'Recetas rápidas':

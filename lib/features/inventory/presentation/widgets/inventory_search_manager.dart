@@ -2,43 +2,40 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
+
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
+
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_filter_bottom_sheet.dart';
 
 /// Manager for inventory search, filtering, and navigation functionality
 class InventorySearchManager {
   /// Show filter bottom sheet
-  static void showFilterBottomSheet(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  static void showFilterBottomSheet(BuildContext context, WidgetRef ref) {
     final inventoryState = ref.read(inventoryRealProvider);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => InventoryFilterBottomSheet(
-        initialCategoryFilter: inventoryState.categoryFilter,
-        initialStorageFilter: inventoryState.storageFilter,
-        initialSortCriteria: inventoryState.sortCriteria,
-        initialSortAscending: inventoryState.sortAscending,
-        onApply: ({
-          required category,
-          required storageTypes,
-          required sortCriteria,
-          required sortAscending,
-        }) {
-          final notifier = ref.read(inventoryRealProvider.notifier);
-          notifier.setCategoryFilter(category);
-          notifier.setStorageFilter(storageTypes);
-          notifier.setSortCriteria(sortCriteria);
-          notifier.setSortDirection(sortAscending);
-        },
-      ),
+      builder:
+          (context) => InventoryFilterBottomSheet(
+            initialCategoryFilter: inventoryState.categoryFilter,
+            initialStorageFilter: inventoryState.storageFilter,
+            initialSortCriteria: inventoryState.sortCriteria,
+            initialSortAscending: inventoryState.sortAscending,
+            onApply: ({
+              required category,
+              required storageTypes,
+              required sortCriteria,
+              required sortAscending,
+            }) {
+              final notifier = ref.read(inventoryRealProvider.notifier);
+              notifier.setCategoryFilter(category);
+              notifier.setStorageFilter(storageTypes);
+              notifier.setSortCriteria(sortCriteria);
+              notifier.setSortDirection(sortAscending);
+            },
+          ),
     );
   }
 
@@ -66,7 +63,9 @@ class InventorySearchManager {
         // METHOD 1: Try using maxScrollExtent to go to end of list
         // This is the most reliable method to scroll to the end of the list
         if (scrollController.hasClients) {
-          log('Using maxScrollExtent for scroll: ${scrollController.position.maxScrollExtent}');
+          log(
+            'Using maxScrollExtent for scroll: ${scrollController.position.maxScrollExtent}',
+          );
 
           // Immediate scroll without additional delay
           scrollController.animateTo(
@@ -154,7 +153,8 @@ class InventorySearchManager {
         const double itemHeight = 85.0; // Adjust according to actual item size
 
         // Add small offset to ensure item is visible
-        final double scrollPosition = searchBarHeight +
+        final double scrollPosition =
+            searchBarHeight +
             tabBarHeight +
             (highlightedIndex * itemHeight) -
             40;
@@ -211,12 +211,17 @@ class InventorySearchManager {
   }) {
     if (!mounted) return;
 
-    final currentRecentlyAddedIds = ref.read(inventoryProvider).recentlyAddedIds;
-    log('checkHighlightedItemsAndScroll called: ${currentRecentlyAddedIds.length} highlighted items');
+    final currentRecentlyAddedIds =
+        ref.read(inventoryProvider).recentlyAddedIds;
+    log(
+      'checkHighlightedItemsAndScroll called: ${currentRecentlyAddedIds.length} highlighted items',
+    );
 
     if (currentRecentlyAddedIds.isNotEmpty) {
       // Check if there are new items that weren't previously highlighted
-      final newIds = currentRecentlyAddedIds.difference(previousRecentlyAddedIds);
+      final newIds = currentRecentlyAddedIds.difference(
+        previousRecentlyAddedIds,
+      );
       log('New highlighted items detected: ${newIds.length}');
 
       if (newIds.isNotEmpty) {
@@ -272,18 +277,20 @@ class InventorySearchManager {
   }
 
   /// Handle tab controller changes for expiration status filtering
-  static void handleTabChange(
-    int tabIndex,
-    WidgetRef ref,
-  ) {
+  static void handleTabChange(int tabIndex, WidgetRef ref) {
     final expirationStatus = ExpirationStatus.values[tabIndex];
-    ref.read(inventoryRealProvider.notifier).setExpirationStatusFilter(expirationStatus);
+    ref
+        .read(inventoryRealProvider.notifier)
+        .setExpirationStatusFilter(expirationStatus);
   }
 
   /// Get initial tab index based on current filter
   static int getInitialTabIndex(WidgetRef ref) {
-    final initialFilterStatus = ref.read(inventoryRealProvider).expirationStatusFilter;
-    final initialTabIndex = ExpirationStatus.values.indexOf(initialFilterStatus);
+    final initialFilterStatus =
+        ref.read(inventoryRealProvider).expirationStatusFilter;
+    final initialTabIndex = ExpirationStatus.values.indexOf(
+      initialFilterStatus,
+    );
     return initialTabIndex >= 0 ? initialTabIndex : 0;
   }
 }

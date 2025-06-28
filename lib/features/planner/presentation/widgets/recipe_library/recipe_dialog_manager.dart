@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 
 /// Manager for handling all recipe-related dialogs
 class RecipeDialogManager {
@@ -14,71 +12,72 @@ class RecipeDialogManager {
     MealPlan recipe,
     WidgetRef ref,
   ) {
-    // Obtener la fecha actual por defecto
-    final today = DateTime.now();
-    DateTime selectedDate = today;
-
-    // Formatear la fecha actual como clave
-    String dateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
+    DateTime selectedDate = DateTime.now();
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text(
-              'Añadir al plan',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-            ),
-            content: Container(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Información sobre la receta
-                  _buildRecipeInfo(recipe),
-                  
-                  const SizedBox(height: 20),
-
-                  // Selección de fecha
-                  _buildDateSelection(selectedDate, setState),
-                  
-                  const SizedBox(height: 16),
-
-                  // Selección de tipo de comida
-                  _buildMealTypeSelection(recipe, setState),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancelar',
-                  style: GoogleFonts.inter(color: Colors.grey.shade600),
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Añadir al plan',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _addMealToPlan(selectedDate, recipe, ref);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00BFA5),
-                ),
-                child: Text(
-                  'Añadir',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Información sobre la receta
+                      _buildRecipeInfo(recipe),
+
+                      const SizedBox(height: 20),
+
+                      // Selección de fecha
+                      _buildDateSelection(selectedDate, setState, context, (
+                        newDate,
+                      ) {
+                        selectedDate = newDate;
+                        setState(() {});
+                      }),
+
+                      const SizedBox(height: 16),
+
+                      // Selección de tipo de comida
+                      _buildMealTypeSelection(recipe, setState),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: GoogleFonts.inter(color: Colors.grey.shade600),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _addMealToPlan(selectedDate, recipe, ref);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00BFA5),
+                    ),
+                    child: Text(
+                      'Añadir',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
     );
   }
 
@@ -90,29 +89,28 @@ class RecipeDialogManager {
   ) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: Column(
-            children: [
-              // Header with recipe image and basic info
-              _buildRecipeHeader(recipe, context, ref),
-              
-              // Content with tabs for ingredients, instructions, etc.
-              Expanded(
-                child: _buildRecipeContent(recipe, context),
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                children: [
+                  // Header with recipe image and basic info
+                  _buildRecipeHeader(recipe, context, ref),
+
+                  // Content with tabs for ingredients, instructions, etc.
+                  Expanded(child: _buildRecipeContent(recipe, context)),
+
+                  // Actions
+                  _buildRecipeActions(recipe, context, ref),
+                ],
               ),
-              
-              // Actions
-              _buildRecipeActions(recipe, context, ref),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -128,54 +126,55 @@ class RecipeDialogManager {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  _buildAiSuggestionHeader(),
-                  
-                  const SizedBox(height: 20),
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return Container(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  MediaQuery.of(context).viewInsets.bottom + 20,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      _buildAiSuggestionHeader(),
 
-                  // Meal type selection
-                  _buildMealTypeSelectionForAi(selectedType, setState),
-                  
-                  const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
-                  // Ingredients input
-                  _buildIngredientsInput(ingredients),
-                  
-                  const SizedBox(height: 16),
+                      // Meal type selection
+                      _buildMealTypeSelectionForAi(selectedType, setState),
 
-                  // Dietary preferences
-                  _buildDietaryPreferences(selectedDietary, setState),
-                  
-                  const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                  // Generate button
-                  _buildGenerateButton(
-                    context, 
-                    ref, 
-                    selectedType, 
-                    ingredients, 
-                    selectedDietary,
+                      // Ingredients input
+                      _buildIngredientsInput(ingredients),
+
+                      const SizedBox(height: 16),
+
+                      // Dietary preferences
+                      _buildDietaryPreferences(selectedDietary, setState),
+
+                      const SizedBox(height: 24),
+
+                      // Generate button
+                      _buildGenerateButton(
+                        context,
+                        ref,
+                        selectedType,
+                        ingredients,
+                        selectedDietary,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
     );
   }
 
@@ -191,11 +190,7 @@ class RecipeDialogManager {
             color: recipe.type.color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            recipe.type.icon,
-            color: recipe.type.color,
-            size: 24,
-          ),
+          child: Icon(recipe.type.icon, color: recipe.type.color, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -213,10 +208,7 @@ class RecipeDialogManager {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: recipe.type.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
@@ -236,41 +228,62 @@ class RecipeDialogManager {
     );
   }
 
-  static Widget _buildDateSelection(DateTime selectedDate, StateSetter setState) {
+  static Widget _buildDateSelection(
+    DateTime selectedDate,
+    StateSetter setState,
+    BuildContext context,
+    Function(DateTime) onDateChanged,
+  ) {
     final today = DateTime.now();
     final tomorrow = today.add(const Duration(days: 1));
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Selecciona el día:',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        
+
         // Quick date options
         Row(
           children: [
-            _buildDateOption('Hoy', today, selectedDate, setState),
+            _buildDateOption(
+              'Hoy',
+              today,
+              selectedDate,
+              setState,
+              context,
+              onDateChanged,
+            ),
             const SizedBox(width: 8),
-            _buildDateOption('Mañana', tomorrow, selectedDate, setState),
+            _buildDateOption(
+              'Mañana',
+              tomorrow,
+              selectedDate,
+              setState,
+              context,
+              onDateChanged,
+            ),
             const SizedBox(width: 8),
-            _buildDateOption('Otro día', null, selectedDate, setState, isCustom: true),
+            _buildDateOption(
+              'Otro día',
+              null,
+              selectedDate,
+              setState,
+              context,
+              onDateChanged,
+              isCustom: true,
+            ),
           ],
         ),
-        
+
         if (selectedDate != today && selectedDate != tomorrow) ...[
           const SizedBox(height: 8),
           Text(
             'Fecha seleccionada: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
           ),
         ],
       ],
@@ -278,34 +291,45 @@ class RecipeDialogManager {
   }
 
   static Widget _buildDateOption(
-    String label, 
-    DateTime? date, 
-    DateTime selectedDate, 
+    String label,
+    DateTime? date,
+    DateTime selectedDate,
     StateSetter setState,
-    {bool isCustom = false}
-  ) {
-    final isSelected = !isCustom && date != null && 
-      DateFormat('yyyy-MM-dd').format(selectedDate) == DateFormat('yyyy-MM-dd').format(date);
+    BuildContext context,
+    Function(DateTime) onDateChanged, {
+    bool isCustom = false,
+  }) {
+    final isSelected =
+        !isCustom &&
+        date != null &&
+        DateFormat('yyyy-MM-dd').format(selectedDate) ==
+            DateFormat('yyyy-MM-dd').format(date);
 
     return Expanded(
       child: InkWell(
         onTap: () async {
           if (isCustom) {
             final picked = await showDatePicker(
-              context: null as BuildContext, // This needs to be passed properly
+              context: context,
               initialDate: selectedDate,
               firstDate: DateTime.now(),
               lastDate: DateTime.now().add(const Duration(days: 365)),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: Theme.of(
+                      context,
+                    ).colorScheme.copyWith(primary: const Color(0xFF00BFA5)),
+                  ),
+                  child: child!,
+                );
+              },
             );
             if (picked != null) {
-              setState(() {
-                // selectedDate = picked; // This needs proper state management
-              });
+              onDateChanged(picked);
             }
           } else if (date != null) {
-            setState(() {
-              // selectedDate = date; // This needs proper state management
-            });
+            onDateChanged(date);
           }
         },
         child: Container(
@@ -334,32 +358,34 @@ class RecipeDialogManager {
       children: [
         Text(
           'Tipo de comida:',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children: MealType.values.map((type) {
-            final isSelected = recipe.type == type;
-            return ChoiceChip(
-              label: Text(type.name),
-              selected: isSelected,
-              onSelected: (selected) {
-                // Handle selection
-              },
-              backgroundColor: Colors.grey.shade100,
-              selectedColor: type.color.withValues(alpha: 0.2),
-            );
-          }).toList(),
+          children:
+              MealType.values.map((type) {
+                final isSelected = recipe.type == type;
+                return ChoiceChip(
+                  label: Text(type.name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    // Handle selection
+                  },
+                  backgroundColor: Colors.grey.shade100,
+                  selectedColor: type.color.withValues(alpha: 0.2),
+                );
+              }).toList(),
         ),
       ],
     );
   }
 
-  static Widget _buildRecipeHeader(MealPlan recipe, BuildContext context, WidgetRef ref) {
+  static Widget _buildRecipeHeader(
+    MealPlan recipe,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -370,13 +396,9 @@ class RecipeDialogManager {
         children: [
           // Recipe image placeholder
           Center(
-            child: Icon(
-              recipe.type.icon,
-              size: 80,
-              color: recipe.type.color,
-            ),
+            child: Icon(recipe.type.icon, size: 80, color: recipe.type.color),
           ),
-          
+
           // Close button
           Positioned(
             top: 8,
@@ -386,7 +408,7 @@ class RecipeDialogManager {
               icon: const Icon(Icons.close),
             ),
           ),
-          
+
           // Recipe title
           Positioned(
             bottom: 16,
@@ -433,7 +455,11 @@ class RecipeDialogManager {
     );
   }
 
-  static Widget _buildRecipeActions(MealPlan recipe, BuildContext context, WidgetRef ref) {
+  static Widget _buildRecipeActions(
+    MealPlan recipe,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -467,33 +493,27 @@ class RecipeDialogManager {
       children: [
         Text(
           '✨ Sugerencia Inteligente',
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
           'Nuestra IA te recomendará recetas basadas en tus preferencias y los ingredientes que ya tienes',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
+          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade600),
         ),
       ],
     );
   }
 
-  static Widget _buildMealTypeSelectionForAi(MealType selectedType, StateSetter setState) {
+  static Widget _buildMealTypeSelectionForAi(
+    MealType selectedType,
+    StateSetter setState,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Tipo de comida',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -533,10 +553,7 @@ class RecipeDialogManager {
       children: [
         Text(
           'Ingredientes disponibles',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -551,7 +568,10 @@ class RecipeDialogManager {
     );
   }
 
-  static Widget _buildDietaryPreferences(List<String> selectedDietary, StateSetter setState) {
+  static Widget _buildDietaryPreferences(
+    List<String> selectedDietary,
+    StateSetter setState,
+  ) {
     final dietaryTags = [
       'Vegetariano',
       'Vegano',
@@ -567,31 +587,29 @@ class RecipeDialogManager {
       children: [
         Text(
           'Preferencias dietéticas',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: dietaryTags.map((tag) {
-            final isSelected = selectedDietary.contains(tag);
-            return FilterChip(
-              label: Text(tag),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    selectedDietary.add(tag);
-                  } else {
-                    selectedDietary.remove(tag);
-                  }
-                });
-              },
-            );
-          }).toList(),
+          children:
+              dietaryTags.map((tag) {
+                final isSelected = selectedDietary.contains(tag);
+                return FilterChip(
+                  label: Text(tag),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        selectedDietary.add(tag);
+                      } else {
+                        selectedDietary.remove(tag);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
         ),
       ],
     );
@@ -610,7 +628,12 @@ class RecipeDialogManager {
         onPressed: () {
           // Generate AI suggestions
           Navigator.pop(context);
-          _generateAiSuggestions(ref, selectedType, ingredients.text, selectedDietary);
+          _generateAiSuggestions(
+            ref,
+            selectedType,
+            ingredients.text,
+            selectedDietary,
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF00BFA5),
@@ -651,7 +674,6 @@ class RecipeDialogManager {
 
   // Helper methods for actions
   static void _addMealToPlan(DateTime date, MealPlan recipe, WidgetRef ref) {
-    final dateKey = DateFormat('yyyy-MM-dd').format(date);
     // Add to meal plan logic
   }
 
