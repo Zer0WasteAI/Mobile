@@ -181,6 +181,7 @@ class UserFriendlyErrorMessages {
     ErrorContext context = ErrorContext.general,
     ActionType action = ActionType.load,
     String? customHint,
+    bool hasNetworkConnectivity = true,
   }) {
     if (error == null) {
       return getContextualMessage(context, action);
@@ -196,10 +197,13 @@ class UserFriendlyErrorMessages {
     }
 
     // Detectar patrones comunes en el error
-    if (_isConnectionError(errorString)) {
+    if (_isConnectionError(errorString) || !hasNetworkConnectivity) {
+      if (!hasNetworkConnectivity) {
+        return 'Sin conexión a internet. Verifica que tu WiFi esté activado o que tengas datos móviles disponibles.';
+      }
       return context == ErrorContext.network 
           ? getContextualMessage(ErrorContext.network, action)
-          : 'Sin conexión a internet. Verifica tu conexión e intenta nuevamente.';
+          : 'Problema de conexión. Verifica tu internet e intenta nuevamente.';
     }
 
     if (_isAuthenticationError(errorString)) {
