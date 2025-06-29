@@ -27,6 +27,9 @@ abstract class AuthRepository {
   /// Get current user
   UserModel? get currentUser;
 
+  /// Get current user with complete Firestore data (async)
+  Future<UserModel?> getCurrentUserWithFirestore();
+
   /// Stream of auth state changes
   Stream<UserModel?> get authStateChanges;
 

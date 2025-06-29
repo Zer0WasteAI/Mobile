@@ -40,7 +40,8 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
   Future<void> _init() async {
     state = const AsyncValue.loading();
     try {
-      final user = _authRepository.currentUser;
+      // Get user with complete Firestore data
+      final user = await _authRepository.getCurrentUserWithFirestore();
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

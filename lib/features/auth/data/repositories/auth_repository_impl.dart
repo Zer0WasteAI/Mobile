@@ -408,7 +408,21 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   UserModel? get currentUser {
     final user = _firebaseAuth.currentUser;
-    return user != null ? _getUserModelFromFirebaseUser(user) : null;
+    if (user == null) return null;
+    
+    // Note: This is a synchronous getter, so we can't await Firestore data
+    // For real-time updates with Firestore data, use authStateChanges stream
+    // For synchronous access with Firestore data, call refreshUserFromFirestore() first
+    return _getUserModelFromFirebaseUser(user);
+  }
+
+  /// Get current user with complete Firestore data (async)
+  @override
+  Future<UserModel?> getCurrentUserWithFirestore() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return null;
+    
+    return await _getUserModelFromFirebaseUserWithFirestore(user);
   }
 
   @override
@@ -766,13 +780,29 @@ class AuthRepositoryImpl implements AuthRepository {
         
         // 2. Exchange Firebase token for new JWT tokens
         log('🔄 Exchanging Firebase token for new JWT tokens...');
-        await _apiService.firebaseSignIn(firebaseIdToken);
+        final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
         
-        // 3. Force refresh the user data from Firestore
+        // 3. Update local Firestore with backend profile data if available
+        if (backendResponse.containsKey('profile')) {
+          final profile = backendResponse['profile'] as Map<String, dynamic>;
+          final initialPreferencesCompleted = profile['initialPreferencesCompleted'] as bool? ?? false;
+          
+          log('🔄 Updating Firestore with backend profile data...');
+          log('🔧 Backend says initialPreferencesCompleted: $initialPreferencesCompleted');
+          
+          // Update Firestore to match backend state
+          await _firestore.collection('users').doc(user.uid).update({
+            'initialPreferencesCompleted': initialPreferencesCompleted,
+            'lastUpdatedAt': FieldValue.serverTimestamp(),
+          });
+          
+          log('✅ Firestore updated to match backend state');
+        }
+        
+        // 4. Force refresh the user data from Firestore
         final userDoc =
             await _firestore.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
-          // The user data will be automatically updated through listeners
           log('✅ User data and tokens refreshed successfully');
         }
       }

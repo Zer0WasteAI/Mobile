@@ -118,10 +118,20 @@ class AppRouter {
         final isLoggedIn = authState.value != null;
         final user = authState.value;
 
-        // Get user preferences state to check completion - use read instead of watch to avoid dependency issues
-        final userPreferencesState = ref.read(userPreferencesProvider);
-        final hasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
+        // Check preferences completion directly from user data and UserPreferencesService
+        final userPreferencesState = ref.watch(userPreferencesProvider);
+        
+        // First try to get the value directly from user data (most reliable)
+        final userHasCompletedPreferences = user?.initialPreferencesCompleted ?? false;
+        
+        // Use UserPreferencesService as fallback
+        final serviceHasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
         final isPreferencesLoading = userPreferencesState.isLoading;
+        
+        // Use user data if available, otherwise fall back to service
+        final hasCompletedPreferences = userHasCompletedPreferences || serviceHasCompletedPreferences;
+        
+        log('🔍 Router: userHasCompleted=$userHasCompletedPreferences, serviceHasCompleted=$serviceHasCompletedPreferences, final=$hasCompletedPreferences');
 
         final isGoingToLogin = state.matchedLocation == '/login';
         final isGoingToRegister = state.matchedLocation == '/register';
