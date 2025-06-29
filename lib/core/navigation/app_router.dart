@@ -118,8 +118,8 @@ class AppRouter {
         final isLoggedIn = authState.value != null;
         final user = authState.value;
 
-        // Get user preferences state to check completion
-        final userPreferencesState = ref.watch(userPreferencesProvider);
+        // Get user preferences state to check completion - use read instead of watch to avoid dependency issues
+        final userPreferencesState = ref.read(userPreferencesProvider);
         final hasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
         final isPreferencesLoading = userPreferencesState.isLoading;
 

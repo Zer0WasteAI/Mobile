@@ -8,6 +8,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 import 'package:zer0_waste_ai/injection_container.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:zer0_waste_ai/core/utils/session_expiry_helper.dart';
 import 'dart:developer';
 
 void main() async {
@@ -22,17 +23,8 @@ void main() async {
   // Initialize dependencies
   final container = await DependencyInjection.init();
 
-  // Configurar callback global para invalidar providers después de actualizaciones de Firestore
-  // AuthRepositoryImpl.setProviderRefreshCallback(() {
-  //   print(
-  //     '🔄 Callback global activado - refrescando preferencias desde Firestore para LOGIN',
-  //   );
-
-  //   // Para LOGIN: usar el método específico que SIEMPRE lee desde Firestore
-  //   container
-  //       .read(userPreferencesProvider.notifier)
-  //       .loadUserPreferencesFromFirestore();
-  // });
+  // Configurar manejo de sesiones expiradas en todos los servicios
+  SessionExpiryHelper.setupSessionExpiryHandling(container);
 
   // Run app with ProviderScope
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));

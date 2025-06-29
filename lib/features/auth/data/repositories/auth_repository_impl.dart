@@ -756,15 +756,28 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        // Force refresh the user data from Firestore
+        // 1. Get fresh Firebase ID token
+        log('🔄 Getting fresh Firebase ID token...');
+        final firebaseIdToken = await user.getIdToken(true); // Force refresh
+        
+        if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+          throw Exception('Failed to get Firebase ID token');
+        }
+        
+        // 2. Exchange Firebase token for new JWT tokens
+        log('🔄 Exchanging Firebase token for new JWT tokens...');
+        await _apiService.firebaseSignIn(firebaseIdToken);
+        
+        // 3. Force refresh the user data from Firestore
         final userDoc =
             await _firestore.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
           // The user data will be automatically updated through listeners
-          log('User data refreshed from Firestore');
+          log('✅ User data and tokens refreshed successfully');
         }
       }
     } catch (e) {
+      log('❌ Failed to refresh user from Firestore: $e');
       throw Exception('Failed to refresh user from Firestore: ${e.toString()}');
     }
   }

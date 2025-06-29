@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/utils/debug_helpers.dart';
 
 /// Estado de las preferencias del usuario
 class UserPreferencesState {
@@ -240,9 +241,17 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       // Obtener el usuario actualizado después de refrescar
       final refreshedUser = _ref.read(authControllerProvider).value;
 
+      if (refreshedUser != null) {
+        // AUTO-FIX: Check if preferences are actually complete but flag is false
+        await _autoFixPreferencesCompletionIfNeeded(refreshedUser);
+      }
+
+      // Obtener el usuario nuevamente después del posible auto-fix
+      final finalUser = _ref.read(authControllerProvider).value;
+
       // Usar el valor de Firestore directamente
       final firestorePreferencesStatus =
-          refreshedUser?.initialPreferencesCompleted ?? false;
+          finalUser?.initialPreferencesCompleted ?? false;
 
       log(
         '✅ INICIO SESIÓN: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
@@ -256,6 +265,42 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
     } catch (e) {
       log('❌ Error al cargar preferencias desde Firestore: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Auto-fix preferences completion flag if needed
+  Future<void> _autoFixPreferencesCompletionIfNeeded(dynamic user) async {
+    try {
+      final currentFlag = user.initialPreferencesCompleted as bool? ?? false;
+      
+      // Skip if already marked as complete
+      if (currentFlag) {
+        return;
+      }
+
+      log('🔍 AUTO-FIX: Checking if preferences completion needs fixing for user ${user.id}');
+
+      // Check if preferences are actually complete
+      final isActuallyComplete = DebugHelpers.arePreferencesComplete(
+        cookingLevel: user.prefs?.cookingLevel,
+        allergies: user.prefs?.allergies,
+        specialDiets: user.prefs?.specialDiets,
+        preferredFoodTypes: user.prefs?.preferredFoodTypes,
+      );
+
+      if (isActuallyComplete) {
+        log('🔧 AUTO-FIX: Preferences are complete but flag is false - fixing automatically');
+        await DebugHelpers.forceCompleteUserPreferences(user.id);
+        
+        // Refresh user data after fix
+        final authController = _ref.read(authControllerProvider.notifier);
+        await authController.refreshUserFromFirestore();
+        
+        log('✅ AUTO-FIX: Preferences completion flag fixed automatically');
+      }
+    } catch (e) {
+      log('❌ AUTO-FIX: Error during auto-fix: $e');
+      // Don't throw - this is just a helpful auto-fix
     }
   }
 }

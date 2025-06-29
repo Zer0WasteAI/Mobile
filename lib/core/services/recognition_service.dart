@@ -12,6 +12,9 @@ class RecognitionService {
 
   late final Dio _dio;
   final AuthService _authService = AuthService.instance;
+  
+  // Callback para manejar errores de sesión
+  static void Function(String)? _onSessionExpired;
 
   // Recognition endpoints
   static const String _recognitionFoods = '/api/recognition/foods';
@@ -31,6 +34,11 @@ class RecognitionService {
 
   RecognitionService._internal() {
     _initializeDio();
+  }
+  
+  /// Configurar callback para manejar errores de sesión
+  static void setSessionExpiredCallback(void Function(String) callback) {
+    _onSessionExpired = callback;
   }
 
   void _initializeDio() {
@@ -61,15 +69,33 @@ class RecognitionService {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            // Try to refresh token
-            final newToken = await _authService.refreshTokens();
-            if (newToken != null) {
-              // Retry the request with new token
-              final authHeaders = await _authService.getAuthHeaders();
-              if (authHeaders != null) {
-                error.requestOptions.headers.addAll(authHeaders);
-                final response = await _dio.fetch(error.requestOptions);
-                handler.resolve(response);
+            try {
+              // Try to refresh token
+              final newToken = await _authService.refreshTokens();
+              if (newToken != null) {
+                // Retry the request with new token
+                final authHeaders = await _authService.getAuthHeaders();
+                if (authHeaders != null) {
+                  error.requestOptions.headers.addAll(authHeaders);
+                  final response = await _dio.fetch(error.requestOptions);
+                  handler.resolve(response);
+                  return;
+                }
+              }
+            } catch (refreshError) {
+              log('❌ Token refresh failed in interceptor: $refreshError');
+              
+              // If it's a session expired error, trigger logout callback
+              if (refreshError is SessionExpiredException) {
+                log('🚪 Session expired - triggering logout callback');
+                _onSessionExpired?.call(refreshError.message);
+                
+                // Still reject the request with a clear error
+                handler.reject(DioException(
+                  requestOptions: error.requestOptions,
+                  error: refreshError,
+                  type: DioExceptionType.unknown,
+                ));
                 return;
               }
             }

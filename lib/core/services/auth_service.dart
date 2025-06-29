@@ -8,6 +8,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+/// Excepción personalizada para sesiones expiradas
+class SessionExpiredException implements Exception {
+  final String message;
+  const SessionExpiredException(this.message);
+  
+  @override
+  String toString() => message;
+}
+
 /// Authentication service for Firebase token exchange and JWT management
 class AuthService {
   static AuthService? _instance;
@@ -203,7 +212,7 @@ class AuthService {
       final refreshToken = await getRefreshToken();
       if (refreshToken == null) {
         log('❌ No refresh token available for refresh');
-        throw Exception('No refresh token available');
+        throw SessionExpiredException('No refresh token available');
       }
 
       log('🔍 Sending refresh request to backend...');
@@ -230,18 +239,25 @@ class AuthService {
         return newAccessToken;
       }
       log('❌ Token refresh failed - invalid response code: ${response.statusCode}');
-      throw Exception('Token refresh failed with status: ${response.statusCode}');
+      throw SessionExpiredException('Token refresh failed with status: ${response.statusCode}');
     } catch (e) {
       log('❌ Token refresh error: $e');
       
-      // If it's a 401 error, clear tokens to force re-authentication
+      // If it's a 401 error, both refresh and access tokens are invalid
+      // This means we need a fresh Firebase ID token to get new JWT tokens
       if (e is DioException && e.response?.statusCode == 401) {
-        log('🔄 Refresh token expired - clearing tokens to force re-authentication');
+        log('🔄 JWT refresh failed - Firebase re-authentication required');
         await clearTokens();
-        throw Exception('Refresh token expired - authentication required');
+        throw SessionExpiredException('Su sesión con el servidor ha expirado. Necesita volver a autenticarse con Firebase.');
       }
       
-      throw Exception('Token refresh failed: ${e.toString()}');
+      // If it's already a SessionExpiredException, re-throw it
+      if (e is SessionExpiredException) {
+        await clearTokens();
+        rethrow;
+      }
+      
+      throw SessionExpiredException('Error al renovar la sesión: ${e.toString()}');
     }
   }
 

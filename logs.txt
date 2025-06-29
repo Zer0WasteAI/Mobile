@@ -1,11 +1,22 @@
-LOGS FRONTEND FLUTTER:
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           49.9s
-Connecting to VM Service at ws://127.0.0.1:50019/bvN1-4WbRfk=/ws
+Xcode build done.                                           39.4s
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+Connecting to VM Service at ws://127.0.0.1:54366/KG8jYEyWBNM=/ws
 Connected to the VM Service.
 flutter: Hive initialized successfully
 [log] 🔧 Initializing ApiService with specialized services
 [log] ✅ ApiService initialized with 9 specialized services
+[log] 🔧 Setting up session expiry handling for all services
+[log] ✅ InventoryService session expiry configured
+[log] ✅ RecipeService session expiry configured
+[log] ✅ UserProfileService session expiry configured
+[log] ✅ MealPlanningService session expiry configured
+[log] ✅ AdminService session expiry configured
+[log] ✅ EnvironmentalService session expiry configured
+[log] ✅ ImageManagementService session expiry configured
+[log] ✅ RecognitionService session expiry configured
+[log] ✅ Session expiry handling setup completed for 8 services
 [GoRouter] setting initial location /splash
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
@@ -99,6 +110,9 @@ flutter: Hive initialized successfully
 [log] 🔧 specialDiets: [Sin lácteos]
 [log] 🔧 preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
+[log] 🔄 Getting fresh Firebase ID token...
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+[log] 🔄 Getting fresh Firebase ID token...
 [log] 🚀 Proactively loading inventory for better UX...
 [log] 🔧 InventoryRealNotifier initialized (cache-optimized)
 [log] 🌐 Cache invalid or empty, loading fresh data
@@ -106,7 +120,6 @@ flutter: Hive initialized successfully
 [log] 🔄 DEBUG - Starting loadInventoryFromBackend
 [log] 📡 DEBUG - Calling backend getInventory
 [log] 📦 Getting complete inventory
-[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
 [GoRouter] setting initial location /splash
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
@@ -190,7 +203,7 @@ flutter: Hive initialized successfully
              about_app => /about-app
              support => /support
 [log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: true, location: /splash
-[log] 🔑 Access token retrieved from secure storage
+[log] ⚠️ No access token found in secure storage
 [log] *** Request ***
 [log] uri: http://127.0.0.1:3000/api/inventory
 [log] method: GET
@@ -208,153 +221,39 @@ flutter: Hive initialized successfully
 [log] data:
 [log] null
 [log]
-[log]  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MDc2ODMzMiwianRpIjoiOTlkMDdhODMtYjVjNC00MjgxLWExZTMtZjI0ZDQ0NWVlZmQ5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJuYmYiOjE3NTA3NjgzMzIsImNzcmYiOiI1NWYwZTNlNC1hMTJjLTRhZjctYjBkNy00ZTkyNGNhMzE5YWEiLCJleHAiOjE3NTA3NzAxMzJ9._Qn6n0Vb9BJ5TsAg2qNpsPAutffnwtFnO2CVy1Hp8lk
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: true, location: /home
-[log] 🔄 Router: Preferences loading - staying on current location
-[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-flutter: 🔧 UserProfileProvider: Initial user set - Rafa Pres
-flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
-flutter: 🔧 Preferences loaded:
-flutter:   - cookingLevel: intermediate
-flutter:   - allergies: [Pescado, Soya]
-flutter:   - specialDiets: [Sin lácteos]
-flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
-
-════════ Exception caught by foundation library ════════════════════════════════
-The following assertion was thrown while dispatching notifications for GoRouteInformationProvider:
-Cannot use ref functions after the dependency of a provider changed but before the provider rebuilt
-'package:riverpod/src/framework/element.dart':
-Failed assertion: line 675 pos 7: '!_didChangeDependency'
-
-When the exception was thrown, this was the stack:
-#2      ProviderElementBase._assertNotOutdated (package:riverpod/src/framework/element.dart:675:7)
-#3      ProviderElementBase.watch (package:riverpod/src/framework/element.dart:700:5)
-#4      AppRouter.createRouter.<anonymous closure> (package:zer0_waste_ai/core/navigation/app_router.dart:122:42)
-#5      RouteConfiguration.redirect.processRedirect (package:go_router/src/configuration.dart:414:80)
-#6      RouteConfiguration.redirect (package:go_router/src/configuration.dart:426:14)
-#7      GoRouteInformationParser._redirect (package:go_router/src/parser.dart:164:10)
-#8      GoRouteInformationParser.parseRouteInformationWithDependencies (package:go_router/src/parser.dart:98:32)
-#9      _RouterState._processRouteInformation (package:flutter/src/widgets/router.dart:778:10)
-#10     _RouterState._handleRouteInformationProviderNotification (package:flutter/src/widgets/router.dart:799:5)
-#11     ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
-#12     GoRouteInformationProvider.notifyListeners (package:go_router/src/information_provider.dart:139:11)
-#13     GoRouteInformationProvider._setValue (package:go_router/src/information_provider.dart:154:7)
-#14     GoRouteInformationProvider.go (package:go_router/src/information_provider.dart:176:5)
-#15     GoRouter.go (package:go_router/src/router.dart:349:30)
-#16     GoRouterHelper.go (package:go_router/src/misc/extensions.dart:28:25)
-#17     _LoginScreenState.build.<anonymous closure>.<anonymous closure> (package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart:39:21)
-#18     AsyncValueX.whenData.<anonymous closure> (package:riverpod/src/common.dart:640:15)
-#19     AsyncData.map (package:riverpod/src/common.dart:346:16)
-#20     AsyncValueX.whenData (package:riverpod/src/common.dart:636:12)
-#21     _LoginScreenState.build.<anonymous closure> (package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart:30:13)
-#22     ProviderBase.addListener.<anonymous closure> (package:riverpod/src/framework/provider_base.dart:98:41)
-#24     ProviderElementBase._notifyListeners.<anonymous closure> (package:riverpod/src/framework/element.dart:542:28)
-#25     ResultData.map (package:riverpod/src/result.dart:74:16)
-#26     ProviderElementBase._notifyListeners (package:riverpod/src/framework/element.dart:536:14)
-#27     ProviderElementBase.setState (package:riverpod/src/framework/element.dart:140:7)
-#28     StateNotifier.state= (package:state_notifier/state_notifier.dart:227:31)
-#29     AuthController._init (package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart:42:7)
-#30     AuthController.refreshUserFromFirestore (package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart:155:13)
-<asynchronous suspension>
-#31     UserPreferencesNotifier.loadUserPreferences (package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart:93:7)
-<asynchronous suspension>
-(elided 3 frames from class _AssertionError and dart:async)
-
-The GoRouteInformationProvider sending notification was: Instance of 'GoRouteInformationProvider'
-════════════════════════════════════════════════════════════════════════════════
-[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[GoRouter] setting initial location /splash
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: false, location: /splash
-[GoRouter] Full paths for routes:
-           ├─/splash (SplashScreen)
-           ├─/onboarding (OnboardingScreen)
-           ├─/login (LoginScreen)
-           ├─/register (RegisterScreen)
-           ├─/forgot-password (ForgotPasswordScreen)
-           ├─/allergy-selector (AllergySelectorScreen)
-           ├─/cooking-level-selector (CookingLevelSelectorScreen)
-           ├─/preferred-food-type (PreferredFoodTypeScreen)
-           ├─/special-diet-selector (SpecialDietSelectorScreen)
-           ├─/scan/confirm (StatefulWidget)
-           ├─/scan/results (ScanResultsScreen)
-           ├─/simplified-recognition (SimplifiedRecognitionScreen)
-           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
-           ├─/recognition-selector (RecognitionTypeSelectorScreen)
-           ├─/inventory/add (AddInventoryItemScreen)
-           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
-           ├─/inventory/food/:itemId (StatefulWidget)
-           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
-           ├─/recipes/all (AllRecipesScreen)
-           ├─/recipes/detail (StatefulWidget)
-           ├─/recipes/my-recipes (MyRecipesScreen)
-           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
-           ├─/impact (ImpactScreen)
-           ├─/planner (PlannerScreen)
-           ├─/meal-planning (MealPlanningScreen)
-           ├─/smart-recipes
-           ├─ (ShellRoute)
-           │ ├─/home (HomeScreen)
-           │ ├─/inventory (InventoryScreen)
-           │ ├─/recipes (RecipeScreen)
-           │ ├─/profile (ProfileScreen)
-           │ └─/scan/add/:itemType (AddScanItemScreen)
-           ├─/notifications (NotificationsScreen)
-           ├─/language (LanguageScreen)
-           ├─/units (UnitsScreen)
-           ├─/faqs (FAQsScreen)
-           ├─/privacy-policy (PrivacyPolicyScreen)
-           ├─/terms-and-conditions (TermsAndConditionsScreen)
-           ├─/about-app (AboutAppScreen)
-           └─/support (SupportScreen)
-           known full paths for route names:
-             splash => /splash
-             onboarding => /onboarding
-             login => /login
-             register => /register
-             forgot-password => /forgot-password
-             allergy_selector => /allergy-selector
-             cooking_level_selector => /cooking-level-selector
-             preferred_food_type => /preferred-food-type
-             special_diet_selector => /special-diet-selector
-             scanConfirm => /scan/confirm
-             scan_results => /scan/results
-             simplifiedRecognition => /simplified-recognition
-             simplifiedFoodRecognition => /simplified-food-recognition
-             recognitionTypeSelector => /recognition-selector
-             addInventoryItem => /inventory/add
-             ingredientDetail => /inventory/ingredient/:ingredientName
-             foodDetail => /inventory/food/:itemId
-             AIRecipeGenerationScreen => /recipes/ai-generation
-             all-recipes => /recipes/all
-             recipeDetail => /recipes/detail
-             my-recipes => /recipes/my-recipes
-             custom-recipe-generation => /recipes/custom-generation
-             impact => /impact
-             planner => /planner
-             mealPlanning => /meal-planning
-             smart-recipes => /smart-recipes
-             home => /home
-             inventory => /inventory
-             recipes => /recipes
-             profile => /profile
-             addScanItem => /scan/add/:itemType
-             notifications => /notifications
-             language => /language
-             units => /units
-             faqs => /faqs
-             privacy_policy => /privacy-policy
-             terms_and_conditions => /terms-and-conditions
-             about_app => /about-app
-             support => /support
 [log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
+[log] ⚠️ No refresh token found in secure storage
+[log] ❌ No refresh token available for refresh
+[log] ❌ Token refresh error: No refresh token available
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] ❌ Token refresh failed in interceptor: No refresh token available
+[log] 🚪 Session expired - triggering logout callback
+[log] 🚪 Session expired detected globally: No refresh token available
+[log] 🚪 Handling session expiry - trying to refresh Firebase token first
+[log] 🔄 Found Firebase user, attempting to refresh ID token and exchange for JWT
+[log] 🔄 Getting fresh Firebase ID token...
+[log] ❌ Get inventory error: DioException [unknown]: null
+      Error: No refresh token available
+[log] ✅ Proactive inventory loading completed
+[log] ❌ DEBUG - Error in loadInventoryFromBackend: Exception: Failed to get inventory: Error de conexión. Verifica tu internet e intenta nuevamente.
+[log] 🔄 Exchanging Firebase token for new JWT tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1751230187 (2025-06-29 15:49:47.000)
+[log]    - iat (issued at): 1751226587 (2025-06-29 14:49:47.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
 [log] *** Request ***
-[log] uri: http://127.0.0.1:3000/api/auth/refresh
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
 [log] method: POST
 [log] responseType: ResponseType.json
 [log] followRedirects: true
@@ -370,50 +269,151 @@ The GoRouteInformationProvider sending notification was: Instance of 'GoRouteInf
 [log] data:
 [log] null
 [log]
-[log]  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MDc2ODMzMiwianRpIjoiOWM1NjMyMmEtOWU2MC00MWEyLTg5ZTAtNmQ5ZWQ2YjM3NDU4IiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJPUTdURnNZcHhBWkJmTnlMc2xvVkpYSW15Um0xIiwibmJmIjoxNzUwNzY4MzMyLCJjc3JmIjoiYmNmM2RjY2ItYjlmMS00M2RiLTgyYTMtN2MyOGQ3YWIyMTg0IiwiZXhwIjoxNzUzMzYwMzMyfQ.VJLb4lCZbvUNhkmmx2zyWoYuR8nwvrwta2BokLyhl9Q
-[log] *** DioException ***:
-[log] uri: http://127.0.0.1:3000/api/auth/refresh
-[log] uri: http://127.0.0.1:3000/api/auth/refresh
-[log] statusCode: 401
+[log] 🔄 Exchanging Firebase token for new JWT tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1751230187 (2025-06-29 15:49:47.000)
+[log]    - iat (issued at): 1751226587 (2025-06-29 14:49:47.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] *** Request ***
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
+[log] method: POST
+[log] responseType: ResponseType.json
+[log] followRedirects: true
+[log] persistentConnection: true
+[log] connectTimeout: 0:00:30.000000
+[log] sendTimeout: 0:00:30.000000
+[log] receiveTimeout: 0:00:30.000000
+[log] receiveDataWhenStatusError: true
+[log] extra: {}
+[log] headers:
+[log]  Content-Type: application/json
+[log]  Accept: application/json
+[log] data:
+[log] null
+[log]
+[log]  Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg3NzQ4NTAwMmYwNWJlMDI2N2VmNDU5ZjViNTEzNTMzYjVjNThjMTIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmFmYSBQcmVzIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0s0d0U1LVZsUUZZb0IzQnNzSTVZVXBnLXUxeWxTbm9OU0g4LWF2NVExQ2F1Uk1tdz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS96ZXIwd2FzdGVhaS05MTQwOCIsImF1ZCI6InplcjB3YXN0ZWFpLTkxNDA4IiwiYXV0aF90aW1lIjoxNzQ4OTM5NzA0LCJ1c2VyX2lkIjoiT1E3VEZzWXB4QVpCZk55THNsb1ZKWElteVJtMSIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJpYXQiOjE3NTEyMjY1ODcsImV4cCI6MTc1MTIzMDE4NywiZW1haWwiOiJyYWZhcHJlczM4QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTA5MjQxOTU2NDA3NjQ2Njg3NzAzIl0sImVtYWlsIjpbInJhZmFwcmVzMzhAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.nuWzmAtAk6HAnAe61vS9dxH7cmScbSYjS9mCKGlvyYncjTjbaaQf63fSLUSyPQtOQ0V7el4ghi-_IEoL7oMnHbsZZfv0e_zU_fSk11WQuJ6UnbeDmx4h58hFRvFPEEVzEiHrfgzUcMSLvnAuZHEwtnJYQzUbSmKYycYsi5D6KzX5a4s4d7GTCQrl0jFk7OCrg6Kqgv1QNlvB61hFWmkmzJ_kb3ABD4Zz2_OFD6G298w6P8rfJpUEsZhhyZvAaD2wxQH6IyR6O6N1V3ZBpphBU0HSVFWFdJiOkWRaGRLdPdQHHrRo0FKCiWBtQHYvwzZ_NC6DNmQOkVmJRWjinYSuow
+[log]  Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg3NzQ4NTAwMmYwNWJlMDI2N2VmNDU5ZjViNTEzNTMzYjVjNThjMTIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmFmYSBQcmVzIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0s0d0U1LVZsUUZZb0IzQnNzSTVZVXBnLXUxeWxTbm9OU0g4LWF2NVExQ2F1Uk1tdz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS96ZXIwd2FzdGVhaS05MTQwOCIsImF1ZCI6InplcjB3YXN0ZWFpLTkxNDA4IiwiYXV0aF90aW1lIjoxNzQ4OTM5NzA0LCJ1c2VyX2lkIjoiT1E3VEZzWXB4QVpCZk55THNsb1ZKWElteVJtMSIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJpYXQiOjE3NTEyMjY1ODcsImV4cCI6MTc1MTIzMDE4NywiZW1haWwiOiJyYWZhcHJlczM4QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTA5MjQxOTU2NDA3NjQ2Njg3NzAzIl0sImVtYWlsIjpbInJhZmFwcmVzMzhAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.nuWzmAtAk6HAnAe61vS9dxH7cmScbSYjS9mCKGlvyYncjTjbaaQf63fSLUSyPQtOQ0V7el4ghi-_IEoL7oMnHbsZZfv0e_zU_fSk11WQuJ6UnbeDmx4h58hFRvFPEEVzEiHrfgzUcMSLvnAuZHEwtnJYQzUbSmKYycYsi5D6KzX5a4s4d7GTCQrl0jFk7OCrg6Kqgv1QNlvB61hFWmkmzJ_kb3ABD4Zz2_OFD6G298w6P8rfJpUEsZhhyZvAaD2wxQH6IyR6O6N1V3ZBpphBU0HSVFWFdJiOkWRaGRLdPdQHHrRo0FKCiWBtQHYvwzZ_NC6DNmQOkVmJRWjinYSuow
+[log] 🔄 Exchanging Firebase token for new JWT tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
+[log] 🔧 JWT Payload key info:
+[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
+[log]    - aud (audience): zer0wasteai-91408
+[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log]    - exp (expires): 1751230187 (2025-06-29 15:49:47.000)
+[log]    - iat (issued at): 1751226587 (2025-06-29 14:49:47.000)
+[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] *** Request ***
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
+[log] method: POST
+[log] responseType: ResponseType.json
+[log] followRedirects: true
+[log] persistentConnection: true
+[log] connectTimeout: 0:00:30.000000
+[log] sendTimeout: 0:00:30.000000
+[log] receiveTimeout: 0:00:30.000000
+[log] receiveDataWhenStatusError: true
+[log] extra: {}
+[log] headers:
+[log]  Content-Type: application/json
+[log]  Accept: application/json
+[log] data:
+[log] null
+[log]
+[log]  Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg3NzQ4NTAwMmYwNWJlMDI2N2VmNDU5ZjViNTEzNTMzYjVjNThjMTIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmFmYSBQcmVzIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0s0d0U1LVZsUUZZb0IzQnNzSTVZVXBnLXUxeWxTbm9OU0g4LWF2NVExQ2F1Uk1tdz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS96ZXIwd2FzdGVhaS05MTQwOCIsImF1ZCI6InplcjB3YXN0ZWFpLTkxNDA4IiwiYXV0aF90aW1lIjoxNzQ4OTM5NzA0LCJ1c2VyX2lkIjoiT1E3VEZzWXB4QVpCZk55THNsb1ZKWElteVJtMSIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJpYXQiOjE3NTEyMjY1ODcsImV4cCI6MTc1MTIzMDE4NywiZW1haWwiOiJyYWZhcHJlczM4QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTA5MjQxOTU2NDA3NjQ2Njg3NzAzIl0sImVtYWlsIjpbInJhZmFwcmVzMzhAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.nuWzmAtAk6HAnAe61vS9dxH7cmScbSYjS9mCKGlvyYncjTjbaaQf63fSLUSyPQtOQ0V7el4ghi-_IEoL7oMnHbsZZfv0e_zU_fSk11WQuJ6UnbeDmx4h58hFRvFPEEVzEiHrfgzUcMSLvnAuZHEwtnJYQzUbSmKYycYsi5D6KzX5a4s4d7GTCQrl0jFk7OCrg6Kqgv1QNlvB61hFWmkmzJ_kb3ABD4Zz2_OFD6G298w6P8rfJpUEsZhhyZvAaD2wxQH6IyR6O6N1V3ZBpphBU0HSVFWFdJiOkWRaGRLdPdQHHrRo0FKCiWBtQHYvwzZ_NC6DNmQOkVmJRWjinYSuow
+[log] *** Response ***
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
+[log] statusCode: 200
 [log] headers:
 [log]  connection: close
-[log]  date: Sun, 29 Jun 2025 18:54:03 GMT
+[log]  date: Sun, 29 Jun 2025 19:49:50 GMT
 [log]  access-control-allow-origin: *
 [log]  strict-transport-security: max-age=31536000; includeSubDomains
 [log]  referrer-policy: strict-origin-when-cross-origin
 [log]  content-type: application/json
 [log]  x-xss-protection: 1; mode=block
 [log]  server: Werkzeug/3.1.3 Python/3.11.13
-[log]  content-length: 34
+[log]  content-length: 1907
 [log]  x-frame-options: DENY
 [log]  x-content-type-options: nosniff
 [log] Response Text:
-[log] {"error":"Authentication failed"}
-[log] 
 [log]
-[log] 🔄 Refresh token expired - clearing tokens to force re-authentication
-[log] 🗑️ Clearing stored JWT tokens...
-[log] DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
 [log]  permissions-policy: geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), speaker=(), vibrate=(), fullscreen=()
 [log]  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ✅ JWT tokens cleared from secure storage
-[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Exception: Refresh token expired - authentication required
-#0      AuthService.refreshTokens (package:zer0_waste_ai/core/services/auth_service.dart:241:9)
-<asynchronous suspension>
-#1      InventoryService._initializeDio.<anonymous closure> (package:zer0_waste_ai/core/services/inventory_service.dart:62:30)
-<asynchronous suspension>
-
-
-LOGS BACKEND PYTHON:
-2025-06-29 13:54:02 🚨 [AUTH ERROR] Token expirado - JTI: 99d07a83-b5c4-4281-a1e3-f24d445eefd9
-2025-06-29 13:54:02 🚨 [AUTH ERROR] User: OQ7TFsYpxAZBfNyLsloVJXImyRm1
-2025-06-29 13:54:02 🚨 [AUTH ERROR] Expiró en: 1750770132
-2025-06-29 13:54:02 172.18.0.1 - - [29/Jun/2025 18:54:02] "GET /api/inventory HTTP/1.1" 401 -
-2025-06-29 13:54:03 172.18.0.1 - - [29/Jun/2025 18:54:03] "POST /api/auth/refresh HTTP/1.1" 401 -
+[log] {"access_jti":"8109ad6d-9ef3-4a2d-8a99-9297b334255d","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiODEwOWFkNmQtOWVmMy00YTJkLThhOTktOTI5N2IzMzQyNTVkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJuYmYiOjE3NTEyMjY1ODgsImNzcmYiOiIwNGQxMTM4ZC1jYzBiLTRhYjEtOGExNi1mNmRkMDJhODJlNDkiLCJleHAiOjE3NTEyMjgzODh9.bJWcd4Zgy7G_-sqhQjFV-TxhAAUaG93OMk7WBfi1l90","profile":{"allergies":["Pescado","Soya"],"allergyItems":[{"emoji":"🐟","isCustom":false,"name":"Pescado"},{"emoji":"🌱","isCustom":false,"name":"Soya"}],"authProvider":"google.com","cookingLevel":"intermediate","createdAt":"2025-06-03T08:35:05.657000+00:00","displayName":"Rafa Pres","email":"rafapres38@gmail.com","emailVerified":true,"favoriteRecipes":[],"initialPreferencesCompleted":true,"language":"es","lastLoginAt":"2025-06-03T08:35:05.657000+00:00","measurementUnit":"metric","photoURL":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","preferredFoodTypes":["Alemana","Tailandesa"],"specialDietItems":[{"emoji":"🥛","isCustom":false,"name":"Sin lácteos"}],"uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"},"refresh_jti":"92d05035-d084-4d2e-b762-970ddec51d32","refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiOTJkMDUwMzUtZDA4NC00ZDJlLWI3NjItOTcwZGRlYzUxZDMyIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJPUTdURnNZcHhBWkJmTnlMc2xvVkpYSW15Um0xIiwibmJmIjoxNzUxMjI2NTg4LCJjc3JmIjoiNTExZmU1ODYtNzcyZS00MTNmLWJlZTktYTQ1OTJkNzQ2YjNiIiwiZXhwIjoxNzUzODE4NTg4fQ.Ly09czmeJnc-n1cBhcn5ZwLzu0x_PgFSxAJS_zmtcgU","token_type":"Bearer","user":{"email":"rafapres38@gmail.com","email_verified":true,"name":"Rafa Pres","photo_url":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"}}
+[log] *** Response ***
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
+[log] statusCode: 200
+[log] headers:
+[log]  connection: close
+[log]  date: Sun, 29 Jun 2025 19:49:50 GMT
+[log]  access-control-allow-origin: *
+[log]  strict-transport-security: max-age=31536000; includeSubDomains
+[log]  referrer-policy: strict-origin-when-cross-origin
+[log]  content-type: application/json
+[log]  x-xss-protection: 1; mode=block
+[log]  server: Werkzeug/3.1.3 Python/3.11.13
+[log]  content-length: 1907
+[log]  x-frame-options: DENY
+[log]  x-content-type-options: nosniff
+[log] Response Text:
+[log]
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ❌ No active Firebase session - requiring full re-authentication
+[log]  permissions-policy: geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), speaker=(), vibrate=(), fullscreen=()
+[log]  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'
+[log] {"access_jti":"87c72d13-e6df-4ec8-a4d8-1e8a1718d456","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiODdjNzJkMTMtZTZkZi00ZWM4LWE0ZDgtMWU4YTE3MThkNDU2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJuYmYiOjE3NTEyMjY1ODgsImNzcmYiOiJlOWQ1M2NkNi1kZDhkLTRhNjgtYjMzNS0xMDYwZWU2MTM0NzAiLCJleHAiOjE3NTEyMjgzODh9.qio2Yq-6aeYm7g3-QmKsciT0LWPa709YpfnJgy8wB3U","profile":{"allergies":["Pescado","Soya"],"allergyItems":[{"emoji":"🐟","isCustom":false,"name":"Pescado"},{"emoji":"🌱","isCustom":false,"name":"Soya"}],"authProvider":"google.com","cookingLevel":"intermediate","createdAt":"2025-06-03T08:35:05.657000+00:00","displayName":"Rafa Pres","email":"rafapres38@gmail.com","emailVerified":true,"favoriteRecipes":[],"initialPreferencesCompleted":true,"language":"es","lastLoginAt":"2025-06-03T08:35:05.657000+00:00","measurementUnit":"metric","photoURL":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","preferredFoodTypes":["Alemana","Tailandesa"],"specialDietItems":[{"emoji":"🥛","isCustom":false,"name":"Sin lácteos"}],"uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"},"refresh_jti":"eb323469-2674-4a80-a846-11db799888ec","refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiZWIzMjM0NjktMjY3NC00YTgwLWE4NDYtMTFkYjc5OTg4OGVjIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJPUTdURnNZcHhBWkJmTnlMc2xvVkpYSW15Um0xIiwibmJmIjoxNzUxMjI2NTg4LCJjc3JmIjoiYzMxNjdkNzctOTAzMi00M2I4LTliMzktODc2M2FiYWIyOWU1IiwiZXhwIjoxNzUzODE4NTg4fQ.H-VwFcMEpTl5JZuk_KuE0iN3LMihpY5WaGlb1tOZqmk","token_type":"Bearer","user":{"email":"rafapres38@gmail.com","email_verified":true,"name":"Rafa Pres","photo_url":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"}}
+[log] ❌ Firebase token exchange failed: PlatformException(Unexpected security result code, Code: -25299, Message: The specified item already exists in the keychain., -25299, null)
+[log] ❌ Failed to refresh user from Firestore: Exception: Firebase sign in error: PlatformException(Unexpected security result code, Code: -25299, Message: The specified item already exists in the keychain., -25299, null)
+[log] ❌ Failed to refresh from Firebase: Exception: Failed to refresh user from Firestore: Exception: Firebase sign in error: PlatformException(Unexpected security result code, Code: -25299, Message: The specified item already exists in the keychain., -25299, null)
+[log] *** Response ***
+[log] uri: http://127.0.0.1:3000/api/auth/firebase-signin
+[log] statusCode: 200
+[log] headers:
+[log]  connection: close
+[log]  date: Sun, 29 Jun 2025 19:49:50 GMT
+[log]  access-control-allow-origin: *
+[log]  strict-transport-security: max-age=31536000; includeSubDomains
+[log]  referrer-policy: strict-origin-when-cross-origin
+[log]  content-type: application/json
+[log]  x-xss-protection: 1; mode=block
+[log]  server: Werkzeug/3.1.3 Python/3.11.13
+[log]  content-length: 1907
+[log]  x-frame-options: DENY
+[log]  x-content-type-options: nosniff
+[log] Response Text:
+[log]
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log]  permissions-policy: geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), speaker=(), vibrate=(), fullscreen=()
+[log]  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'
+[log] {"access_jti":"0382005f-b4a8-4b34-aad0-cdbb8b07fe53","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiMDM4MjAwNWYtYjRhOC00YjM0LWFhZDAtY2RiYjhiMDdmZTUzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJuYmYiOjE3NTEyMjY1ODgsImNzcmYiOiJmZDJiZTY0NC03MzU4LTQwMTQtODBjOS1hOTU2YzBmOWU3OTEiLCJleHAiOjE3NTEyMjgzODh9.iXexzUhQIcn7bRQL8as1fq_BzfM9t7u05LxXwt2ITuk","profile":{"allergies":["Pescado","Soya"],"allergyItems":[{"emoji":"🐟","isCustom":false,"name":"Pescado"},{"emoji":"🌱","isCustom":false,"name":"Soya"}],"authProvider":"google.com","cookingLevel":"intermediate","createdAt":"2025-06-03T08:35:05.657000+00:00","displayName":"Rafa Pres","email":"rafapres38@gmail.com","emailVerified":true,"favoriteRecipes":[],"initialPreferencesCompleted":true,"language":"es","lastLoginAt":"2025-06-03T08:35:05.657000+00:00","measurementUnit":"metric","photoURL":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","preferredFoodTypes":["Alemana","Tailandesa"],"specialDietItems":[{"emoji":"🥛","isCustom":false,"name":"Sin lácteos"}],"uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"},"refresh_jti":"f72d8336-8d06-49e0-9d5f-071bb51effeb","refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTIyNjU4OCwianRpIjoiZjcyZDgzMzYtOGQwNi00OWUwLTlkNWYtMDcxYmI1MWVmZmViIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJPUTdURnNZcHhBWkJmTnlMc2xvVkpYSW15Um0xIiwibmJmIjoxNzUxMjI2NTg4LCJjc3JmIjoiMjI2ZmRkZGEtMTRkMC00ZTNhLWE5YTctZDUyNzVkNDQ4OGQzIiwiZXhwIjoxNzUzODE4NTg4fQ.M4x8ARmrQIrtB1p1TLKOXf5h97lp40Jj-SuguXHcRxA","token_type":"Bearer","user":{"email":"rafapres38@gmail.com","email_verified":true,"name":"Rafa Pres","photo_url":"https://lh3.googleusercontent.com/a/ACg8ocK4wE5-VlQFYoB3BssI5YUpg-u1ylSnoNSH8-av5Q1CauRMmw=s96-c","uid":"OQ7TFsYpxAZBfNyLsloVJXImyRm1"}}
+[log] ✅ User data and tokens refreshed successfully
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] ✅ User data and tokens refreshed successfully
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
