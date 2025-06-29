@@ -213,25 +213,37 @@ class ProfileScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
 
-                    ProfileWidgetBuilders.buildSectionHeader(context, 'Preferencias culinarias'),
+                    ProfileWidgetBuilders.buildSectionHeader(
+                      context,
+                      'Preferencias culinarias',
+                    ),
                     const SizedBox(height: 8),
                     ProfileWidgetBuilders.buildPreferencesGrid(context, ref),
 
                     const SizedBox(height: 24),
 
-                    ProfileWidgetBuilders.buildSectionHeader(context, 'Tu impacto'),
+                    ProfileWidgetBuilders.buildSectionHeader(
+                      context,
+                      'Tu impacto',
+                    ),
                     const SizedBox(height: 8),
                     ProfileWidgetBuilders.buildImpactCard(context),
 
                     const SizedBox(height: 24),
 
-                    ProfileWidgetBuilders.buildSectionHeader(context, 'Configuración'),
+                    ProfileWidgetBuilders.buildSectionHeader(
+                      context,
+                      'Configuración',
+                    ),
                     const SizedBox(height: 8),
                     ProfileWidgetBuilders.buildSettingsCard(context),
 
                     const SizedBox(height: 24),
 
-                    ProfileWidgetBuilders.buildSectionHeader(context, 'Información y ayuda'),
+                    ProfileWidgetBuilders.buildSectionHeader(
+                      context,
+                      'Información y ayuda',
+                    ),
                     const SizedBox(height: 8),
                     ProfileWidgetBuilders.buildInfoCard(context),
 
@@ -239,105 +251,6 @@ class ProfileScreen extends ConsumerWidget {
 
                     ProfileWidgetBuilders.buildLogoutButton(context, ref),
                     const SizedBox(height: 20),
-
-                    // DEBUG BUTTONS
-                    Column(
-                      children: [
-                        // DEBUG: Botón para leer directamente de Firestore
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
-                              try {
-                                final profileState = ref.read(userProfileProvider);
-                                print('🔥 DEBUG: Leyendo datos desde Firestore...');
-                                print('📊 Profile state: $profileState');
-                                print('👤 User: ${profileState.user}');
-                                print('🔄 Is loading: ${profileState.isLoading}');
-                                print('💾 Is backend synced: ${profileState.isBackendSynced}');
-
-                                // Forzar refetch desde Firestore
-                                // await ref.read(userProfileProvider.notifier).refreshFromFirestore();
-                                print('✅ Refresh completed');
-                              } catch (e) {
-                                print('❌ Error durante refresh: $e');
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange.shade600,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: Text(
-                              'DEBUG: Refrescar desde Firestore',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 8),
-                        
-                        // DEBUG: Fix preferences completion
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
-                              try {
-                                final currentUser = user;
-                                if (currentUser == null) {
-                                  print('❌ DEBUG: No user available');
-                                  return;
-                                }
-                                
-                                print('🔧 DEBUG: Fixing preferences completion for ${currentUser.id}');
-                                
-                                // Check current status
-                                final status = await DebugHelpers.getUserPreferenceStatus(currentUser.id);
-                                print('📊 Current status: $status');
-                                
-                                if (status['needsFix'] == true) {
-                                  await DebugHelpers.forceCompleteUserPreferences(currentUser.id);
-                                  
-                                  // Refresh the user profile
-                                  await ref.read(userProfileProvider.notifier).refresh();
-                                  
-                                  print('✅ DEBUG: Preferences completion fixed and profile refreshed');
-                                } else {
-                                  print('ℹ️ DEBUG: No fix needed - preferences are already complete or genuinely incomplete');
-                                }
-                              } catch (e) {
-                                print('❌ Error fixing preferences: $e');
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade600,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            icon: const Icon(Icons.build_circle, size: 18),
-                            label: Text(
-                              'DEBUG: Fix Preferences Flag',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
 
                     const SizedBox(height: 40),
                   ],
