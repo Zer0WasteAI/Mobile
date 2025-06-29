@@ -11,10 +11,11 @@ import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 
 // ✅ RESOLVED: Route name already defined below as routeName and routePath constants
 
-class SpecialDietSelectorScreen extends ConsumerWidget {
+class SpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const SpecialDietSelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'special_diet_selector';
@@ -24,7 +25,14 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
   final bool fromProfile;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SpecialDietSelectorScreen> createState() => _SpecialDietSelectorScreenState();
+}
+
+class _SpecialDietSelectorScreenState extends ConsumerState<SpecialDietSelectorScreen> {
+  bool _isSaving = false;
+
+  @override
+  Widget build(BuildContext context) {
     final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
     final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
     final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
@@ -191,7 +199,13 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                       foregroundColor:
                           colorScheme.onPrimary, // Use theme color for text
                     ),
-                    onPressed: () async {
+                    onPressed: _isSaving ? null : () async {
+                      if (_isSaving) return;
+                      
+                      setState(() {
+                        _isSaving = true;
+                      });
+
                       // Mostrar indicador de carga
                       if (context.mounted) {
                         showLoadingSnackBar(
@@ -225,13 +239,21 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                         // IMPORTANT: Mark initial preferences as completed since this is the last onboarding screen
                         await authRepository.markInitialPreferencesCompleted();
 
+                        // Update UserPreferencesService to reflect completion
+                        await ref.read(userPreferencesProvider.notifier).markPreferencesAsCompleted();
+
                         log('✅ Special diets saved to Firestore successfully');
                         log('✅ Initial preferences marked as completed');
                         log("Selected Diets on Continue: $selectedDiets");
 
+                        // Reset saving state
+                        setState(() {
+                          _isSaving = false;
+                        });
+
                         // Navigate based on context
                         if (context.mounted) {
-                          if (fromProfile) {
+                          if (widget.fromProfile) {
                             // From profile - go back to profile
                             context.pop();
                           } else {
@@ -241,19 +263,69 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                         }
                       } catch (e) {
                         log('❌ Error saving special diets: $e');
-                        // Still navigate even if save fails
+                        
+                        // Reset saving state
+                        setState(() {
+                          _isSaving = false;
+                        });
+                        
+                        // Show error to user and don't navigate
                         if (context.mounted) {
-                          context.go('/home');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error al guardar las preferencias. Por favor, intenta de nuevo.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: Duration(seconds: 4),
+                              action: SnackBarAction(
+                                label: 'Reintentar',
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  // User can press the continue button again
+                                },
+                              ),
+                            ),
+                          );
                         }
+                        
+                        // Don't navigate if save fails to prevent inconsistent state
+                        return;
                       }
                     },
-                    child: Text(
-                      'Continuar',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isSaving 
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Guardando...',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          'Continuar',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                   ),
                 ),
                 const SizedBox(height: 16), // Add some padding at the bottom

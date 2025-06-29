@@ -304,7 +304,7 @@ final currentUserProvider = Provider<UserModel?>((ref) {
   return ref.watch(userProfileProvider).user;
 });
 
-final userPreferencesProvider = Provider<UserPreferencesModel>((ref) {
+final userPreferencesModelProvider = Provider<UserPreferencesModel>((ref) {
   return ref.watch(userProfileProvider).user?.prefs ??
       const UserPreferencesModel();
 });

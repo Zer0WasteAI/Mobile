@@ -116,17 +116,32 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
 
   /// Marcar las preferencias como completadas
   Future<void> markPreferencesAsCompleted() async {
-    // Marcar inmediatamente en memoria para evitar redirecciones
-    state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
-    log(
-      "UserPreferencesService: Preferencias marcadas como completadas en memoria",
-    );
+    try {
+      // Marcar inmediatamente en memoria para evitar redirecciones
+      state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
+      log(
+        "UserPreferencesService: Preferencias marcadas como completadas en memoria",
+      );
 
-    // No intentar guardar en Firestore aquí para evitar duplicados
-    // El guardado en Firestore debe hacerse desde el screen que maneja la lógica de negocio
-    log(
-      "UserPreferencesService: No guardando en Firestore para evitar race conditions",
-    );
+      // Verificar que la actualización fue exitosa al leer el estado del auth controller
+      final authController = _ref.read(authControllerProvider.notifier);
+      await authController.refreshUserFromFirestore();
+      
+      final refreshedUser = _ref.read(authControllerProvider).value;
+      if (refreshedUser?.initialPreferencesCompleted == true) {
+        log(
+          "✅ UserPreferencesService: Confirmado que preferencias están marcadas en Firestore",
+        );
+      } else {
+        log(
+          "⚠️ UserPreferencesService: Preferencias no confirmadas en Firestore, manteniendo estado en memoria",
+        );
+      }
+    } catch (e) {
+      log("❌ UserPreferencesService: Error al confirmar preferencias: $e");
+      // Keep the in-memory state as completed even if verification fails
+      // to prevent navigation loops
+    }
   }
 
   /// Resetear el estado cuando el usuario cierra sesión

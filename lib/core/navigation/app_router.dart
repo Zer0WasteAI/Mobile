@@ -47,7 +47,7 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/support_scre
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/my_recipes_screen.dart'; // Import MyRecipesScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recipe_generation_screen.dart'; // Import CustomRecipeGenerationScreen
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -109,13 +109,19 @@ class AppRouter {
       // Add the observer here
       observers: [heroController],
       redirect: (context, state) {
+        // Handle loading state
+        if (authState.isLoading) {
+          log('🔄 Router: Auth state loading - staying on current location');
+          return null;
+        }
+
         final isLoggedIn = authState.value != null;
         final user = authState.value;
 
-        // Get user profile state to check preferences completion
-        final userProfileState = ref.watch(userProfileProvider);
-        final hasCompletedPreferences =
-            userProfileState.user?.initialPreferencesCompleted ?? false;
+        // Get user preferences state to check completion
+        final userPreferencesState = ref.watch(userPreferencesProvider);
+        final hasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
+        final isPreferencesLoading = userPreferencesState.isLoading;
 
         final isGoingToLogin = state.matchedLocation == '/login';
         final isGoingToRegister = state.matchedLocation == '/register';
@@ -130,8 +136,14 @@ class AppRouter {
             state.matchedLocation.startsWith('/special-diet-selector');
 
         log(
-          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, location: ${state.matchedLocation}',
+          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, isPreferencesLoading: $isPreferencesLoading, location: ${state.matchedLocation}',
         );
+
+        // If preferences are still loading and user is logged in, wait
+        if (isLoggedIn && isPreferencesLoading && !isGoingToSplash) {
+          log('🔄 Router: Preferences loading - staying on current location');
+          return null;
+        }
 
         // If not logged in and not going to auth/onboarding screens, redirect to login
         if (!isLoggedIn &&
@@ -146,7 +158,7 @@ class AppRouter {
         }
 
         // If logged in, check preferences completion
-        if (isLoggedIn && user != null) {
+        if (isLoggedIn && user != null && !isPreferencesLoading) {
           // If user has completed preferences but trying to go to auth/onboarding screens, redirect to home
           if (hasCompletedPreferences &&
               (isGoingToLogin ||

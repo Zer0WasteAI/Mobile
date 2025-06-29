@@ -1,10 +1,11 @@
+LOGS FRONTEND FLUTTER:
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           50.3s
-[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-Connecting to VM Service at ws://127.0.0.1:62145/A14duPonyrY=/ws
+Xcode build done.                                           49.9s
+Connecting to VM Service at ws://127.0.0.1:50019/bvN1-4WbRfk=/ws
 Connected to the VM Service.
 flutter: Hive initialized successfully
+[log] 🔧 Initializing ApiService with specialized services
+[log] ✅ ApiService initialized with 9 specialized services
 [GoRouter] setting initial location /splash
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
@@ -27,6 +28,8 @@ flutter: Hive initialized successfully
            ├─/recipes/ai-generation (AIRecipeGenerationScreen)
            ├─/recipes/all (AllRecipesScreen)
            ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
            ├─/impact (ImpactScreen)
            ├─/planner (PlannerScreen)
            ├─/meal-planning (MealPlanningScreen)
@@ -66,6 +69,8 @@ flutter: Hive initialized successfully
              AIRecipeGenerationScreen => /recipes/ai-generation
              all-recipes => /recipes/all
              recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
              impact => /impact
              planner => /planner
              mealPlanning => /meal-planning
@@ -83,25 +88,26 @@ flutter: Hive initialized successfully
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
-[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /splash
+[log] 🔄 Router: Auth state loading - staying on current location
 [GoRouter] Using MaterialApp configuration
 [log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log] 🛑 Stopped proactive token refresh mechanism
-[log] 🔄 Starting proactive token refresh mechanism...
 [GoRouter] going to /login
-[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /login
+[log] 🔄 Router: Auth state loading - staying on current location
 [log] ✅ User document found in Firestore
 [log] 🔧 cookingLevel: intermediate
 [log] 🔧 allergies: [Pescado, Soya]
 [log] 🔧 specialDiets: [Sin lácteos]
 [log] 🔧 preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
-[log] 🛑 Stopped proactive token refresh mechanism
-[log] 🔄 Starting proactive token refresh mechanism...
-[GoRouter] setting initial location /splash
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /splash
-[log] 🔄 Redirecting to home - user has completed preferences
+[log] 🚀 Proactively loading inventory for better UX...
+[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
+[log] 🌐 Cache invalid or empty, loading fresh data
+[log] 🚀 First load - using fast endpoint
+[log] 🔄 DEBUG - Starting loadInventoryFromBackend
+[log] 📡 DEBUG - Calling backend getInventory
+[log] 📦 Getting complete inventory
 [log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+[GoRouter] setting initial location /splash
 [GoRouter] Full paths for routes:
            ├─/splash (SplashScreen)
            ├─/onboarding (OnboardingScreen)
@@ -123,6 +129,8 @@ flutter: Hive initialized successfully
            ├─/recipes/ai-generation (AIRecipeGenerationScreen)
            ├─/recipes/all (AllRecipesScreen)
            ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
            ├─/impact (ImpactScreen)
            ├─/planner (PlannerScreen)
            ├─/meal-planning (MealPlanningScreen)
@@ -162,6 +170,8 @@ flutter: Hive initialized successfully
              AIRecipeGenerationScreen => /recipes/ai-generation
              all-recipes => /recipes/all
              recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
              impact => /impact
              planner => /planner
              mealPlanning => /meal-planning
@@ -179,677 +189,231 @@ flutter: Hive initialized successfully
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[GoRouter] Using MaterialApp configuration
-[GoRouter] redirecting to RouteMatchList#6f479(uri: /home, matches: [ShellRouteMatch#5c12d(route: ShellRoute#b54b3(navigatorKey: [LabeledGlobalKey<NavigatorState>#05ebe]))])
-flutter: 🔧 UserProfileProvider: Auth state changed
-flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafa Pres
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: true, location: /splash
+[log] 🔑 Access token retrieved from secure storage
+[log] *** Request ***
+[log] uri: http://127.0.0.1:3000/api/inventory
+[log] method: GET
+[log] responseType: ResponseType.json
+[log] followRedirects: true
+[log] persistentConnection: true
+[log] connectTimeout: 0:00:30.000000
+[log] sendTimeout: 0:00:30.000000
+[log] receiveTimeout: 0:00:30.000000
+[log] receiveDataWhenStatusError: true
+[log] extra: {}
+[log] headers:
+[log]  Content-Type: application/json
+[log]  Accept: application/json
+[log] data:
+[log] null
+[log]
+[log]  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MDc2ODMzMiwianRpIjoiOTlkMDdhODMtYjVjNC00MjgxLWExZTMtZjI0ZDQ0NWVlZmQ5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Ik9RN1RGc1lweEFaQmZOeUxzbG9WSlhJbXlSbTEiLCJuYmYiOjE3NTA3NjgzMzIsImNzcmYiOiI1NWYwZTNlNC1hMTJjLTRhZjctYjBkNy00ZTkyNGNhMzE5YWEiLCJleHAiOjE3NTA3NzAxMzJ9._Qn6n0Vb9BJ5TsAg2qNpsPAutffnwtFnO2CVy1Hp8lk
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: true, location: /home
+[log] 🔄 Router: Preferences loading - staying on current location
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] User data refreshed from Firestore
+[GoRouter] going to /home
+flutter: 🔧 UserProfileProvider: Initial user set - Rafa Pres
 flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
 flutter: 🔧 Preferences loaded:
 flutter:   - cookingLevel: intermediate
 flutter:   - allergies: [Pescado, Soya]
 flutter:   - specialDiets: [Sin lácteos]
 flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
-[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
+
+════════ Exception caught by foundation library ════════════════════════════════
+The following assertion was thrown while dispatching notifications for GoRouteInformationProvider:
+Cannot use ref functions after the dependency of a provider changed but before the provider rebuilt
+'package:riverpod/src/framework/element.dart':
+Failed assertion: line 675 pos 7: '!_didChangeDependency'
+
+When the exception was thrown, this was the stack:
+#2      ProviderElementBase._assertNotOutdated (package:riverpod/src/framework/element.dart:675:7)
+#3      ProviderElementBase.watch (package:riverpod/src/framework/element.dart:700:5)
+#4      AppRouter.createRouter.<anonymous closure> (package:zer0_waste_ai/core/navigation/app_router.dart:122:42)
+#5      RouteConfiguration.redirect.processRedirect (package:go_router/src/configuration.dart:414:80)
+#6      RouteConfiguration.redirect (package:go_router/src/configuration.dart:426:14)
+#7      GoRouteInformationParser._redirect (package:go_router/src/parser.dart:164:10)
+#8      GoRouteInformationParser.parseRouteInformationWithDependencies (package:go_router/src/parser.dart:98:32)
+#9      _RouterState._processRouteInformation (package:flutter/src/widgets/router.dart:778:10)
+#10     _RouterState._handleRouteInformationProviderNotification (package:flutter/src/widgets/router.dart:799:5)
+#11     ChangeNotifier.notifyListeners (package:flutter/src/foundation/change_notifier.dart:435:24)
+#12     GoRouteInformationProvider.notifyListeners (package:go_router/src/information_provider.dart:139:11)
+#13     GoRouteInformationProvider._setValue (package:go_router/src/information_provider.dart:154:7)
+#14     GoRouteInformationProvider.go (package:go_router/src/information_provider.dart:176:5)
+#15     GoRouter.go (package:go_router/src/router.dart:349:30)
+#16     GoRouterHelper.go (package:go_router/src/misc/extensions.dart:28:25)
+#17     _LoginScreenState.build.<anonymous closure>.<anonymous closure> (package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart:39:21)
+#18     AsyncValueX.whenData.<anonymous closure> (package:riverpod/src/common.dart:640:15)
+#19     AsyncData.map (package:riverpod/src/common.dart:346:16)
+#20     AsyncValueX.whenData (package:riverpod/src/common.dart:636:12)
+#21     _LoginScreenState.build.<anonymous closure> (package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart:30:13)
+#22     ProviderBase.addListener.<anonymous closure> (package:riverpod/src/framework/provider_base.dart:98:41)
+#24     ProviderElementBase._notifyListeners.<anonymous closure> (package:riverpod/src/framework/element.dart:542:28)
+#25     ResultData.map (package:riverpod/src/result.dart:74:16)
+#26     ProviderElementBase._notifyListeners (package:riverpod/src/framework/element.dart:536:14)
+#27     ProviderElementBase.setState (package:riverpod/src/framework/element.dart:140:7)
+#28     StateNotifier.state= (package:state_notifier/state_notifier.dart:227:31)
+#29     AuthController._init (package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart:42:7)
+#30     AuthController.refreshUserFromFirestore (package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart:155:13)
+<asynchronous suspension>
+#31     UserPreferencesNotifier.loadUserPreferences (package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart:93:7)
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and dart:async)
+
+The GoRouteInformationProvider sending notification was: Instance of 'GoRouteInformationProvider'
+════════════════════════════════════════════════════════════════════════════════
 [log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] API Request: GET /api/recipes/saved
-[log] API Request: GET /api/environmental_savings/calculations
-[log] API Request: GET /api/planning/all
-[log] User data refreshed from Firestore
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] 🔄 ApiService: 401 detected for /api/planning/all - initiating token recovery...
-[log] 🔄 Step 1: Attempting normal token refresh...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 ApiService: 401 detected for /api/recipes/saved - initiating token recovery...
-[log] 🔄 Step 1: Attempting normal token refresh...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 ApiService: 401 detected for /api/environmental_savings/calculations - initiating token recovery...
-[log] 🔄 Step 1: Attempting normal token refresh...
+[GoRouter] setting initial location /splash
+[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: false, isPreferencesLoading: false, location: /splash
+[GoRouter] Full paths for routes:
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/units (UnitsScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             units => /units
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
 [log] 🔄 Initiating token refresh...
 [log] 🔄 Refresh token retrieved from secure storage
 [log] 🔍 Sending refresh request to backend...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] API Request: POST /api/auth/refresh
-[log] API Request: POST /api/auth/refresh
+[log] *** Request ***
+[log] uri: http://127.0.0.1:3000/api/auth/refresh
+[log] method: POST
+[log] responseType: ResponseType.json
+[log] followRedirects: true
+[log] persistentConnection: true
+[log] connectTimeout: 0:00:30.000000
+[log] sendTimeout: 0:00:30.000000
+[log] receiveTimeout: 0:00:30.000000
+[log] receiveDataWhenStatusError: true
+[log] extra: {}
+[log] headers:
+[log]  Content-Type: application/json
+[log]  Accept: application/json
+[log] data:
+[log] null
+[log]
+[log]  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MDc2ODMzMiwianRpIjoiOWM1NjMyMmEtOWU2MC00MWEyLTg5ZTAtNmQ5ZWQ2YjM3NDU4IiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJPUTdURnNZcHhBWkJmTnlMc2xvVkpYSW15Um0xIiwibmJmIjoxNzUwNzY4MzMyLCJjc3JmIjoiYmNmM2RjY2ItYjlmMS00M2RiLTgyYTMtN2MyOGQ3YWIyMTg0IiwiZXhwIjoxNzUzMzYwMzMyfQ.VJLb4lCZbvUNhkmmx2zyWoYuR8nwvrwta2BokLyhl9Q
+[log] *** DioException ***:
+[log] uri: http://127.0.0.1:3000/api/auth/refresh
+[log] uri: http://127.0.0.1:3000/api/auth/refresh
+[log] statusCode: 401
+[log] headers:
+[log]  connection: close
+[log]  date: Sun, 29 Jun 2025 18:54:03 GMT
+[log]  access-control-allow-origin: *
+[log]  strict-transport-security: max-age=31536000; includeSubDomains
+[log]  referrer-policy: strict-origin-when-cross-origin
+[log]  content-type: application/json
+[log]  x-xss-protection: 1; mode=block
+[log]  server: Werkzeug/3.1.3 Python/3.11.13
+[log]  content-length: 34
+[log]  x-frame-options: DENY
+[log]  x-content-type-options: nosniff
+[log] Response Text:
+[log] {"error":"Authentication failed"}
+[log] 
+[log]
+[log] 🔄 Refresh token expired - clearing tokens to force re-authentication
 [log] 🗑️ Clearing stored JWT tokens...
-[log] 🗑️ Clearing stored JWT tokens...
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] 🔄 Step 2: Attempting auto-relogin...
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] ✅ JWT tokens cleared from secure storage
-[log] 🔄 Step 2: Attempting auto-relogin...
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] ✅ JWT tokens cleared from secure storage
-[log] 🔄 Step 2: Attempting auto-relogin...
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
+[log] DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log]  permissions-policy: geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), speaker=(), vibrate=(), fullscreen=()
+[log]  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'
 [log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
       The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
       Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
       In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
-[log] API Request: GET /api/environmental_savings/calculations
-[log] API Response: 200 /api/environmental_savings/calculations
-[log] ✅ ApiService: Auto-relogin successful - request retried
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
-[log] API Request: GET /api/recipes/saved
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] API Request: GET /api/planning/all
-[log] API Response: 200 /api/recipes/saved
-[log] ✅ ApiService: Auto-relogin successful - request retried
-[log] API Response: 200 /api/planning/all
-[log] ✅ ApiService: Auto-relogin successful - request retried
-[GoRouter] going to /inventory
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /inventory
-[log] 🌐 Cache invalid or empty, loading fresh data
-[log] 🔄 DEBUG - Starting loadCompleteInventoryFromBackend
-[log] 📡 DEBUG - Calling backend getInventoryComplete
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/inventory/complete
-[log] API Request: GET /api/inventory/complete
-[log] API Response: 200 /api/inventory/complete
-[log] 🔧 DEBUG - Parsing complete inventory data
-[log] 🔍 DEBUG - Ingredients found: 2
-[log] 🔍 DEBUG - Food items found: 0
-[log] 🔍 DEBUG - Processing ingredient: Gnocchi al Forno
-[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Gnocchi al Forno
-[log] ✅ DEBUG - Created stack item: Gnocchi al Forno - 1.0 porciones
-[log] ✅ DEBUG - Created 1 items from ingredient Gnocchi al Forno
-[log] 🔍 DEBUG - Processing ingredient: Pollo en Salsa con Polenta
-[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pollo en Salsa con Polenta
-[log] ✅ DEBUG - Created stack item: Pollo en Salsa con Polenta - 1.0 porciones
-[log] ✅ DEBUG - Created 1 items from ingredient Pollo en Salsa con Polenta
-[log] 🔍 DEBUG - Final items count: 2
-[log] 🔍 DEBUG - Final items: [Gnocchi al Forno (1.0 porciones), Pollo en Salsa con Polenta (1.0 porciones)]
-[log] 🔧 DEBUG - Parsing completed, 2 items created
-[log] ✅ DEBUG - loadCompleteInventoryFromBackend completed successfully
-[log] 📋 Smart loading completed: 2 items synced to UI
-[log] initState: IDs destacados encontrados: 2
-[log] initState: Haciendo scroll al último elemento de la lista
-[log] 📡 DEBUG - Complete inventory response received: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
-[log] 🔍 DEBUG - Raw API response: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
-[log] Intentando hacer scroll al final de 2 elementos
-[log] Usando maxScrollExtent para scroll: 0.0
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-flutter: 🏠 Navigation button tapped: Inicio -> /home
-flutter: 📍 Current path: /inventory
-flutter: 🔄 Scan flow active: false
-flutter: ✅ Navigation completed to: /home
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] API Request: GET /api/planning/all
-[log] API Response: 200 /api/planning/all
-[log] User data refreshed from Firestore
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] User data refreshed from Firestore
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] User data refreshed from Firestore
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] User data refreshed from Firestore
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-Reloaded 1 of 2328 libraries in 2,638ms (compile: 1049 ms, reload: 220 ms, reassemble: 772 ms).
-[GoRouter] going to /scan/add/ingredient
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/add/ingredient
-Reloaded 1 of 2328 libraries in 1,175ms (compile: 565 ms, reload: 229 ms, reassemble: 121 ms).
-Reloaded 1 of 2328 libraries in 378ms (compile: 53 ms, reload: 120 ms, reassemble: 133 ms).
-Reloaded 1 of 2328 libraries in 798ms (compile: 176 ms, reload: 167 ms, reassemble: 175 ms).
-Reloaded 1 of 2328 libraries in 717ms (compile: 103 ms, reload: 250 ms, reassemble: 195 ms).
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
 [log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-Reloaded 7 of 2328 libraries in 1,128ms (compile: 464 ms, reload: 229 ms, reassemble: 205 ms).
-Reloaded 7 of 2328 libraries in 750ms (compile: 177 ms, reload: 184 ms, reassemble: 117 ms).
-[log] Picked 3 images from gallery.
-[log] Attempting navigation to /scan/confirm from ScanItemType.ingredient with 3 images.
-[GoRouter] going to /scan/confirm
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/confirm
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626379 (2025-06-22 16:06:19.000)
-[log]    - iat (issued at): 1750622779 (2025-06-22 15:06:19.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/234cb98c290b4762baf32bd77c7ad56c.jpg?Expires=1751227583&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=lVCAE9sQb3CxRMSZTwZFrLSWYKXp%2FPeE8LGEOKdToeKRAX0RZGO1J7Cjtshizpven7KS2ajhibiORvnoPdZQ9x8LW3geSiOQ1WJ1I%2FhUOITCE7YL%2FpJpJAyydWRb%2FqGdPgX6XZU79tuNBDtyqNC8HZN2%2Fo6SLUeCWJlygTTTPj6hOspYVsDA5F%2BrkTeCTxfuc2b4%2Bg53DO6VynzXwiG2iYPA5npyrjwm801FhuT0esoOIVqohdbm4J9jMyaMekV8qvwhWfU6XTb%2BbuGPtuPF8e9Ik7cdX1sBQYfSC47F%2F4WvH%2BGHSsIUhmhL2YzxR3U4Kzf9HHhlXUPliSaYTbzt4w%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/bc7502f8faef4bce95f6cc9921e450ac.jpg?Expires=1751227585&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gcfhe2Nr8NBSWxnB9PzR8%2BVcnF1WDKISEZeD%2FcETZiRZSP4n2eyiTfWBKNAj%2FqwaTHTPs79KtvVdORXarcg0PE03x5P%2FgpdH1VQa1DiuI1wjEcoXhZiPsAaWP5Pflx5oWH0WOv2PrCXc3YZF1BL66Z6wGcCZbXUTGZ0PjZMaWJJo2Pegu8Ivw%2Fj3iAQGvu1hSOuMp2HAD76jx5TDmASaOG5xFJftxFrSP2BJHA3uuA0P56lr%2B%2BFJKMV8o9rgdGz8kKscLf38LrGagieBNfezrGYO5iWtrMYuFrsiy3X2U6e6%2BXFTy24nnPKVCWorteqojIs6wEAJvg0Tt1guJdNtpA%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/27297f29acee4cb194e568aadd627d19.jpg?Expires=1751227587&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CPQpY44lUwCQe89iz%2BuPtMvG5XI1uoRDhCss%2Fl6IvvFQAss5X%2FvBGyjNcC8Hs%2BPMlz9x7b7LUaVXrSwV1yobj%2FghIdnPb963vKwYFv4JmaKYKb6L8GkUUJ6PGWCSJgMfDCDgR84YJdtAeiOCwaQnKLvmrdctrNcZYGSPmGg5HBGuvrCOD8voTwk0bL6MacXLuWKYH9In38Nm7ykkp7MyG%2FT8jAysBi5dhutzU%2FC%2FBVTSQPwAJwSHu6U8H%2BytDJ8%2FvaPN7O9WoIHkA5ARzZHTJ421bY0Q689nLOJYEkx%2Bz5mSb4ARNkFAUtElxkBjKESfnmKbaATB5eNsssQ6V2OmGQ%3D%3D
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] API Error: 500 /api/recognition/ingredients
-[log] Error Data: {error: unsupported type for timedelta days component: NoneType, error_type: TypeError, traceback: Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 210, in recognize_ingredients
-          expiration_date = calculator_service.calculate_expiration_date(
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/app/src/infrastructure/inventory/inventory_calcularor_impl.py", line 30, in calculate_expiration_date
-          result = added_at + relativedelta(years=time_value)
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/usr/local/lib/python3.11/site-packages/dateutil/relativedelta.py", line 177, in __init__
-          self.years = int(years)
-                       ^^^^^^^^^^
-      TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Exception: Refresh token expired - authentication required
+#0      AuthService.refreshTokens (package:zer0_waste_ai/core/services/auth_service.dart:241:9)
+<asynchronous suspension>
+#1      InventoryService._initializeDio.<anonymous closure> (package:zer0_waste_ai/core/services/inventory_service.dart:62:30)
+<asynchronous suspension>
 
-      During handling of the above exception, another exception occurred:
 
-      Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 218, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=ingredient.get("expiration_time", 7))
-                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      TypeError: unsupported type for timedelta days component: NoneType
-      }
-[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626629 (2025-06-22 16:10:29.000)
-[log]    - iat (issued at): 1750623029 (2025-06-22 15:10:29.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/1279bafdf9e14e159199edfe2f6ba0c2.jpg?Expires=1751227835&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=bNrJCbn3f9MhBOLGm9NmzAn%2BXzMJCstsDtpYHV8OozK%2FyyF%2Bg5G0SV3TxBBTy1%2Fmp6pFSGGKOOQwaD78xQIhzi%2F3trHqkDMSLOft%2F3G2CSLLTS7Trrgk54KHz5z%2B8MT9emLQJSeMEHv6ensT0BJThovyC2Ca7ybWuGummhIVUVFJym4ADojfb66PTNQIAvreUhFZsJsCZlUHIfr7Ygk4pKAh%2FXL9XQGJEbQ%2F2GFOqxuilUcEQR7H9FKyN6z9VK5I2t46aLFmWytva6qLGTdXG1RsDqxu3crxKd26td51OJYQKz8glirzfQCKCk31SnVeZztu%2FX00vqbok6bLLV9SwA%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/17e735e959354a19b40317370dd0f924.jpg?Expires=1751227837&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=E%2BgsNWB9GC4ZdXDAEclsOoCt8%2FNjoztAuDfVV85o3v55XpONW%2Btf6ZVMD0MVWzuhTK8cbxgbE4GE5fNq2W8KXEIBwWiwCMXj7MrR%2FpHeYTQiT18AlsSvvxijM09i%2BgiNWIis%2FrMVfeD2jllNIgjSTM%2BCbv5JLa%2BzJvW%2BNKRUJqgo5W6fEaIc8jkHRgKM%2BWF8q03smNilLHsvYWhoA30ZlgXCwDzAXs2upS6%2FFF%2BoZleaZIIWTpiGfelrl9qhYnbn7FKS%2Bj0iaQJSum8Y1To%2FvePFnrf%2FyPcQd%2FFNUVfhh7QkTbQRxhR2iBEGI3bYHy6Kz5Qdixz9smrfVTvPE0P3xw%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/ca4adbc86f744b62b7f2886dac4ea96c.jpg?Expires=1751227839&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=o6wtX6e22xaXE6rewZ2dccJbAo6SOdSCdWRuD3yVoQWxl7fwu0AfOg18zzxk2A1stWdYRHwKB8jZOJP%2FyurbK57wlUHa5UDbSoOl12ir8nCh1pxqaFceWEKNXk3QMXV9QuptXpzQuyntvJ%2B3HRNKORPGYh%2BIdlqsXA9ifLJc%2BDQW5rzq3p%2F2dJLTYXUJvfsywsQPHq3mFu2mGCz4slGS3xRBx4%2F0Dzx8VmD0OJqqhnGBj%2F1cQi5ydhCj441xQruMWEauyoLSlXiCJj8LLKfZJ4VUCRowV5wn8e8cbik8c7d3f0tZZ7u3t0kD3UMgCHt3Its%2FDcMV4vdjMyKVDPutJw%3D%3D
-[log] API Error: 500 /api/recognition/ingredients
-[log] Error Data: {error: name 'timedelta' is not defined, error_type: NameError, traceback: Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 224, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=7)
-                                         ^^^^^^^^^
-      NameError: name 'timedelta' is not defined
-
-      During handling of the above exception, another exception occurred:
-
-      Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 232, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=7)
-                                         ^^^^^^^^^
-      NameError: name 'timedelta' is not defined
-      }
-[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626779 (2025-06-22 16:12:59.000)
-[log]    - iat (issued at): 1750623179 (2025-06-22 15:12:59.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/a92e07fde4544fbc9c3855ba79885d5b.jpg?Expires=1751227997&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=KkzPWugcHtGHGneJPJHgNID8Bd1jEqQMory2WAwque21fzVnIi6aaN5JpOW38T10xgH0W4aHub0kH%2F6FdgNI5AVC9C8Ew6fH7kEkn0BuyVf%2BWIcZExqPR3orkxFKIBq8ayOGtBuI5yU0Jn8OSLh%2BJcUuDBPH6myA1MID%2BeyjhZGhu6xvpT9PXtcvsCGJbreWJtsaSAeAxVdhNKKa64mS%2BCP0kzuEEsZLA318tHfrOa697kSIPrfDSVh4lV6HSAq85%2FAieQ%2FK342sBgt6tfkxS78fl75qLj2N04axcMS2TVwlW1c%2BaihoCjh2gav3%2FKldzD96zPzIWW7Gvy7hvNYIQw%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/19123d3bb6524efcbe21e216197d21b7.jpg?Expires=1751227999&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gEFBOJCs%2F5DERaXJKC2zIkphcVN2LV4smPS6dZAUTCbN4%2BdkQza7CKxGwNZVC6ZHIoCntfroBHwIwatpBx8%2BYIKTqAnthD8fbVSuaqn8weUuNN0ZH0bG0efUgVeqZRY8pJIUhSywdSXgNshYsAP2cOrLkd15AMth6UlALm7D8cJQc5Sede%2FVmD4jLb8q69tgXY6RZ47WoNc%2FrBE1DxJgaLujDSgV%2BFby4X%2FAteZgXb12eOC9HLojWOnigI5rSMBDE9nXj71x5dqfp0JiaQkQw9NL82i9NpSLO1gQD0Kyj%2FIsRVmrfTv0HNjramobJ4miCl0cjakF8b3XXd4Sq7EYlg%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/7e946a47475048589a953b61bb5f250e.jpg?Expires=1751228003&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=sdocgTDv2F%2BeQzvgvPhv0C96wW5n2%2B3o68NoHyGi61wNXxA9KMgv9heVZnFO4IiPqfuw8m1kPZ4%2BDItdadTFPLGN9jlEt7cIvEMCllWz8AsFU%2F8NIkuRnzYLTcRXcm7Sq85qh3CeclcnbUuJEP8%2BlWxlf9vFG36EKeVdA1HpawWRfXUZPrHk%2FV%2Bkt7Iuv3Het8QG1GSl7yxHtSOah37VSBJwO0egaFxcNSVkhqDaIOIiyTD3Cpng4IAQhKsxITF69ctr9N%2Bgnmd%2Bh4kgAW5IEyau%2BHslB9cIfr0%2F4wSoR67RmEWpreFhk5T198IbdSBTtoEZqrn20OaRLbYasXKLIQ%3D%3D
-[log] API Response: 200 /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Recognition completed successfully!
-[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
-[log]    1. Pescado blanco: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    2. Limones: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    3. Cebolla roja: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    4. Tomate: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    5. Ají limo / Rocoto: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    6. Cilantro: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    7. Sal: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log] ✅ [SIMPLIFIED] Recognition completed!
-[log] 📋 [SIMPLIFIED] Recognition ID: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
-[log] 🎨 [SIMPLIFIED] Images: 0 ready, 7 generating
-[log] 📋 [SIMPLIFIED] Response keys: [allergy_alerts, has_allergens, images_check_url, images_status, ingredients, message, recognition_id]
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🎨 [SIMPLIFIED] Starting image polling for: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔍 [SIMPLIFIED] Checking images for: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔍 [SIMPLIFIED] Checking images for recognition: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] API Request: GET /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] API Response: 200 /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] 📊 [SIMPLIFIED] Images status response received
-[log] 🖼️ [SIMPLIFIED] Updated 7 ingredients
-[log]    1. Pescado blanco:
-[log]       📊 image_status: ready
-[log]    2. Limones:
-[log]       📊 image_status: ready
-[log]    3. Cebolla roja:
-[log]       📊 image_status: ready
-[log]    4. Tomate:
-[log]       📊 image_status: ready
-[log]    5. Ají limo / Rocoto:
-[log]       📊 image_status: ready
-[log]    6. Cilantro:
-[log]       📊 image_status: ready
-[log]    7. Sal:
-[log]       📊 image_status: ready
-[log] ✅ [SIMPLIFIED] 7/7 images ready
-[log] 🎨 [SIMPLIFIED] Images: 7 ready, 0 generating
-[log] 📊 [SIMPLIFIED] Images status: ready
-[log] 🔍 [SIMPLIFIED] Updated ingredients:
-[log]    1. Pescado blanco:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    2. Limones:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    3. Cebolla roja:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    4. Tomate:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    5. Ají limo / Rocoto:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    6. Cilantro:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    7. Sal:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log] ✅ [SIMPLIFIED] All images ready! Stopping polling.
-[log] 🔍 [SIMPLIFIED] Response keys: [images_generating, images_ready, images_status, ingredients, last_updated, message, progress_percentage, recognition_id, recognition_type, total_ingredients, total_items]
-[log] 🔍 [SIMPLIFIED] Full response: {images_generating: 0, images_ready: 7, images_status: ready, ingredients: [{added_at: 2025-06-22T20:13:37.906929+00:00, description: Cubos pequeños de pescado blanco fresco, de color rosado pálido, con una textura firme y ligeramente translúcida., expiration_date: 2025-06-24T20:13:37.906929+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D, image_status: ready, name: Pescado blanco, quantity: 300, storage_type: Refrigerado, time_unit: Días, tips: Mantener en el refrigerador en un recipiente hermético, idealmente sobre una cama de hielo para conservar su frescura., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Limones verdes, de tamaño mediano, con cáscara lisa y brillante. Se observan varios cortados por la mitad, listos para exprimir., expiration_date: 2025-07-06T20:13:37.906929+00:00, expiration_time: 14, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D, image_status: ready, name: Limones, quantity: 10, storage_type: Ambiente, time_unit: Días, tips: Guardar en un lugar fresco y seco. Para prolongar su vida útil, se pueden refrigerar en una bolsa plástica perforada., type_unit: unidades}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Cebolla roja finamente picada en brunoise, de color morado intenso y textura crujiente., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D, image_status: ready, name: Cebolla roja, quantity: 150, storage_type: Ambiente, time_unit: Días, tips: Almacenar en un lugar fresco y oscuro. Una vez picada, es mejor usarla pronto o guardarla en un recipiente hermético en el refrigerador por no más de 2-3 días., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Tomates rojos, cortados en cubos pequeños (brunoise), de pulpa jugosa y color vibrante., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D, image_status: ready, name: Tomate, quantity: 200, storage_type: Ambiente, time_unit: Días, tips: Conservar a temperatura ambiente lejos de la luz solar directa. Si están muy maduros, refrigerar en una bolsa de papel., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Trozos pequeños de ají limo o rocoto, de color verde y rojo, picados finamente. Se aprecian semillas y venas, indicando su picor., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D, image_status: ready, name: Ají limo / Rocoto, quantity: 50, storage_type: Refrigerado, time_unit: Días, tips: Guardar en un recipiente hermético en el refrigerador. Para un almacenamiento más prolongado, se pueden congelar picados., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Manojo de cilantro fresco, con hojas verdes vibrantes y tallos tiernos., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D, image_status: ready, name: Cilantro, quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Guardar las hojas y tallos en un recipiente con un poco de agua en la base, cubiertos con una bolsa plástica en el refrigerador., type_unit: manojo}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Sal fina en un pequeño recipiente., expiration_date: 2026-06-22T20:13:37.906929+00:00, expiration_time: 365, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D, image_status: ready, name: Sal, quantity: 1, storage_type: Ambiente, time_unit: Días, tips: Mantener en un recipiente hermético en un lugar seco para evitar que se apelmace., type_unit: pizca}], last_updated: 2025-06-22T20:13:38, message: ✅ Todas las imágenes están listas (ingredients), progress_percentage: 100, recognition_id: e4150bea-8bc8-4064-b125-869b3d88c48f, recognition_type: ingredients, total_ingredients: 7, total_items: 7}
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
+LOGS BACKEND PYTHON:
+2025-06-29 13:54:02 🚨 [AUTH ERROR] Token expirado - JTI: 99d07a83-b5c4-4281-a1e3-f24d445eefd9
+2025-06-29 13:54:02 🚨 [AUTH ERROR] User: OQ7TFsYpxAZBfNyLsloVJXImyRm1
+2025-06-29 13:54:02 🚨 [AUTH ERROR] Expiró en: 1750770132
+2025-06-29 13:54:02 172.18.0.1 - - [29/Jun/2025 18:54:02] "GET /api/inventory HTTP/1.1" 401 -
+2025-06-29 13:54:03 172.18.0.1 - - [29/Jun/2025 18:54:03] "POST /api/auth/refresh HTTP/1.1" 401 -

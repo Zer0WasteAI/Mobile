@@ -25,7 +25,7 @@ class ProfileScreen extends ConsumerWidget {
     final isLoading = profileState.isLoading;
     final isBackendSynced = profileState.isBackendSynced;
 
-    final userPrefs = ref.watch(userPreferencesProvider);
+    final userPrefs = ref.watch(userPreferencesModelProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
