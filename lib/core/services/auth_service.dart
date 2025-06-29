@@ -203,7 +203,7 @@ class AuthService {
       final refreshToken = await getRefreshToken();
       if (refreshToken == null) {
         log('❌ No refresh token available for refresh');
-        return null;
+        throw Exception('No refresh token available');
       }
 
       log('🔍 Sending refresh request to backend...');
@@ -230,10 +230,18 @@ class AuthService {
         return newAccessToken;
       }
       log('❌ Token refresh failed - invalid response code: ${response.statusCode}');
-      return null;
+      throw Exception('Token refresh failed with status: ${response.statusCode}');
     } catch (e) {
       log('❌ Token refresh error: $e');
-      return null;
+      
+      // If it's a 401 error, clear tokens to force re-authentication
+      if (e is DioException && e.response?.statusCode == 401) {
+        log('🔄 Refresh token expired - clearing tokens to force re-authentication');
+        await clearTokens();
+        throw Exception('Refresh token expired - authentication required');
+      }
+      
+      throw Exception('Token refresh failed: ${e.toString()}');
     }
   }
 

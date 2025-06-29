@@ -82,8 +82,13 @@ class AuthInterceptor extends Interceptor {
       // Avoid an infinite loop if the refresh token request itself fails with 401
       if (err.requestOptions.path == _refreshEndpointPath) {
         log(
-          '💥 AuthInterceptor: CRITICAL - Refresh token request failed with 401. Attempting auto-relogin...',
+          '💥 AuthInterceptor: CRITICAL - Refresh token request failed with 401. Clearing tokens and attempting auto-relogin...',
         );
+
+        // Clear tokens since refresh failed
+        await _secureStorage.delete(key: _accessTokenKey);
+        await _secureStorage.delete(key: _refreshTokenKey);
+        log('🔄 Cleared expired tokens from storage');
 
         // Try auto-relogin as last resort
         if (!_isPerformingAutoRelogin) {
@@ -97,8 +102,11 @@ class AuthInterceptor extends Interceptor {
         }
 
         log(
-          '❌ AuthInterceptor: Auto-relogin also failed - user logout required',
+          '❌ AuthInterceptor: Auto-relogin also failed - forcing logout',
         );
+        
+        // Force logout to clear all authentication state
+        await _forceLogout();
         return handler.next(err);
       }
 
@@ -118,20 +126,27 @@ class AuthInterceptor extends Interceptor {
       } catch (refreshError) {
         log('❌ AuthInterceptor: Token refresh failed: $refreshError');
 
-        // Step 2: Try auto-relogin if refresh failed
-        if (!_isPerformingAutoRelogin) {
-          log('🔄 Step 2: Attempting auto-relogin...');
-          final reloginSuccess = await _performAutoRelogin();
+        // Check if the refresh error indicates authentication failure
+        if (refreshError.toString().contains('authentication required') ||
+            refreshError.toString().contains('Refresh token expired')) {
+          log('🔄 Step 2: Refresh token expired - attempting auto-relogin...');
+          
+          if (!_isPerformingAutoRelogin) {
+            final reloginSuccess = await _performAutoRelogin();
 
-          if (reloginSuccess) {
-            log(
-              '✅ AuthInterceptor: Auto-relogin successful - retrying original request...',
-            );
-            return await _retryOriginalRequest(err, handler);
+            if (reloginSuccess) {
+              log(
+                '✅ AuthInterceptor: Auto-relogin successful - retrying original request...',
+              );
+              return await _retryOriginalRequest(err, handler);
+            }
           }
         }
 
-        log('❌ AuthInterceptor: Both refresh and auto-relogin failed');
+        log('❌ AuthInterceptor: Both refresh and auto-relogin failed - forcing logout');
+        
+        // Force logout to clear all authentication state
+        await _forceLogout();
         return handler.next(err);
       }
     }
@@ -158,26 +173,50 @@ class AuthInterceptor extends Interceptor {
 
       log('👤 AuthInterceptor: Firebase user found: ${firebaseUser.email}');
 
-      // Get fresh Firebase ID token
+      // Get fresh Firebase ID token with force refresh
       log('🔍 Getting fresh Firebase ID token...');
-      final firebaseIdToken = await firebaseUser.getIdToken(
-        true,
-      ); // force refresh
+      String? firebaseIdToken;
+      
+      try {
+        firebaseIdToken = await firebaseUser.getIdToken(true); // force refresh
+      } catch (tokenError) {
+        log('❌ AuthInterceptor: Failed to get Firebase ID token: $tokenError');
+        
+        // Try to reload the user first, then get token again
+        try {
+          await firebaseUser.reload();
+          firebaseIdToken = await firebaseUser.getIdToken(true);
+          log('✅ AuthInterceptor: Firebase user reloaded and token obtained');
+        } catch (reloadError) {
+          log('❌ AuthInterceptor: Failed to reload Firebase user: $reloadError');
+          return false;
+        }
+      }
 
       if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
-        log('❌ AuthInterceptor: Failed to get Firebase ID token');
+        log('❌ AuthInterceptor: Firebase ID token is null or empty');
         return false;
       }
 
       // Exchange Firebase token for backend JWT tokens
       log('🔄 Exchanging Firebase token for backend tokens...');
-      // ignore: unused_local_variable
-      final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
-
-      log('✅ AuthInterceptor: Auto-relogin successful! New tokens obtained');
-      return true;
+      try {
+        final backendResponse = await _apiService.firebaseSignIn(firebaseIdToken);
+        
+        if (backendResponse['access_token'] != null && 
+            backendResponse['refresh_token'] != null) {
+          log('✅ AuthInterceptor: Auto-relogin successful! New tokens obtained');
+          return true;
+        } else {
+          log('❌ AuthInterceptor: Backend response missing required tokens');
+          return false;
+        }
+      } catch (backendError) {
+        log('❌ AuthInterceptor: Backend token exchange failed: $backendError');
+        return false;
+      }
     } catch (e) {
-      log('❌ AuthInterceptor: Auto-relogin failed: $e');
+      log('❌ AuthInterceptor: Auto-relogin failed with unexpected error: $e');
       return false;
     } finally {
       _isPerformingAutoRelogin = false;
@@ -213,6 +252,28 @@ class AuthInterceptor extends Interceptor {
     } catch (retryError) {
       log('❌ AuthInterceptor: Retry of original request failed: $retryError');
       return handler.next(err);
+    }
+  }
+
+  /// Force logout to clear all authentication state
+  Future<void> _forceLogout() async {
+    try {
+      log('🔒 AuthInterceptor: Forcing logout to clear authentication state...');
+      
+      // Clear tokens from secure storage
+      await _secureStorage.delete(key: _accessTokenKey);
+      await _secureStorage.delete(key: _refreshTokenKey);
+      
+      // Attempt to sign out through auth repository (best effort)
+      try {
+        await _authRepository.signOut();
+      } catch (e) {
+        log('⚠️ AuthInterceptor: Auth repository signOut failed (non-critical): $e');
+      }
+      
+      log('✅ AuthInterceptor: Force logout completed');
+    } catch (e) {
+      log('❌ AuthInterceptor: Error during force logout: $e');
     }
   }
 }

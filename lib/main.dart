@@ -68,8 +68,16 @@ class _MyAppState extends ConsumerState<MyApp> {
       } else {
         // Si no hay usuario o se cerró sesión, resetear el estado
         ref.read(userPreferencesProvider.notifier).reset();
+        
+        // Log when user becomes unauthenticated for debugging
+        if (previous?.value != null && next.value == null) {
+          log('🔄 User became unauthenticated - auth state changed to null');
+        }
       }
     });
+
+    // Initialize authentication error handling
+    _initializeAuthErrorHandling();
 
     // Verificar estado actual de autenticación para inicialización inicial
     final authState = ref.read(authStateProvider);
@@ -79,6 +87,23 @@ class _MyAppState extends ConsumerState<MyApp> {
       // 🚀 PROACTIVE: Load inventory immediately at app start
       _loadInventoryProactively();
     }
+  }
+
+  /// Initialize global authentication error handling
+  void _initializeAuthErrorHandling() {
+    // Listen for auth errors that might occur during API calls
+    ref.listenManual(authStateProvider, (previous, next) {
+      // If user was authenticated and becomes null unexpectedly, it might be due to auth error
+      if (previous?.value != null && 
+          next.value == null && 
+          next.hasError == false) {
+        log('⚠️ User authentication state changed unexpectedly - this might indicate a token issue');
+        
+        // The router will automatically redirect to login due to auth state change
+        // No additional action needed here as the auth interceptor and error handler
+        // will manage the authentication flow
+      }
+    });
   }
 
   /// 🚀 Load inventory proactively in background for better UX
