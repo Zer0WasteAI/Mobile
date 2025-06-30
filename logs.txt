@@ -1,12 +1,13 @@
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           50.3s
+Xcode build done.                                           46.0s
 [ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-Connecting to VM Service at ws://127.0.0.1:62145/A14duPonyrY=/ws
+Connecting to VM Service at ws://127.0.0.1:49864/_wmWwtdim9E=/ws
 Connected to the VM Service.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
 flutter: Hive initialized successfully
-[GoRouter] setting initial location /splash
+[GoRouter] setting initial location /
 [GoRouter] Full paths for routes:
+           ├─/
            ├─/splash (SplashScreen)
            ├─/onboarding (OnboardingScreen)
            ├─/login (LoginScreen)
@@ -27,6 +28,8 @@ flutter: Hive initialized successfully
            ├─/recipes/ai-generation (AIRecipeGenerationScreen)
            ├─/recipes/all (AllRecipesScreen)
            ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
            ├─/impact (ImpactScreen)
            ├─/planner (PlannerScreen)
            ├─/meal-planning (MealPlanningScreen)
@@ -66,6 +69,8 @@ flutter: Hive initialized successfully
              AIRecipeGenerationScreen => /recipes/ai-generation
              all-recipes => /recipes/all
              recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
              impact => /impact
              planner => /planner
              mealPlanning => /meal-planning
@@ -83,26 +88,37 @@ flutter: Hive initialized successfully
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
-[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /splash
+[log] 🔄 Router redirect - isAuthLoading: true, isLoggedIn: false, hasCompletedPreferences: false, location: /
+[log] 🔄 Router redirect - isAuthLoading: true, isLoggedIn: false, hasCompletedPreferences: false, location: /splash
+[GoRouter] redirecting to RouteMatchList#7d333(uri: /splash, matches: [RouteMatch#f6e3c(route: GoRoute#27778(name: "splash", path: "/splash"))])
 [GoRouter] Using MaterialApp configuration
 [log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log] 🛑 Stopped proactive token refresh mechanism
-[log] 🔄 Starting proactive token refresh mechanism...
 [GoRouter] going to /login
-[log] 🔄 Router redirect - isLoggedIn: false, hasCompletedPreferences: false, location: /login
+[log] 🔄 Router redirect - isAuthLoading: true, isLoggedIn: false, hasCompletedPreferences: false, location: /login
+[log] 🔄 Router redirect - isAuthLoading: true, isLoggedIn: false, hasCompletedPreferences: false, location: /splash
+[GoRouter] redirecting to RouteMatchList#7d333(uri: /splash, matches: [RouteMatch#f6e3c(route: GoRoute#27778(name: "splash", path: "/splash"))])
 [log] ✅ User document found in Firestore
-[log] 🔧 cookingLevel: intermediate
+[log] 🔧 cookingLevel: advanced
 [log] 🔧 allergies: [Pescado, Soya]
 [log] 🔧 specialDiets: [Sin lácteos]
-[log] 🔧 preferredFoodTypes: [Alemana, Tailandesa]
-[log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
-[log] 🛑 Stopped proactive token refresh mechanism
-[log] 🔄 Starting proactive token refresh mechanism...
-[GoRouter] setting initial location /splash
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /splash
-[log] 🔄 Redirecting to home - user has completed preferences
+[log] 🔧 preferredFoodTypes: [China, Coreana]
+[log] 🔧 Built UserPreferencesModel - cookingLevel: advanced
+[log] 🚀 Proactively loading inventory for better UX...
+[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
+[log] 🌐 Cache invalid or empty, loading fresh data
+flutter: 🔧 UserProfileProvider: Auth state changed
+flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafael P
+flutter: 🔧 UserProfileProvider: Setting user - Rafael P
+flutter: 🔧 Preferences loaded:
+[log] 🚀 First load - using fast endpoint
+[log] 🔄 DEBUG - Starting loadInventoryFromBackend
+[log] 📡 DEBUG - Calling backend getInventory
+[GoRouter] setting initial location /
 [log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+flutter:   - cookingLevel: advanced
+flutter:   - allergies: [Pescado, Soya]
 [GoRouter] Full paths for routes:
+           ├─/
            ├─/splash (SplashScreen)
            ├─/onboarding (OnboardingScreen)
            ├─/login (LoginScreen)
@@ -123,6 +139,8 @@ flutter: Hive initialized successfully
            ├─/recipes/ai-generation (AIRecipeGenerationScreen)
            ├─/recipes/all (AllRecipesScreen)
            ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
            ├─/impact (ImpactScreen)
            ├─/planner (PlannerScreen)
            ├─/meal-planning (MealPlanningScreen)
@@ -162,6 +180,8 @@ flutter: Hive initialized successfully
              AIRecipeGenerationScreen => /recipes/ai-generation
              all-recipes => /recipes/all
              recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
              impact => /impact
              planner => /planner
              mealPlanning => /meal-planning
@@ -179,46 +199,35 @@ flutter: Hive initialized successfully
              terms_and_conditions => /terms-and-conditions
              about_app => /about-app
              support => /support
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[GoRouter] Using MaterialApp configuration
-[GoRouter] redirecting to RouteMatchList#6f479(uri: /home, matches: [ShellRouteMatch#5c12d(route: ShellRoute#b54b3(navigatorKey: [LabeledGlobalKey<NavigatorState>#05ebe]))])
-flutter: 🔧 UserProfileProvider: Auth state changed
-flutter: 🔧 UserProfileProvider: Auth state updated with user - Rafa Pres
-flutter: 🔧 UserProfileProvider: Setting user - Rafa Pres
-flutter: 🔧 Preferences loaded:
-flutter:   - cookingLevel: intermediate
-flutter:   - allergies: [Pescado, Soya]
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: true, location: /
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: true, location: /home
 flutter:   - specialDiets: [Sin lácteos]
-flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
-[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] User data refreshed from Firestore
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-[log] 🏠 Home: Datos de usuario refrescados automáticamente
+flutter:   - preferredFoodTypes: [China, Coreana]
+[GoRouter] redirecting to RouteMatchList#2bae2(uri: /home, matches: [ShellRouteMatch#aeefc(route: ShellRoute#565cf(navigatorKey: [LabeledGlobalKey<NavigatorState>#7cff0]))])
+[GoRouter] Using MaterialApp configuration
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
+[log] 🔑 ApiService: JWT token injected for /api/inventory
+[log] API Request: GET /api/inventory
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] API Request: GET /api/recipes/saved
-[log] API Request: GET /api/environmental_savings/calculations
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
 [log] API Request: GET /api/planning/all
+[log] API Request: GET /api/environmental_savings/calculations
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
+[log] API Request: GET /api/recipes/saved
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
-[log] 🔄 ApiService: 401 detected for /api/planning/all - initiating token recovery...
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] 🔄 ApiService: 401 detected for /api/inventory - initiating token recovery...
 [log] 🔄 Step 1: Attempting normal token refresh...
 [log] 🔄 Initiating token refresh...
 [log] 🔄 ApiService: 401 detected for /api/recipes/saved - initiating token recovery...
@@ -227,6 +236,9 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔄 ApiService: 401 detected for /api/environmental_savings/calculations - initiating token recovery...
 [log] 🔄 Step 1: Attempting normal token refresh...
 [log] 🔄 Initiating token refresh...
+[log] 🔄 ApiService: 401 detected for /api/planning/all - initiating token recovery...
+[log] 🔄 Step 1: Attempting normal token refresh...
+[log] 🔄 Initiating token refresh...
 [log] 🔄 Refresh token retrieved from secure storage
 [log] 🔍 Sending refresh request to backend...
 [log] 🔄 Refresh token retrieved from secure storage
@@ -236,9 +248,22 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] API Request: POST /api/auth/refresh
 [log] API Request: POST /api/auth/refresh
 [log] API Request: POST /api/auth/refresh
+[log] 🔄 Refresh token retrieved from secure storage
+[log] 🔍 Sending refresh request to backend...
+[log] API Request: POST /api/auth/refresh
 [log] 🗑️ Clearing stored JWT tokens...
 [log] 🗑️ Clearing stored JWT tokens...
 [log] 🗑️ Clearing stored JWT tokens...
+[log] 🗑️ Clearing stored JWT tokens...
+[log] ✅ JWT tokens cleared from secure storage
+[log] 🔄 Step 2: Attempting auto-relogin...
+[log] 🔄 ApiService: Starting auto-relogin process...
+[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
+[log] 🔍 Getting fresh Firebase ID token...
+[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
 [log] ✅ JWT tokens cleared from secure storage
 [log] 🔄 Step 2: Attempting auto-relogin...
 [log] 🔄 ApiService: Starting auto-relogin process...
@@ -269,51 +294,51 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] 🔄 Exchanging Firebase token for backend tokens...
 [log] 🔍 Initiating Firebase token exchange with backend...
 [log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token length: 1154 characters
 [log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
 [log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1154_CHARS]
 [log] 🔄 Exchanging Firebase token for backend tokens...
 [log] 🔍 Initiating Firebase token exchange with backend...
 [log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token length: 1154 characters
 [log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
 [log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1154_CHARS]
 [log] 🔄 Exchanging Firebase token for backend tokens...
 [log] 🔍 Initiating Firebase token exchange with backend...
 [log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
+[log] 🔧 Token length: 1154 characters
 [log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626155 (2025-06-22 16:02:35.000)
-[log]    - iat (issued at): 1750622555 (2025-06-22 15:02:35.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
 [log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1154_CHARS]
 [log] API Request: POST /api/auth/firebase-signin
 [log] API Request: POST /api/auth/firebase-signin
+[log] API Request: POST /api/auth/firebase-signin
+[log] ⚠️ Could not decode JWT header/payload: FormatException: Invalid character (at character 709)
+      ...XByZXMzOEBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19====
+                                                                                ^
+[log] ⚠️ Could not decode JWT header/payload: FormatException: Invalid character (at character 709)
+      ...XByZXMzOEBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19====
+                                                                                ^
+[log] ⚠️ Could not decode JWT header/payload: FormatException: Invalid character (at character 709)
+      ...XByZXMzOEBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19====
+                                                                                ^
+[log] 🔄 Exchanging Firebase token for backend tokens...
+[log] 🔍 Initiating Firebase token exchange with backend...
+[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
+[log] 🔧 Token length: 1154 characters
+[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
+[log] 🔧 JWT Header: {"alg":"RS256","kid":"877485002f05be0267ef459f5b513533b5c58c12","typ":"JWT"}
+[log] 🌐 Sending request to: /api/auth/firebase-signin
+[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1154_CHARS]
+[log] API Request: POST /api/auth/firebase-signin
+[log] ⚠️ Could not decode JWT header/payload: FormatException: Invalid character (at character 709)
+      ...XByZXMzOEBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19====
+                                                                                ^
 [log] API Response: 200 /api/auth/firebase-signin
 [log] ✅ Backend response received with JWT tokens
 [log] 📊 Token expires in: null seconds
@@ -321,79 +346,444 @@ flutter:   - preferredFoodTypes: [Alemana, Tailandesa]
 [log] ✅ JWT tokens stored successfully in secure storage
 [log] 🎉 Firebase token exchange completed successfully
 [log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] API Request: GET /api/planning/all
+[log] API Response: 200 /api/planning/all
+[log] ✅ ApiService: Auto-relogin successful - request retried
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
 [log] API Request: GET /api/environmental_savings/calculations
-[log] API Response: 200 /api/environmental_savings/calculations
-[log] ✅ ApiService: Auto-relogin successful - request retried
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
 [log] ✅ JWT tokens stored successfully in secure storage
 [log] 🎉 Firebase token exchange completed successfully
 [log] ✅ ApiService: Auto-relogin successful! New tokens obtained
 [log] 🔑 Access token retrieved from secure storage
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/recipes/saved
 [log] API Request: GET /api/recipes/saved
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/planning/all
-[log] API Request: GET /api/planning/all
+[log] API Response: 200 /api/environmental_savings/calculations
+[log] ✅ ApiService: Auto-relogin successful - request retried
 [log] API Response: 200 /api/recipes/saved
 [log] ✅ ApiService: Auto-relogin successful - request retried
-[log] API Response: 200 /api/planning/all
-[log] ✅ ApiService: Auto-relogin successful - request retried
-[GoRouter] going to /inventory
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /inventory
-[log] 🌐 Cache invalid or empty, loading fresh data
-[log] 🔄 DEBUG - Starting loadCompleteInventoryFromBackend
-[log] 📡 DEBUG - Calling backend getInventoryComplete
+[log] API Response: 200 /api/auth/firebase-signin
+[log] ✅ Backend response received with JWT tokens
+[log] 📊 Token expires in: null seconds
+[log] 🔐 Storing JWT tokens securely...
+[log] ✅ JWT tokens stored successfully in secure storage
+[log] 🎉 Firebase token exchange completed successfully
+[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/inventory/complete
-[log] API Request: GET /api/inventory/complete
-[log] API Response: 200 /api/inventory/complete
-[log] 🔧 DEBUG - Parsing complete inventory data
-[log] 🔍 DEBUG - Ingredients found: 2
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/inventory
+[log] API Request: GET /api/inventory
+[log] API Response: 200 /api/inventory
+[log] ✅ ApiService: Auto-relogin successful - request retried
+[log] 🔧 DEBUG - Parsing inventory data
+[log] 🔍 DEBUG - Ingredients found: 18
 [log] 🔍 DEBUG - Food items found: 0
+[log] 🔍 DEBUG - Processing ingredient: Ají amarillo
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Ají amarillo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 📡 DEBUG - Backend response received: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
+[log] 🔍 DEBUG - Raw API response: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají amarillo - 1.0 unidad
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají amarillo - 1.0 unidad
+[log] ✅ DEBUG - Created 2 items from ingredient Ají amarillo
+[log] 🔍 DEBUG - Processing ingredient: Ají Limo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají Limo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají Limo - 1.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají Limo
+[log] 🔍 DEBUG - Processing ingredient: Ají rojo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají rojo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají rojo - 2.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají rojo
+[log] 🔍 DEBUG - Processing ingredient: Ají rojo fresco
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají rojo fresco
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Ají rojo fresco - 1.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají rojo fresco
+[log] 🔍 DEBUG - Processing ingredient: Ají verde picado
+[log] 🔍 DEBUG - Processing 3 stacks for ingredient: Ají verde picado
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 1.3 taza
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 2.5 taza
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 0.25 taza
+[log] ✅ DEBUG - Created 3 items from ingredient Ají verde picado
+[log] 🔍 DEBUG - Processing ingredient: Cebolla roja
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cebolla roja
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Cebolla roja - 150.0 tazón
+[log] ✅ DEBUG - Created 1 items from ingredient Cebolla roja
+[log] 🔍 DEBUG - Processing ingredient: Cebolla roja picada
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cebolla roja picada
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Cebolla roja picada - 3.0 taza
+[log] ✅ DEBUG - Created 1 items from ingredient Cebolla roja picada
+[log] 🔍 DEBUG - Processing ingredient: Cilantro
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Cilantro
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro - 50.0 manojos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro - 2.0 manojos
+[log] ✅ DEBUG - Created 2 items from ingredient Cilantro
+[log] 🔍 DEBUG - Processing ingredient: Cilantro fresco
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cilantro fresco
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro fresco - 1.0 manojo
+[log] ✅ DEBUG - Created 1 items from ingredient Cilantro fresco
 [log] 🔍 DEBUG - Processing ingredient: Gnocchi al Forno
 [log] 🔍 DEBUG - Processing 1 stacks for ingredient: Gnocchi al Forno
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T19:38:58
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T19:38:58
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 19:38:58.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T19:38:58.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T19:38:58.000Z
 [log] ✅ DEBUG - Created stack item: Gnocchi al Forno - 1.0 porciones
 [log] ✅ DEBUG - Created 1 items from ingredient Gnocchi al Forno
-[log] 🔍 DEBUG - Processing ingredient: Pollo en Salsa con Polenta
-[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pollo en Salsa con Polenta
-[log] ✅ DEBUG - Created stack item: Pollo en Salsa con Polenta - 1.0 porciones
-[log] ✅ DEBUG - Created 1 items from ingredient Pollo en Salsa con Polenta
-[log] 🔍 DEBUG - Final items count: 2
-[log] 🔍 DEBUG - Final items: [Gnocchi al Forno (1.0 porciones), Pollo en Salsa con Polenta (1.0 porciones)]
-[log] 🔧 DEBUG - Parsing completed, 2 items created
-[log] ✅ DEBUG - loadCompleteInventoryFromBackend completed successfully
-[log] 📋 Smart loading completed: 2 items synced to UI
-[log] initState: IDs destacados encontrados: 2
-[log] initState: Haciendo scroll al último elemento de la lista
-[log] 📡 DEBUG - Complete inventory response received: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
-[log] 🔍 DEBUG - Raw API response: {enriched_with: [environmental_impact, utilization_ideas], food_items: [], ingredients: [{environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 2.5}, sustainability_message: Prioriza ingredientes locales y de temporada para reducir la huella de transporte. Considera alternativas de cocción más eficientes energéticamente., water_footprint: {description: agua, unit: l, value: 1500}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones, utilization_ideas: [{description: Si los gnocchi están recién hechos y aún no se han horneado, se pueden hervir y servir inmediatamente con una clásica salsa huancaína, un plato peruano reconfortante y delicioso., title: Gnocchi Frescos a la Huancaína, type: preparación}, {description: Antes de hornear, separa los gnocchi crudos en porciones individuales en bandejas para hornear cubiertas con papel pergamino. Una vez congelados, transfiérelos a bolsas herméticas para su conservación. Esto permite descongelar y hornear solo la cantidad necesaria., title: Congelación de Gnocchi Crudos en Porciones, type: conservación}, {description: Los gnocchi sobrantes, incluso si ya fueron horneados, se pueden saltear en una sartén con un poco de aceite, pasta de ají amarillo, cebolla, pimiento y otras verduras de temporada. Esto les da una nueva textura y sabor, evitando el recalentamiento excesivo., title: Gnocchi Salteados con Ají Amarillo y Verduras, type: preparación}, {description: Los gnocchi que hayan quedado un poco blandos por un recalentamiento previo pueden ser una excelente adición a un caldo de gallina o pollo casero. Se añaden al final de la cocción del caldo para que absorban el sabor y aporten sustento, similar a los fideos en una sopa., title: Gnocchi en Caldo de Gallina o Pollo, type: reciclaje}]}, {environmental_impact: {carbon_footprint: {description: CO2, unit: kg, value: 12.5}, sustainability_message: Priorizar el consumo de pollo de granjas con prácticas sostenibles y reducir el desperdicio de alimentos para mitigar el impacto., water_footprint: {description: agua, unit: l, value: 4300}}, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pollo_en_salsa_con_polenta.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SB6kzm3BiWghwrJiR%2F6Fkx4LsCFB38Ed1wcJsP4vYtH3XzIib3DYQtM8rEoVlqF251gGAE8fscx7SmboXnu2QsvbUzV7uTZwEME3NPSZ37rljn7lxe6kyWRrLvY8TMhc%2BbwHXb7crv0rfpjw5W%2B%2BubC93pvJGij%2BjlgpT6e3JzbzDHNewrCXXaL2vMHOwZpsqHBJCL0SjxqNyKlzpMVtXBTy0XlJafQzVo9xX4ZAhue%2Bxs5aSZ3gXVathVwWXmoyUI%2B%2FXS0VGemZEOHvfBIbgTZV%2FUL%2BEj55AqSiKrFPHg4S4AYnHiuMZk0viU1BMRwFlRf7puhz%2BBfN7ExEgkGHNA%3D%3D, name: Pollo en Salsa con Polenta, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-25T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Se puede recalentar suavemente en sartén o microondas. Si la polenta está muy espesa, añadir un poco de caldo o agua., type_unit: porciones, utilization_ideas: [{description: Divide el pollo en salsa con polenta en recipientes aptos para congelador. Etiqueta con la fecha. Ideal para comidas rápidas y evitar desperdicio., title: Congelar en porciones individuales, type: conservación}, {description: Desmenuza el pollo en salsa. Sofríe cebolla, ajo y ají amarillo. Agrega arroz, caldo y el pollo desmenuzado. Cocina hasta que el arroz esté tierno. La polenta sobrante se puede integrar al final para dar cremosidad., title: Arroz con Pollo y Salsa, type: preparación}, {description: Desmenuza el pollo en salsa. Si hay polenta, puedes mezclarla con el pollo para darle cuerpo al relleno. Usa esta mezcla para rellenar empanadas horneadas o fritas, o para tamales peruanos., title: Relleno para Empanadas o Tamales, type: preparación}, {description: Si solo queda salsa y restos de pollo, caliéntalos con agua o caldo de vegetales. Cuela y tendrás un caldo de pollo con sabor. Puedes añadir hierbas como culantro o perejil para más aroma., title: Caldo de Pollo Reforzado, type: aprovechamiento}]}], total_ingredients: 2}
-[log] Intentando hacer scroll al final de 2 elementos
-[log] Usando maxScrollExtent para scroll: 0.0
-[GoRouter] going to /home
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /home
-flutter: 🏠 Navigation button tapped: Inicio -> /home
-flutter: 📍 Current path: /inventory
-flutter: 🔄 Scan flow active: false
-flutter: ✅ Navigation completed to: /home
+[log] 🔍 DEBUG - Processing ingredient: Limón
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Limón
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Limón - 14.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Limón
+[log] 🔍 DEBUG - Processing ingredient: Limones
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Limones
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Limones - 16.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Limones
+[log] 🔍 DEBUG - Processing ingredient: Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco (para ceviche) - 200.0 gramos
+[log] ✅ DEBUG - Created 1 items from ingredient Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Processing ingredient: Pescado Blanco Crudo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pescado Blanco Crudo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Pescado Blanco Crudo - 0.5 kilos
+[log] ✅ DEBUG - Created 1 items from ingredient Pescado Blanco Crudo
+[log] 🔍 DEBUG - Processing ingredient: Pescado blanco en cubos
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Pescado blanco en cubos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco en cubos - 250.0 gramos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco en cubos - 302.5 gramos
+[log] ✅ DEBUG - Created 2 items from ingredient Pescado blanco en cubos
+[log] 🔍 DEBUG - Processing ingredient: Sal
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Sal
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Sal - 20.0 cucharadita
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Sal - 1.0 cucharadita
+[log] ✅ DEBUG - Created 2 items from ingredient Sal
+[log] 🔍 DEBUG - Processing ingredient: Tomate
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Tomate
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Tomate - 2.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Tomate
+[log] 🔍 DEBUG - Processing ingredient: Tomate picado
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Tomate picado
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Tomate picado - 2.0 taza
+[log] ✅ DEBUG - Created 1 items from ingredient Tomate picado
+[log] 🔍 DEBUG - Final items count: 24
+[log] 🔧 DEBUG - Parsing completed, 24 items created
+[log] ✅ DEBUG - loadInventoryFromBackend completed successfully
+[log] ✅ Proactive inventory loading completed
+[log] 🔍 DEBUG - Final items: [Ají amarillo (1.0 unidad), Ají amarillo (1.0 unidad), Ají Limo (1.0 unidad), Ají rojo (2.0 unidad), Ají rojo fresco (1.0 unidad), Ají verde picado (1.3 taza), Ají verde picado (2.5 taza), Ají verde picado (0.25 taza), Cebolla roja (150.0 tazón), Cebolla roja picada (3.0 taza), Cilantro (50.0 manojos), Cilantro (2.0 manojos), Cilantro fresco (1.0 manojo), Gnocchi al Forno (1.0 porciones), Limón (14.0 unidades), Limones (16.0 unidades), Pescado blanco (para ceviche) (200.0 gramos), Pescado Blanco Crudo (0.5 kilos), Pescado blanco en cubos (250.0 gramos), Pescado blanco en cubos (302.5 gramos), Sal (20.0 cucharadita), Sal (1.0 cucharadita), Tomate (2.0 unidades), Tomate picado (2.0 taza)]
+[GoRouter] going to /profile
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: true, location: /profile
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Sin lácteos]
+flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
+[GoRouter] setting initial location /
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: true, location: /
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: true, location: /home
+[GoRouter] Full paths for routes:
+           ├─/
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/units (UnitsScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             units => /units
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
+[GoRouter] redirecting to RouteMatchList#60a4e(uri: /home, matches: [ShellRouteMatch#4f840(route: ShellRoute#aa330(navigatorKey: [LabeledGlobalKey<NavigatorState>#7cff0]))])
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Sin lácteos]
+flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Sin lácteos]
+flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+The following assertion was thrown while finalizing the widget tree:
+Multiple widgets used the same GlobalKey.
+The key [GlobalObjectKey int#5f8c7] was used by multiple widgets. The parents of those widgets were:
+- FractionalTranslation(renderObject: RenderFractionalTranslation#57255 relayoutBoundary=up4 NEEDS-PAINT)
+- FractionalTranslation(renderObject: RenderFractionalTranslation#afa3b relayoutBoundary=up4)
+A GlobalKey can only be specified on one widget at a time in the widget tree.
+
+When the exception was thrown, this was the stack:
+#0      BuildOwner._debugVerifyGlobalKeyReservation.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:flutter/src/widgets/framework.dart:3220:13)
+#1      _LinkedHashMapMixin.forEach (dart:_compact_hash:764:13)
+#2      BuildOwner._debugVerifyGlobalKeyReservation.<anonymous closure>.<anonymous closure> (package:flutter/src/widgets/framework.dart:3164:20)
+#3      _LinkedHashMapMixin.forEach (dart:_compact_hash:764:13)
+#4      BuildOwner._debugVerifyGlobalKeyReservation.<anonymous closure> (package:flutter/src/widgets/framework.dart:3158:36)
+#5      BuildOwner._debugVerifyGlobalKeyReservation (package:flutter/src/widgets/framework.dart:3228:6)
+#6      BuildOwner.finalizeTree.<anonymous closure> (package:flutter/src/widgets/framework.dart:3291:11)
+#7      BuildOwner.finalizeTree (package:flutter/src/widgets/framework.dart:3378:8)
+#8      WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1247:19)
+#9      RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#10     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+#11     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+#12     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+#13     _invoke (dart:ui/hooks.dart:331:13)
+#14     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+#15     _drawFrame (dart:ui/hooks.dart:303:31)
+════════════════════════════════════════════════════════════════════════════════
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Sin lácteos]
+flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Sin lácteos]
+flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+[log] API Request: GET /api/planning/all
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/planning/all
 [log] API Request: GET /api/planning/all
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
 [log] API Response: 200 /api/planning/all
+[log] API Response: 200 /api/planning/all
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+Multiple widgets used the same GlobalKey.
+════════════════════════════════════════════════════════════════════════════════
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] User data refreshed from Firestore
@@ -402,454 +792,106 @@ flutter: ✅ Navigation completed to: /home
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
-Reloaded 1 of 2328 libraries in 2,638ms (compile: 1049 ms, reload: 220 ms, reassemble: 772 ms).
-[GoRouter] going to /scan/add/ingredient
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/add/ingredient
-Reloaded 1 of 2328 libraries in 1,175ms (compile: 565 ms, reload: 229 ms, reassemble: 121 ms).
-Reloaded 1 of 2328 libraries in 378ms (compile: 53 ms, reload: 120 ms, reassemble: 133 ms).
-Reloaded 1 of 2328 libraries in 798ms (compile: 176 ms, reload: 167 ms, reassemble: 175 ms).
-Reloaded 1 of 2328 libraries in 717ms (compile: 103 ms, reload: 250 ms, reassemble: 195 ms).
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
 [log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-Reloaded 7 of 2328 libraries in 1,128ms (compile: 464 ms, reload: 229 ms, reassemble: 205 ms).
-Reloaded 7 of 2328 libraries in 750ms (compile: 177 ms, reload: 184 ms, reassemble: 117 ms).
-[log] Picked 3 images from gallery.
-[log] Attempting navigation to /scan/confirm from ScanItemType.ingredient with 3 images.
-[GoRouter] going to /scan/confirm
-[log] 🔄 Router redirect - isLoggedIn: true, hasCompletedPreferences: true, location: /scan/confirm
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[GoRouter] An extra with complex data type _Map<String, Object> is provided without a codec. Consider provide a codec to GoRouter to prevent extra being dropped during serialization.
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626379 (2025-06-22 16:06:19.000)
-[log]    - iat (issued at): 1750622779 (2025-06-22 15:06:19.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/234cb98c290b4762baf32bd77c7ad56c.jpg?Expires=1751227583&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=lVCAE9sQb3CxRMSZTwZFrLSWYKXp%2FPeE8LGEOKdToeKRAX0RZGO1J7Cjtshizpven7KS2ajhibiORvnoPdZQ9x8LW3geSiOQ1WJ1I%2FhUOITCE7YL%2FpJpJAyydWRb%2FqGdPgX6XZU79tuNBDtyqNC8HZN2%2Fo6SLUeCWJlygTTTPj6hOspYVsDA5F%2BrkTeCTxfuc2b4%2Bg53DO6VynzXwiG2iYPA5npyrjwm801FhuT0esoOIVqohdbm4J9jMyaMekV8qvwhWfU6XTb%2BbuGPtuPF8e9Ik7cdX1sBQYfSC47F%2F4WvH%2BGHSsIUhmhL2YzxR3U4Kzf9HHhlXUPliSaYTbzt4w%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/bc7502f8faef4bce95f6cc9921e450ac.jpg?Expires=1751227585&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gcfhe2Nr8NBSWxnB9PzR8%2BVcnF1WDKISEZeD%2FcETZiRZSP4n2eyiTfWBKNAj%2FqwaTHTPs79KtvVdORXarcg0PE03x5P%2FgpdH1VQa1DiuI1wjEcoXhZiPsAaWP5Pflx5oWH0WOv2PrCXc3YZF1BL66Z6wGcCZbXUTGZ0PjZMaWJJo2Pegu8Ivw%2Fj3iAQGvu1hSOuMp2HAD76jx5TDmASaOG5xFJftxFrSP2BJHA3uuA0P56lr%2B%2BFJKMV8o9rgdGz8kKscLf38LrGagieBNfezrGYO5iWtrMYuFrsiy3X2U6e6%2BXFTy24nnPKVCWorteqojIs6wEAJvg0Tt1guJdNtpA%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/27297f29acee4cb194e568aadd627d19.jpg?Expires=1751227587&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CPQpY44lUwCQe89iz%2BuPtMvG5XI1uoRDhCss%2Fl6IvvFQAss5X%2FvBGyjNcC8Hs%2BPMlz9x7b7LUaVXrSwV1yobj%2FghIdnPb963vKwYFv4JmaKYKb6L8GkUUJ6PGWCSJgMfDCDgR84YJdtAeiOCwaQnKLvmrdctrNcZYGSPmGg5HBGuvrCOD8voTwk0bL6MacXLuWKYH9In38Nm7ykkp7MyG%2FT8jAysBi5dhutzU%2FC%2FBVTSQPwAJwSHu6U8H%2BytDJ8%2FvaPN7O9WoIHkA5ARzZHTJ421bY0Q689nLOJYEkx%2Bz5mSb4ARNkFAUtElxkBjKESfnmKbaATB5eNsssQ6V2OmGQ%3D%3D
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] API Error: 500 /api/recognition/ingredients
-[log] Error Data: {error: unsupported type for timedelta days component: NoneType, error_type: TypeError, traceback: Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 210, in recognize_ingredients
-          expiration_date = calculator_service.calculate_expiration_date(
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/app/src/infrastructure/inventory/inventory_calcularor_impl.py", line 30, in calculate_expiration_date
-          result = added_at + relativedelta(years=time_value)
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/usr/local/lib/python3.11/site-packages/dateutil/relativedelta.py", line 177, in __init__
-          self.years = int(years)
-                       ^^^^^^^^^^
-      TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
-
-      During handling of the above exception, another exception occurred:
-
-      Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 218, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=ingredient.get("expiration_time", 7))
-                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      TypeError: unsupported type for timedelta days component: NoneType
-      }
-[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] ✅ Profile updated successfully in Firebase & Firestore
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: setState() called after dispose(): _EditProfileModalContentState#2daa5(lifecycle state: defunct, not mounted)
+This error happens if you call setState() on a State object for a widget that no longer appears in the widget tree (e.g., whose parent widget no longer includes the widget in its build). This error can occur when code calls setState() from a timer or an animation callback.
+The preferred solution is to cancel the timer or stop listening to the animation in the dispose() callback. Another solution is to check the "mounted" property of this object before calling setState() to ensure the object is still in the tree.
+This error might indicate a memory leak if setState() is being called because another object is retaining a reference to this State object after it has been removed from the tree. To avoid memory leaks, consider breaking the reference to this object during dispose().
+#0      State.setState.<anonymous closure> (pac<…>
+[GoRouter] setting initial location /
+[GoRouter] Full paths for routes:
+           ├─/
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/units (UnitsScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             units => /units
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: false, location: /
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: false, location: /home
+[log] 🔄 Redirecting to onboarding - user needs to complete preferences
+[log] 🔄 Router redirect - isAuthLoading: false, isLoggedIn: true, hasCompletedPreferences: false, location: /allergy-selector
+[GoRouter] redirecting to RouteMatchList#5d7e3(uri: /home, matches: [ShellRouteMatch#9d0c4(route: ShellRoute#2cb4b(navigatorKey: [LabeledGlobalKey<NavigatorState>#7cff0]))])
+[GoRouter] redirecting to RouteMatchList#bf9c3(uri: /allergy-selector, matches: [RouteMatch#0a971(route: GoRoute#46012(name: "allergy_selector", path: "/allergy-selector"))])
 [log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626629 (2025-06-22 16:10:29.000)
-[log]    - iat (issued at): 1750623029 (2025-06-22 15:10:29.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/1279bafdf9e14e159199edfe2f6ba0c2.jpg?Expires=1751227835&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=bNrJCbn3f9MhBOLGm9NmzAn%2BXzMJCstsDtpYHV8OozK%2FyyF%2Bg5G0SV3TxBBTy1%2Fmp6pFSGGKOOQwaD78xQIhzi%2F3trHqkDMSLOft%2F3G2CSLLTS7Trrgk54KHz5z%2B8MT9emLQJSeMEHv6ensT0BJThovyC2Ca7ybWuGummhIVUVFJym4ADojfb66PTNQIAvreUhFZsJsCZlUHIfr7Ygk4pKAh%2FXL9XQGJEbQ%2F2GFOqxuilUcEQR7H9FKyN6z9VK5I2t46aLFmWytva6qLGTdXG1RsDqxu3crxKd26td51OJYQKz8glirzfQCKCk31SnVeZztu%2FX00vqbok6bLLV9SwA%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/17e735e959354a19b40317370dd0f924.jpg?Expires=1751227837&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=E%2BgsNWB9GC4ZdXDAEclsOoCt8%2FNjoztAuDfVV85o3v55XpONW%2Btf6ZVMD0MVWzuhTK8cbxgbE4GE5fNq2W8KXEIBwWiwCMXj7MrR%2FpHeYTQiT18AlsSvvxijM09i%2BgiNWIis%2FrMVfeD2jllNIgjSTM%2BCbv5JLa%2BzJvW%2BNKRUJqgo5W6fEaIc8jkHRgKM%2BWF8q03smNilLHsvYWhoA30ZlgXCwDzAXs2upS6%2FFF%2BoZleaZIIWTpiGfelrl9qhYnbn7FKS%2Bj0iaQJSum8Y1To%2FvePFnrf%2FyPcQd%2FFNUVfhh7QkTbQRxhR2iBEGI3bYHy6Kz5Qdixz9smrfVTvPE0P3xw%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/ca4adbc86f744b62b7f2886dac4ea96c.jpg?Expires=1751227839&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=o6wtX6e22xaXE6rewZ2dccJbAo6SOdSCdWRuD3yVoQWxl7fwu0AfOg18zzxk2A1stWdYRHwKB8jZOJP%2FyurbK57wlUHa5UDbSoOl12ir8nCh1pxqaFceWEKNXk3QMXV9QuptXpzQuyntvJ%2B3HRNKORPGYh%2BIdlqsXA9ifLJc%2BDQW5rzq3p%2F2dJLTYXUJvfsywsQPHq3mFu2mGCz4slGS3xRBx4%2F0Dzx8VmD0OJqqhnGBj%2F1cQi5ydhCj441xQruMWEauyoLSlXiCJj8LLKfZJ4VUCRowV5wn8e8cbik8c7d3f0tZZ7u3t0kD3UMgCHt3Its%2FDcMV4vdjMyKVDPutJw%3D%3D
-[log] API Error: 500 /api/recognition/ingredients
-[log] Error Data: {error: name 'timedelta' is not defined, error_type: NameError, traceback: Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 224, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=7)
-                                         ^^^^^^^^^
-      NameError: name 'timedelta' is not defined
-
-      During handling of the above exception, another exception occurred:
-
-      Traceback (most recent call last):
-        File "/app/src/interface/controllers/recognition_controller.py", line 232, in recognize_ingredients
-          fallback_date = current_time + timedelta(days=7)
-                                         ^^^^^^^^^
-      NameError: name 'timedelta' is not defined
-      }
-[log] ❌ [SIMPLIFIED] Recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ [SIMPLIFIED] Recognition error: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🚀 Starting ingredient analysis with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 🚀 [SIMPLIFIED] Starting recognition with 3 images
-[log] 📤 [SIMPLIFIED] Uploading image 1/3
-[log] ⚠️ No access token found in secure storage
-[log] ⚠️ ApiService: No access token found for /api/image_management/upload_image
-[log] 🔄 ApiService: Starting auto-relogin process...
-[log] 👤 ApiService: Firebase user found: rafapres38@gmail.com
-[log] 🔍 Getting fresh Firebase ID token...
-[log] 🔄 Exchanging Firebase token for backend tokens...
-[log] 🔍 Initiating Firebase token exchange with backend...
-[log] 🔧 Firebase token has 3 parts (should be 3 for JWT)
-[log] 🔧 Token length: 1156 characters
-[log] 🔧 Token starts with: eyJhbGciOiJSUzI1NiIs...
-[log] 🔧 JWT Header: {"alg":"RS256","kid":"3bf05391396913a78ec80f427033863640610adc","typ":"JWT"}
-[log] 🔧 JWT Payload key info:
-[log]    - iss (issuer): https://securetoken.google.com/zer0wasteai-91408
-[log]    - aud (audience): zer0wasteai-91408
-[log]    - sub (user ID): OQ7TFsYpxAZBfNyLsloVJXImyRm1
-[log]    - exp (expires): 1750626779 (2025-06-22 16:12:59.000)
-[log]    - iat (issued at): 1750623179 (2025-06-22 15:12:59.000)
-[log]    - firebase: {identities: {google.com: [109241956407646687703], email: [rafapres38@gmail.com]}, sign_in_provider: google.com}
-[log] 🌐 Sending request to: /api/auth/firebase-signin
-[log] 🔑 Authorization header: Bearer [FIREBASE_TOKEN_1156_CHARS]
-[log] API Request: POST /api/auth/firebase-signin
-[log] API Response: 200 /api/auth/firebase-signin
-[log] ✅ Backend response received with JWT tokens
-[log] 📊 Token expires in: null seconds
-[log] 🔐 Storing JWT tokens securely...
-[log] ✅ JWT tokens stored successfully in secure storage
-[log] 🎉 Firebase token exchange completed successfully
-[log] ✅ ApiService: Auto-relogin successful! New tokens obtained
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: Auto-relogin successful, JWT token injected
-[log] API Request: POST /api/image_management/upload_image
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 2/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 1 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/a92e07fde4544fbc9c3855ba79885d5b.jpg?Expires=1751227997&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=KkzPWugcHtGHGneJPJHgNID8Bd1jEqQMory2WAwque21fzVnIi6aaN5JpOW38T10xgH0W4aHub0kH%2F6FdgNI5AVC9C8Ew6fH7kEkn0BuyVf%2BWIcZExqPR3orkxFKIBq8ayOGtBuI5yU0Jn8OSLh%2BJcUuDBPH6myA1MID%2BeyjhZGhu6xvpT9PXtcvsCGJbreWJtsaSAeAxVdhNKKa64mS%2BCP0kzuEEsZLA318tHfrOa697kSIPrfDSVh4lV6HSAq85%2FAieQ%2FK342sBgt6tfkxS78fl75qLj2N04axcMS2TVwlW1c%2BaihoCjh2gav3%2FKldzD96zPzIWW7Gvy7hvNYIQw%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 📤 [SIMPLIFIED] Uploading image 3/3
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/image_management/upload_image
-[log] API Request: POST /api/image_management/upload_image
-[log] ✅ [SIMPLIFIED] Image 2 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/19123d3bb6524efcbe21e216197d21b7.jpg?Expires=1751227999&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=gEFBOJCs%2F5DERaXJKC2zIkphcVN2LV4smPS6dZAUTCbN4%2BdkQza7CKxGwNZVC6ZHIoCntfroBHwIwatpBx8%2BYIKTqAnthD8fbVSuaqn8weUuNN0ZH0bG0efUgVeqZRY8pJIUhSywdSXgNshYsAP2cOrLkd15AMth6UlALm7D8cJQc5Sede%2FVmD4jLb8q69tgXY6RZ47WoNc%2FrBE1DxJgaLujDSgV%2BFby4X%2FAteZgXb12eOC9HLojWOnigI5rSMBDE9nXj71x5dqfp0JiaQkQw9NL82i9NpSLO1gQD0Kyj%2FIsRVmrfTv0HNjramobJ4miCl0cjakF8b3XXd4Sq7EYlg%3D%3D
-[log] API Response: 201 /api/image_management/upload_image
-[log] 🔄 [SIMPLIFIED] Starting recognition with 3 URLs...
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/ingredients
-[log] API Request: POST /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Image 3 uploaded: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/uploads/OQ7TFsYpxAZBfNyLsloVJXImyRm1/ingredient/7e946a47475048589a953b61bb5f250e.jpg?Expires=1751228003&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=sdocgTDv2F%2BeQzvgvPhv0C96wW5n2%2B3o68NoHyGi61wNXxA9KMgv9heVZnFO4IiPqfuw8m1kPZ4%2BDItdadTFPLGN9jlEt7cIvEMCllWz8AsFU%2F8NIkuRnzYLTcRXcm7Sq85qh3CeclcnbUuJEP8%2BlWxlf9vFG36EKeVdA1HpawWRfXUZPrHk%2FV%2Bkt7Iuv3Het8QG1GSl7yxHtSOah37VSBJwO0egaFxcNSVkhqDaIOIiyTD3Cpng4IAQhKsxITF69ctr9N%2Bgnmd%2Bh4kgAW5IEyau%2BHslB9cIfr0%2F4wSoR67RmEWpreFhk5T198IbdSBTtoEZqrn20OaRLbYasXKLIQ%3D%3D
-[log] API Response: 200 /api/recognition/ingredients
-[log] ✅ [SIMPLIFIED] Recognition completed successfully!
-[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
-[log]    1. Pescado blanco: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    2. Limones: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    3. Cebolla roja: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    4. Tomate: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    5. Ají limo / Rocoto: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    6. Cilantro: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log]    7. Sal: https://via.placeholder.com/150x150/f0f0f0/666666?text=Generando... (status: generating)
-[log] ✅ [SIMPLIFIED] Recognition completed!
-[log] 📋 [SIMPLIFIED] Recognition ID: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🖼️ [SIMPLIFIED] Found 7 ingredients
-[log] 🎨 [SIMPLIFIED] Images: 0 ready, 7 generating
-[log] 📋 [SIMPLIFIED] Response keys: [allergy_alerts, has_allergens, images_check_url, images_status, ingredients, message, recognition_id]
-[log] ❌ Error in ingredient analysis: Exception: Exception: Simplified ingredient recognition failed: Exception: Simplified recognition error: DioException [bad response]: This exception was thrown because the response has a status code of 500 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 500 has the following meaning: "Server error - the server failed to fulfil an apparently valid request"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] 🎨 [SIMPLIFIED] Starting image polling for: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔍 [SIMPLIFIED] Checking images for: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔍 [SIMPLIFIED] Checking images for recognition: e4150bea-8bc8-4064-b125-869b3d88c48f
-[log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] API Request: GET /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] API Response: 200 /api/recognition/recognition/e4150bea-8bc8-4064-b125-869b3d88c48f/images
-[log] 📊 [SIMPLIFIED] Images status response received
-[log] 🖼️ [SIMPLIFIED] Updated 7 ingredients
-[log]    1. Pescado blanco:
-[log]       📊 image_status: ready
-[log]    2. Limones:
-[log]       📊 image_status: ready
-[log]    3. Cebolla roja:
-[log]       📊 image_status: ready
-[log]    4. Tomate:
-[log]       📊 image_status: ready
-[log]    5. Ají limo / Rocoto:
-[log]       📊 image_status: ready
-[log]    6. Cilantro:
-[log]       📊 image_status: ready
-[log]    7. Sal:
-[log]       📊 image_status: ready
-[log] ✅ [SIMPLIFIED] 7/7 images ready
-[log] 🎨 [SIMPLIFIED] Images: 7 ready, 0 generating
-[log] 📊 [SIMPLIFIED] Images status: ready
-[log] 🔍 [SIMPLIFIED] Updated ingredients:
-[log]    1. Pescado blanco:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    2. Limones:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    3. Cebolla roja:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    4. Tomate:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    5. Ají limo / Rocoto:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    6. Cilantro:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log]    7. Sal:
-[log]       📊 imageStatus: ready
-[log]       🔗 hasImage: true
-[log] ✅ [SIMPLIFIED] All images ready! Stopping polling.
-[log] 🔍 [SIMPLIFIED] Response keys: [images_generating, images_ready, images_status, ingredients, last_updated, message, progress_percentage, recognition_id, recognition_type, total_ingredients, total_items]
-[log] 🔍 [SIMPLIFIED] Full response: {images_generating: 0, images_ready: 7, images_status: ready, ingredients: [{added_at: 2025-06-22T20:13:37.906929+00:00, description: Cubos pequeños de pescado blanco fresco, de color rosado pálido, con una textura firme y ligeramente translúcida., expiration_date: 2025-06-24T20:13:37.906929+00:00, expiration_time: 2, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D, image_status: ready, name: Pescado blanco, quantity: 300, storage_type: Refrigerado, time_unit: Días, tips: Mantener en el refrigerador en un recipiente hermético, idealmente sobre una cama de hielo para conservar su frescura., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Limones verdes, de tamaño mediano, con cáscara lisa y brillante. Se observan varios cortados por la mitad, listos para exprimir., expiration_date: 2025-07-06T20:13:37.906929+00:00, expiration_time: 14, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D, image_status: ready, name: Limones, quantity: 10, storage_type: Ambiente, time_unit: Días, tips: Guardar en un lugar fresco y seco. Para prolongar su vida útil, se pueden refrigerar en una bolsa plástica perforada., type_unit: unidades}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Cebolla roja finamente picada en brunoise, de color morado intenso y textura crujiente., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D, image_status: ready, name: Cebolla roja, quantity: 150, storage_type: Ambiente, time_unit: Días, tips: Almacenar en un lugar fresco y oscuro. Una vez picada, es mejor usarla pronto o guardarla en un recipiente hermético en el refrigerador por no más de 2-3 días., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Tomates rojos, cortados en cubos pequeños (brunoise), de pulpa jugosa y color vibrante., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D, image_status: ready, name: Tomate, quantity: 200, storage_type: Ambiente, time_unit: Días, tips: Conservar a temperatura ambiente lejos de la luz solar directa. Si están muy maduros, refrigerar en una bolsa de papel., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Trozos pequeños de ají limo o rocoto, de color verde y rojo, picados finamente. Se aprecian semillas y venas, indicando su picor., expiration_date: 2025-06-29T20:13:37.906929+00:00, expiration_time: 7, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D, image_status: ready, name: Ají limo / Rocoto, quantity: 50, storage_type: Refrigerado, time_unit: Días, tips: Guardar en un recipiente hermético en el refrigerador. Para un almacenamiento más prolongado, se pueden congelar picados., type_unit: gramos}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Manojo de cilantro fresco, con hojas verdes vibrantes y tallos tiernos., expiration_date: 2025-06-27T20:13:37.906929+00:00, expiration_time: 5, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D, image_status: ready, name: Cilantro, quantity: 1, storage_type: Refrigerado, time_unit: Días, tips: Guardar las hojas y tallos en un recipiente con un poco de agua en la base, cubiertos con una bolsa plástica en el refrigerador., type_unit: manojo}, {added_at: 2025-06-22T20:13:37.906929+00:00, description: Sal fina en un pequeño recipiente., expiration_date: 2026-06-22T20:13:37.906929+00:00, expiration_time: 365, image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D, image_status: ready, name: Sal, quantity: 1, storage_type: Ambiente, time_unit: Días, tips: Mantener en un recipiente hermético en un lugar seco para evitar que se apelmace., type_unit: pizca}], last_updated: 2025-06-22T20:13:38, message: ✅ Todas las imágenes están listas (ingredients), progress_percentage: 100, recognition_id: e4150bea-8bc8-4064-b125-869b3d88c48f, recognition_type: ingredients, total_ingredients: 7, total_items: 7}
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
-[log]       📷 image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco.jpg?Expires=1751228018&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=MJy4vhqViAJLFBWgICfeJEn2frVG41k0SQS8GDSd1LA%2BMVsRp1ZEEkuXG0oicIj%2F4Iov0k5nfgxxkRxmhEU0wIpFyeSFbQtet3OhbbDYBStYwtuzqIeaCv9mcyB4Wxj%2F13zcBSOGZK%2FLZZeGjPZ8%2Fi8F6UnVFhKsKa15%2FaYLl1Zq2n94LaEQ8wqWKYDRk7j8mc0R1PEN1R6D4u1pb8bMgpN2pxkVmnZtxlA7aZSGQZnF0umrfjXQihBkDcPWYNJyL9p%2BOVe3oUVxrXQdh6n1ZLQpGnGyp9KKoit3GRm9bh0CCKuztJ1XK37ebuUlgrwWc9fn5WUvOdGLtKQ2JS1UIw%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=DaZLJxHYrgFaufWmELV8gNJFyXexRkUMp0NuquD%2F8VlfweYg9YPzviqoy8lfozdc%2F%2BKZh0VrsMfJuoakqVzOGCwK6KuNOrZRngy2nIvCNRw%2Bt1PdaEP0TEIXwyYY6Nu9VT5273zQQUWUKqufAs3yY95WkFT7dMdJQfnYkQ4NZwnyRrqx15jkjGtd8ycfIdEKcuf2ryI6aGZe32BqLD%2FUqhB9aVl%2BOZiYezfDGlbLxIa9OHG0N%2FquJYNHXMZ6tFDgXKYqgnkDEBDj%2BqcoKueKb31RuigI3rx1LLdUufHIs9Dj0hMg0bjUPyug7GpEHriomKYH8PqUYnKcR7pccZ6yag%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=VYE83qHVZTqEwVXGPHCrAdmfYthTIZeU4vPzQV%2F8oWyOF4C9vhbJtisGUPsZR0sySRAyL9FaG6oyebkOJZTROBCAVwygg7eBDqEOZbT92r4Jm%2FIwTZcRgfUX%2BRY92pQkZJmpB9UHDWD5X7KL6kKU7OnQZQ2RsNROj0rbhD06cIW8kwVCU6taIWlQcfh%2F52AUVUiOdBwcp8IAcoXNfC7Jw2OZtObTwbN%2FtllUOLYBWxvap4hQ9Vl2Qscoj%2FpPRk4spfNAn4AhIHhEF9sMGpLl%2BoQAgSW8igMv%2FvqEn2NqnUE3MdvBe4LCvm6YwYQAAX6f%2F4B%2B5gt9fdg95CDo2FhuQw%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751228019&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=CY3JKbqnA4Ff1ztW501LWmSDBv9cjFzatInMjUPTySnHONVHVIPlfAalRdm6ZX40VX3uECuRqZIQJsBoiEXAh9pfyhZUFi985exWuadNX2YX0ppMuY0b%2BkNgH0Nmqb1KRk12A7fHFSLSDEKOigMww8Au22tilPS3b49I9Ue0Vr7lohuA15H0dAq3Q4Ff6CPFvjoRcdvYasfpmrBzyOkOXQLku0OQmADX3m67wDRVGPM5fFijLze6Uw1N%2FNOc%2BiOgyJWwbEuD9qhIqIMAY3juDRaxc0DsVTeR8nV0rTlZs9psjL92lxxwj4uNFM%2FAcg%2BYlvYVhPb9Vw%2FxoGhr9T3RHA%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo_rocoto.jpg?Expires=1751228032&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UhEkA9DskOK5i8LDP4frITAVPKElykbY78HUn9xur6HSz1%2BfqDLSCwT%2BHIVdqo3OACbmIfv2S%2Fr6alNbVJZRc3B7ItlkwVk2ddfjowWVYShYx7wCNWYi3jZo6Ocn3LIkPaacZAVkuMvxSNMgNozrIryyftmgn314pJ9L40zbNzBKeiTa8ycuYWrvznKpDKg%2FNBA5pXxwov1NgPG1V58K%2F133Bt94oK8%2BtfDK47bMDcv0NwE8E3ImigPOD1rHDmneQCuEi6Yp17GLK1p1aWYPw0v1zDRmSJtUyz8PPOYiI7Ap7Oibd%2F8umggWOaRyffQZfMEREgAbFZBgaCboarLFiA%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=TQzrdYFsBgIlS7jCn6udeP%2BmfL9otIQynvOC%2BwSEuOdKhbH%2Byk0Cbz7ScLOkZZ0vX5ru2uc7udw4%2FWrEzf1R0hfppsMGCgGkeC0MfGWoPR417uSZ0QfOjWh5M%2FJGCxjCWG3PRi%2BKqsH8xWqvBR95fLhqENeIYAU7ySQ52jvuS6rwEEJXnllxOT2obDZW1VDCAoaxC8qGFj6W1I3WWqCHJ4RYUAnfJXAwdHgdQpfcqUbdCt2PcJ8dPXGMWtb3c8KJPXGnBz0xoWN1WDHQMVSpOBUJ7WyklJLQH9%2B4TS3BcMZRG64YuI1sIfWk5pUU0Fa44GNZ1jgMbVCt7OLSJab%2F1A%3D%3D
-[log]       📷 imagePath: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751228020&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=HgnqP5%2BYvJwZLUboQu6KlMQIqcdf6iG%2FOILZiFD1YqdSYWvmZXUwMfP%2BeLKrHX4bgfTNZ6LtJAdYf3rVsidVl%2B7xn6SaiDIzn%2BPZAzFCrYAvDWjfzmPK3Z%2Fk3sqkL0qyi%2Bsg3uBwDXC5GrBm%2Fo6LE8H30gqbqjTl8GtXC5TFnSlGZoEG5cojZuzlOc%2F4alE0UOO5RJybOi4B%2F9KqRcHxqx79IRotyUU9bs%2F6YdiBVK7AN2kXxIhO6%2BIJ4UkXfPiMm8TFg5jfYpLYk85Z7VjvtFDAjCUr4KRJGeX1XbIR21ewaqBkdSsW1zpbaxKsjSxItM2SVOtRwPCiQf2O8BDiYg%3D%3D
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] 🔄 Refresh token retrieved from secure storage
-[log] 🔍 Sending refresh request to backend...
-[log] API Request: POST /api/auth/refresh
-[log] 🗑️ Clearing stored JWT tokens...
-[log] ✅ JWT tokens cleared from secure storage
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Token refresh error: DioException [bad response]: This exception was thrown because the response has a status code of 401 and RequestOptions.validateStatus was configured to throw for this status code.
-      The status code of 401 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
-      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
-[log] 🔍 SecureTokenService: Checking for valid tokens...
-[log] ✅ SecureTokenService: Valid tokens found
-[log] ⚠️ Access token is expired - refresh needed
-[log] 🔍 SecureTokenService: Checking if tokens need refresh...
-[log] ⚠️ No expiration time found - refresh recommended
-[log] 🔄 Proactively refreshing tokens...
-[log] 🔄 AuthRepository: Starting token refresh process...
-[log] 🔄 Initiating token refresh...
-[log] ⚠️ No refresh token found in secure storage
-[log] ❌ No refresh token available for refresh
-[log] ❌ Token refresh failed - no new access token received
-[log] ❌ AuthRepository: Token refresh failed - Exception: Failed to refresh tokens - no new access token received
-[log] ❌ Proactive token refresh failed: Exception: Failed to refresh tokens: Exception: Failed to refresh tokens - no new access token received
-[log] User data refreshed from Firestore
-[log] ✅ Auto-relogin successful after refresh failure
+[log] 🏠 Home: Datos de usuario refrescados automáticamente

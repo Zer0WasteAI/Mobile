@@ -28,6 +28,43 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
     final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
     final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
     final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
+    final authState = ref.watch(authControllerProvider);
+
+    // Load current special diets when entering the screen from profile
+    if (fromProfile && authState.hasValue) {
+      final user = authState.value;
+      if (user != null) {
+        final userDiets = user.prefs.specialDietItems.isNotEmpty
+            ? user.prefs.specialDietItems.map((item) => item['name'] as String).toList()
+            : user.prefs.specialDiets;
+        
+        // Always load when coming from profile, reset first to ensure clean state
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Clear current selections first
+          final currentDiets = List.from(selectedDiets);
+          for (final diet in currentDiets) {
+            notifier.toggleDiet(diet, predefinedDietsAsyncValue.value ?? []);
+          }
+          
+          // Then add user's saved diets
+          final availableDiets = predefinedDietsAsyncValue.value ?? [];
+          for (final dietName in userDiets) {
+            // Find matching predefined diet or create custom one
+            final predefinedDiet = availableDiets.where((d) => d.name == dietName).firstOrNull;
+            if (predefinedDiet != null) {
+              notifier.toggleDiet(predefinedDiet, availableDiets);
+            } else {
+              // Custom diet
+              notifier.addCustomDiet(SpecialDiet(
+                name: dietName,
+                emoji: '🍴',
+                isCustom: true,
+              ));
+            }
+          }
+        });
+      }
+    }
 
     // Use Theme colors
     final theme = Theme.of(context);
@@ -60,7 +97,17 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
         // --- Build the main Scaffold --- START
         return Scaffold(
           backgroundColor: backgroundColor,
-          appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+          appBar:
+              fromProfile
+                  ? AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    leading: IconButton(
+                      icon: Icon(Icons.close, color: colorScheme.onSurface),
+                      onPressed: () => context.go('/profile'),
+                    ),
+                  )
+                  : null,
           body: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 24.0,
@@ -177,85 +224,197 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                // Bottom Buttons
+                if (fromProfile) ...[
+                  // Show Save and Cancel buttons when editing from profile
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            // Cancel - go back without saving
+                            context.go('/profile');
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: colorScheme.onSurface,
+                            side: BorderSide(color: colorScheme.outline),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancelar',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
-                      elevation: 2, // Subtle shadow
-                      shadowColor: primaryColor.withValues(alpha: 0.3),
-                      foregroundColor:
-                          colorScheme.onPrimary, // Use theme color for text
-                    ),
-                    onPressed: () async {
-                      // Mostrar indicador de carga
-                      if (context.mounted) {
-                        showLoadingSnackBar(
-                          context,
-                          message: 'Guardando dietas especiales...',
-                        );
-                      }
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            // Mostrar indicador de carga
+                            if (context.mounted) {
+                              showLoadingSnackBar(
+                                context,
+                                message: 'Guardando dietas especiales...',
+                              );
+                            }
 
-                      // Save special diets to Firestore before navigating
-                      try {
-                        final authRepository = ref.read(authRepositoryProvider);
+                            // Save special diets to Firestore
+                            try {
+                              final authRepository = ref.read(authRepositoryProvider);
 
-                        // Create special diet items with metadata (emoji, isCustom)
-                        final List<Map<String, dynamic>> specialDietItems =
-                            selectedDiets
-                                .map(
-                                  (diet) => {
-                                    'name': diet.name,
-                                    'emoji': diet.emoji,
-                                    'isCustom': diet.isCustom,
-                                  },
-                                )
-                                .toList();
+                              // Create special diet items with metadata (emoji, isCustom)
+                              final List<Map<String, dynamic>> specialDietItems =
+                                  selectedDiets
+                                      .map(
+                                        (diet) => {
+                                          'name': diet.name,
+                                          'emoji': diet.emoji,
+                                          'isCustom': diet.isCustom,
+                                        },
+                                      )
+                                      .toList();
 
-                        // Save both simple list and complex structure
-                        await authRepository
-                            .saveUserSpecialDietItemsWithMetadata(
-                              specialDietItems,
-                            );
+                              // Save both simple list and complex structure
+                              await authRepository
+                                  .saveUserSpecialDietItemsWithMetadata(
+                                    specialDietItems,
+                                  );
 
-                        // IMPORTANT: Mark initial preferences as completed since this is the last onboarding screen
-                        await authRepository.markInitialPreferencesCompleted();
+                              // Refrescar datos de usuario
+                              await ref
+                                  .read(authControllerProvider.notifier)
+                                  .refreshUserFromFirestore();
 
-                        log('✅ Special diets saved to Firestore successfully');
-                        log('✅ Initial preferences marked as completed');
-                        log("Selected Diets on Continue: $selectedDiets");
+                              log('✅ Special diets saved to Firestore successfully');
+                              log("Selected Diets on Save: $selectedDiets");
 
-                        // Navigate based on context
+                              // Show success message
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Dietas especiales actualizadas'),
+                                    backgroundColor: colorScheme.primary,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                                // Go back to profile
+                                context.go('/profile');
+                              }
+                            } catch (e) {
+                              log('❌ Error saving special diets: $e');
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Error: No se pudieron guardar las dietas'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            foregroundColor: colorScheme.onPrimary,
+                          ),
+                          child: Text(
+                            'Guardar',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else
+                  // Show single Continue button for onboarding
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 2, // Subtle shadow
+                        shadowColor: primaryColor.withValues(alpha: 0.3),
+                        foregroundColor:
+                            colorScheme.onPrimary, // Use theme color for text
+                      ),
+                      onPressed: () async {
+                        // Mostrar indicador de carga
                         if (context.mounted) {
-                          if (fromProfile) {
-                            // From profile - go back to profile
-                            context.pop();
-                          } else {
-                            // From onboarding - go to home (mark preferences completed)
+                          showLoadingSnackBar(
+                            context,
+                            message: 'Guardando dietas especiales...',
+                          );
+                        }
+
+                        // Save special diets to Firestore before navigating
+                        try {
+                          final authRepository = ref.read(authRepositoryProvider);
+
+                          // Create special diet items with metadata (emoji, isCustom)
+                          final List<Map<String, dynamic>> specialDietItems =
+                              selectedDiets
+                                  .map(
+                                    (diet) => {
+                                      'name': diet.name,
+                                      'emoji': diet.emoji,
+                                      'isCustom': diet.isCustom,
+                                    },
+                                  )
+                                  .toList();
+
+                          // Save both simple list and complex structure
+                          await authRepository
+                              .saveUserSpecialDietItemsWithMetadata(
+                                specialDietItems,
+                              );
+
+                          // IMPORTANT: Mark initial preferences as completed since this is the last onboarding screen
+                          await authRepository.markInitialPreferencesCompleted();
+
+                          log('✅ Special diets saved to Firestore successfully');
+                          log('✅ Initial preferences marked as completed');
+                          log("Selected Diets on Continue: $selectedDiets");
+
+                          // Continue to home after onboarding
+                          if (context.mounted) {
+                            context.go('/home');
+                          }
+                        } catch (e) {
+                          log('❌ Error saving special diets: $e');
+                          // Still navigate even if save fails
+                          if (context.mounted) {
                             context.go('/home');
                           }
                         }
-                      } catch (e) {
-                        log('❌ Error saving special diets: $e');
-                        // Still navigate even if save fails
-                        if (context.mounted) {
-                          context.go('/home');
-                        }
-                      }
-                    },
-                    child: Text(
-                      'Continuar',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      },
+                      child: Text(
+                        'Continuar',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 16), // Add some padding at the bottom
               ],
             ),

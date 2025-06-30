@@ -68,6 +68,29 @@ class AllergySelectorScreen extends ConsumerWidget {
     final selectedAllergyNames = ref.watch(selectedAllergiesProvider);
     final notifier = ref.read(selectedAllergiesProvider.notifier);
     final allergiesAsyncValue = ref.watch(allergiesProvider);
+    final authState = ref.watch(authControllerProvider);
+
+    // Load current allergies when entering the screen from profile
+    if (fromProfile && authState.hasValue) {
+      final user = authState.value;
+      if (user != null) {
+        final userAllergies = user.prefs.allergyItems.isNotEmpty
+            ? user.prefs.allergyItems.map((item) => item['name'] as String).toList()
+            : user.prefs.allergies;
+        
+        // Always load when coming from profile, reset first to ensure clean state
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Clear current selections first
+          while (selectedAllergyNames.isNotEmpty) {
+            notifier.toggleAllergy(selectedAllergyNames.first);
+          }
+          // Then add user's saved allergies
+          for (final allergyName in userAllergies) {
+            notifier.toggleAllergy(allergyName);
+          }
+        });
+      }
+    }
 
     // Use Theme colors for consistency
     final theme = Theme.of(context);
@@ -88,6 +111,17 @@ class AllergySelectorScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor, // Use theme-based background
+      appBar:
+          fromProfile
+              ? AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(Icons.close, color: colorScheme.onSurface),
+                  onPressed: () => context.go('/profile'),
+                ),
+              )
+              : null,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -214,118 +248,261 @@ class AllergySelectorScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed:
-                      allergiesAsyncValue.hasValue
-                          ? () async {
-                            // Mostrar indicador de carga
-                            if (context.mounted) {
-                              showLoadingSnackBar(
-                                context,
-                                message: 'Guardando alergias...',
-                              );
-                            }
+              // Bottom Buttons
+              if (fromProfile) ...[
+                // Show Save and Cancel buttons when editing from profile
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Cancel - go back without saving
+                          context.go('/profile');
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colorScheme.onSurface,
+                          side: BorderSide(color: colorScheme.outline),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancelar',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed:
+                            allergiesAsyncValue.hasValue
+                                ? () async {
+                                  // Mostrar indicador de carga
+                                  if (context.mounted) {
+                                    showLoadingSnackBar(
+                                      context,
+                                      message: 'Guardando alergias...',
+                                    );
+                                  }
 
-                            log(
-                              'Selected allergy names: $selectedAllergyNames',
-                            );
-
-                            // Save allergies to Firestore before navigating
-                            try {
-                              final authRepository = ref.read(
-                                authRepositoryProvider,
-                              );
-                              final allergies =
-                                  ref.read(allergiesProvider).value ?? [];
-
-                              // Create allergy items with metadata (emoji, isCustom)
-                              final List<Map<String, dynamic>> allergyItems =
-                                  [];
-
-                              for (final allergyName in selectedAllergyNames) {
-                                // Find if it's a predefined allergy
-                                final predefinedAllergy =
-                                    allergies
-                                        .where((a) => a.name == allergyName)
-                                        .firstOrNull;
-
-                                if (predefinedAllergy != null) {
-                                  // Predefined allergy
-                                  allergyItems.add({
-                                    'name': predefinedAllergy.name,
-                                    'emoji': predefinedAllergy.emoji,
-                                    'isCustom': false,
-                                  });
-                                } else {
-                                  // Custom allergy
-                                  allergyItems.add({
-                                    'name': allergyName,
-                                    'emoji':
-                                        '🚫', // Default emoji for custom allergies
-                                    'isCustom': true,
-                                  });
-                                }
-                              }
-
-                              // Save both simple list and complex structure
-                              await authRepository
-                                  .saveUserAllergyItemsWithMetadata(
-                                    allergyItems,
+                                  log(
+                                    'Selected allergy names: $selectedAllergyNames',
                                   );
 
+                                  // Save allergies to Firestore
+                                  try {
+                                    final authRepository = ref.read(
+                                      authRepositoryProvider,
+                                    );
+                                    final allergies =
+                                        ref.read(allergiesProvider).value ?? [];
+
+                                    // Create allergy items with metadata (emoji, isCustom)
+                                    final List<Map<String, dynamic>> allergyItems =
+                                        [];
+
+                                    for (final allergyName in selectedAllergyNames) {
+                                      // Find if it's a predefined allergy
+                                      final predefinedAllergy =
+                                          allergies
+                                              .where((a) => a.name == allergyName)
+                                              .firstOrNull;
+
+                                      if (predefinedAllergy != null) {
+                                        // Predefined allergy
+                                        allergyItems.add({
+                                          'name': predefinedAllergy.name,
+                                          'emoji': predefinedAllergy.emoji,
+                                          'isCustom': false,
+                                        });
+                                      } else {
+                                        // Custom allergy
+                                        allergyItems.add({
+                                          'name': allergyName,
+                                          'emoji': '🚫',
+                                          'isCustom': true,
+                                        });
+                                      }
+                                    }
+
+                                    // Save both simple list and complex structure
+                                    await authRepository
+                                        .saveUserAllergyItemsWithMetadata(
+                                          allergyItems,
+                                        );
+
+                                    // Refrescar datos de usuario
+                                    await ref
+                                        .read(authControllerProvider.notifier)
+                                        .refreshUserFromFirestore();
+
+                                    log(
+                                      '✅ Allergies saved to Firestore successfully',
+                                    );
+
+                                    // Show success message
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Alergias actualizadas'),
+                                          backgroundColor: colorScheme.primary,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                      // Go back to profile
+                                      context.go('/profile');
+                                    }
+                                  } catch (e) {
+                                    log('❌ Error saving allergies: $e');
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Error: No se pudieron guardar las alergias'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                                : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              allergiesAsyncValue.hasValue
+                                  ? primaryColor
+                                  : Colors.grey,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          foregroundColor: colorScheme.onPrimary,
+                        ),
+                        child: Text(
+                          'Guardar',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else
+                // Show single Continue button for onboarding
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        allergiesAsyncValue.hasValue
+                            ? () async {
+                              // Mostrar indicador de carga
+                              if (context.mounted) {
+                                showLoadingSnackBar(
+                                  context,
+                                  message: 'Guardando alergias...',
+                                );
+                              }
+
                               log(
-                                '✅ Allergies saved to Firestore successfully',
+                                'Selected allergy names: $selectedAllergyNames',
                               );
 
-                              // Navigate based on context
-                              if (context.mounted) {
-                                if (fromProfile) {
-                                  // From profile - go back to profile
-                                  context.pop();
-                                } else {
-                                  // From onboarding - continue to next step
+                              // Save allergies to Firestore before navigating
+                              try {
+                                final authRepository = ref.read(
+                                  authRepositoryProvider,
+                                );
+                                final allergies =
+                                    ref.read(allergiesProvider).value ?? [];
+
+                                // Create allergy items with metadata (emoji, isCustom)
+                                final List<Map<String, dynamic>> allergyItems =
+                                    [];
+
+                                for (final allergyName in selectedAllergyNames) {
+                                  // Find if it's a predefined allergy
+                                  final predefinedAllergy =
+                                      allergies
+                                          .where((a) => a.name == allergyName)
+                                          .firstOrNull;
+
+                                  if (predefinedAllergy != null) {
+                                    // Predefined allergy
+                                    allergyItems.add({
+                                      'name': predefinedAllergy.name,
+                                      'emoji': predefinedAllergy.emoji,
+                                      'isCustom': false,
+                                    });
+                                  } else {
+                                    // Custom allergy
+                                    allergyItems.add({
+                                      'name': allergyName,
+                                      'emoji':
+                                          '🚫', // Default emoji for custom allergies
+                                      'isCustom': true,
+                                    });
+                                  }
+                                }
+
+                                // Save both simple list and complex structure
+                                await authRepository
+                                    .saveUserAllergyItemsWithMetadata(
+                                      allergyItems,
+                                    );
+
+                                log(
+                                  '✅ Allergies saved to Firestore successfully',
+                                );
+
+                                // Continue to next step in onboarding
+                                if (context.mounted) {
+                                  context.go(
+                                    CookingLevelSelectorScreen.routePath,
+                                  );
+                                }
+                              } catch (e) {
+                                log('❌ Error saving allergies: $e');
+                                // Still navigate even if save fails
+                                if (context.mounted) {
                                   context.go(
                                     CookingLevelSelectorScreen.routePath,
                                   );
                                 }
                               }
-                            } catch (e) {
-                              log('❌ Error saving allergies: $e');
-                              // Still navigate even if save fails
-                              if (context.mounted) {
-                                context.go(
-                                  CookingLevelSelectorScreen.routePath,
-                                );
-                              }
                             }
-                          }
-                          : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        allergiesAsyncValue.hasValue
-                            ? primaryColor
-                            : Colors.grey,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                            : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          allergiesAsyncValue.hasValue
+                              ? primaryColor
+                              : Colors.grey,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      foregroundColor: colorScheme.onPrimary,
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    foregroundColor: colorScheme.onPrimary,
-                    textStyle: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  child: Text(
-                    'Continuar',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    child: Text(
+                      'Continuar',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

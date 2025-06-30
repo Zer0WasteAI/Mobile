@@ -26,6 +26,8 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
           ),
   initialPreferencesCompleted:
       json['initialPreferencesCompleted'] as bool? ?? false,
+  streak: (json['streak'] as num?)?.toInt() ?? 0,
+  achievements: (json['achievements'] as num?)?.toInt() ?? 0,
   createdAt:
       json['createdAt'] == null
           ? null
@@ -51,6 +53,8 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'favoriteRecipes': instance.favoriteRecipes,
       'prefs': instance.prefs,
       'initialPreferencesCompleted': instance.initialPreferencesCompleted,
+      'streak': instance.streak,
+      'achievements': instance.achievements,
       'createdAt': instance.createdAt?.toIso8601String(),
       'lastLoginAt': instance.lastLoginAt?.toIso8601String(),
       'needsAdditionalInfo': instance.needsAdditionalInfo,

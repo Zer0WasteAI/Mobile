@@ -104,12 +104,14 @@ class AppRouter {
 
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: '/splash',
+      initialLocation: '/',
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
       redirect: (context, state) {
-        final isLoggedIn = authState.value != null;
+        // Don't redirect while auth state is loading
+        final isAuthLoading = authState.isLoading;
+        final isLoggedIn = authState.hasValue && authState.value != null;
         final user = authState.value;
 
         // Get user profile state to check preferences completion
@@ -123,15 +125,34 @@ class AppRouter {
             state.matchedLocation == '/forgot-password';
         final isGoingToOnboarding = state.matchedLocation == '/onboarding';
         final isGoingToSplash = state.matchedLocation == '/splash';
+        final isGoingToHome = state.matchedLocation == '/home';
         final isGoingToAuthFlow =
             state.matchedLocation.startsWith('/allergy-selector') ||
             state.matchedLocation.startsWith('/cooking-level-selector') ||
             state.matchedLocation.startsWith('/preferred-food-type') ||
             state.matchedLocation.startsWith('/special-diet-selector');
 
+        // Check if coming from profile via query parameter
+        final fromProfile = state.uri.queryParameters['from'] == 'profile';
+
         log(
-          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, location: ${state.matchedLocation}',
+          '🔄 Router redirect - isAuthLoading: $isAuthLoading, isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, location: ${state.matchedLocation}',
         );
+
+        // Handle initial '/' route
+        if (state.matchedLocation == '/') {
+          return isAuthLoading ? '/splash' : (isLoggedIn ? '/home' : '/login');
+        }
+
+        // If auth is still loading and not on splash, redirect to splash
+        if (isAuthLoading && !isGoingToSplash) {
+          return '/splash';
+        }
+
+        // If logged in and auth loaded, prevent going back to splash
+        if (isLoggedIn && !isAuthLoading && isGoingToSplash) {
+          return hasCompletedPreferences ? '/home' : '/allergy-selector';
+        }
 
         // If not logged in and not going to auth/onboarding screens, redirect to login
         if (!isLoggedIn &&
@@ -147,8 +168,10 @@ class AppRouter {
 
         // If logged in, check preferences completion
         if (isLoggedIn && user != null) {
-          // If user has completed preferences but trying to go to auth/onboarding screens, redirect to home
+          // If user has completed preferences but trying to go to auth/onboarding screens,
+          // redirect to home UNLESS coming from profile
           if (hasCompletedPreferences &&
+              !fromProfile &&
               (isGoingToLogin ||
                   isGoingToRegister ||
                   isGoingToForgotPassword ||
@@ -174,6 +197,7 @@ class AppRouter {
         return null; // No redirect needed
       },
       routes: [
+        GoRoute(path: '/', redirect: (_, __) => '/home'),
         GoRoute(
           path: '/splash',
           name: splashRouteName,

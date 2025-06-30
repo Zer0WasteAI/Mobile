@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 import 'package:zer0_waste_ai/features/auth/data/models/user_preferences_model.dart';
+import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/services/storage_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -177,35 +181,6 @@ class ProfileScreen extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildProfileStat(
-                                  context,
-                                  icon: Icons.star_rounded,
-                                  value: '3',
-                                  label: 'Logros',
-                                  color: const Color(0xFFFFC107),
-                                  bgColor: const Color(0xFFFFF8E1),
-                                ),
-                                _buildProfileStat(
-                                  context,
-                                  icon: Icons.local_fire_department_rounded,
-                                  value: '5',
-                                  label: 'Racha',
-                                  color: const Color(0xFFFF5722),
-                                  bgColor: const Color(0xFFFFF3F0),
-                                ),
-                                _buildProfileStat(
-                                  context,
-                                  icon: Icons.restaurant_rounded,
-                                  value: '${user?.favoriteRecipes.length ?? 0}',
-                                  label: 'Recetas',
-                                  color: const Color(0xFF4CAF50),
-                                  bgColor: const Color(0xFFE8F5E9),
-                                ),
-                              ],
-                            ),
                           ],
                         ],
                       ),
@@ -216,12 +191,6 @@ class ProfileScreen extends ConsumerWidget {
                     _buildSectionHeader(context, 'Preferencias culinarias'),
                     const SizedBox(height: 8),
                     _buildPreferencesGrid(context, ref),
-
-                    const SizedBox(height: 24),
-
-                    _buildSectionHeader(context, 'Tu impacto'),
-                    const SizedBox(height: 8),
-                    _buildImpactCard(context),
 
                     const SizedBox(height: 24),
 
@@ -238,155 +207,6 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     _buildLogoutButton(context, ref),
-                    const SizedBox(height: 20),
-
-                    // DEBUG: Botón para leer directamente de Firestore
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            final profileState = ref.read(userProfileProvider);
-                            final user = profileState.user;
-
-                            print('🔧 CURRENT USER MODEL DEBUG:');
-                            print('  User exists: ${user != null}');
-                            if (user != null) {
-                              print('  User ID: ${user.id}');
-                              print('  Display Name: ${user.displayName}');
-                              print('  Email: ${user.email}');
-                              print(
-                                '  🎯 INITIAL PREFERENCES COMPLETED: ${user.initialPreferencesCompleted}',
-                              );
-                              // ignore: unnecessary_null_comparison
-                              print('  Prefs exists: ${user.prefs != null}');
-
-                              final prefs = user.prefs;
-                              print(
-                                '  Prefs cookingLevel: ${prefs.cookingLevel}',
-                              );
-                              print('  Prefs allergies: ${prefs.allergies}');
-                              print(
-                                '  Prefs allergyItems: ${prefs.allergyItems}',
-                              );
-                              print(
-                                '  Prefs specialDiets: ${prefs.specialDiets}',
-                              );
-                              print(
-                                '  Prefs specialDietItems: ${prefs.specialDietItems}',
-                              );
-                              print(
-                                '  Prefs preferredFoodTypes: ${prefs.preferredFoodTypes}',
-                              );
-
-                              // También forzar un refresh
-                              print('🔧 Forcing auth state refresh...');
-                              ref.invalidate(authStateProvider);
-                              await Future.delayed(
-                                Duration(milliseconds: 1000),
-                              );
-                              ref.invalidate(userProfileProvider);
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Debug completado - revisa logs'),
-                                backgroundColor: Colors.blue,
-                              ),
-                            );
-                          } catch (e) {
-                            print('❌ Error en debug: $e');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.info),
-                        label: Text(
-                          'DEBUG: Ver datos actuales',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // DEBUG: Botón para marcar preferencias como completadas manualmente
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            final authRepository = ref.read(
-                              authRepositoryProvider,
-                            );
-                            final authController = ref.read(
-                              authControllerProvider.notifier,
-                            );
-
-                            print(
-                              '🔧 MANUAL: Marcando preferencias como completadas...',
-                            );
-
-                            await authRepository
-                                .markInitialPreferencesCompleted();
-
-                            print(
-                              '✅ MANUAL: Preferencias marcadas correctamente',
-                            );
-
-                            // Refresh data
-                            await authController.refreshUserFromFirestore();
-                            ref.invalidate(userProfileProvider);
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Preferencias marcadas como completadas',
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          } catch (e) {
-                            print('❌ Error marcando preferencias: $e');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.check_circle),
-                        label: Text(
-                          'DEBUG: Marcar como completado',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
 
                     const SizedBox(height: 40),
                   ],
@@ -672,130 +492,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildImpactCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9), // Light green background
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          // Header section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.eco_rounded,
-                      color: Color(0xFF4CAF50),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Tu impacto ambiental',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward,
-                  color: Color(0xFF4CAF50),
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Metrics section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildImpactMetric(
-                context,
-                icon: Icons.food_bank_outlined,
-                value: '2.5kg',
-                label: 'Alimentos salvados',
-                color: const Color(0xFFFF9800),
-                bgColor: const Color(0xFFFFF3E0),
-              ),
-              _buildImpactMetric(
-                context,
-                icon: Icons.water_drop_outlined,
-                value: '350L',
-                label: 'Agua ahorrada',
-                color: const Color(0xFF2196F3),
-                bgColor: const Color(0xFFE3F2FD),
-              ),
-              _buildImpactMetric(
-                context,
-                icon: Icons.cloud_outlined,
-                value: '4.2kg',
-                label: 'CO₂ reducido',
-                color: const Color(0xFF9E9E9E),
-                bgColor: const Color(0xFFF5F5F5),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImpactMetric(
-    BuildContext context, {
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-    required Color bgColor,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 12, color: Colors.black54),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
   Widget _buildSettingsCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -1035,161 +731,22 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showEditProfileDialog(BuildContext context) {
-    // Controladores para los campos de texto
-    final nameController = TextEditingController(text: 'Usuario');
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Editar perfil',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Foto de perfil
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        // Mostrar opciones para cambiar foto
-                        _showPhotoSourceOptions(context);
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFE0F2F1),
-                          border: Border.all(
-                            color: Colors.grey.shade200,
-                            width: 2,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Color(0xFF00BFA5),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00BFA5),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Campo de nombre
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nombre',
-                    labelStyle: GoogleFonts.inter(color: Colors.black54),
-                    prefixIcon: const Icon(
-                      Icons.person_outline,
-                      color: Color(0xFF00BFA5),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF00BFA5),
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 16,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-                // Texto para cambiar contraseña
-                TextButton(
-                  onPressed: () {
-                    // Cerrar el diálogo actual
-                    Navigator.of(context).pop();
-
-                    // Mostrar diálogo para cambiar contraseña
-                    _showChangePasswordDialog(context);
-                  },
-                  child: Text(
-                    'Cambiar contraseña',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF00BFA5),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: const EditProfileModalContent(),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancelar',
-                style: GoogleFonts.inter(
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Aquí iría la lógica para guardar los cambios
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Perfil actualizado correctamente'),
-                    backgroundColor: Color(0xFF00BFA5),
-                  ),
-                );
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BFA5),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Guardar',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -2415,6 +1972,818 @@ class ProfileScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class EditProfileModalContent extends ConsumerStatefulWidget {
+  const EditProfileModalContent({super.key});
+
+  @override
+  ConsumerState<EditProfileModalContent> createState() =>
+      _EditProfileModalContentState();
+}
+
+class _EditProfileModalContentState
+    extends ConsumerState<EditProfileModalContent> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  File? _imageFile;
+  bool _isLoading = false;
+  String? _currentPhotoURL;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with current user data
+    final user = ref.read(authControllerProvider).value;
+    _nameController = TextEditingController(text: user?.displayName ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
+    _currentPhotoURL = user?.photoURL;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 500,
+        maxHeight: 500,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al seleccionar imagen: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userProfileNotifier = ref.read(userProfileProvider.notifier);
+      final user = ref.read(userProfileProvider).user;
+
+      // Upload the image if a new one has been selected
+      String? photoURL = _currentPhotoURL;
+      if (_imageFile != null && user != null) {
+        final storageService = ref.read(storageServiceProvider);
+        // Upload the image and get the download URL
+        photoURL = await storageService.uploadProfileImage(
+          _imageFile!,
+          user.id,
+        );
+      }
+
+      // Update the user's profile using userProfileProvider
+      await userProfileNotifier.updateBasicProfile(
+        displayName: _nameController.text,
+        photoURL: photoURL,
+      );
+
+      // Force refresh the profile provider to ensure UI updates
+      await userProfileNotifier.refresh();
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close modal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Perfil actualizado correctamente',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Error al actualizar perfil: $e',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showChangePasswordModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: const ChangePasswordModalForm(),
+          ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(authControllerProvider).value;
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Editar Perfil',
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.grey.shade600),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Profile picture section
+            Center(
+              child: Stack(
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: _buildProfileImage(user),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      height: 32,
+                      width: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00BFA5),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        onPressed: _pickImage,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Name field
+            Text(
+              'Nombre',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu nombre',
+                prefixIcon: Icon(
+                  Icons.person_outline,
+                  color: Colors.grey.shade500,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF00BFA5),
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingresa tu nombre';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Email field (read-only)
+            Text(
+              'Correo electrónico',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _emailController,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: 'Tu correo electrónico',
+                prefixIcon: Icon(
+                  Icons.email_outlined,
+                  color: Colors.grey.shade400,
+                ),
+                suffixIcon: Icon(
+                  Icons.lock_outline,
+                  color: Colors.grey.shade400,
+                  size: 18,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Change password section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        color: Colors.grey.shade600,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Contraseña',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Cambia tu contraseña para mantener tu cuenta segura',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showChangePasswordModal(context),
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: Text(
+                        'Cambiar Contraseña',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF00BFA5),
+                        side: const BorderSide(color: Color(0xFF00BFA5)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Spacer(),
+
+            // Save button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00BFA5),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                  shadowColor: const Color(0xFF00BFA5).withValues(alpha: 0.3),
+                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : Text(
+                          'Guardar Cambios',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage(UserModel? user) {
+    // If there's a new image selected, show that
+    if (_imageFile != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: Image.file(
+          _imageFile!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    // If user already has a photo URL, show that
+    if (_currentPhotoURL != null && _currentPhotoURL!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: Image.network(
+          _currentPhotoURL!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildAvatarInitial(user?.displayName ?? '');
+          },
+        ),
+      );
+    }
+
+    // Otherwise, show an initial
+    return _buildAvatarInitial(user?.displayName ?? '');
+  }
+
+  Widget _buildAvatarInitial(String displayName) {
+    // Get the first letter of the name or use 'U' by default
+    final String initial =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
+
+    return Center(
+      child: Text(
+        initial,
+        style: GoogleFonts.inter(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF00BFA5),
+        ),
+      ),
+    );
+  }
+}
+
+class ChangePasswordModalForm extends ConsumerStatefulWidget {
+  const ChangePasswordModalForm({super.key});
+
+  @override
+  ConsumerState<ChangePasswordModalForm> createState() =>
+      _ChangePasswordModalFormState();
+}
+
+class _ChangePasswordModalFormState
+    extends ConsumerState<ChangePasswordModalForm> {
+  final _passwordFormKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    if (!_passwordFormKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Aquí simularemos el cambio de contraseña
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Contraseña actualizada correctamente',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Error al cambiar contraseña: $e',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _passwordFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cambiar Contraseña',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Mantén tu cuenta segura',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.grey.shade600),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Current password field
+            Text(
+              'Contraseña actual',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _currentPasswordController,
+              obscureText: _obscureCurrentPassword,
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu contraseña actual',
+                prefixIcon: Icon(
+                  Icons.lock_outline,
+                  color: Colors.grey.shade500,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureCurrentPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: Colors.grey.shade500,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureCurrentPassword = !_obscureCurrentPassword;
+                    });
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF00BFA5),
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingresa tu contraseña actual';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // New password field
+            Text(
+              'Nueva contraseña',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _newPasswordController,
+              obscureText: _obscureNewPassword,
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu nueva contraseña',
+                prefixIcon: Icon(Icons.lock, color: Colors.grey.shade500),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNewPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: Colors.grey.shade500,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureNewPassword = !_obscureNewPassword;
+                    });
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF00BFA5),
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingresa tu nueva contraseña';
+                }
+                if (value.length < 6) {
+                  return 'La contraseña debe tener al menos 6 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Confirm password field
+            Text(
+              'Confirmar nueva contraseña',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              decoration: InputDecoration(
+                hintText: 'Confirma tu nueva contraseña',
+                prefixIcon: Icon(Icons.lock, color: Colors.grey.shade500),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: Colors.grey.shade500,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                    });
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF00BFA5),
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor confirma tu nueva contraseña';
+                }
+                if (value != _newPasswordController.text) {
+                  return 'Las contraseñas no coinciden';
+                }
+                return null;
+              },
+            ),
+
+            const Spacer(),
+
+            // Change password button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _changePassword,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00BFA5),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                  shadowColor: const Color(0xFF00BFA5).withValues(alpha: 0.3),
+                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : Text(
+                          'Cambiar Contraseña',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
     );
   }
 }
