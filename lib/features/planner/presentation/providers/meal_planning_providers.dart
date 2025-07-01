@@ -10,7 +10,10 @@ final mealPlanRepositoryProvider = Provider<MealPlanRepository>((ref) {
 });
 
 /// Provider for meal plan by date
-final mealPlanByDateProvider = FutureProvider.family<MealPlanModel?, String>((ref, date) async {
+final mealPlanByDateProvider = FutureProvider.family<MealPlanModel?, String>((
+  ref,
+  date,
+) async {
   final repository = ref.read(mealPlanRepositoryProvider);
   try {
     final response = await repository.getMealPlanByDate(date);
@@ -50,17 +53,29 @@ final mealPlanDatesProvider = FutureProvider<List<String>>((ref) async {
 /// Provider for selected date
 final selectedDateProvider = StateProvider<DateTime?>((ref) => null);
 
+/// Provider for meal planning operations
+final mealPlanningProvider =
+    StateNotifierProvider<MealPlanningNotifier, AsyncValue<MealPlanModel?>>((
+      ref,
+    ) {
+      final repository = ref.read(mealPlanRepositoryProvider);
+      return MealPlanningNotifier(repository);
+    });
+
 /// State notifier for meal planning operations
 class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
-  MealPlanningNotifier(this._repository) : super(const AsyncValue.loading());
-
   final MealPlanRepository _repository;
+
+  MealPlanningNotifier(this._repository) : super(const AsyncValue.data(null));
 
   /// Save a new meal plan
   Future<void> saveMealPlan(String date, DailyMeals meals) async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.saveMealPlan(date: date, meals: meals.toJson());
+      final response = await _repository.saveMealPlan(
+        date: date,
+        meals: meals.toJson(),
+      );
       if (response['meal_plan'] != null) {
         final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
         state = AsyncValue.data(mealPlan);
@@ -76,7 +91,10 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
   Future<void> updateMealPlan(String date, DailyMeals meals) async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.updateMealPlan(date: date, meals: meals.toJson());
+      final response = await _repository.updateMealPlan(
+        date: date,
+        meals: meals.toJson(),
+      );
       if (response['meal_plan'] != null) {
         final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
         state = AsyncValue.data(mealPlan);
@@ -103,7 +121,9 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
   Future<void> generateMealPlan(List<Map<String, dynamic>> ingredients) async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.generateMealPlan(ingredients: ingredients);
+      final response = await _repository.generateMealPlan(
+        ingredients: ingredients,
+      );
       if (response['meal_plan'] != null) {
         final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
         state = AsyncValue.data(mealPlan);
@@ -131,12 +151,6 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
     }
   }
 }
-
-/// Provider for meal planning state notifier
-final mealPlanningProvider = StateNotifierProvider<MealPlanningNotifier, AsyncValue<MealPlanModel?>>((ref) {
-  final repository = ref.read(mealPlanRepositoryProvider);
-  return MealPlanningNotifier(repository);
-});
 
 /// Provider for editing state
 class EditingState {
@@ -172,31 +186,37 @@ final editingStateProvider = StateProvider<EditingState>((ref) {
 final tempMealProvider = StateProvider<Meal?>((ref) => null);
 
 /// Provider for weekly meal plans
-final weeklyMealPlansProvider = FutureProvider.family<List<MealPlanModel>, DateTime>((ref, startDate) async {
-  final repository = ref.read(mealPlanRepositoryProvider);
-  final plans = <MealPlanModel>[];
-  
-  // Get 7 days starting from startDate
-  for (int i = 0; i < 7; i++) {
-    final date = startDate.add(Duration(days: i));
-    final dateString = DateFormat('yyyy-MM-dd').format(date);
-    
-    try {
-      final response = await repository.getMealPlanByDate(dateString);
-      if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
-        plans.add(mealPlan);
+final weeklyMealPlansProvider =
+    FutureProvider.family<List<MealPlanModel>, DateTime>((
+      ref,
+      startDate,
+    ) async {
+      final repository = ref.read(mealPlanRepositoryProvider);
+      final plans = <MealPlanModel>[];
+
+      // Get 7 days starting from startDate
+      for (int i = 0; i < 7; i++) {
+        final date = startDate.add(Duration(days: i));
+        final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+        try {
+          final response = await repository.getMealPlanByDate(dateString);
+          if (response['meal_plan'] != null) {
+            final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+            plans.add(mealPlan);
+          }
+        } catch (e) {
+          // Continue if individual day fails
+        }
       }
-    } catch (e) {
-      // Continue if individual day fails
-    }
-  }
-  
-  return plans;
-});
+
+      return plans;
+    });
 
 /// Provider for meal plan history
-final mealPlanHistoryProvider = FutureProvider<List<MealPlanModel>>((ref) async {
+final mealPlanHistoryProvider = FutureProvider<List<MealPlanModel>>((
+  ref,
+) async {
   final repository = ref.read(mealPlanRepositoryProvider);
   try {
     final response = await repository.getMealPlanHistory();
@@ -231,8 +251,8 @@ class DateUtils {
 
   static bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
-           date1.month == date2.month &&
-           date1.day == date2.day;
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   static bool isToday(DateTime date) {

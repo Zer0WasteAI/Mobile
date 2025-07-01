@@ -1,388 +1,381 @@
+Launching lib/main.dart on iPhone 16 in debug mode...
+Xcode build done.                                           50.3s
+Connecting to VM Service at ws://127.0.0.1:55605/UAzXXgWdUxg=/ws
+Connected to the VM Service.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+flutter: Hive initialized successfully
+[GoRouter] setting initial location /home
+[GoRouter] Full paths for routes:
+           ├─/ (SplashScreen)
+           ├─/splash (SplashScreen)
+           ├─/onboarding (OnboardingScreen)
+           ├─/login (LoginScreen)
+           ├─/register (RegisterScreen)
+           ├─/forgot-password (ForgotPasswordScreen)
+           ├─/allergy-selector (AllergySelectorScreen)
+           ├─/cooking-level-selector (CookingLevelSelectorScreen)
+           ├─/preferred-food-type (PreferredFoodTypeScreen)
+           ├─/special-diet-selector (SpecialDietSelectorScreen)
+           ├─/scan/confirm (StatefulWidget)
+           ├─/scan/results (ScanResultsScreen)
+           ├─/simplified-recognition (SimplifiedRecognitionScreen)
+           ├─/simplified-food-recognition (SimplifiedFoodRecognitionScreen)
+           ├─/recognition-selector (RecognitionTypeSelectorScreen)
+           ├─/inventory/add (AddInventoryItemScreen)
+           ├─/inventory/ingredient/:ingredientName (StatefulWidget)
+           ├─/inventory/food/:itemId (StatefulWidget)
+           ├─/recipes/ai-generation (AIRecipeGenerationScreen)
+           ├─/recipes/all (AllRecipesScreen)
+           ├─/recipe-library (AllRecipesScreen)
+           ├─/recipe-generation (StatefulWidget)
+           ├─/recipes/detail (StatefulWidget)
+           ├─/recipes/my-recipes (MyRecipesScreen)
+           ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
+           ├─/impact (ImpactScreen)
+           ├─/planner (PlannerScreen)
+           ├─/meal-planning (MealPlanningScreen)
+           ├─/unified-planning (UnifiedMealPlanningScreen)
+           ├─/smart-recipes
+           ├─ (ShellRoute)
+           │ ├─/home (HomeScreen)
+           │ ├─/inventory (InventoryScreen)
+           │ ├─/recipes (RecipeScreen)
+           │ ├─/profile (ProfileScreen)
+           │ └─/scan/add/:itemType (AddScanItemScreen)
+           ├─/notifications (NotificationsScreen)
+           ├─/language (LanguageScreen)
+           ├─/faqs (FAQsScreen)
+           ├─/privacy-policy (PrivacyPolicyScreen)
+           ├─/terms-and-conditions (TermsAndConditionsScreen)
+           ├─/about-app (AboutAppScreen)
+           └─/support (SupportScreen)
+           known full paths for route names:
+             splash => /splash
+             onboarding => /onboarding
+             login => /login
+             register => /register
+             forgot-password => /forgot-password
+             allergy_selector => /allergy-selector
+             cooking_level_selector => /cooking-level-selector
+             preferred_food_type => /preferred-food-type
+             special_diet_selector => /special-diet-selector
+             scanConfirm => /scan/confirm
+             scan_results => /scan/results
+             simplifiedRecognition => /simplified-recognition
+             simplifiedFoodRecognition => /simplified-food-recognition
+             recognitionTypeSelector => /recognition-selector
+             addInventoryItem => /inventory/add
+             ingredientDetail => /inventory/ingredient/:ingredientName
+             foodDetail => /inventory/food/:itemId
+             AIRecipeGenerationScreen => /recipes/ai-generation
+             all-recipes => /recipes/all
+             recipeLibrary => /recipe-library
+             recipeGeneration => /recipe-generation
+             recipeDetail => /recipes/detail
+             my-recipes => /recipes/my-recipes
+             custom-recipe-generation => /recipes/custom-generation
+             impact => /impact
+             planner => /planner
+             mealPlanning => /meal-planning
+             unifiedPlanning => /unified-planning
+             smart-recipes => /smart-recipes
+             home => /home
+             inventory => /inventory
+             recipes => /recipes
+             profile => /profile
+             addScanItem => /scan/add/:itemType
+             notifications => /notifications
+             language => /language
+             faqs => /faqs
+             privacy_policy => /privacy-policy
+             terms_and_conditions => /terms-and-conditions
+             about_app => /about-app
+             support => /support
+[GoRouter] Using MaterialApp configuration
+[GoRouter] Using MaterialApp configuration
+[log] 🔧 InventoryRealNotifier initialized (cache-optimized)
+[log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recipes/saved
+[log] API Request: GET /api/planning/all
+[log] API Request: GET /api/environmental_savings/calculations
+[log] API Request: GET /api/recipes/saved
+[log] API Response: 200 /api/recipes/saved
+[log] API Response: 200 /api/planning/all
+[log] API Response: 200 /api/environmental_savings/calculations
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] User data refreshed from Firestore
+[log] 🏠 Home: Datos de usuario refrescados automáticamente
+[log] ✅ User document found in Firestore
+[log] 🔧 cookingLevel: intermediate
+[log] 🔧 allergies: [Lácteos, Huevo]
+[log] 🔧 specialDiets: [Plant-based, Paleo]
+[log] 🔧 preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+[log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
+[log] 🚀 Proactively loading inventory for better UX...
+[log] 🌐 Cache invalid or empty, loading fresh data
+[log] 🚀 First load - using fast endpoint
+[log] 🔄 DEBUG - Starting loadInventoryFromBackend
+[log] 📡 DEBUG - Calling backend getInventory
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/inventory
+[log] API Request: GET /api/inventory
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, measurementUnit, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+[log] API Response: 200 /api/inventory
+[log] 🔧 DEBUG - Parsing inventory data
+[log] 🔍 DEBUG - Ingredients found: 18
+[log] 🔍 DEBUG - Food items found: 0
+[log] 🔍 DEBUG - Processing ingredient: Ají amarillo
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Ají amarillo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají amarillo - 1.0 unidad
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají amarillo - 1.0 unidad
+[log] ✅ DEBUG - Created 2 items from ingredient Ají amarillo
+[log] 🔍 DEBUG - Processing ingredient: Ají Limo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají Limo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají Limo - 1.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají Limo
+[log] 🔍 DEBUG - Processing ingredient: Ají rojo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají rojo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají rojo - 2.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají rojo
+[log] 🔍 DEBUG - Processing ingredient: Ají rojo fresco
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Ají rojo fresco
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Ají rojo fresco - 1.0 unidad
+[log] ✅ DEBUG - Created 1 items from ingredient Ají rojo fresco
+[log] 🔍 DEBUG - Processing ingredient: Ají verde picado
+[log] 🔍 DEBUG - Processing 3 stacks for ingredient: Ají verde picado
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 1.3 taza
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 2.5 taza
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Ají verde picado - 0.25 taza
+[log] ✅ DEBUG - Created 3 items from ingredient Ají verde picado
+[log] 🔍 DEBUG - Processing ingredient: Cebolla roja
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cebolla roja
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Cebolla roja - 150.0 tazón
+[log] ✅ DEBUG - Created 1 items from ingredient Cebolla roja
+[log] 🔍 DEBUG - Processing ingredient: Cebolla roja picada
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cebolla roja picada
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Cebolla roja picada - 3.0 taza
+[log] ✅ DEBUG - Created 1 items from ingredient Cebolla roja picada
+[log] 🔍 DEBUG - Processing ingredient: Cilantro
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Cilantro
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro - 50.0 manojos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro - 2.0 manojos
+[log] ✅ DEBUG - Created 2 items from ingredient Cilantro
+[log] 🔍 DEBUG - Processing ingredient: Cilantro fresco
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Cilantro fresco
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Cilantro fresco - 1.0 manojo
+[log] ✅ DEBUG - Created 1 items from ingredient Cilantro fresco
+[log] 🔍 DEBUG - Processing ingredient: Gnocchi al Forno
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Gnocchi al Forno
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T19:38:58
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T19:38:58
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 19:38:58.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T19:38:58.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T19:38:58.000Z
+[log] ✅ DEBUG - Created stack item: Gnocchi al Forno - 1.0 porciones
+[log] ✅ DEBUG - Created 1 items from ingredient Gnocchi al Forno
+[log] 🔍 DEBUG - Processing ingredient: Limón
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Limón
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Limón - 14.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Limón
+[log] 🔍 DEBUG - Processing ingredient: Limones
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Limones
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Limones - 16.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Limones
+[log] 🔍 DEBUG - Processing ingredient: Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco (para ceviche) - 200.0 gramos
+[log] ✅ DEBUG - Created 1 items from ingredient Pescado blanco (para ceviche)
+[log] 🔍 DEBUG - Processing ingredient: Pescado Blanco Crudo
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Pescado Blanco Crudo
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Pescado Blanco Crudo - 0.5 kilos
+[log] ✅ DEBUG - Created 1 items from ingredient Pescado Blanco Crudo
+[log] 🔍 DEBUG - Processing ingredient: Pescado blanco en cubos
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Pescado blanco en cubos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:42:46
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:42:46.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:42:46.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:42:46.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco en cubos - 250.0 gramos
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Pescado blanco en cubos - 302.5 gramos
+[log] ✅ DEBUG - Created 2 items from ingredient Pescado blanco en cubos
+[log] 🔍 DEBUG - Processing ingredient: Sal
+[log] 🔍 DEBUG - Processing 2 stacks for ingredient: Sal
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:29:12
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:29:12.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:29:12.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:29:12.000Z
+[log] ✅ DEBUG - Created stack item: Sal - 20.0 cucharadita
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Sal - 1.0 cucharadita
+[log] ✅ DEBUG - Created 2 items from ingredient Sal
+[log] 🔍 DEBUG - Processing ingredient: Tomate
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Tomate
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
+[log] ✅ DEBUG - Created stack item: Tomate - 2.0 unidades
+[log] ✅ DEBUG - Created 1 items from ingredient Tomate
+[log] 🔍 DEBUG - Processing ingredient: Tomate picado
+[log] 🔍 DEBUG - Processing 1 stacks for ingredient: Tomate picado
+[log] 🔍 DEBUG - Original timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-22T20:45:20
+[log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
+[log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
+[log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
+[log] ✅ DEBUG - Created stack item: Tomate picado - 2.0 taza
+[log] ✅ DEBUG - Created 1 items from ingredient Tomate picado
+[log] 🔍 DEBUG - Final items count: 24
+[log] 🔧 DEBUG - Parsing completed, 24 items created
+[log] ✅ DEBUG - loadInventoryFromBackend completed successfully
+[log] ✅ Proactive inventory loading completed
+[log] 📡 DEBUG - Backend response received: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
+[log] 🔍 DEBUG - Raw API response: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
+[log] 🔍 DEBUG - Final items: [Ají amarillo (1.0 unidad), Ají amarillo (1.0 unidad), Ají Limo (1.0 unidad), Ají rojo (2.0 unidad), Ají rojo fresco (1.0 unidad), Ají verde picado (1.3 taza), Ají verde picado (2.5 taza), Ají verde picado (0.25 taza), Cebolla roja (150.0 tazón), Cebolla roja picada (3.0 taza), Cilantro (50.0 manojos), Cilantro (2.0 manojos), Cilantro fresco (1.0 manojo), Gnocchi al Forno (1.0 porciones), Limón (14.0 unidades), Limones (16.0 unidades), Pescado blanco (para ceviche) (200.0 gramos), Pescado Blanco Crudo (0.5 kilos), Pescado blanco en cubos (250.0 gramos), Pescado blanco en cubos (302.5 gramos), Sal (20.0 cucharadita), Sal (1.0 cucharadita), Tomate (2.0 unidades), Tomate picado (2.0 taza)]
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
 [GoRouter] getting location for name: "unifiedPlanning"
 [GoRouter] pushing /unified-planning
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by scheduler library ═════════════════════════════════
-'package:flutter/src/animation/curves.dart': Failed assertion: line 180 pos 12: 'end <= 1.0': is not true.
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 7.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 7.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 7.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 71 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:395:13
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 69 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:395:13
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 69 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:395:13
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 62 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:395:13
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 3.0 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:352:18
-════════════════════════════════════════════════════════════════════════════════
-
-════════ Exception caught by rendering library ═════════════════════════════════
-A RenderFlex overflowed by 69 pixels on the right.
-The relevant error-causing widget was:
-    Row Row:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/features/planner/presentation/widgets/unified_planning_widget.dart:395:13
-════════════════════════════════════════════════════════════════════════════════
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/get
+[log] API Request: GET /api/planning/get
+[log] API Error: 404 /api/planning/get
+[log] Error Data: {error: No hay plan de comidas para el 2025-07-01}
+[log] 🔍 Technical Error Details: Exception: Get meal plan by date error: DioException [bad response]: This exception was thrown because the response has a status code of 404 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 404 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[log] 🔍 Non-DioException Error: Exception: Get meal plan by date error: DioException [bad response]: This exception was thrown because the response has a status code of 404 and RequestOptions.validateStatus was configured to throw for this status code.
+      The status code of 404 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
+      Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
+[GoRouter] getting location for name: "recipeGeneration", queryParameters: {date: 2025-07-01T10:34:39.941870, mealType: breakfast}
+[GoRouter] pushing /recipe-generation?date=2025-07-01T10%3A34%3A39.941870&mealType=breakfast
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Tried to modify a provider while the widget tree was building.
+If you are encountering this error, chances are you tried to modify a provider
+in a widget life-cycle, such as but not limited to:
+- build
+- initState
+- dispose
+- didUpdateWidget
+- didChangeDependencies
+
+Modifying a provider inside those life-cycles is not allowed, as it could
+lead to an inconsistent UI state. For example, two widgets could listen to the
+same provider, but incorrectly receive different states.
+
+To fix this problem, you have one of two solutions:
+- (preferred) Move the logic for modifying your provider outside of a widget
+  life-cycle. For example, maybe you could update your provider inside a button's
+  onPressed instead.
+
+- Delay your modification, such as by encapsulating the modification
+  in a `Future(() {...})`.
+  This will perform your update after the widget tree is done building.
+#0      _UncontrolledProviderScopeElement._debugCanModifyProvid<…>

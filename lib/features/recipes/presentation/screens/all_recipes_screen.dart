@@ -24,7 +24,7 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
   bool _isLoading = true;
   List<Recipe> _allRecipes = [];
   String? _error;
-  bool _showDefaultRecipes =
+  final bool _showDefaultRecipes =
       false; // Toggle between all recipes and default recipes
 
   List<String> _categories = ['Todas']; // Will be populated from backend

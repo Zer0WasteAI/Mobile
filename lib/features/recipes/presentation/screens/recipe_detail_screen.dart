@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_history_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Recipe recipe;
@@ -78,9 +81,6 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     // Recipe history state
-    final isInProgress = ref.watch(
-      isRecipeInProgressProvider(widget.recipe.id),
-    );
     final recipeHistory = ref
         .read(recipeHistoryProvider.notifier)
         .getRecipeHistory(widget.recipe);
@@ -293,22 +293,98 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           ],
         ),
         child: SafeArea(
-          child: ElevatedButton(
-            onPressed: () => _handleCookingAction(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              // Add to plan button
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    return ElevatedButton(
+                      onPressed: () async {
+                        // Get the date and meal type from route parameters
+                        final params =
+                            GoRouter.of(context)
+                                .routeInformationProvider
+                                .value
+                                .uri
+                                .queryParameters;
+                        final dateStr = params['date'];
+                        final mealType = params['mealType'];
+
+                        if (dateStr != null && mealType != null) {
+                          // Convert recipe ingredients to MealIngredient format
+                          final mealIngredients =
+                              widget.recipe.ingredients
+                                  .map(
+                                    (ingredient) => MealIngredient(
+                                      name: ingredient,
+                                      quantity:
+                                          1, // Default quantity, should be adjusted based on servings
+                                      unit:
+                                          'unidad', // Default unit, should be adjusted based on recipe
+                                    ),
+                                  )
+                                  .toList();
+
+                          final meal = Meal(
+                            recipeTitle: widget.recipe.name,
+                            ingredientsNeeded: mealIngredients,
+                            prepTime: widget.recipe.cookingTime,
+                            calories:
+                                0, // This should come from the recipe model
+                          );
+
+                          final dailyMeals = DailyMeals(
+                            breakfast: mealType == 'breakfast' ? meal : null,
+                            lunch: mealType == 'lunch' ? meal : null,
+                            dinner: mealType == 'dinner' ? meal : null,
+                          );
+
+                          final notifier = ref.read(
+                            mealPlanningProvider.notifier,
+                          );
+                          final existingPlan = await ref.read(
+                            mealPlanByDateProvider(dateStr).future,
+                          );
+
+                          if (existingPlan != null) {
+                            // Update existing plan
+                            await notifier.updateMealPlan(dateStr, dailyMeals);
+                          } else {
+                            // Create new plan
+                            await notifier.saveMealPlan(dateStr, dailyMeals);
+                          }
+
+                          if (context.mounted) {
+                            context.pop();
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      child: const Text('Agregar al Plan'),
+                    );
+                  },
+                ),
               ),
-            ),
-            child: Text(
-              isInProgress ? 'Terminar de Cocinar' : 'Empezar a Cocinar',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              const SizedBox(width: 16),
+              // Start cooking button
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement start cooking functionality
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                  child: const Text('Empezar a Cocinar'),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -377,96 +453,6 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
-  }
-
-  void _handleCookingAction(BuildContext context) {
-    final isInProgress = ref.read(isRecipeInProgressProvider(widget.recipe.id));
-    final historyNotifier = ref.read(recipeHistoryProvider.notifier);
-
-    if (isInProgress) {
-      // Show rating dialog when completing
-      showDialog(
-        context: context,
-        builder: (context) => _buildCompletionDialog(context),
-      );
-    } else {
-      // Start cooking
-      historyNotifier.startCooking(widget.recipe);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Empezaste a cocinar esta receta!'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Widget _buildCompletionDialog(BuildContext context) {
-    double rating = 5.0;
-    final controller = TextEditingController();
-
-    return AlertDialog(
-      title: const Text('¿Qué tal quedó la receta?'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Rating slider
-          Row(
-            children: [
-              const Text('1'),
-              Expanded(
-                child: Slider(
-                  value: rating,
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  onChanged: (value) {
-                    rating = value;
-                  },
-                ),
-              ),
-              const Text('5'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Notes field
-          TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              hintText: 'Notas (opcional)',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            // Complete cooking with rating and notes
-            ref
-                .read(recipeHistoryProvider.notifier)
-                .completeCooking(
-                  widget.recipe,
-                  rating: rating,
-                  notes: controller.text.isNotEmpty ? controller.text : null,
-                );
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('¡Receta completada!'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
-          child: const Text('Guardar'),
-        ),
-      ],
-    );
   }
 
   // Función simple para parsear ingredientes

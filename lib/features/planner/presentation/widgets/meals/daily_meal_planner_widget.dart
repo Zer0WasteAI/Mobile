@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../../domain/models/meal_plan_models.dart';
 import '../../providers/meal_planning_providers.dart';
 import 'meal_card_widget.dart';
@@ -467,11 +468,88 @@ class _DailyMealPlannerWidgetState
   }
 
   void _generateAutomaticPlan() {
-    // Implement automatic plan generation
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  'Generando plan automático...',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'La IA está creando el plan perfecto para ti',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+    );
+
+    // Generate automatic plan using AI
+    _generateAutomaticMealPlan();
   }
 
   void _createManualPlan() {
-    // Navigate to manual plan creation
+    context.pushNamed(
+      'manualPlanCreation',
+      queryParameters: {'date': widget.selectedDate.toIso8601String()},
+    );
+  }
+
+  Future<void> _generateAutomaticMealPlan() async {
+    try {
+      // Get user preferences (you can enhance this by reading from user profile)
+      final List<Map<String, dynamic>> ingredients = []; // Get from inventory
+
+      // Generate the plan using the backend service
+      final response = await ref
+          .read(mealPlanRepositoryProvider)
+          .generateMealPlan(ingredients: ingredients);
+
+      if (response['meal_plan'] != null) {
+        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+
+        // Save the generated plan
+        await ref
+            .read(mealPlanningProvider.notifier)
+            .saveMealPlan(
+              DateFormat('yyyy-MM-dd').format(widget.selectedDate),
+              mealPlan.meals,
+            );
+
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Plan automático generado exitosamente!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception('No se pudo generar el plan de comidas');
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al generar plan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _duplicatePlan(MealPlanModel mealPlan) {

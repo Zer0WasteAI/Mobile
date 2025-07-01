@@ -92,7 +92,7 @@ class _UnifiedMealPlanningScreenState
               end: Alignment.bottomRight,
               colors: [
                 colorScheme.primary,
-                colorScheme.primary.withOpacity(0.8),
+                colorScheme.primary.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -114,7 +114,7 @@ class _UnifiedMealPlanningScreenState
                   Text(
                     _getHeaderSubtitle(),
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onPrimary.withOpacity(0.8),
+                      color: colorScheme.onPrimary.withValues(alpha: 0.8),
                       fontSize: 13,
                     ),
                     maxLines: 2,
@@ -138,7 +138,7 @@ class _UnifiedMealPlanningScreenState
       alignment: Alignment.center,
       child: Container(
         decoration: BoxDecoration(
-          color: colorScheme.onPrimary.withOpacity(0.1),
+          color: colorScheme.onPrimary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
@@ -274,7 +274,7 @@ class _UnifiedMealPlanningScreenState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -301,7 +301,7 @@ class _UnifiedMealPlanningScreenState
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -464,7 +464,7 @@ class _UnifiedMealPlanningScreenState
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primaryContainer.withOpacity(0.3),
+                          ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -546,7 +546,7 @@ class _UnifiedMealPlanningScreenState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -555,7 +555,7 @@ class _UnifiedMealPlanningScreenState
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color),
@@ -571,7 +571,7 @@ class _UnifiedMealPlanningScreenState
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.6),
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -580,7 +580,7 @@ class _UnifiedMealPlanningScreenState
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),
@@ -639,7 +639,7 @@ class _UnifiedMealPlanningScreenState
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primaryContainer.withOpacity(0.3),
+                          ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -664,7 +664,7 @@ class _UnifiedMealPlanningScreenState
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -701,9 +701,9 @@ class _UnifiedMealPlanningScreenState
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: mealType.color.withOpacity(0.1),
+          color: mealType.color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: mealType.color.withOpacity(0.3)),
+          border: Border.all(color: mealType.color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -727,10 +727,10 @@ class _UnifiedMealPlanningScreenState
   void _addMeal(MealType mealType) {
     Navigator.pop(context);
     context.pushNamed(
-      'recipeLibrary',
+      'recipeGeneration',
       queryParameters: {
         'date': _selectedDate.toIso8601String(),
-        'mealType': mealType.name,
+        'mealType': mealType.toString().split('.').last,
       },
     );
   }

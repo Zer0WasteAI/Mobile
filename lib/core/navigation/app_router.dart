@@ -47,6 +47,9 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_sc
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/my_recipes_screen.dart'; // Import MyRecipesScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recipe_generation_screen.dart'; // Import CustomRecipeGenerationScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_generation_screen.dart'; // Import RecipeGenerationScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/manual_plan_creation_screen.dart'; // Import ManualPlanCreationScreen
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart'; // Import MealType
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -334,6 +337,78 @@ class AppRouter {
           builder: (context, state) {
             // For now, just show the recipes screen. Later can be enhanced with meal planning context
             return const AllRecipesScreen();
+          },
+        ),
+        // Route for Recipe Generation (for meal planning)
+        GoRoute(
+          path: '/recipe-generation',
+          name: 'recipeGeneration',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final dateStr = state.uri.queryParameters['date'];
+            final mealTypeStr = state.uri.queryParameters['mealType'];
+            
+            if (dateStr == null || mealTypeStr == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            try {
+              final selectedDate = DateTime.parse(dateStr);
+              final mealType = MealType.values.firstWhere(
+                (type) => type.toString().split('.').last == mealTypeStr,
+                orElse: () => MealType.lunch,
+              );
+              
+              return RecipeGenerationScreen(
+                selectedDate: selectedDate,
+                mealType: mealType,
+              );
+            } catch (e) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+          },
+        ),
+        // Route for Manual Plan Creation
+        GoRoute(
+          path: '/manual-plan-creation',
+          name: 'manualPlanCreation',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final dateStr = state.uri.queryParameters['date'];
+            
+            if (dateStr == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            try {
+              final selectedDate = DateTime.parse(dateStr);
+              
+              return ManualPlanCreationScreen(
+                selectedDate: selectedDate,
+              );
+            } catch (e) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
           },
         ),
         // Route for Recipe Detail Screen
