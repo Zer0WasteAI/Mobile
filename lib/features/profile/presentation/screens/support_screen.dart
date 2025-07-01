@@ -799,6 +799,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
     }
   }
 
+  // ignore: unused_element
   void _showChatUnavailableDialog() {
     showDialog(
       context: context,

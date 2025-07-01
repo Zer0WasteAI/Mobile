@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart';
@@ -14,7 +14,7 @@ import 'package:zer0_waste_ai/features/navigation/presentation/widgets/safe_navi
 class RecipeLibraryScreen extends ConsumerStatefulWidget {
   final bool selectionMode;
   final MealType? initialMealType;
-  final Function(MealPlan)? onRecipeSelected;
+  final Function(SimpleRecipe)? onRecipeSelected;
 
   const RecipeLibraryScreen({
     super.key,
@@ -465,7 +465,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   }
 
   // Grid de recetas
-  Widget _buildRecipeGrid(List<MealPlan> recipes, WidgetRef ref) {
+  Widget _buildRecipeGrid(List<SimpleRecipe> recipes, WidgetRef ref) {
     if (recipes.isEmpty) {
       return _buildEmptyState(
         'No se encontraron recetas',
@@ -490,7 +490,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   }
 
   // Tarjeta de receta
-  Widget _buildRecipeCard(MealPlan recipe, WidgetRef ref) {
+  Widget _buildRecipeCard(SimpleRecipe recipe, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
         // Si estamos en modo selección, llamar al callback con la receta seleccionada
@@ -761,7 +761,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   // Método para mostrar diálogo de añadir al plan
   void _showAddToPlanDialog(
     BuildContext context,
-    MealPlan recipe,
+    SimpleRecipe recipe,
     WidgetRef ref,
   ) {
     // Obtener la fecha actual por defecto
@@ -1106,7 +1106,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   void _addMealToPlan(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     // Obtener todos los planes de comida existentes
@@ -1317,7 +1317,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
   }
 
   // Método para obtener el icono adecuado según la receta
-  IconData _getIconForRecipe(MealPlan recipe) {
+  IconData _getIconForRecipe(SimpleRecipe recipe) {
     // Primero verificamos el tipo de comida
     switch (recipe.type) {
       case MealType.breakfast:
@@ -1636,7 +1636,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
 
   void _showRecipeDetails(
     BuildContext context,
-    MealPlan recipe,
+    SimpleRecipe recipe,
     WidgetRef ref,
   ) {
     // Mostrar detalles de la receta en un bottom sheet

@@ -10,7 +10,6 @@ import 'package:zer0_waste_ai/features/recipes/data/repositories/recipe_reposito
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
-
 // --- Provider Definitions ---
 
 // StateNotifier for Recipe Logic

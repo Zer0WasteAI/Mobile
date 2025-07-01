@@ -155,6 +155,7 @@ class _AllergySelectorScreenState extends ConsumerState<AllergySelectorScreen> {
     final selectedAllergyNames = ref.watch(selectedAllergiesProvider);
     final notifier = ref.read(selectedAllergiesProvider.notifier);
     final allergiesAsyncValue = ref.watch(allergiesProvider);
+    // ignore: unused_local_variable
     final authState = ref.watch(authStateProvider);
 
     // Use Theme colors for consistency

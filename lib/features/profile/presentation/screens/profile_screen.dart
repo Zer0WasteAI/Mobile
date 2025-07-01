@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, no_leading_underscores_for_local_identifiers, avoid_print
+// ignore_for_file: unused_local_variable, no_leading_underscores_for_local_identifiers, avoid_print, unused_element
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

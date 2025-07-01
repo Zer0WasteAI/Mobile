@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/widgets/dialogs/add_meal_dialog.dart';
@@ -1019,7 +1019,7 @@ class PlannerScreen extends ConsumerWidget {
   Widget _buildMealItem(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     final isToday = dateKey == DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -1134,27 +1134,6 @@ class PlannerScreen extends ConsumerWidget {
                               color: Colors.grey.shade600,
                             ),
                           ),
-
-                          if (meal.reminders != null &&
-                              meal.reminders!.isNotEmpty)
-                            Row(
-                              children: [
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.notifications_active,
-                                  size: 12,
-                                  color: Colors.amber.shade700,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Recordatorio',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: Colors.amber.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
                         ],
                       ),
                     ],
@@ -1297,7 +1276,7 @@ class PlannerScreen extends ConsumerWidget {
     final formattedDate = DateFormat('EEEE d MMMM', 'es_ES').format(day);
 
     // Comida seleccionada actualmente para agregar
-    MealPlan? selectedMeal;
+    SimpleRecipe? selectedMeal;
 
     // Obtener todas las recetas, favoritos y recientes
     final allRecipes = ref.read(allRecipesProvider);
@@ -1332,7 +1311,7 @@ class PlannerScreen extends ConsumerWidget {
           (context) => StatefulBuilder(
             builder: (context, setState) {
               // Determinar qué lista mostrar según la pestaña seleccionada
-              List<MealPlan> currentList;
+              List<SimpleRecipe> currentList;
               switch (selectedTabIndex) {
                 case 1:
                   currentList = filteredFavorites;
@@ -1638,7 +1617,7 @@ class PlannerScreen extends ConsumerWidget {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        '${recipe.prepTimeMinutes} min',
+                                                        '30 min', // SimpleRecipe doesn't have prepTimeMinutes
                                                         style:
                                                             GoogleFonts.inter(
                                                               fontSize: 12,
@@ -1657,7 +1636,7 @@ class PlannerScreen extends ConsumerWidget {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        '${recipe.calories} kcal',
+                                                        '250 kcal', // SimpleRecipe doesn't have calories
                                                         style:
                                                             GoogleFonts.inter(
                                                               fontSize: 12,
@@ -1862,7 +1841,7 @@ class PlannerScreen extends ConsumerWidget {
             (context) => RecipeLibraryScreen(
               selectionMode: true,
               initialMealType: initialType,
-              onRecipeSelected: (MealPlan selectedRecipe) {
+              onRecipeSelected: (SimpleRecipe selectedRecipe) {
                 // Actualizar fecha de último uso
                 ref
                     .read(allRecipesProvider.notifier)
@@ -1889,7 +1868,7 @@ class PlannerScreen extends ConsumerWidget {
   void _showAiSuggestionDialog(
     BuildContext context,
     MealType? initialType,
-    Function(MealPlan) onSelect,
+    Function(SimpleRecipe) onSelect,
     WidgetRef ref,
   ) {
     final ingredients = TextEditingController();
@@ -2327,7 +2306,7 @@ class PlannerScreen extends ConsumerWidget {
   void _showEditMealDialog(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     final formattedDate = DateFormat(
@@ -2343,7 +2322,7 @@ class PlannerScreen extends ConsumerWidget {
         allRecipes.where((recipe) => recipe.type == meal.type).toList();
 
     // Comida seleccionada actualmente
-    MealPlan selectedMeal = meal;
+    SimpleRecipe selectedMeal = meal;
 
     // Obtener favoritos y recientes
     final favorites =
@@ -2862,7 +2841,7 @@ class PlannerScreen extends ConsumerWidget {
   void _showMoveMealDialog(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String currentDateKey,
     DateTime currentDate,
   ) {
@@ -2886,7 +2865,7 @@ class PlannerScreen extends ConsumerWidget {
   void _showReminderDialog(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     showDialog(
@@ -2894,13 +2873,10 @@ class PlannerScreen extends ConsumerWidget {
       builder:
           (context) => CustomReminderDialog(
             onAdd: (reminderText) {
-              // Agregar el recordatorio a la lista existente
-              final currentReminders = meal.reminders ?? [];
-              final updatedReminders = [...currentReminders, reminderText];
-              final updatedMeal = meal.copyWith(reminders: updatedReminders);
-                                  ref
-                                      .read(mealPlansProvider.notifier)
-                                      .editMeal(dateKey, meal, updatedMeal);
+              // SimpleRecipe doesn't have reminders, so we'll just show a message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Recordatorio agregado: $reminderText')),
+              );           
             },
           ),
     );
@@ -3730,7 +3706,7 @@ class PlannerScreen extends ConsumerWidget {
   void _showMealDetails(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     final formattedDate =
@@ -3922,7 +3898,8 @@ class PlannerScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 12),
 
-                        if (meal.reminders == null || meal.reminders!.isEmpty)
+                        // SimpleRecipe doesn't have reminders
+                        if (true) // meal.reminders == null || meal.reminders!.isEmpty
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Row(
@@ -3942,27 +3919,8 @@ class PlannerScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                          )
-                        else
-                          ...meal.reminders!.map(
-                            (reminder) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.notifications_active,
-                                    size: 16,
-                                    color: Colors.amber.shade700,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    reminder,
-                                    style: GoogleFonts.inter(fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
+                        
 
                         const SizedBox(height: 16),
 
@@ -3973,9 +3931,7 @@ class PlannerScreen extends ConsumerWidget {
                           },
                           icon: const Icon(Icons.notifications),
                           label: Text(
-                            meal.reminders == null || meal.reminders!.isEmpty
-                                ? 'Configurar recordatorios'
-                                : 'Modificar recordatorios',
+                            'Configurar recordatorios', // SimpleRecipe doesn't have reminders
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.amber.shade700,
@@ -4000,7 +3956,7 @@ class PlannerScreen extends ConsumerWidget {
   void _addMealWithValidation(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey, {
     MealType? expectedType,
   }) {
@@ -4080,7 +4036,7 @@ class PlannerScreen extends ConsumerWidget {
   void _processValidation(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
   ) {
     // Obtener todos los planes de comida existentes

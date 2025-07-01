@@ -1,6 +1,53 @@
-/// INFO: Data models for meal planning functionality
+/// INFO: Data models for meal planning functionality  
 /// ADVICE: These models match the API structure for meal planning endpoints
 library;
+
+import 'package:flutter/material.dart';
+
+/// Enum for meal types with UI extensions
+enum MealType { breakfast, lunch, dinner, snack }
+
+/// Extension for meal type UI properties
+extension MealTypeExtension on MealType {
+  String get name {
+    switch (this) {
+      case MealType.breakfast:
+        return 'Desayuno';
+      case MealType.lunch:
+        return 'Almuerzo';
+      case MealType.dinner:
+        return 'Cena';
+      case MealType.snack:
+        return 'Snack';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case MealType.breakfast:
+        return Icons.breakfast_dining;
+      case MealType.lunch:
+        return Icons.lunch_dining;
+      case MealType.dinner:
+        return Icons.dinner_dining;
+      case MealType.snack:
+        return Icons.cookie;
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case MealType.breakfast:
+        return Colors.orange;
+      case MealType.lunch:
+        return Colors.green;
+      case MealType.dinner:
+        return Colors.purple;
+      case MealType.snack:
+        return Colors.blue;
+    }
+  }
+}
 
 /// INFO: Ingredient model for meal planning
 class MealIngredient {
@@ -265,5 +312,111 @@ class DeleteMealPlanResponse {
 
   factory DeleteMealPlanResponse.fromJson(Map<String, dynamic> json) {
     return DeleteMealPlanResponse(message: json['message'] as String);
+  }
+}
+
+/// INFO: Simple recipe model for meal planning
+class SimpleRecipe {
+  final String id;
+  final String name;
+  final String imageUrl;
+  final List<String> ingredients;
+  final int prepTimeMinutes;
+  final int calories;
+  final String difficulty;
+  final List<String> dietaryTags;
+  final MealType type;
+  final bool isFavorite;
+  final List<String>? reminders;
+  final DateTime? lastUsed;
+
+  const SimpleRecipe({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.ingredients,
+    required this.prepTimeMinutes,
+    required this.calories,
+    required this.difficulty,
+    required this.dietaryTags,
+    required this.type,
+    this.isFavorite = false,
+    this.reminders,
+    this.lastUsed,
+  });
+
+  SimpleRecipe copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    List<String>? ingredients,
+    int? prepTimeMinutes,
+    int? calories,
+    String? difficulty,
+    List<String>? dietaryTags,
+    MealType? type,
+    bool? isFavorite,
+    List<String>? reminders,
+    DateTime? lastUsed,
+  }) {
+    return SimpleRecipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      ingredients: ingredients ?? this.ingredients,
+      prepTimeMinutes: prepTimeMinutes ?? this.prepTimeMinutes,
+      calories: calories ?? this.calories,
+      difficulty: difficulty ?? this.difficulty,
+      dietaryTags: dietaryTags ?? this.dietaryTags,
+      type: type ?? this.type,
+      isFavorite: isFavorite ?? this.isFavorite,
+      reminders: reminders ?? this.reminders,
+      lastUsed: lastUsed ?? this.lastUsed,
+    );
+  }
+
+  factory SimpleRecipe.fromJson(Map<String, dynamic> json) {
+    return SimpleRecipe(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      imageUrl: json['imageUrl'] as String? ?? '',
+      ingredients: (json['ingredients'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ?? [],
+      prepTimeMinutes: json['prepTimeMinutes'] as int? ?? 0,
+      calories: json['calories'] as int? ?? 0,
+      difficulty: json['difficulty'] as String? ?? 'Fácil',
+      dietaryTags: (json['dietaryTags'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ?? [],
+      type: MealType.values.firstWhere(
+        (e) => e.toString() == 'MealType.${json['type']}',
+        orElse: () => MealType.lunch,
+      ),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      reminders: (json['reminders'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      lastUsed: json['lastUsed'] != null
+          ? DateTime.parse(json['lastUsed'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'imageUrl': imageUrl,
+      'ingredients': ingredients,
+      'prepTimeMinutes': prepTimeMinutes,
+      'calories': calories,
+      'difficulty': difficulty,
+      'dietaryTags': dietaryTags,
+      'type': type.toString().split('.').last,
+      'isFavorite': isFavorite,
+      'reminders': reminders,
+      'lastUsed': lastUsed?.toIso8601String(),
+    };
   }
 }
