@@ -93,6 +93,15 @@ final impactEquivalenceProvider = Provider<Map<String, String>>((ref) {
 /// Proveedor para el índice de la pestaña activa en el panel de impacto
 final impactTabIndexProvider = StateProvider<int>((ref) => 0);
 
+/// Provider for calculating meal impact
+final mealImpactProvider = FutureProvider.family<EnvironmentalImpact, String>((
+  ref,
+  recipeId,
+) {
+  final repository = ref.watch(impactRepositoryProvider);
+  return repository.calculateImpactFromUid(recipeId);
+});
+
 // --- API Based Providers ---
 
 final impactRepositoryProvider = Provider<ImpactRepository>((ref) {

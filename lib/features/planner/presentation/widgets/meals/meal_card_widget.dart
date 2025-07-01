@@ -60,11 +60,7 @@ class MealCardWidget extends StatelessWidget {
               color: mealType.color,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              mealType.icon,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: Icon(mealType.icon, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -82,17 +78,13 @@ class MealCardWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: Colors.grey[600],
-                    ),
+                    Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
                       '${meal.prepTime} min',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                     const SizedBox(width: 12),
                     Icon(
@@ -103,9 +95,9 @@ class MealCardWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       '${meal.calories} cal',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -113,37 +105,35 @@ class MealCardWidget extends StatelessWidget {
             ),
           ),
           PopupMenuButton(
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.grey[600],
-            ),
-            itemBuilder: (context) => [
-              if (onEdit != null)
-                PopupMenuItem(
-                  value: 'edit',
-                  child: const Row(
-                    children: [
-                      Icon(Icons.edit, size: 18),
-                      SizedBox(width: 8),
-                      Text('Editar'),
-                    ],
-                  ),
-                ),
-              if (onDelete != null)
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, size: 18, color: Colors.red[600]),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Eliminar',
-                        style: TextStyle(color: Colors.red[600]),
+            icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+            itemBuilder:
+                (context) => [
+                  if (onEdit != null)
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: const Row(
+                        children: [
+                          Icon(Icons.edit, size: 18),
+                          SizedBox(width: 8),
+                          Text('Editar'),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-            ],
+                    ),
+                  if (onDelete != null)
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, size: 18, color: Colors.red[600]),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Eliminar',
+                            style: TextStyle(color: Colors.red[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
             onSelected: (value) {
               switch (value) {
                 case 'edit':
@@ -168,33 +158,37 @@ class MealCardWidget extends StatelessWidget {
         children: [
           Text(
             'Ingredientes:',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          ...meal.ingredientsNeeded.take(3).map((ingredient) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: mealType.color,
-                    shape: BoxShape.circle,
+          ...meal.ingredientsNeeded
+              .take(3)
+              .map(
+                (ingredient) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: mealType.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ingredient.toString(),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    ingredient.toString(),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-          )),
+              ),
           if (meal.ingredientsNeeded.length > 3)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -223,17 +217,13 @@ class MealCardWidget extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                Icon(
-                  Icons.restaurant,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
+                Icon(Icons.restaurant, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 4),
                 Text(
                   '${meal.ingredientsNeeded.length} ingredientes',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
