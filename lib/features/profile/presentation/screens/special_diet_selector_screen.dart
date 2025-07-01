@@ -11,6 +11,7 @@ import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/special_diets_provider.dart';
 import 'package:zer0_waste_ai/features/profile/domain/models/special_diet.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 // ✅ RESOLVED: Route name already defined below as routeName and routePath constants
 
@@ -28,16 +29,19 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
     final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
     final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
     final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
-    final authState = ref.watch(authControllerProvider);
+    final authState = ref.watch(authStateProvider);
 
     // Load current special diets when entering the screen from profile
     if (fromProfile && authState.hasValue) {
       final user = authState.value;
       if (user != null) {
-        final userDiets = user.prefs.specialDietItems.isNotEmpty
-            ? user.prefs.specialDietItems.map((item) => item['name'] as String).toList()
-            : user.prefs.specialDiets;
-        
+        final userDiets =
+            user.prefs.specialDietItems.isNotEmpty
+                ? user.prefs.specialDietItems
+                    .map((item) => item['name'] as String)
+                    .toList()
+                : user.prefs.specialDiets;
+
         // Always load when coming from profile, reset first to ensure clean state
         WidgetsBinding.instance.addPostFrameCallback((_) {
           // Clear current selections first
@@ -45,21 +49,20 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
           for (final diet in currentDiets) {
             notifier.toggleDiet(diet, predefinedDietsAsyncValue.value ?? []);
           }
-          
+
           // Then add user's saved diets
           final availableDiets = predefinedDietsAsyncValue.value ?? [];
           for (final dietName in userDiets) {
             // Find matching predefined diet or create custom one
-            final predefinedDiet = availableDiets.where((d) => d.name == dietName).firstOrNull;
+            final predefinedDiet =
+                availableDiets.where((d) => d.name == dietName).firstOrNull;
             if (predefinedDiet != null) {
               notifier.toggleDiet(predefinedDiet, availableDiets);
             } else {
               // Custom diet
-              notifier.addCustomDiet(SpecialDiet(
-                name: dietName,
-                emoji: '🍴',
-                isCustom: true,
-              ));
+              notifier.addCustomDiet(
+                SpecialDiet(name: dietName, emoji: '🍴', isCustom: true),
+              );
             }
           }
         });
@@ -267,10 +270,13 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
 
                             // Save special diets to Firestore
                             try {
-                              final authRepository = ref.read(authRepositoryProvider);
+                              final authRepository = ref.read(
+                                authRepositoryProvider,
+                              );
 
                               // Create special diet items with metadata (emoji, isCustom)
-                              final List<Map<String, dynamic>> specialDietItems =
+                              final List<Map<String, dynamic>>
+                              specialDietItems =
                                   selectedDiets
                                       .map(
                                         (diet) => {
@@ -287,20 +293,31 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                                     specialDietItems,
                                   );
 
-                              // Refrescar datos de usuario
+                              // Refrescar datos de usuario y estado de autenticación
                               await ref
                                   .read(authControllerProvider.notifier)
                                   .refreshUserFromFirestore();
 
-                              log('✅ Special diets saved to Firestore successfully');
+                              // Force refresh del perfil para asegurar actualización
+                              await ref
+                                  .read(userProfileProvider.notifier)
+                                  .refresh();
+
+                              log(
+                                '✅ Special diets saved to Firestore successfully',
+                              );
                               log("Selected Diets on Save: $selectedDiets");
 
                               // Show success message
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentSnackBar();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Dietas especiales actualizadas'),
+                                    content: const Text(
+                                      'Dietas especiales actualizadas',
+                                    ),
                                     backgroundColor: colorScheme.primary,
                                     duration: const Duration(seconds: 2),
                                   ),
@@ -311,10 +328,14 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                             } catch (e) {
                               log('❌ Error saving special diets: $e');
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentSnackBar();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Error: No se pudieron guardar las dietas'),
+                                    content: const Text(
+                                      'Error: No se pudieron guardar las dietas',
+                                    ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -367,7 +388,9 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
 
                         // Save special diets to Firestore before navigating
                         try {
-                          final authRepository = ref.read(authRepositoryProvider);
+                          final authRepository = ref.read(
+                            authRepositoryProvider,
+                          );
 
                           // Create special diet items with metadata (emoji, isCustom)
                           final List<Map<String, dynamic>> specialDietItems =
@@ -388,9 +411,22 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                               );
 
                           // IMPORTANT: Mark initial preferences as completed since this is the last onboarding screen
-                          await authRepository.markInitialPreferencesCompleted();
+                          await authRepository
+                              .markInitialPreferencesCompleted();
 
-                          log('✅ Special diets saved to Firestore successfully');
+                          // Refrescar datos de usuario y estado de autenticación
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .refreshUserFromFirestore();
+
+                          // Force refresh del perfil para asegurar actualización
+                          await ref
+                              .read(userProfileProvider.notifier)
+                              .refresh();
+
+                          log(
+                            '✅ Special diets saved to Firestore successfully',
+                          );
                           log('✅ Initial preferences marked as completed');
                           log("Selected Diets on Continue: $selectedDiets");
 

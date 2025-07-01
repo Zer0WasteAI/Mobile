@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/preferred_food_type_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // --- Enum & State Management ---
@@ -48,12 +49,10 @@ final selectedCookingLevelProvider = StateNotifierProvider.autoDispose<
 });
 
 // Non-autoDispose version for profile editing to maintain state
-final selectedCookingLevelForProfileProvider = StateNotifierProvider<
-  SelectedCookingLevelNotifier,
-  CookingLevel?
->((ref) {
-  return SelectedCookingLevelNotifier(null);
-});
+final selectedCookingLevelForProfileProvider =
+    StateNotifierProvider<SelectedCookingLevelNotifier, CookingLevel?>((ref) {
+      return SelectedCookingLevelNotifier(null);
+    });
 
 class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
   SelectedCookingLevelNotifier(super.initialState);
@@ -82,10 +81,12 @@ class CookingLevelSelectorScreen extends ConsumerStatefulWidget {
   final bool fromProfile;
 
   @override
-  ConsumerState<CookingLevelSelectorScreen> createState() => _CookingLevelSelectorScreenState();
+  ConsumerState<CookingLevelSelectorScreen> createState() =>
+      _CookingLevelSelectorScreenState();
 }
 
-class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelectorScreen> {
+class _CookingLevelSelectorScreenState
+    extends ConsumerState<CookingLevelSelectorScreen> {
   bool _isInitialized = false;
 
   @override
@@ -108,35 +109,43 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
   }
 
   void _initializeCookingLevel() {
-    log('🔧 Initializing cooking level screen. fromProfile: ${widget.fromProfile}, isInitialized: $_isInitialized');
-    
+    log(
+      '🔧 Initializing cooking level screen. fromProfile: ${widget.fromProfile}, isInitialized: $_isInitialized',
+    );
+
     // Always reinitialize when coming from profile to ensure fresh state
     if (_isInitialized && !widget.fromProfile) {
       log('🔧 Already initialized and not from profile, skipping');
       return;
     }
-    
-    final authState = ref.read(authControllerProvider);
+
+    final authState = ref.read(authStateProvider);
     log('🔧 Auth state hasValue: ${authState.hasValue}');
-    
+
     if (widget.fromProfile && authState.hasValue) {
       final user = authState.value;
       if (user != null) {
         final currentLevelString = user.prefs.cookingLevel;
         log('🔧 User cooking level from Firestore: "$currentLevelString"');
-        
+
         // Test each mapping explicitly
         log('🔧 Testing mappings:');
-        log('  - "beginner" -> ${CookingLevelExtension.fromStorageString("beginner")}');
-        log('  - "intermediate" -> ${CookingLevelExtension.fromStorageString("intermediate")}');
-        log('  - "advanced" -> ${CookingLevelExtension.fromStorageString("advanced")}');
-        
+        log(
+          '  - "beginner" -> ${CookingLevelExtension.fromStorageString("beginner")}',
+        );
+        log(
+          '  - "intermediate" -> ${CookingLevelExtension.fromStorageString("intermediate")}',
+        );
+        log(
+          '  - "advanced" -> ${CookingLevelExtension.fromStorageString("advanced")}',
+        );
+
         final currentLevel = CookingLevelExtension.fromStorageString(
           currentLevelString,
         );
         log('🔧 Parsed cooking level: ${currentLevel.toStorageString()}');
         log('🔧 Parsed cooking level enum: $currentLevel');
-        
+
         // Use simple provider for both cases to eliminate complexity
         final notifier = ref.read(selectedCookingLevelProvider.notifier);
         notifier.selectLevel(currentLevel);
@@ -148,7 +157,7 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
     } else {
       log('🔧 Not from profile or auth state not available');
     }
-    
+
     _isInitialized = true;
   }
 
@@ -157,7 +166,7 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
     // Use single provider for simplicity to debug the issue
     final selectedLevel = ref.watch(selectedCookingLevelProvider);
     final notifier = ref.read(selectedCookingLevelProvider.notifier);
-    
+
     // Debug info
     log('🔍 Building CookingLevelSelectorScreen:');
     log('  - fromProfile: ${widget.fromProfile}');
@@ -165,12 +174,18 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
     log('  - selectedLevel enum: $selectedLevel');
     log('  - isInitialized: $_isInitialized');
     log('  - using ${widget.fromProfile ? "profile" : "regular"} provider');
-    
+
     // Check each comparison
     log('🔍 Selection comparisons:');
-    log('  - selectedLevel == beginner: ${selectedLevel == CookingLevel.beginner}');
-    log('  - selectedLevel == intermediate: ${selectedLevel == CookingLevel.intermediate}');
-    log('  - selectedLevel == advanced: ${selectedLevel == CookingLevel.advanced}');
+    log(
+      '  - selectedLevel == beginner: ${selectedLevel == CookingLevel.beginner}',
+    );
+    log(
+      '  - selectedLevel == intermediate: ${selectedLevel == CookingLevel.intermediate}',
+    );
+    log(
+      '  - selectedLevel == advanced: ${selectedLevel == CookingLevel.advanced}',
+    );
 
     // Use Theme colors for consistent styling
     final theme = Theme.of(context);
@@ -374,22 +389,33 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
                                       cookingLevelString,
                                     );
 
-                                    // Refrescar datos de usuario
-                                    await authController.refreshUserFromFirestore();
+                                    // Refrescar datos de usuario y estado de autenticación
+                                    await authController
+                                        .refreshUserFromFirestore();
 
-                                    // Reset state to avoid keeping selections
-                                    notifier.reset();
+                                    // Force refresh del perfil para asegurar actualización
+                                    await ref
+                                        .read(userProfileProvider.notifier)
+                                        .refresh();
 
                                     // Show success message
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: const Text('Nivel de cocina actualizado'),
+                                          content: const Text(
+                                            'Nivel de cocina actualizado',
+                                          ),
                                           backgroundColor: colorScheme.primary,
                                           duration: const Duration(seconds: 2),
                                         ),
                                       );
+                                      // Reset state AFTER showing message
+                                      notifier.reset();
                                       // Go back to profile
                                       context.go('/profile');
                                     }
@@ -399,7 +425,9 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
                                       ScaffoldMessenger.of(
                                         context,
                                       ).hideCurrentSnackBar();
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             'Error: No se pudo guardar el nivel de cocina',
@@ -419,7 +447,9 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
                           foregroundColor:
                               selectedLevel != null
                                   ? colorScheme.onPrimary
-                                  : colorScheme.onSurface.withValues(alpha: 0.5),
+                                  : colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -472,8 +502,13 @@ class _CookingLevelSelectorScreenState extends ConsumerState<CookingLevelSelecto
                                   cookingLevelString,
                                 );
 
-                                // Refrescar datos de usuario
+                                // Refrescar datos de usuario y estado de autenticación
                                 await authController.refreshUserFromFirestore();
+
+                                // Force refresh del perfil para asegurar actualización
+                                await ref
+                                    .read(userProfileProvider.notifier)
+                                    .refresh();
 
                                 // Reset state to avoid keeping selections
                                 notifier.reset();

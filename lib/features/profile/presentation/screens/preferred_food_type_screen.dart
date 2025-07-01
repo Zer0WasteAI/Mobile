@@ -9,6 +9,7 @@ import 'package:zer0_waste_ai/features/profile/application/providers/food_types_
 import 'package:zer0_waste_ai/features/profile/application/providers/selected_food_types_provider.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // --- Screen Widget ---
@@ -44,7 +45,7 @@ class _PreferredFoodTypeScreenState
   Future<void> _initializeFoodTypes() async {
     // When coming from profile, always reinitialize to load current values
     if (_isInitialized && !widget.fromProfile) return;
-    
+
     // Reset state if coming from profile
     if (widget.fromProfile) {
       final notifier = ref.read(
@@ -54,7 +55,7 @@ class _PreferredFoodTypeScreenState
     }
 
     final foodTypesAsyncValue = ref.read(foodTypesProvider);
-    final user = ref.read(authControllerProvider).value;
+    final user = ref.read(authStateProvider).value;
 
     // Wait for food types to load if they haven't yet
     if (foodTypesAsyncValue is AsyncLoading) {
@@ -239,7 +240,9 @@ class _PreferredFoodTypeScreenState
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: colorScheme.onSurface,
                                   side: BorderSide(color: colorScheme.outline),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30),
                                   ),
@@ -273,7 +276,10 @@ class _PreferredFoodTypeScreenState
                                             // Save selected food types to Firestore
                                             final foodTypeNames =
                                                 selectedTypes
-                                                    .map((foodType) => foodType.name)
+                                                    .map(
+                                                      (foodType) =>
+                                                          foodType.name,
+                                                    )
                                                     .toList();
 
                                             log(
@@ -285,22 +291,41 @@ class _PreferredFoodTypeScreenState
                                                   foodTypeNames,
                                                 );
 
-                                            // Refrescar datos de usuario
+                                            // Refrescar datos de usuario y estado de autenticación
                                             await ref
-                                                .read(authControllerProvider.notifier)
+                                                .read(
+                                                  authControllerProvider
+                                                      .notifier,
+                                                )
                                                 .refreshUserFromFirestore();
+
+                                            // Force refresh del perfil para asegurar actualización
+                                            await ref
+                                                .read(
+                                                  userProfileProvider.notifier,
+                                                )
+                                                .refresh();
 
                                             // Reset state to avoid keeping selections
                                             notifier.reset();
 
                                             // Show success message
                                             if (context.mounted) {
-                                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 SnackBar(
-                                                  content: const Text('Tipos de comida actualizados'),
-                                                  backgroundColor: colorScheme.primary,
-                                                  duration: const Duration(seconds: 2),
+                                                  content: const Text(
+                                                    'Tipos de comida actualizados',
+                                                  ),
+                                                  backgroundColor:
+                                                      colorScheme.primary,
+                                                  duration: const Duration(
+                                                    seconds: 2,
+                                                  ),
                                                 ),
                                               );
                                               // Go back to profile
@@ -333,7 +358,9 @@ class _PreferredFoodTypeScreenState
                                       allFoodTypesAsyncValue.hasValue
                                           ? primaryColor
                                           : Colors.grey,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30),
                                   ),
@@ -371,7 +398,9 @@ class _PreferredFoodTypeScreenState
                                         // Save selected food types to Firestore - even if empty list
                                         final foodTypeNames =
                                             selectedTypes
-                                                .map((foodType) => foodType.name)
+                                                .map(
+                                                  (foodType) => foodType.name,
+                                                )
                                                 .toList();
 
                                         log(
@@ -383,10 +412,17 @@ class _PreferredFoodTypeScreenState
                                               foodTypeNames, // Could be empty list
                                             );
 
-                                        // Refrescar datos de usuario
+                                        // Refrescar datos de usuario y estado de autenticación
                                         await ref
-                                            .read(authControllerProvider.notifier)
+                                            .read(
+                                              authControllerProvider.notifier,
+                                            )
                                             .refreshUserFromFirestore();
+
+                                        // Force refresh del perfil para asegurar actualización
+                                        await ref
+                                            .read(userProfileProvider.notifier)
+                                            .refresh();
 
                                         // Reset state to avoid keeping selections
                                         notifier.reset();

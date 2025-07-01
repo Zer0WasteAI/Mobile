@@ -11,6 +11,7 @@ import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/allergies_provider.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
 final selectedAllergiesProvider = StateNotifierProvider<
@@ -68,16 +69,19 @@ class AllergySelectorScreen extends ConsumerWidget {
     final selectedAllergyNames = ref.watch(selectedAllergiesProvider);
     final notifier = ref.read(selectedAllergiesProvider.notifier);
     final allergiesAsyncValue = ref.watch(allergiesProvider);
-    final authState = ref.watch(authControllerProvider);
+    final authState = ref.watch(authStateProvider);
 
     // Load current allergies when entering the screen from profile
     if (fromProfile && authState.hasValue) {
       final user = authState.value;
       if (user != null) {
-        final userAllergies = user.prefs.allergyItems.isNotEmpty
-            ? user.prefs.allergyItems.map((item) => item['name'] as String).toList()
-            : user.prefs.allergies;
-        
+        final userAllergies =
+            user.prefs.allergyItems.isNotEmpty
+                ? user.prefs.allergyItems
+                    .map((item) => item['name'] as String)
+                    .toList()
+                : user.prefs.allergies;
+
         // Always load when coming from profile, reset first to ensure clean state
         WidgetsBinding.instance.addPostFrameCallback((_) {
           // Clear current selections first
@@ -304,14 +308,17 @@ class AllergySelectorScreen extends ConsumerWidget {
                                         ref.read(allergiesProvider).value ?? [];
 
                                     // Create allergy items with metadata (emoji, isCustom)
-                                    final List<Map<String, dynamic>> allergyItems =
-                                        [];
+                                    final List<Map<String, dynamic>>
+                                    allergyItems = [];
 
-                                    for (final allergyName in selectedAllergyNames) {
+                                    for (final allergyName
+                                        in selectedAllergyNames) {
                                       // Find if it's a predefined allergy
                                       final predefinedAllergy =
                                           allergies
-                                              .where((a) => a.name == allergyName)
+                                              .where(
+                                                (a) => a.name == allergyName,
+                                              )
                                               .firstOrNull;
 
                                       if (predefinedAllergy != null) {
@@ -337,10 +344,15 @@ class AllergySelectorScreen extends ConsumerWidget {
                                           allergyItems,
                                         );
 
-                                    // Refrescar datos de usuario
+                                    // Refrescar datos de usuario y estado de autenticación
                                     await ref
                                         .read(authControllerProvider.notifier)
                                         .refreshUserFromFirestore();
+
+                                    // Force refresh del perfil para asegurar actualización
+                                    await ref
+                                        .read(userProfileProvider.notifier)
+                                        .refresh();
 
                                     log(
                                       '✅ Allergies saved to Firestore successfully',
@@ -348,10 +360,16 @@ class AllergySelectorScreen extends ConsumerWidget {
 
                                     // Show success message
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: const Text('Alergias actualizadas'),
+                                          content: const Text(
+                                            'Alergias actualizadas',
+                                          ),
                                           backgroundColor: colorScheme.primary,
                                           duration: const Duration(seconds: 2),
                                         ),
@@ -362,10 +380,16 @@ class AllergySelectorScreen extends ConsumerWidget {
                                   } catch (e) {
                                     log('❌ Error saving allergies: $e');
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: const Text('Error: No se pudieron guardar las alergias'),
+                                          content: const Text(
+                                            'Error: No se pudieron guardar las alergias',
+                                          ),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -427,7 +451,8 @@ class AllergySelectorScreen extends ConsumerWidget {
                                 final List<Map<String, dynamic>> allergyItems =
                                     [];
 
-                                for (final allergyName in selectedAllergyNames) {
+                                for (final allergyName
+                                    in selectedAllergyNames) {
                                   // Find if it's a predefined allergy
                                   final predefinedAllergy =
                                       allergies
@@ -457,6 +482,16 @@ class AllergySelectorScreen extends ConsumerWidget {
                                     .saveUserAllergyItemsWithMetadata(
                                       allergyItems,
                                     );
+
+                                // Refrescar datos de usuario y estado de autenticación
+                                await ref
+                                    .read(authControllerProvider.notifier)
+                                    .refreshUserFromFirestore();
+
+                                // Force refresh del perfil para asegurar actualización
+                                await ref
+                                    .read(userProfileProvider.notifier)
+                                    .refresh();
 
                                 log(
                                   '✅ Allergies saved to Firestore successfully',

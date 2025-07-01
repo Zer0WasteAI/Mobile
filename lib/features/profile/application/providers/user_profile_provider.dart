@@ -241,7 +241,14 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
   /// INFO: Force refresh from backend
   /// USAGE: Call to ensure data is up-to-date
   Future<void> refresh() async {
-    await refreshProfile();
+    state = state.copyWith(isLoading: true);
+    try {
+      // Force refresh from Firestore
+      await _authRepository.refreshUserFromFirestore();
+      await refreshProfile();
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   void setUser(UserModel user) {

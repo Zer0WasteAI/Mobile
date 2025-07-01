@@ -12,25 +12,84 @@ import 'package:zer0_waste_ai/features/auth/data/models/user_model.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/core/services/storage_service.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   static const String routeName = 'profile';
   static const String routePath = '/profile';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Force refresh when app comes back to foreground
+      _refreshProfile();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Force refresh whenever the screen receives focus
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshProfile();
+    });
+  }
+
+  Future<void> _refreshProfile() async {
+    try {
+      print('🔄 ProfileScreen: Forcing profile refresh...');
+
+      // Force refresh both auth state and profile
+      await ref
+          .read(authControllerProvider.notifier)
+          .refreshUserFromFirestore();
+      await ref.read(userProfileProvider.notifier).refresh();
+
+      // Add a small delay to ensure Firestore has propagated
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Force a rebuild by invalidating providers
+      ref.invalidate(authStateProvider);
+      ref.invalidate(userProfileProvider);
+
+      print('✅ ProfileScreen: Profile refresh completed');
+    } catch (e) {
+      print('❌ Error refreshing profile: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final screenSize = MediaQuery.of(context).size;
 
-    // Watch the user profile provider for backend data
+    // Watch auth state for most up-to-date user data
+    final authState = ref.watch(authStateProvider);
+    final user = authState.valueOrNull;
+    final isLoading = authState.isLoading;
     final profileState = ref.watch(userProfileProvider);
-    final user = profileState.user;
-    final isLoading = profileState.isLoading;
     final isBackendSynced = profileState.isBackendSynced;
 
-    final userPrefs = ref.watch(userPreferencesProvider);
+    // Profile data updates automatically when userProfileProvider changes
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -52,6 +111,22 @@ class ProfileScreen extends ConsumerWidget {
             ),
             centerTitle: true,
             actions: [
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  onPressed: _refreshProfile,
+                  tooltip: 'Refrescar perfil',
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
               Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.all(8),
@@ -281,9 +356,31 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildPreferencesGrid(BuildContext context, WidgetRef ref) {
-    // Get user preferences from the provider in build method scope
+    // Use authStateProvider directly for most up-to-date data
+    final authState = ref.watch(authStateProvider);
+    final userPrefs = authState.when(
+      data: (user) => user?.prefs ?? const UserPreferencesModel(),
+      loading: () => const UserPreferencesModel(),
+      error: (_, _) => const UserPreferencesModel(),
+    );
     final profileState = ref.watch(userProfileProvider);
-    final userPrefs = profileState.user?.prefs ?? const UserPreferencesModel();
+    final user = authState.valueOrNull;
+
+    // Remove the problematic refresh that causes infinite loops
+
+    // Debug logging to understand what data we have
+    print('🔧 ProfileScreen DEBUG - User preferences:');
+    print('  user: ${profileState.user != null ? "EXISTS" : "NULL"}');
+    print('  cookingLevel: "${userPrefs.cookingLevel}"');
+    print('  allergies: ${userPrefs.allergies}');
+    print('  allergyItems: ${userPrefs.allergyItems}');
+    print('  specialDiets: ${userPrefs.specialDiets}');
+    print('  specialDietItems: ${userPrefs.specialDietItems}');
+    print('  preferredFoodTypes: ${userPrefs.preferredFoodTypes}');
+    print('  profileState.isBackendSynced: ${profileState.isBackendSynced}');
+    print('  authState.hasValue: ${authState.hasValue}');
+    print('  authState.isLoading: ${authState.isLoading}');
+    print('  Current time: ${DateTime.now()}');
 
     // Define colors for each preference item
     final List<Color> iconColors = [
@@ -302,6 +399,12 @@ class ProfileScreen extends ConsumerWidget {
 
     // Helper function to get cooking level display text
     String getCookingLevelText() {
+      print(
+        '🔧 ProfileScreen - cookingLevel value: "${userPrefs.cookingLevel}"',
+      );
+      print(
+        '🔧 ProfileScreen - cookingLevel type: ${userPrefs.cookingLevel.runtimeType}',
+      );
       switch (userPrefs.cookingLevel) {
         case 'beginner':
           return 'Principiante';
@@ -310,16 +413,22 @@ class ProfileScreen extends ConsumerWidget {
         case 'advanced':
           return 'Avanzado';
         default:
+          print(
+            '🔧 ProfileScreen - cookingLevel NOT matched, returning default',
+          );
           return 'No definido';
       }
     }
 
     // Helper function to get food types summary
     String getFoodTypesText() {
+      print(
+        '🔧 ProfileScreen - preferredFoodTypes: ${userPrefs.preferredFoodTypes}',
+      );
       final count = userPrefs.preferredFoodTypes.length;
       if (count == 0) return 'No definido';
       if (count == 1) return userPrefs.preferredFoodTypes.first;
-      return '$count seleccionad...';
+      return userPrefs.preferredFoodTypes.join(', ');
     }
 
     // Helper function to get allergies summary
@@ -347,7 +456,7 @@ class ProfileScreen extends ConsumerWidget {
       final count = allergyNames.length;
       if (count == 0) return 'Ninguna';
       if (count == 1) return allergyNames.first;
-      return '$count seleccionad...';
+      return allergyNames.join(', ');
     }
 
     // Helper function to get diets summary
@@ -375,7 +484,7 @@ class ProfileScreen extends ConsumerWidget {
       final count = dietNames.length;
       if (count == 0) return 'Ninguna';
       if (count == 1) return dietNames.first;
-      return '$count seleccionad...';
+      return dietNames.join(', ');
     }
 
     return GridView.count(

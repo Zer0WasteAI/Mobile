@@ -30,7 +30,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     // Initialize controllers with current user data
-    final user = ref.read(authControllerProvider).value;
+    final user = ref.read(authStateProvider).value;
     _nameController = TextEditingController(text: user?.displayName ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _currentPhotoURL = user?.photoURL;
@@ -78,7 +78,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       final authController = ref.read(authControllerProvider.notifier);
-      final user = ref.read(authControllerProvider).value;
+      final user = ref.read(authStateProvider).value;
 
       // Upload the image if a new one has been selected
       String? photoURL = _currentPhotoURL;
@@ -124,7 +124,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authControllerProvider).value;
+    final user = ref.watch(authStateProvider).value;
     final theme = Theme.of(context);
     final _ = theme.colorScheme;
 
@@ -245,7 +245,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Por favor ingresa tu correo';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Por favor ingresa un correo válido';
                       }
                       return null;
@@ -333,7 +335,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 2,
-                        shadowColor: const Color(0xFF00BFA5).withValues(alpha: 0.3),
+                        shadowColor: const Color(
+                          0xFF00BFA5,
+                        ).withValues(alpha: 0.3),
                       ),
                       child:
                           _isLoading
@@ -363,17 +367,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: const ChangePasswordForm(),
-      ),
+      builder:
+          (context) => Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: const ChangePasswordForm(),
+          ),
     );
   }
 
@@ -483,7 +488,9 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -503,7 +510,9 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -571,10 +580,15 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
               obscureText: _obscureCurrentPassword,
               decoration: InputDecoration(
                 hintText: 'Ingresa tu contraseña actual',
-                prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade500),
+                prefixIcon: Icon(
+                  Icons.lock_outline,
+                  color: Colors.grey.shade500,
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscureCurrentPassword ? Icons.visibility_off : Icons.visibility,
+                    _obscureCurrentPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                     color: Colors.grey.shade500,
                   ),
                   onPressed: () {
@@ -624,7 +638,9 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
                 prefixIcon: Icon(Icons.lock, color: Colors.grey.shade500),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+                    _obscureNewPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                     color: Colors.grey.shade500,
                   ),
                   onPressed: () {
@@ -677,7 +693,9 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
                 prefixIcon: Icon(Icons.lock, color: Colors.grey.shade500),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                    _obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                     color: Colors.grey.shade500,
                   ),
                   onPressed: () {
@@ -728,22 +746,23 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
                   elevation: 2,
                   shadowColor: const Color(0xFF00BFA5).withValues(alpha: 0.3),
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : Text(
+                          'Cambiar Contraseña',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )
-                    : Text(
-                        'Cambiar Contraseña',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
               ),
             ),
             const SizedBox(height: 24),
