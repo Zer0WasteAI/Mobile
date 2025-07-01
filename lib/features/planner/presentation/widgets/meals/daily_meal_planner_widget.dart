@@ -17,10 +17,12 @@ class DailyMealPlannerWidget extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DailyMealPlannerWidget> createState() => _DailyMealPlannerWidgetState();
+  ConsumerState<DailyMealPlannerWidget> createState() =>
+      _DailyMealPlannerWidgetState();
 }
 
-class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget> {
+class _DailyMealPlannerWidgetState
+    extends ConsumerState<DailyMealPlannerWidget> {
   @override
   Widget build(BuildContext context) {
     final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
@@ -58,7 +60,10 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
             child: GestureDetector(
               onTap: () => _showDatePicker(),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -74,7 +79,10 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      DateFormat('EEEE, dd MMMM yyyy', 'es_ES').format(widget.selectedDate),
+                      DateFormat(
+                        'EEEE, dd MMMM yyyy',
+                        'es_ES',
+                      ).format(widget.selectedDate),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -136,7 +144,7 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
   Widget _buildEmptyPlan() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(25.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -148,16 +156,16 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
             const SizedBox(height: 16),
             Text(
               'No hay plan para este día',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Crea un plan de comidas para comenzar',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -173,6 +181,7 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
                     foregroundColor: Colors.white,
                   ),
                 ),
+                const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: () => _createManualPlan(),
                   icon: const Icon(Icons.add),
@@ -199,7 +208,9 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
@@ -232,11 +243,7 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.restaurant,
-                      color: Colors.green,
-                      size: 18,
-                    ),
+                    Icon(Icons.restaurant, color: Colors.green, size: 18),
                     const SizedBox(width: 4),
                     Text(
                       '${mealPlan.meals.allMeals.length} comidas planificadas',
@@ -253,11 +260,7 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
               color: Theme.of(context).primaryColor,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: const Icon(Icons.check, color: Colors.white, size: 24),
           ),
         ],
       ),
@@ -275,17 +278,13 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
       children: [
         Row(
           children: [
-            Icon(
-              mealType.icon,
-              color: mealType.color,
-              size: 24,
-            ),
+            Icon(mealType.icon, color: mealType.color, size: 24),
             const SizedBox(width: 8),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Spacer(),
             if (meal == null)
@@ -326,17 +325,13 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
         ),
         child: Column(
           children: [
-            Icon(
-              Icons.add_circle_outline,
-              color: Colors.grey[400],
-              size: 32,
-            ),
+            Icon(Icons.add_circle_outline, color: Colors.grey[400], size: 32),
             const SizedBox(height: 8),
             Text(
               'Agregar ${mealType.name.toLowerCase()}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
           ],
         ),
@@ -375,11 +370,7 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
             'Error al cargar el plan',
@@ -393,9 +384,12 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => ref.refresh(mealPlanByDateProvider(
-              DateFormat('yyyy-MM-dd').format(widget.selectedDate),
-            )),
+            onPressed:
+                () => ref.refresh(
+                  mealPlanByDateProvider(
+                    DateFormat('yyyy-MM-dd').format(widget.selectedDate),
+                  ),
+                ),
             child: const Text('Reintentar'),
           ),
         ],
@@ -424,10 +418,11 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => AddMealBottomSheet(
-        mealType: mealType,
-        selectedDate: widget.selectedDate,
-      ),
+      builder:
+          (context) => AddMealBottomSheet(
+            mealType: mealType,
+            selectedDate: widget.selectedDate,
+          ),
     );
   }
 
@@ -435,35 +430,39 @@ class _DailyMealPlannerWidgetState extends ConsumerState<DailyMealPlannerWidget>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => AddMealBottomSheet(
-        mealType: mealType,
-        selectedDate: widget.selectedDate,
-        existingMeal: meal,
-      ),
+      builder:
+          (context) => AddMealBottomSheet(
+            mealType: mealType,
+            selectedDate: widget.selectedDate,
+            existingMeal: meal,
+          ),
     );
   }
 
   void _deleteMeal(MealType mealType) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Eliminar Comida'),
-        content: Text('¿Estás seguro de que deseas eliminar este ${mealType.name.toLowerCase()}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Eliminar Comida'),
+            content: Text(
+              '¿Estás seguro de que deseas eliminar este ${mealType.name.toLowerCase()}?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Implement delete meal logic
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Eliminar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Implement delete meal logic
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
     );
   }
 

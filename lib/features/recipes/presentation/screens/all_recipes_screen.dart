@@ -215,184 +215,160 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Recipe type toggle
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _showDefaultRecipes ? 'Recetas Curadas' : 'Todas las Recetas',
-                  style: GoogleFonts.inter(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20.0),
+        child: Column(
+          children: [
+            // Search bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Buscar recetas...',
+                  hintStyle: GoogleFonts.inter(color: Colors.grey.shade500),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                  filled: true,
+                  fillColor:
+                      isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                ),
-                Switch(
-                  value: _showDefaultRecipes,
-                  onChanged: (value) {
-                    setState(() {
-                      _showDefaultRecipes = value;
-                    });
-                    _loadAllRecipes(); // Reload recipes when toggling
-                  },
-                  activeColor: Colors.green.shade600,
-                ),
-              ],
-            ),
-          ),
-
-          // Search bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Buscar recetas...',
-                hintStyle: GoogleFonts.inter(color: Colors.grey.shade500),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                filled: true,
-                fillColor: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Category filter
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                final isSelected = _selectedCategory == category;
+            // Category filter
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                  final isSelected = _selectedCategory == category;
 
-                return Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(
-                      category,
-                      style: GoogleFonts.inter(
-                        color: isSelected ? Colors.white : textColor,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
+                  return Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(
+                        category,
+                        style: GoogleFonts.inter(
+                          color: isSelected ? Colors.white : textColor,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
                       ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    backgroundColor:
-                        isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                    selectedColor: Colors.green.shade600,
-                    checkmarkColor: Colors.white,
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Content
-          Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: LoadingWidgets.recipeLoading)
-                    : _error != null
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 64,
-                            color: Colors.red.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error al cargar recetas',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _error!,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadAllRecipes,
-                            child: const Text('Reintentar'),
-                          ),
-                        ],
-                      ),
-                    )
-                    : _filteredRecipes.isEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No se encontraron recetas',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Intenta con otros términos de búsqueda',
-                            style: GoogleFonts.inter(
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _filteredRecipes.length,
-                      itemBuilder: (context, index) {
-                        final recipe = _filteredRecipes[index];
-                        return _buildRecipeCard(recipe);
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
                       },
+                      backgroundColor:
+                          isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                      selectedColor: Colors.green.shade600,
+                      checkmarkColor: Colors.white,
                     ),
-          ),
-        ],
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Content
+            Expanded(
+              child:
+                  _isLoading
+                      ? const Center(child: LoadingWidgets.recipeLoading)
+                      : _error != null
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red.shade400,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Error al cargar recetas',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadAllRecipes,
+                              child: const Text('Reintentar'),
+                            ),
+                          ],
+                        ),
+                      )
+                      : _filteredRecipes.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No se encontraron recetas',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Intenta con otros términos de búsqueda',
+                              style: GoogleFonts.inter(
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _filteredRecipes.length,
+                        itemBuilder: (context, index) {
+                          final recipe = _filteredRecipes[index];
+                          return _buildRecipeCard(recipe);
+                        },
+                      ),
+            ),
+          ],
+        ),
       ),
     );
   }

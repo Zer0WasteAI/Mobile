@@ -42,7 +42,8 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
           _buildHeader(),
           _buildTabSelector(),
           Expanded(
-            child: _isCustomMeal ? _buildCustomMealForm() : _buildRecipeSelector(),
+            child:
+                _isCustomMeal ? _buildCustomMealForm() : _buildRecipeSelector(),
           ),
           _buildBottomActions(),
         ],
@@ -88,18 +89,18 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.existingMeal != null 
-                        ? 'Editar ${widget.mealType.name}'
-                        : 'Agregar ${widget.mealType.name}',
+                      widget.existingMeal != null
+                          ? 'Editar ${widget.mealType.name}'
+                          : 'Agregar ${widget.mealType.name}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       'Para el ${_formatDate(widget.selectedDate)}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -126,9 +127,8 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: !_isCustomMeal 
-                    ? widget.mealType.color 
-                    : Colors.grey[200],
+                  color:
+                      !_isCustomMeal ? widget.mealType.color : Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -149,9 +149,8 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: _isCustomMeal 
-                    ? widget.mealType.color 
-                    : Colors.grey[200],
+                  color:
+                      _isCustomMeal ? widget.mealType.color : Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -194,9 +193,7 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
             },
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: _buildRecipeList(),
-          ),
+          Expanded(child: _buildRecipeList()),
         ],
       ),
     );
@@ -205,11 +202,36 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
   Widget _buildRecipeList() {
     // Mock data - replace with actual recipe data from provider
     final mockRecipes = [
-      {'name': 'Avena con Frutas', 'time': 10, 'calories': 250, 'difficulty': 'Fácil'},
-      {'name': 'Huevos Revueltos', 'time': 15, 'calories': 180, 'difficulty': 'Fácil'},
-      {'name': 'Smoothie Verde', 'time': 5, 'calories': 120, 'difficulty': 'Muy Fácil'},
-      {'name': 'Tostadas de Aguacate', 'time': 8, 'calories': 200, 'difficulty': 'Fácil'},
-      {'name': 'Pancakes Integrales', 'time': 20, 'calories': 300, 'difficulty': 'Media'},
+      {
+        'name': 'Avena con Frutas',
+        'time': 10,
+        'calories': 250,
+        'difficulty': 'Fácil',
+      },
+      {
+        'name': 'Huevos Revueltos',
+        'time': 15,
+        'calories': 180,
+        'difficulty': 'Fácil',
+      },
+      {
+        'name': 'Smoothie Verde',
+        'time': 5,
+        'calories': 120,
+        'difficulty': 'Muy Fácil',
+      },
+      {
+        'name': 'Tostadas de Aguacate',
+        'time': 8,
+        'calories': 200,
+        'difficulty': 'Fácil',
+      },
+      {
+        'name': 'Pancakes Integrales',
+        'time': 20,
+        'calories': 300,
+        'difficulty': 'Media',
+      },
     ];
 
     return ListView.builder(
@@ -221,10 +243,7 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: widget.mealType.color.withValues(alpha: 0.1),
-              child: Icon(
-                Icons.restaurant,
-                color: widget.mealType.color,
-              ),
+              child: Icon(Icons.restaurant, color: widget.mealType.color),
             ),
             title: Text(
               recipe['name'] as String,
@@ -236,12 +255,19 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
                 const SizedBox(width: 4),
                 Text('${recipe['time']} min'),
                 const SizedBox(width: 12),
-                Icon(Icons.local_fire_department, size: 14, color: Colors.orange),
+                Icon(
+                  Icons.local_fire_department,
+                  size: 14,
+                  color: Colors.orange,
+                ),
                 const SizedBox(width: 4),
                 Text('${recipe['calories']} cal'),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -342,9 +368,9 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
           const SizedBox(height: 16),
           Text(
             'Ingredientes',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -417,9 +443,10 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton(
-              onPressed: _selectedRecipes.isNotEmpty || _isCustomMeal
-                  ? () => _saveMeal()
-                  : null,
+              onPressed:
+                  _selectedRecipes.isNotEmpty || _isCustomMeal
+                      ? () => _saveMeal()
+                      : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.mealType.color,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -436,10 +463,30 @@ class _AddMealBottomSheetState extends ConsumerState<AddMealBottomSheet> {
   }
 
   String _formatDate(DateTime date) {
-    final days = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-    final months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    
+    final days = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo',
+    ];
+    final months = [
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
+    ];
+
     return '${days[date.weekday - 1]} ${date.day} de ${months[date.month - 1]}';
   }
 

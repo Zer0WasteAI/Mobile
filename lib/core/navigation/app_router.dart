@@ -34,6 +34,7 @@ import 'package:zer0_waste_ai/features/recipes/presentation/screens/all_recipes_
 import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/unified_meal_planning_screen.dart'; // Import UnifiedMealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart'; // Import Recipe model
 // Profile-specific selector screens removed - now using unified screens with context parameter
@@ -325,6 +326,16 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const AllRecipesScreen(),
         ),
+        // Route for Recipe Library (for meal planning)
+        GoRoute(
+          path: '/recipe-library',
+          name: 'recipeLibrary',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            // For now, just show the recipes screen. Later can be enhanced with meal planning context
+            return const AllRecipesScreen();
+          },
+        ),
         // Route for Recipe Detail Screen
         GoRoute(
           path: '/recipes/detail',
@@ -377,6 +388,24 @@ class AppRouter {
           name: 'mealPlanning',
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const MealPlanningScreen(),
+        ),
+        // Route for Unified Planning (New Awesome Interface)
+        GoRoute(
+          path: '/unified-planning',
+          name: 'unifiedPlanning',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final initialDateStr = state.uri.queryParameters['date'];
+            DateTime? initialDate;
+            if (initialDateStr != null) {
+              try {
+                initialDate = DateTime.parse(initialDateStr);
+              } catch (e) {
+                initialDate = null;
+              }
+            }
+            return UnifiedMealPlanningScreen(initialDate: initialDate);
+          },
         ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(
