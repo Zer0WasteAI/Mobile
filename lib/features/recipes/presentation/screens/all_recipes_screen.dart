@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_backend_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 class AllRecipesScreen extends ConsumerStatefulWidget {
@@ -495,7 +494,7 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => _viewRecipeDetail(recipe),
+                    onPressed: () => _navigateToRecipeDetail(recipe),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
@@ -548,31 +547,7 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
     await favoriteNotifier.toggleFavorite(recipe);
   }
 
-  void _viewRecipeDetail(Recipe recipe) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => RecipeDetailScreen(
-              recipe: {
-                'name': recipe.name,
-                'description': recipe.description,
-                'emoji': recipe.emoji,
-                'ingredients': recipe.ingredients,
-                'time': '${recipe.cookingTime} min',
-                'difficulty': recipe.difficulty,
-                'type': 'fondo',
-                'tags': recipe.categories,
-                'usesExpiringItems': recipe.usesExpiringItems,
-                'dietType': recipe.dietType,
-                'steps': [
-                  'Prepara todos los ingredientes antes de comenzar',
-                  'Sigue las instrucciones de la receta paso a paso',
-                  'Disfruta de tu comida recién preparada',
-                ],
-              },
-            ),
-      ),
-    );
+  void _navigateToRecipeDetail(Recipe recipe) {
+    context.pushNamed('recipeDetail', extra: recipe);
   }
 }

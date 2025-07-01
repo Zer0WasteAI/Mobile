@@ -1,35 +1,94 @@
-class Recipe {
-  final String id;
-  final String name;
-  final String description;
-  final String emoji;
-  final List<String> ingredients;
-  final int requiredIngredientsCount;
-  final int availableIngredientsCount;
-  final bool usesExpiringItems;
-  final int cookingTime; // in minutes
-  final String difficulty; // 'Fácil', 'Medio', 'Difícil'
-  final String dietType; // 'Omnívora', 'Vegetariana', 'Vegana', etc.
-  final List<String> categories; // e.g. ['Destacados', 'Rápidas y Fáciles']
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  Recipe({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.emoji,
-    required this.ingredients,
-    required this.requiredIngredientsCount,
-    required this.availableIngredientsCount,
-    required this.usesExpiringItems,
-    required this.cookingTime,
-    required this.difficulty,
-    required this.dietType,
-    required this.categories,
-  });
+part 'recipe_model.freezed.dart';
+part 'recipe_model.g.dart';
 
+@freezed
+abstract class Recipe with _$Recipe {
+  const factory Recipe({
+    required String id,
+    required String name,
+    required String description,
+    required String emoji,
+    required List<String> ingredients,
+    required int requiredIngredientsCount,
+    required int availableIngredientsCount,
+    required bool usesExpiringItems,
+    required int cookingTime,
+    required String difficulty,
+    required String dietType,
+    required List<String> categories,
+  }) = _Recipe;
+
+  factory Recipe.fromJson(Map<String, dynamic> json) => _$RecipeFromJson(json);
+}
+
+extension RecipeExtension on Recipe {
   // Format cooking time as a human-readable string
   String get formattedCookingTime {
-    return '$cookingTime min';
+    if (cookingTime < 60) {
+      return '$cookingTime min';
+    }
+    final hours = cookingTime ~/ 60;
+    final minutes = cookingTime % 60;
+    if (minutes == 0) {
+      return '$hours h';
+    }
+    return '$hours h $minutes min';
+  }
+
+  // Get ingredient availability percentage
+  double get ingredientAvailabilityPercentage {
+    if (requiredIngredientsCount == 0) return 0;
+    return (availableIngredientsCount / requiredIngredientsCount) * 100;
+  }
+
+  // Get difficulty level color
+  int get difficultyLevel {
+    switch (difficulty.toLowerCase()) {
+      case 'fácil':
+        return 1;
+      case 'medio':
+        return 2;
+      case 'difícil':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+  // Get difficulty level icon
+  String get difficultyIcon {
+    switch (difficulty.toLowerCase()) {
+      case 'fácil':
+        return '🟢';
+      case 'medio':
+        return '🟡';
+      case 'difícil':
+        return '🔴';
+      default:
+        return '⚪️';
+    }
+  }
+
+  // Get diet type icon
+  String get dietTypeIcon {
+    switch (dietType.toLowerCase()) {
+      case 'vegetariano':
+        return '🥬';
+      case 'vegano':
+        return '🌱';
+      case 'sin gluten':
+        return '🌾';
+      case 'sin lactosa':
+        return '🥛';
+      case 'bajo en carbohidratos':
+        return '🥩';
+      case 'bajo en calorías':
+        return '🥗';
+      default:
+        return '🍽️';
+    }
   }
 
   // Create a copy of this recipe with optional field updates

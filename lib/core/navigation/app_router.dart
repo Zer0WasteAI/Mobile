@@ -35,6 +35,7 @@ import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
+import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart'; // Import Recipe model
 // Profile-specific selector screens removed - now using unified screens with context parameter
 import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
@@ -329,8 +330,8 @@ class AppRouter {
           path: '/recipes/detail',
           name: 'recipeDetail',
           builder: (context, state) {
-            // Esperar los datos de la receta como parameter extra
-            final recipe = state.extra as Map<String, dynamic>?;
+            // Get the recipe from the extra parameter
+            final recipe = state.extra as Recipe?;
             if (recipe == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/home');

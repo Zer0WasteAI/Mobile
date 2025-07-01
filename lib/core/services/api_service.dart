@@ -2391,4 +2391,42 @@ class ApiService {
       throw Exception('Get food recognition by ID error: ${e.toString()}');
     }
   }
+
+  /// Save recipe history entry
+  Future<Map<String, dynamic>> saveRecipeHistory(
+    Map<String, dynamic> historyData,
+  ) async {
+    try {
+      final response = await _dio.post('/recipes/history', data: historyData);
+      return response.data;
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Get recipe history
+  Future<Map<String, dynamic>> getRecipeHistory() async {
+    try {
+      final response = await _dio.get('/recipes/history');
+      return response.data;
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Helper method to handle API errors
+  Exception _handleError(dynamic error) {
+    if (error is DioException) {
+      final response = error.response;
+      if (response != null) {
+        final data = response.data;
+        if (data is Map<String, dynamic> && data.containsKey('message')) {
+          return Exception(data['message']);
+        }
+        return Exception('API Error: ${response.statusCode}');
+      }
+      return Exception('Network Error: ${error.message}');
+    }
+    return Exception('Unexpected Error: $error');
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/environmental_summary.dart';
@@ -17,56 +18,53 @@ class ImpactDashboardTab extends ConsumerWidget {
         isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
     final textColor = isDarkMode ? Colors.white : Colors.black87;
 
-    return summaryAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err')),
-      data: (summary) {
-        // final equivalences = _calculateEquivalences(summary); // You can create a helper for this
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Título principal
-              Text(
-                'Tu Impacto Ambiental',
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Cada acción cuenta para un planeta más sostenible',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: textColor.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Métricas principales
-              _buildMainMetrics(summary, primaryColor, textColor),
-              const SizedBox(height: 24),
-
-              _buildEquivalences(summary, primaryColor, textColor),
-              const SizedBox(height: 24),
-
-              // Mensaje motivacional
-              _buildMotivationalMessage(summary, primaryColor, textColor),
-            ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resumen de Impacto',
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: primaryColor,
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 8),
+          Text(
+            'Tu contribución al medio ambiente',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: textColor.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 24),
+          summaryAsync.when(
+            data: (summary) => _buildMetricsGrid(summary, textColor),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (error, stack) => Center(
+                  child: Text(
+                    'Error al cargar las métricas: $error',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+          ),
+          const SizedBox(height: 24),
+          _buildTipsSection(context, textColor),
+        ],
+      ),
     );
   }
 
-  Widget _buildMainMetrics(
-    EnvironmentalSummary summary,
-    Color primaryColor,
-    Color textColor,
-  ) {
+  Widget _buildMetricsGrid(EnvironmentalSummary summary, Color textColor) {
+    final currencyFormat = NumberFormat.currency(
+      locale: 'es_PE',
+      symbol: 'S/',
+      decimalDigits: 2,
+    );
+
     return Column(
       children: [
         Row(
@@ -74,11 +72,12 @@ class ImpactDashboardTab extends ConsumerWidget {
             Expanded(
               child: _buildMetricCard(
                 title: 'Ahorro Económico',
-                value:
-                    '${summary.totalEconomicCost.toStringAsFixed(2)} ${summary.unitCost}',
+                value: currencyFormat.format(summary.totalEconomicCost),
                 icon: Icons.monetization_on,
                 color: Colors.green,
                 textColor: textColor,
+                tooltip:
+                    'Dinero ahorrado al evitar el desperdicio de alimentos',
               ),
             ),
             const SizedBox(width: 12),
@@ -90,6 +89,8 @@ class ImpactDashboardTab extends ConsumerWidget {
                 icon: Icons.cloud_off,
                 color: Colors.blue,
                 textColor: textColor,
+                tooltip:
+                    'Emisiones de CO₂ evitadas al no desperdiciar alimentos',
               ),
             ),
           ],
@@ -105,6 +106,8 @@ class ImpactDashboardTab extends ConsumerWidget {
                 icon: Icons.water_drop,
                 color: Colors.cyan,
                 textColor: textColor,
+                tooltip:
+                    'Agua ahorrada en la producción de alimentos no desperdiciados',
               ),
             ),
             const SizedBox(width: 12),
@@ -116,6 +119,8 @@ class ImpactDashboardTab extends ConsumerWidget {
                 icon: Icons.flash_on,
                 color: Colors.orange,
                 textColor: textColor,
+                tooltip:
+                    'Energía ahorrada en la producción y transporte de alimentos',
               ),
             ),
           ],
@@ -130,173 +135,117 @@ class ImpactDashboardTab extends ConsumerWidget {
     required IconData icon,
     required Color color,
     required Color textColor,
-    bool isWide = false,
+    required String tooltip,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Tooltip(
+      message: tooltip,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: textColor.withValues(alpha: 0.8),
+              Row(
+                children: [
+                  Icon(icon, color: color, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: textColor.withValues(alpha: 0.8),
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: isWide ? 28 : 22,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEquivalences(
-    EnvironmentalSummary summary,
-    Color primaryColor,
-    Color textColor,
-  ) {
-    final treesEquivalent = (summary.totalCarbonFootprint / 22).toStringAsFixed(
-      1,
-    );
-    // Assuming 1 kg of CO2 is roughly 4.6 km in an average car
-    final carKmEquivalent = (summary.totalCarbonFootprint / 0.217)
-        .toStringAsFixed(1); // 1km = 0.217 kg CO2
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.2),
-          width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Equivalencias de tu Ahorro',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildEquivalenceItem(
-            '🌳 $treesEquivalent árboles',
-            'plantados para absorber el CO₂ que evitaste.',
-            textColor,
-          ),
-          const SizedBox(height: 8),
-          _buildEquivalenceItem(
-            '🚗 $carKmEquivalent km',
-            'que un coche promedio no tuvo que recorrer.',
-            textColor,
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildEquivalenceItem(
-    String value,
-    String description,
-    Color textColor,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: RichText(
-            text: TextSpan(
+  Widget _buildTipsSection(BuildContext context, Color textColor) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                TextSpan(
-                  text: value,
+                Icon(Icons.tips_and_updates, color: Colors.amber),
+                const SizedBox(width: 8),
+                Text(
+                  'Tips para Maximizar tu Impacto',
                   style: GoogleFonts.inter(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: textColor,
                   ),
                 ),
-                TextSpan(
-                  text: ' $description',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: textColor.withValues(alpha: 0.7),
-                  ),
-                ),
               ],
             ),
-          ),
+            const SizedBox(height: 16),
+            _buildTipItem(
+              icon: Icons.calendar_today,
+              text: 'Planifica tus comidas semanalmente',
+              textColor: textColor,
+            ),
+            _buildTipItem(
+              icon: Icons.inventory_2,
+              text: 'Mantén tu inventario actualizado',
+              textColor: textColor,
+            ),
+            _buildTipItem(
+              icon: Icons.local_offer,
+              text: 'Aprovecha los alimentos próximos a vencer',
+              textColor: textColor,
+            ),
+            _buildTipItem(
+              icon: Icons.eco,
+              text: 'Prioriza ingredientes de temporada',
+              textColor: textColor,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildMotivationalMessage(
-    EnvironmentalSummary summary,
-    Color primaryColor,
-    Color textColor,
-  ) {
-    String message;
-    if (summary.totalCarbonFootprint > 100) {
-      message =
-          "¡Increíble! Has evitado más de 100kg de CO2. Eres un verdadero héroe ambiental.";
-    } else if (summary.totalWaterFootprint > 10000) {
-      message =
-          "Tu esfuerzo está marcando la diferencia. Sigue ahorrando agua.";
-    } else if (summary.totalEconomicCost > 50) {
-      message =
-          "Has ahorrado más de \$50. ¡Tu bolsillo y el planeta te lo agradecen!";
-    } else {
-      message =
-          "Cada pequeña acción cuenta. ¡Sigue adelante con tu impacto positivo!";
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
+  Widget _buildTipItem({
+    required IconData icon,
+    required String text,
+    required Color textColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.lightbulb_outline, size: 30, color: Colors.amber),
+          Icon(icon, size: 20, color: textColor.withValues(alpha: 0.6)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              message,
+              text,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: textColor.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w500,
+                color: textColor.withValues(alpha: 0.8),
               ),
             ),
           ),
