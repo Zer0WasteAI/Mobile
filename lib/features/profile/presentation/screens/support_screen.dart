@@ -230,25 +230,14 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                         child: _buildContactOption(
                           icon: Icons.email_outlined,
                           title: 'Email',
-                          subtitle: 'support@zerowaste.ai',
+                          subtitle: 'zerowasteai4@gmail.com',
                           color: const Color(0xFF2196F3),
                           onTap: () {
-                            _launchURL('mailto:support@zerowaste.ai');
+                            _launchURL('mailto:zerowasteai4@gmail.com');
                           },
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildContactOption(
-                          icon: Icons.chat_bubble_outline_rounded,
-                          title: 'Chat',
-                          subtitle: 'Asistencia en línea',
-                          color: const Color(0xFF4CAF50),
-                          onTap: () {
-                            _showChatUnavailableDialog();
-                          },
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -258,10 +247,10 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                         child: _buildContactOption(
                           icon: Icons.phone_outlined,
                           title: 'Teléfono',
-                          subtitle: '+34 911 234 567',
+                          subtitle: '+51 994934431',
                           color: const Color(0xFFFF9800),
                           onTap: () {
-                            _launchURL('tel:+34911234567');
+                            _launchURL('tel:+51994934431');
                           },
                         ),
                       ),
@@ -274,7 +263,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                           color: const Color(0xFF25D366),
                           onTap: () {
                             _launchURL(
-                              'https://wa.me/34666000000?text=Hola,+necesito+ayuda+con+la+app+Zer0+Waste+AI',
+                              'https://wa.me/51994934431?text=Hola,+necesito+ayuda+con+la+app+Zer0+Waste+AI',
                             );
                           },
                         ),

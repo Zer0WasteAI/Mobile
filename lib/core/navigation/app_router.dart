@@ -38,7 +38,6 @@ import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detai
 // Profile-specific selector screens removed - now using unified screens with context parameter
 import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/units_screen.dart'; // Import units screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/faqs_screen.dart'; // Import FAQs screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_policy_screen.dart'; // Import PrivacyPolicyScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
@@ -83,7 +82,6 @@ const String allRecipesRouteName = AllRecipesScreen.routeName;
 // Profile-specific selector route names removed - now using unified screens
 const String notificationsRouteName = NotificationsScreen.routeName;
 const String languageRouteName = LanguageScreen.routeName;
-const String unitsRouteName = UnitsScreen.routeName;
 const String faqsRouteName = FAQsScreen.routeName;
 const String privacyPolicyRouteName = PrivacyPolicyScreen.routeName;
 const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
@@ -99,7 +97,7 @@ class AppRouter {
 
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: '/home',  // Go directly to home instead of splash
+      initialLocation: '/home', // Go directly to home instead of splash
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
@@ -108,13 +106,10 @@ class AppRouter {
         if (state.matchedLocation == '/') {
           return '/home';
         }
-        return null;  // No other redirects
+        return null; // No other redirects
       },
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const SplashScreen(),
-        ),
+        GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
         GoRoute(
           path: '/splash',
           name: splashRouteName,
@@ -500,12 +495,6 @@ class AppRouter {
           path: LanguageScreen.routePath,
           name: languageRouteName,
           builder: (context, state) => const LanguageScreen(),
-        ),
-        // Add the units screen route
-        GoRoute(
-          path: UnitsScreen.routePath,
-          name: unitsRouteName,
-          builder: (context, state) => const UnitsScreen(),
         ),
         // Add the FAQs screen route
         GoRoute(

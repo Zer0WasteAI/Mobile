@@ -32,6 +32,39 @@ class Recipe {
     return '$cookingTime min';
   }
 
+  // Create a copy of this recipe with optional field updates
+  Recipe copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? emoji,
+    List<String>? ingredients,
+    int? requiredIngredientsCount,
+    int? availableIngredientsCount,
+    bool? usesExpiringItems,
+    int? cookingTime,
+    String? difficulty,
+    String? dietType,
+    List<String>? categories,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      emoji: emoji ?? this.emoji,
+      ingredients: ingredients ?? this.ingredients,
+      requiredIngredientsCount:
+          requiredIngredientsCount ?? this.requiredIngredientsCount,
+      availableIngredientsCount:
+          availableIngredientsCount ?? this.availableIngredientsCount,
+      usesExpiringItems: usesExpiringItems ?? this.usesExpiringItems,
+      cookingTime: cookingTime ?? this.cookingTime,
+      difficulty: difficulty ?? this.difficulty,
+      dietType: dietType ?? this.dietType,
+      categories: categories ?? this.categories,
+    );
+  }
+
   // Check if this recipe matches filter criteria
   bool matchesFilters(Map<String, Set<String>> filters) {
     if (filters.isEmpty) return true;

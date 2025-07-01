@@ -630,17 +630,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             showChevron: true,
             onTap: () => context.push('/language'),
           ),
-          Divider(color: Colors.grey.shade200, height: 1, indent: 70),
-          _buildSettingsItem(
-            context,
-            icon: Icons.straighten_rounded,
-            title: 'Unidades de medida',
-            subtitle: 'Métricas',
-            color: const Color(0xFF00BFA5),
-            bgColor: const Color(0xFFE0F2F1),
-            showChevron: true,
-            onTap: () => context.push('/units'),
-          ),
         ],
       ),
     );

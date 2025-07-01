@@ -119,7 +119,7 @@ class AboutAppScreen extends ConsumerWidget {
             ),
 
             // Redes sociales
-            Container(
+            /*Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -196,7 +196,7 @@ class AboutAppScreen extends ConsumerWidget {
                 ],
               ),
             ),
-
+*/
             // Información legal
             Container(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),

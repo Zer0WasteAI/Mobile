@@ -48,7 +48,6 @@ extension UserPreferencesModelToEntityMapper on UserPreferencesModel {
   UserPreferencesEntity toEntity() {
     return UserPreferencesEntity(
       language: language,
-      measurementUnit: measurementUnit,
       cookingLevel: cookingLevel,
       allergies: allergies,
       allergyItems: allergyItems,
@@ -64,7 +63,6 @@ extension UserPreferencesEntityToModelMapper on UserPreferencesEntity {
   UserPreferencesModel toModel() {
     return UserPreferencesModel(
       language: language,
-      measurementUnit: measurementUnit,
       cookingLevel: cookingLevel,
       allergies: allergies,
       allergyItems: allergyItems,
