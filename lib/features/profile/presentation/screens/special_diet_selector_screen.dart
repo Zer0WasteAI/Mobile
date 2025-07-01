@@ -15,7 +15,7 @@ import 'package:zer0_waste_ai/features/profile/application/providers/user_profil
 
 // ✅ RESOLVED: Route name already defined below as routeName and routePath constants
 
-class SpecialDietSelectorScreen extends ConsumerWidget {
+class SpecialDietSelectorScreen extends ConsumerStatefulWidget {
   const SpecialDietSelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'special_diet_selector';
@@ -25,49 +25,112 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
   final bool fromProfile;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SpecialDietSelectorScreen> createState() =>
+      _SpecialDietSelectorScreenState();
+}
+
+class _SpecialDietSelectorScreenState
+    extends ConsumerState<SpecialDietSelectorScreen> {
+  bool _isInitialized = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize special diets after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSpecialDiets();
+    });
+  }
+
+  Future<void> _initializeSpecialDiets() async {
+    // When coming from profile, always reinitialize to load current values
+    if (_isInitialized && !widget.fromProfile) return;
+
+    final predefinedDietsAsyncValue = ref.read(predefinedDietsProvider);
+    final user = ref.read(authStateProvider).value;
+
+    log(
+      '🔧 _initializeSpecialDiets - widget.fromProfile: ${widget.fromProfile}',
+    );
+
+    // Reset state BEFORE loading data when coming from profile
+    if (widget.fromProfile) {
+      final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
+      notifier.reset();
+      log('🔄 Reset special diets state for profile editing');
+    }
+
+    // Wait for diets to load if they haven't yet
+    if (predefinedDietsAsyncValue is AsyncLoading) {
+      log('⏳ Special diets still loading, waiting...');
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // Get the list of all available diets
+    final availableDiets = ref.read(predefinedDietsProvider).value ?? [];
+    log('📋 Available diets: ${availableDiets.map((d) => d.name).toList()}');
+
+    // Get user's selected diets from profile
+    final userDiets =
+        user?.prefs.specialDietItems.isNotEmpty == true
+            ? user!.prefs.specialDietItems
+                .map((item) => item['name'] as String)
+                .toList()
+            : user?.prefs.specialDiets ?? [];
+
+    log('🔧 Initializing special diets selector with: $userDiets');
+
+    // Initialize with user's saved preferences
+    if (userDiets.isNotEmpty && availableDiets.isNotEmpty) {
+      final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
+
+      for (final dietName in userDiets) {
+        log('🔍 Looking for diet: "$dietName"');
+        bool found = false;
+
+        // Find matching predefined diet
+        final predefinedDiet =
+            availableDiets.where((d) => d.name == dietName).firstOrNull;
+        if (predefinedDiet != null) {
+          notifier.toggleDiet(predefinedDiet, availableDiets);
+          log('✅ Added predefined diet to selection: ${predefinedDiet.name}');
+          found = true;
+        } else {
+          // Create custom diet
+          final customDiet = SpecialDiet(
+            name: dietName,
+            emoji: '🍴',
+            isCustom: true,
+          );
+          notifier.addCustomDiet(customDiet);
+          log('✅ Added custom diet to selection: $dietName');
+          found = true;
+        }
+
+        if (!found) {
+          log('❌ Diet not processed: "$dietName"');
+        }
+      }
+    } else {
+      log('⚠️ No diets to initialize or available diets list is empty');
+      log('   - userDiets: $userDiets');
+      log('   - availableDiets count: ${availableDiets.length}');
+    }
+
+    setState(() {
+      _isInitialized = true;
+      _isLoading = false;
+    });
+
+    log('✅ Special diets initialization completed');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final selectedDiets = ref.watch(specialDietsProviderWithPersistence);
     final notifier = ref.read(specialDietsProviderWithPersistence.notifier);
     final predefinedDietsAsyncValue = ref.watch(predefinedDietsProvider);
-    final authState = ref.watch(authStateProvider);
-
-    // Load current special diets when entering the screen from profile
-    if (fromProfile && authState.hasValue) {
-      final user = authState.value;
-      if (user != null) {
-        final userDiets =
-            user.prefs.specialDietItems.isNotEmpty
-                ? user.prefs.specialDietItems
-                    .map((item) => item['name'] as String)
-                    .toList()
-                : user.prefs.specialDiets;
-
-        // Always load when coming from profile, reset first to ensure clean state
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Clear current selections first
-          final currentDiets = List.from(selectedDiets);
-          for (final diet in currentDiets) {
-            notifier.toggleDiet(diet, predefinedDietsAsyncValue.value ?? []);
-          }
-
-          // Then add user's saved diets
-          final availableDiets = predefinedDietsAsyncValue.value ?? [];
-          for (final dietName in userDiets) {
-            // Find matching predefined diet or create custom one
-            final predefinedDiet =
-                availableDiets.where((d) => d.name == dietName).firstOrNull;
-            if (predefinedDiet != null) {
-              notifier.toggleDiet(predefinedDiet, availableDiets);
-            } else {
-              // Custom diet
-              notifier.addCustomDiet(
-                SpecialDiet(name: dietName, emoji: '🍴', isCustom: true),
-              );
-            }
-          }
-        });
-      }
-    }
 
     // Use Theme colors
     final theme = Theme.of(context);
@@ -82,6 +145,14 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
       alpha: 0.5,
     );
     final Color secondaryTextColorForDialog = colorScheme.onSurfaceVariant;
+
+    // Show loading if still initializing
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
+      );
+    }
 
     return predefinedDietsAsyncValue.when(
       data: (predefinedDiets) {
@@ -101,7 +172,7 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
         return Scaffold(
           backgroundColor: backgroundColor,
           appBar:
-              fromProfile
+              widget.fromProfile
                   ? AppBar(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -159,6 +230,11 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                                       diet,
                                       predefinedDiets,
                                     ),
+                                onDelete:
+                                    () => notifier.toggleDiet(
+                                      diet,
+                                      predefinedDiets,
+                                    ), // Removing is same as toggling off
                                 selectedColor: primaryColor,
                                 defaultBackgroundColor: backgroundColor,
                                 defaultTextColor: defaultChipTextColor,
@@ -228,7 +304,7 @@ class SpecialDietSelectorScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 // Bottom Buttons
-                if (fromProfile) ...[
+                if (widget.fromProfile) ...[
                   // Show Save and Cancel buttons when editing from profile
                   Row(
                     children: [

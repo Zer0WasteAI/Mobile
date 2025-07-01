@@ -87,11 +87,22 @@ class SelectedAllergiesNotifier extends StateNotifier<List<Allergy>> {
   SelectedAllergiesNotifier(super.state);
 
   void toggleAllergy(Allergy allergy) {
-    if (state.contains(allergy)) {
-      state = [...state.where((a) => a.name != allergy.name)];
+    final isAlreadySelected = state.any(
+      (a) => a.name.toLowerCase() == allergy.name.toLowerCase(),
+    );
+
+    if (isAlreadySelected) {
+      state =
+          state
+              .where((a) => a.name.toLowerCase() != allergy.name.toLowerCase())
+              .toList();
     } else {
       state = [...state, allergy];
     }
+
+    log(
+      '🔄 Toggled allergy: ${allergy.name} - Now selected: ${state.map((a) => a.name).toList()}',
+    );
   }
 
   // Add a custom allergy
@@ -102,7 +113,13 @@ class SelectedAllergiesNotifier extends StateNotifier<List<Allergy>> {
     )) {
       final newAllergy = Allergy(name: name, emoji: emoji);
       state = [...state, newAllergy];
+      log('➕ Added custom allergy: $name');
     }
+  }
+
+  void reset() {
+    state = [];
+    log('🔄 Reset allergies state');
   }
 
   // Initialize allergies from user profile and available allergies list
@@ -112,28 +129,35 @@ class SelectedAllergiesNotifier extends StateNotifier<List<Allergy>> {
   ) {
     if (userAllergies.isEmpty) {
       state = [];
+      log('🔄 Initialized empty allergies state');
       return;
     }
 
     final List<Allergy> selectedAllergies = [];
 
-    // Add predefined allergies
     for (final allergyName in userAllergies) {
+      log('🔍 Processing allergy: $allergyName');
       // First try to find a match in available allergies
       final predefinedMatch =
           availableAllergies
               .where((a) => a.name.toLowerCase() == allergyName.toLowerCase())
-              .toList();
+              .firstOrNull;
 
-      if (predefinedMatch.isNotEmpty) {
-        selectedAllergies.add(predefinedMatch.first);
+      if (predefinedMatch != null) {
+        selectedAllergies.add(predefinedMatch);
+        log('✅ Added predefined allergy: ${predefinedMatch.name}');
       } else {
         // If not found, add as custom allergy with default emoji
-        selectedAllergies.add(Allergy(name: allergyName, emoji: '⚠️'));
+        final customAllergy = Allergy(name: allergyName, emoji: '⚠️');
+        selectedAllergies.add(customAllergy);
+        log('✅ Added custom allergy: $allergyName');
       }
     }
 
     state = selectedAllergies;
+    log(
+      '✅ Initialized allergies state with: ${state.map((a) => a.name).toList()}',
+    );
   }
 }
 
@@ -184,27 +208,53 @@ class _ProfileAllergySelectorScreenState
     final allergiesAsyncValue = ref.read(allergiesProvider);
     final user = ref.read(authStateProvider).value;
 
+    log('🔧 Starting allergies initialization');
+
     // Wait for allergies to load if they haven't yet
     if (allergiesAsyncValue is AsyncLoading) {
-      // ✅ UPDATED: Removed artificial delay
+      log('⏳ Waiting for allergies to load...');
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     // Get the list of all available allergies
     final availableAllergies = ref.read(allergiesProvider).value ?? [];
+    log(
+      '📋 Available allergies: ${availableAllergies.map((a) => a.name).toList()}',
+    );
 
     // Get user's selected allergies from profile
-    final userAllergies = user?.prefs.allergies ?? [];
+    final userAllergies =
+        user?.prefs.allergyItems.isNotEmpty == true
+            ? user!.prefs.allergyItems
+                .map((item) => item['name'] as String)
+                .toList()
+            : user?.prefs.allergies ?? [];
 
-    // Initialize the selected allergies
-    ref
-        .read(selectedAllergiesProviderWithPersistence.notifier)
-        .initializeFromUserProfile(userAllergies, availableAllergies);
+    log('👤 User allergies from profile: $userAllergies');
+
+    // Reset state before initializing
+    final notifier = ref.read(
+      selectedAllergiesProviderWithPersistence.notifier,
+    );
+    notifier.reset();
+    log('🔄 Reset allergies state before initialization');
+
+    // Initialize with user's saved preferences
+    if (userAllergies.isNotEmpty && availableAllergies.isNotEmpty) {
+      notifier.initializeFromUserProfile(userAllergies, availableAllergies);
+    } else {
+      log('⚠️ No allergies to initialize or available allergies list is empty');
+      log('   - userAllergies: $userAllergies');
+      log('   - availableAllergies count: ${availableAllergies.length}');
+    }
 
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
     }
+
+    log('✅ Allergies initialization completed');
   }
 
   // Show dialog to add custom allergy

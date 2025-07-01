@@ -1,8 +1,8 @@
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           37.0s
+Xcode build done.                                           38.5s
 [ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
 [ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-Connecting to VM Service at ws://127.0.0.1:61257/Kqud1zHd5Hc=/ws
+Connecting to VM Service at ws://127.0.0.1:63655/Y9GoZDTV0SU=/ws
 Connected to the VM Service.
 flutter: Hive initialized successfully
 [GoRouter] setting initial location /home
@@ -95,26 +95,25 @@ flutter: Hive initialized successfully
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/recipes/saved
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
-[log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/planning/all
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
 [log] API Request: GET /api/recipes/saved
-[log] API Request: GET /api/environmental_savings/calculations
 [log] API Request: GET /api/planning/all
+[log] API Request: GET /api/environmental_savings/calculations
+[log] API Response: 200 /api/environmental_savings/calculations
 [log] API Response: 200 /api/planning/all
 [log] API Response: 200 /api/recipes/saved
-[log] API Response: 200 /api/environmental_savings/calculations
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] User data refreshed from Firestore
 [log] 🏠 Home: Datos de usuario refrescados automáticamente
 [log] ✅ User document found in Firestore
-[log] 🔧 cookingLevel: beginner
+[log] 🔧 cookingLevel: intermediate
 [log] 🔧 allergies: [Pescado, Soya]
-[log] 🔧 specialDiets: [Sin lácteos]
-[log] 🔧 preferredFoodTypes: [China, Coreana]
-[log] 🔧 Built UserPreferencesModel - cookingLevel: beginner
-[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+[log] 🔧 specialDiets: [Plant-based, Paleo]
+[log] 🔧 preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+[log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
 [log] 🚀 Proactively loading inventory for better UX...
 [log] 🌐 Cache invalid or empty, loading fresh data
 [log] 🚀 First load - using fast endpoint
@@ -123,6 +122,7 @@ flutter: Hive initialized successfully
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/inventory
 [log] API Request: GET /api/inventory
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
 [log] API Response: 200 /api/inventory
 [log] 🔧 DEBUG - Parsing inventory data
 [log] 🔍 DEBUG - Ingredients found: 18
@@ -134,10 +134,10 @@ flutter: Hive initialized successfully
 [log] 🔍 DEBUG - Original DateTime: 2025-06-22 20:45:20.000
 [log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-22T20:45:20.000Z
 [log] 🔍 DEBUG - Formatted for backend: 2025-06-22T20:45:20.000Z
-[log] 📡 DEBUG - Backend response received: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
 [log] ✅ DEBUG - Created stack item: Ají amarillo - 1.0 unidad
 [log] 🔍 DEBUG - Original timestamp from API: 2025-06-24T12:18:00
 [log] 🔍 DEBUG - Parsing timestamp from API: 2025-06-24T12:18:00
+[log] 📡 DEBUG - Backend response received: {food_items: [], ingredients: [{image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_amarillo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=jsraRLX4jFg7qoxyLE52dS1TJniJzkTl8OUIXU%2BxmhChEWy5UKf4b8X7oiL9k%2B6gTg7Byj7lRrTqb70v49yM1OhH4HYeOx%2BRWfgG7YGLkXVlR8ZBNA6tYqa84qOKyqx3RLgvCQNbnTyDxU6AqU%2B7EV0drts1ER3C11rIUs4QQZ6M69Kx7qGse%2Bq8D6pI%2Fkfs9iwWaUPjnAPJV1T2uTREVd60FZ%2BXv6W2ok3ZXiw66ULq9wrYTg4b88eN53YPuY3ZcmmSU7aIxEdM641l%2FMH57RFmVP0OXvn33mdQ%2BeEXxG0Iee1%2B15knn8IZCh0jw5cgA4d1c6k7sae%2B6BtgeWOnlA%3D%3D, name: Ají amarillo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: unidad}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Consérvalo en el cajón de verduras del refrigerador, preferiblemente en una bolsa de papel para permitir la circulación de aire., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_limo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=UpLkn5JpmuLMsxUZu9MIA8s6mRJfGCmdCwZJp%2FtnvdmfVxTPUMtJDk0qGmtEGR1rdP7SBbiDW%2FKbQ7VgJZ74q%2FoxiJjFeDeXgxFKaYuWkDzB8OF3ZLgIDo5UCF%2BLWM0UsSAnKD%2BjK2YwcI6vmmYRrphpwGJmfEHEp%2F8%2BphqRQw9AGvLLno072JBQl9SoRPailgF4t9BXr6CUfog51y7pcEyLdfae6zW%2F%2FMioJqArdzcvDk8FaaFfbhveKEVasWBFZO41gU%2FCifDwrtXMBRs7tyAADe%2B1AaysOQRAFRlymJeUB%2BkqKAqJQ9E9xV7TZqPgd96Fs24qAXl3SInYksKLMw%3D%3D, name: Ají Limo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Al igual que el ají amarillo, guárdalo en el refrigerador en una bolsa de papel para optimizar su conservación., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=YnprdkBdyDImncAAN8NWJMDa%2B9EEznG3T7wEmZVrJTRAMSQ2dEskvjLk99x7qH7rCfX65FW1pZWsY37sCh21IV7ZHDpbxcoaesFixs198JwXUFJRD25H9cOlL8%2Be4WS7JkZgTqoouBi1PZHVTRuoj51lw0UrCwgG7gzt5tAGWK3ZVMmWv8Cn2fy%2BRKqv%2BHdt1hYo1yq%2Fgyhfd%2B%2FMx0EVn7qXeWS3hjQC6tvHwAlqV3ThmJrQLqj4zlthxOTMaKBdnayM9tsayLqC1nSND6j949lW4kvvZSgNsarLTOtzPROhu0aI2Z6usDxUfKYwjqf1fDJQA5ThW%2FO7gGK7XFV7%2Bw%3D%3D, name: Ají rojo, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 2.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico en el refrigerador. Si se desea conservar por más tiempo, se puede congelar o deshidratar., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_rojo_fresco.jpg?Expires=1751229767&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=EM2S0YxpH6SNINJGJkgKCu8IVjSnBYmNsgaD%2FFVrXD7r6mdZeaAZQjGD7PkcdToq6TsFXU9mi4HASimmktVzmISWiUBzWBXPXCDT%2FN4LDEd0LI80UoUqkvYuwyfcn3Wpq36%2B4H2awZx21CdEyMguNIb3Vwtr9QBwXj7xbQYE%2BRVTIEhXLHllqDCh56ZCy%2B6ATJU7pFjxvzU%2FbfLye3HbZwqJ3UiiKzYh3jKZHk%2BObAMD%2FJ2wkGp6cwNFabm1DdHOGAf%2FLhljzVvjxStTYSS815XUOXf6Jfi2PenjyxMquhumAOyEOnAxJM5ImY%2B7kNuypmteY3qnzVz1oMWKWbLyVw%3D%3D, name: Ají rojo fresco, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-29T20:41:46, quantity: 1.0, type_unit: unidad}], storage_type: refrigerated, tips: Guardar en una bolsa de plástico perforada en el cajón de las verduras del refrigerador. Si se desea conservar por más tiempo, se puede congelar entero o picado., type_unit: unidad}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/aji_verde_picado.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=T%2B0RDluYpVuC%2FGNXp%2FE8XubdwGWFAo3ybjn1hl55jRPaKEbLK4Kdsyk6HcSnV8NoTXixTcL6MvJEP2EqCM7YwFl42fW8VwQhnsCCNMVaYIBEIVGlyxQ2cPvMWviDUHESfsPmYbpKF1APlKCGpOY5UcZCEnUyKz0MaWRH86%2FKknT5i4heTDH6G5UM5q1YCciHrhxvmbQ7Lm1qBcdRrnOVwsK89iEcpqweV%2Fm9JzLuPBLkRfJg5zOTuy%2B%2B1Pyh5BMmcE2x2D6X7xbwJUSHOwbhuXobftoUjhSCKwwViQ8jMW2%2BdD7w18cxKVGkWmvgm36ZjZye%2FQwg32XJemjxKNYPdg%3D%3D, name: Ají verde picado, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-27T20:41:46, quantity: 1.3, type_unit: taza}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 2.5, type_unit: taza}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 0.25, type_unit: taza}], storage_type: refrigerated, tips: Una vez picado, guárdalo en un recipiente hermético en el refrigerador para mantener su frescura y evitar que se oxide., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SoprFgWWZH7iy69IoeDeyUcQ%2F1riziqZHkP2GPIkrYtrYtwpIo5mrJKBwP76c7%2Bn5Y%2Bk48TlJKORNJg4xbaqirLJRz2Exaa4H%2Bs7QqiDmGh7gYpY8AyOw7HXM%2BMfa1v5R5hDSGlAbtoIHq%2Fzd4coX%2FaWO0Vb%2FfovKYryMzq2%2Fb6nOO3dwHGZWyRrSuzR9PtId%2F%2Ffa8faG78%2B6WKd8orWW7Iul6y9DDAjlY7uwPNwCXK06XHziAsjxcvuvoaUpvyAIvk7JwfiF5pSbryIpgzCIgjGYSU8YTdRIBQ1nJL%2FAKdE5LyU01sMq%2BBkENERQLt%2FrcVLw1IuIm%2BjoT46MNXTRA%3D%3D, name: Cebolla roja, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-29T20:28:48, quantity: 150.0, type_unit: tazón}], storage_type: refrigerated, tips: Mantener refrigerada en un recipiente hermético para evitar que se seque y pierda su sabor., type_unit: tazón}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cebolla_roja_picada.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=fiLEh6Riq6nx0p2EGkGDvV4Fj7%2BvyODMVfsxijWku91WJYqaZigeb%2F71wSjFhD64EW9RpN0%2FVxVolI0zVO0zciL%2FNmYkKJGIGHYOzkFb7H5O5zoE0tGg%2FE1wqiQ89AVQTAhVwknkXmSECl1nHDN5ksS8Sb4W1gupD3WU%2B%2Fk%2FNPV20aragP0ypYO%2Bp%2BWTLGTcuSJDHSXWP3GCukkLWhVYroqop3fLNXjoEupiZPqfHwJTu73XnnRjtORYalk01OwefOmdxGT7CQDUaG8IWWBE7Fx59zVnHORplWnvg9Sa3S47cY5oByXrluatZX2naO%2BNf8Fl2EtF8hX9z7DEcbZ%2FrQ%3D%3D, name: Cebolla roja picada, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-27T20:44:12, quantity: 3.0, type_unit: taza}], storage_type: dry, tips: Guardar en un recipiente hermético en el refrigerador para mantener su frescura y evitar que impregne otros alimentos con su olor., type_unit: taza}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=RFxHp6Em9z6MjldGjjjiUWbMB3acAUSIz2qi91iOvpO4vLmN1wkxhxgOOfQyCjDqBgfIo%2BGL%2Bu1WFoJ%2Fgt5mMZoW5aPylhHAiAGQ7TiNsBid5BI7RwTtSM03IqSOEM1z6uSna9IT6L%2FfBtFmKDml%2Fth%2BgNl2VUcqSlrNW5W7x5U8ECPQ4uA8ATuB3O%2FOFSSRS64jROXYHph6kz%2FL8jzRKFAanwixFRtT1sxO0l0nNkgmn3lTk4KSOEqd20KuAMqDLabazBsDsw91818fDlUDSGdvDQ5P3%2BRc0kHAl2ugKLp%2BfDMq%2BEEGUImfcAShT3x%2BxjW0s3FbebEisQmv8YM%2BKw%3D%3D, name: Cilantro, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-26T20:28:48, quantity: 50.0, type_unit: manojos}, {added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-29T12:15:26, quantity: 2.0, type_unit: manojos}], storage_type: refrigerated, tips: Lava y seca bien las hojas, luego envuélvelas en papel de cocina y guárdalas en una bolsa o recipiente hermético en el refrigerador., type_unit: manojos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/cilantro_fresco.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=pqpK%2FzsRXk8pF%2BEgttx%2Bysf2Z4t7cUB3P5Xaat3d7KguRSaoxbbdvQZBMlCiGtAXqZEiukPCaUfNVEKmVW6ibUsBWir728EJKReusAgSvnBH8yorbx%2BYf7X1%2F9OcV%2BNAVCHSmf4qe4%2BsVEv5Leiqk97dfP7zCF70LcX7r7F4lNLiNLGkTfWJQZ7j1Q0RGQj1Wfx1rOafMBoCmUvdHJWZt8auik4Q%2FNZaXPXzmyMGa%2B2q6YEPjqd34b3kno5nyRftHXZzlYbS2Qw5sGMSDvnl%2FyiJ%2BHZU8eDo6mv6sNmHqPebPa7hdrI5F%2FeoGVY704uuLSFuBqX7YoumH5Ecogze0A%3D%3D, name: Cilantro fresco, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-29T20:44:12, quantity: 1.0, type_unit: manojo}], storage_type: refrigerated, tips: Mantener los tallos en un vaso con un poco de agua, cubierto con una bolsa de plástico, en el refrigerador. O bien, envolver en papel de cocina húmedo., type_unit: manojo}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/gnocchi_al_forno.jpg?Expires=1751225945&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SczT7SgbtR%2BLf7%2FcjuSM31jy0Ewbr1QlCudBC86fVOPO7Rot8d1bCx8NGEZqbOnxBjrwIj3UoXu%2F%2B9kGYTG8lvdhcJ%2FfDtnz0L7Jgg2mDJ38Z0jMiEbFjOlHYf%2FsGtwUbvKX45ji%2BYU05hLRqE47XrJEMVfEtROSdLzPx1pLxjxHrCeY%2BQJnClRmia6I8hQQZ4099d2urDTbNuBTjSBlhBjW2yBTlHFFEu%2FEr1l7zO6aeK251%2Fgjv5wbgBviou7DTtoGxoIFb8bg9BynbpwkEFeRBxaX9ifD7O5zxTDUeXQL2K5OpCDJMG89dzQkMAURnDjXWF%2B3dbZS3UB0bSzWvw%3D%3D, name: Gnocchi al Forno, stacks: [{added_at: 2025-06-22T19:38:58, expiration_date: 2025-06-24T19:38:45, quantity: 1.0, type_unit: porciones}], storage_type: refrigerated, tips: Calentar en horno o microondas antes de servir. Evitar recalentar en exceso para mantener la textura., type_unit: porciones}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limon.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=dyOjFi1YMgR6zAHJH0MTejzLHixk2ehTb7k3GGUMe9mFK50NefPhU9Dgnc3imi%2FRsunEIO2mKgqCFVJDnODx6PvgeCLN9j9QpS7nn8XQzwo%2F%2B5ZZpZJsgA1xXSjXStbDfWKM42Cqqd62CqQkF3lS9USz7oAGCiwJdw%2BRPdxWyjreFGm%2FS63OuH8fDpoumWlZ596o5yrULbCHEer64i2kTc%2BWo0V8bDoijUPkv0x0e%2FkvnYN%2BRCm9nidVgF0ABd5DT%2Fr04rxNlue7soDvcozSCum1jm5Hq3oTGlNCkeC%2FRcU0BaYgFXZ5RC6US4Tahvnk6gsUx1ZKn1gsSzkO12o%2Fvw%3D%3D, name: Limón, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-07-01T12:15:26, quantity: 14.0, type_unit: unidades}], storage_type: dry, tips: Guárdalos en un lugar fresco y seco, o en el refrigerador en una bolsa hermética para mantener su frescura por más tiempo., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/limones.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=I17JSFZvSQS8eujcpFniht7Xi32NdaUN2JQr66ggf5ObPjzdZNAKjZuM1rn9G%2BSRXJmOwKqysr%2B%2FRoJ0%2BejBNbPdjh118BA0r5LfZ4Fx%2BSvft83LmwSlFlcT6INDtPj8bsx7KW7GQAwr8YLg%2FVHwpn0JsDm6BwNOc%2FUIwVKRhwvbe%2Fh7zjLCKNrX4BsYR8k26gB6hZA65%2BI5E3FjtTmjLsZJmoGHEf6AQc%2BkVuu9T6fU9PA2mvrKn%2F9h3LkFwGRdUAFp6MqjfcbcDEH1HXeztZh%2FMhXw5HkeA%2B72o9nFEt5n%2BVS9QEimb9udzKAWdHNf6LDYVu6zpCl9oALn3L%2F7qQ%3D%3D, name: Limones, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-07-02T20:44:12, quantity: 16.0, type_unit: unidades}], storage_type: dry, tips: Conservar a temperatura ambiente para mantener su jugosidad. Si se van a guardar por más tiempo, refrigerar en una bolsa de plástico perforada., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_para_ceviche.jpg?Expires=1751228952&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=IE2rk04N2TMOEHIsR1Nxq9l7BGQn91jbFA87xwcaFaEuO7hwpwXXak%2FF9pqT1yfTh%2B%2BrSB3qTN%2FLs1I0XX%2B66xxvBkhqtJZLfOWgFjCo5fvjBT3nBfg4lutRAoqh3xjNrp06TRutkSTEcLbl7CHK9eDc0CzHc524MXL3n8aDgXUAerkHW8P8O01p0mwqYFlDDz9I3Ppe4AXlkFrp2tymvwmqJvLLnbFeelgClxxvPrVlcWiA%2Fu2BTR5lJxKlN4%2FFRsWAdhy7p%2B7PO%2BZ4QFnCufo8WC230T7b4p14fy%2B6isp1xHotsV7eRJmQNeSD8%2FP5KN6s2OVyn6iu8gYrwl%2FgfQ%3D%3D, name: Pescado blanco (para ceviche), stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2025-06-23T20:28:48, quantity: 200.0, type_unit: gramos}], storage_type: refrigerated, tips: Mantener siempre refrigerado y consumir lo antes posible. Si se va a marinar, hacerlo justo antes de servir., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_crudo.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=cFqu4J%2BOz697qOL7MU2s77EbBt9MQE0vA3%2F%2ByPz1F3YAGfkQo9REXoJRhq4MIQy3SPi32XSRfwxUlFIZGMkOpajCjU0NYNvWsJc3CaTYC3mA%2B9KrDxgWRWVOZqAS7ghbS8IsuT0ih5i%2B87%2Ft0Fg4UfCd7APjebsZv3pOtGDrMYKU%2FjsSsnPvH%2BiAUxF%2FQtXECt0KhzPhJK%2BJX9%2BeTYEzfCf6sXmNomNMGqg4gCSDkAnURfgsIJhlFuoUVoizW6tV0cQ9G%2FVb%2Bm7qjKNc4XMSDaxBBKZ1Qjkoh6s4WKvAYOiYN2idxlcpCmvxk2phJH%2FaDrnAQ10eDBY5ItcT2EEXcw%3D%3D, name: Pescado Blanco Crudo, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-09-24T12:15:26, quantity: 0.5, type_unit: kilos}], storage_type: frozen, tips: Mantener congelado hasta el momento de su uso. Descongelar lentamente en el refrigerador para preservar su textura y sabor., type_unit: kilos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/pescado_blanco_en_cubos.jpg?Expires=1751229920&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=NvoegVXfGMIO39UmYuRvcEpCw7nEUHUYBXhd50c6SXW6PIskS%2FbykloPo6cDPKcbqwwqmBYSMa5EyA1ozhO5nmvvIE3n2gHOjeZyM7zwc0geIlzrmjke%2F3jQkNlBAeNYiFxStdunWdEuz4RPnKSbg1TC28Bt4xPMiCofRBC07sGPKBEgP0gy9gNkY5k55r92HqXKdou1UrDFE6O94QMfdP6ix%2FbLtVvswVTdIEkkS3WqWhGbXzxZmiI7defy%2BdFe4L5btigVnvtSkbJr2vqAadrtJmUj%2BqA7Sb3pvvWiezEnERQ7%2Bt5qYTVyw5MTIX2kLeq7A1IfF6ECsabuxTDUwQ%3D%3D, name: Pescado blanco en cubos, stacks: [{added_at: 2025-06-22T20:42:46, expiration_date: 2025-06-23T20:41:46, quantity: 250.0, type_unit: gramos}, {added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-24T20:44:12, quantity: 302.5, type_unit: gramos}], storage_type: refrigerated, tips: Mantener el pescado bien cubierto en el refrigerador y consumirlo lo antes posible. Si no se va a usar pronto, congelar en porciones., type_unit: gramos}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/sal.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=q2QA9PFd%2BSo5yQo%2FQsuy%2BMQi%2FPBipNx4fDX3tRU482gLp9e5ClhUNGlZ4T88xyNypmfU4LT4I7h9lvyRJ8PO1cTnkLHGrjx%2FNv%2F%2Ba3j8VoOqrWklneM8WEZuVj2qHYKkFFx%2Fs4TKgXEQS%2BWAWxhueAvtBwrEUPxst%2FinIWHhXu4WTLKGEmL6g90dp%2BOhbF5J%2FAf4c0DtdACtgCNKKmSDL4cq7AINgHGemn1qwRnn%2B2oO3%2F6Uavv604R6tnWzyHe8xSrOelUhuE%2F5DCdfeypGUs91h3E0uUm6I74t5Rabwd3tsHro6FoQlpRgQHaR%2FZOoQHzuLtcYtM2PHr1%2BvUpHig%3D%3D, name: Sal, stacks: [{added_at: 2025-06-22T20:29:12, expiration_date: 2027-06-22T20:28:48, quantity: 20.0, type_unit: cucharadita}, {added_at: 2025-06-24T12:18:00, expiration_date: 2027-06-24T12:15:26, quantity: 1.0, type_unit: cucharadita}], storage_type: dry, tips: Almacenar en un recipiente hermético en un lugar seco para evitar que se apelmace por la humedad., type_unit: cucharadita}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate.jpg?Expires=1751372281&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=SAKCg%2F9hiit32SgRU02tlW5zsEhD%2BDj%2FSL7Qrsm1DXxELgIsEAqW0fqr3zB2tBM46Y3KZpNQTpdVKSHHYkzW32SVVRN05sJQYhO1APABrlWAjJ64yMnnwO6Ucy6%2Baw618FZEHF1KWGYn%2BGJIgGmz55dhnOyLk8BBwznqNQ%2Fyt7kAulWBzTcoZKFISdAvzinldx1rbjxG02NTFg%2BhsMWCmCT44hMhLFjeClkFeAEjxKKME52S7ly5dngPLwNXSNuxIaiUtMSqa5K6DQEbE91Ez2trvu5I3SwO4WlZ1aIcU%2B11%2BGavC1umwg8deBfbFQWzN6GUtNy6IODE1F%2BaTvUMpw%3D%3D, name: Tomate, stacks: [{added_at: 2025-06-24T12:18:00, expiration_date: 2025-06-28T12:15:26, quantity: 2.0, type_unit: unidades}], storage_type: dry, tips: Conserva los tomates a temperatura ambiente si no están completamente maduros. Una vez cortados, guárdalos en el refrigerador en un recipiente hermético., type_unit: unidades}, {image_path: https://storage.googleapis.com/zer0wasteai-91408.firebasestorage.app/ingredients/tomate_picado.jpg?Expires=1751229921&GoogleAccessId=firebase-adminsdk-fbsvc%40zer0wasteai-91408.iam.gserviceaccount.com&Signature=nAFqMY%2BZTsVjWf99wv1wKZgp36IODqIVqeyuW0qEMazaUGCKZARhGra5j%2BwZR9hRg82F9ZKheaBEbFL3ISSST9riTTLzgp46myqiRkdTksAnh%2F%2FTtnt8SpjPLs6a4ubGTygYBFnpIx6fvhRP615a6dJYM8hsheFXXCos2uaDwic5nLDd7HwZf4MmVkworLDvu0FZ21m8gZb5TgBv0qPnIvS4efzZoQDq1K60zVHC0ib3%2BjG4T8WPJFITUnWr2mGZ21XkZ3i72NiGv72snKBFi%2BY9OrpDSQazSfQ3K8EkFBTQLcq4TLUSONYRG3C3tFA5ApUjtVcOh1hQQeqXP0XZpg%3D%3D, name: Tomate picado, stacks: [{added_at: 2025-06-22T20:45:20, expiration_date: 2025-06-25T20:44:12, quantity: 2.0, type_unit: taza}], storage_type: refrigerated, tips: Almacenar en un recipiente hermético en el refrigerador. Evitar lavar hasta el momento de usar para prolongar su frescura., type_unit: taza}]}
 [log] 🔍 DEBUG - Original DateTime: 2025-06-24 12:18:00.000
 [log] 🔍 DEBUG - Formatted timestamp (LOCAL + Z): 2025-06-24T12:18:00.000Z
 [log] 🔍 DEBUG - Formatted for backend: 2025-06-24T12:18:00.000Z
@@ -340,119 +340,656 @@ flutter: Hive initialized successfully
 flutter: 🔧 UserProfileProvider: Initial user set - Raf
 flutter: 🔧 UserProfileProvider: Setting user - Raf
 flutter: 🔧 Preferences loaded:
-flutter:   - cookingLevel: beginner
+flutter:   - cookingLevel: intermediate
 flutter:   - allergies: [Pescado, Soya]
-flutter:   - specialDiets: [Sin lácteos]
-flutter:   - preferredFoodTypes: [China, Coreana]
+flutter:   - specialDiets: [Plant-based, Paleo]
+flutter:   - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
 flutter: 🔧 ProfileScreen DEBUG - User preferences:
 flutter:   user: EXISTS
-flutter:   cookingLevel: "beginner"
+flutter:   cookingLevel: "intermediate"
 flutter:   allergies: [Pescado, Soya]
 flutter:   allergyItems: [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
-flutter:   specialDiets: [Sin lácteos]
-flutter:   specialDietItems: [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
-flutter:   preferredFoodTypes: [China, Coreana]
+flutter:   specialDiets: [Plant-based, Paleo]
+flutter:   specialDietItems: [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter:   preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
 flutter:   profileState.isBackendSynced: true
-flutter: 🔧 ProfileScreen - cookingLevel value: "beginner"
+flutter:   authState.hasValue: true
+flutter:   authState.isLoading: false
+flutter:   Current time: 2025-06-30 21:38:00.587137
+flutter: 🔧 ProfileScreen - cookingLevel value: "intermediate"
 flutter: 🔧 ProfileScreen - cookingLevel type: String
-flutter: 🔧 ProfileScreen - preferredFoodTypes: [China, Coreana]
+flutter: 🔧 ProfileScreen - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
 flutter: 🔧 DEBUG allergies:
 flutter:   allergies (simple): [Pescado, Soya]
 flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
 flutter: 🔧 DEBUG special diets:
-flutter:   specialDiets (simple): [Sin lácteos]
-flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
-[GoRouter] going to /cooking-level-selector?from=profile
-[log] 🔍 Building CookingLevelSelectorScreen:
-[log]   - fromProfile: true
-[log]   - selectedLevel: null
-[log]   - selectedLevel enum: null
-[log]   - isInitialized: false
-[log]   - using profile provider
-[log] 🔍 Selection comparisons:
-[log]   - selectedLevel == beginner: false
-[log]   - selectedLevel == intermediate: false
-[log]   - selectedLevel == advanced: false
-[log] 🔧 Initializing cooking level screen. fromProfile: true, isInitialized: false
-[log] 🔧 Auth state hasValue: true
-[log] 🔧 User cooking level from Firestore: "beginner"
-[log] 🔧 Testing mappings:
-[log]   - "beginner" -> CookingLevel.beginner
-[log]   - "intermediate" -> CookingLevel.intermediate
-[log]   - "advanced" -> CookingLevel.advanced
-[log] 🔧 Parsed cooking level: beginner
-[log] 🔧 Parsed cooking level enum: CookingLevel.beginner
-[log] 🎯 selectLevel called with: CookingLevel.beginner (beginner)
-[log] 🎯 State after selection: CookingLevel.beginner (beginner)
-[log] ✅ Set cooking level to: beginner
-[log] ✅ Set cooking level enum: CookingLevel.beginner
-[log] 🔧 Initializing cooking level screen. fromProfile: true, isInitialized: true
-[log] 🔧 Auth state hasValue: true
-[log] 🔧 User cooking level from Firestore: "beginner"
-[log] 🔧 Testing mappings:
-[log]   - "beginner" -> CookingLevel.beginner
-[log]   - "intermediate" -> CookingLevel.intermediate
-[log]   - "advanced" -> CookingLevel.advanced
-[log] 🔧 Parsed cooking level: beginner
-[log] 🔧 Parsed cooking level enum: CookingLevel.beginner
-[log] 🎯 selectLevel called with: CookingLevel.beginner (beginner)
-[log] 🎯 State after selection: CookingLevel.beginner (beginner)
-[log] ✅ Set cooking level to: beginner
-[log] ✅ Set cooking level enum: CookingLevel.beginner
-[log] 🔍 Building CookingLevelSelectorScreen:
-[log]   - fromProfile: true
-[log]   - selectedLevel: beginner
-[log]   - selectedLevel enum: CookingLevel.beginner
-[log]   - isInitialized: true
-[log]   - using profile provider
-[log] 🔍 Selection comparisons:
-[log]   - selectedLevel == beginner: true
-[log]   - selectedLevel == intermediate: false
-[log]   - selectedLevel == advanced: false
-[log] 🔘 User tapped ADVANCED
-[log] 🎯 selectLevel called with: CookingLevel.advanced (advanced)
-[log] 🎯 State after selection: CookingLevel.advanced (advanced)
-[log] 🔍 Building CookingLevelSelectorScreen:
-[log]   - fromProfile: true
-[log]   - selectedLevel: advanced
-[log]   - selectedLevel enum: CookingLevel.advanced
-[log]   - isInitialized: true
-[log]   - using profile provider
-[log] 🔍 Selection comparisons:
-[log]   - selectedLevel == beginner: false
-[log]   - selectedLevel == intermediate: false
-[log]   - selectedLevel == advanced: true
-[log] Guardando nivel de cocina: advanced
+flutter:   specialDiets (simple): [Plant-based, Paleo]
+flutter:   specialDietItems (complex): [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter: 🔄 ProfileScreen: Forcing profile refresh...
 [log] User data refreshed from Firestore
-[log] User data refreshed from Firestore
-[log] Resetting cooking level selection
-[GoRouter] going to /profile
-[GoRouter] Using MaterialApp configuration
 flutter: 🔧 ProfileScreen DEBUG - User preferences:
 flutter:   user: EXISTS
-flutter:   cookingLevel: "beginner"
+flutter:   cookingLevel: "intermediate"
 flutter:   allergies: [Pescado, Soya]
 flutter:   allergyItems: [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
-flutter:   specialDiets: [Sin lácteos]
-flutter:   specialDietItems: [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
-flutter:   preferredFoodTypes: [China, Coreana]
+flutter:   specialDiets: [Plant-based, Paleo]
+flutter:   specialDietItems: [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter:   preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
 flutter:   profileState.isBackendSynced: true
-flutter: 🔧 ProfileScreen - cookingLevel value: "beginner"
+flutter:   authState.hasValue: true
+flutter:   authState.isLoading: false
+flutter:   Current time: 2025-06-30 21:38:01.251618
+flutter: 🔧 ProfileScreen - cookingLevel value: "intermediate"
 flutter: 🔧 ProfileScreen - cookingLevel type: String
-flutter: 🔧 ProfileScreen - preferredFoodTypes: [China, Coreana]
+flutter: 🔧 ProfileScreen - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
 flutter: 🔧 DEBUG allergies:
 flutter:   allergies (simple): [Pescado, Soya]
 flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
 flutter: 🔧 DEBUG special diets:
-flutter:   specialDiets (simple): [Sin lácteos]
-flutter:   specialDietItems (complex): [{emoji: 🥛, name: Sin lácteos, isCustom: false}]
-[log] 🔍 Building CookingLevelSelectorScreen:
-[log]   - fromProfile: true
-[log]   - selectedLevel: null
-[log]   - selectedLevel enum: null
-[log]   - isInitialized: true
-[log]   - using profile provider
-[log] 🔍 Selection comparisons:
-[log]   - selectedLevel == beginner: false
-[log]   - selectedLevel == intermediate: false
-[log]   - selectedLevel == advanced: false
+flutter:   specialDiets (simple): [Plant-based, Paleo]
+flutter:   specialDietItems (complex): [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+[log] User data refreshed from Firestore
+flutter: 🔧 ProfileScreen DEBUG - User preferences:
+flutter:   user: EXISTS
+flutter:   cookingLevel: "intermediate"
+flutter:   allergies: [Pescado, Soya]
+flutter:   allergyItems: [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter:   specialDiets: [Plant-based, Paleo]
+flutter:   specialDietItems: [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter:   preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter:   profileState.isBackendSynced: true
+flutter:   authState.hasValue: true
+flutter:   authState.isLoading: false
+flutter:   Current time: 2025-06-30 21:38:01.571132
+flutter: 🔧 ProfileScreen - cookingLevel value: "intermediate"
+flutter: 🔧 ProfileScreen - cookingLevel type: String
+flutter: 🔧 ProfileScreen - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Plant-based, Paleo]
+flutter:   specialDietItems (complex): [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter: ✅ ProfileScreen: Profile refresh completed
+flutter: 🔧 UserProfileProvider: Initial user set - Raf
+flutter: 🔧 UserProfileProvider: Setting user - Raf
+flutter: 🔧 Preferences loaded:
+flutter:   - cookingLevel: intermediate
+flutter:   - allergies: [Pescado, Soya]
+flutter:   - specialDiets: [Plant-based, Paleo]
+flutter:   - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter: 🔧 ProfileScreen DEBUG - User preferences:
+flutter:   user: EXISTS
+flutter:   cookingLevel: "intermediate"
+flutter:   allergies: [Pescado, Soya]
+flutter:   allergyItems: [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter:   specialDiets: [Plant-based, Paleo]
+flutter:   specialDietItems: [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter:   preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter:   profileState.isBackendSynced: true
+flutter:   authState.hasValue: true
+flutter:   authState.isLoading: true
+flutter:   Current time: 2025-06-30 21:38:02.089817
+flutter: 🔧 ProfileScreen - cookingLevel value: "intermediate"
+flutter: 🔧 ProfileScreen - cookingLevel type: String
+flutter: 🔧 ProfileScreen - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Plant-based, Paleo]
+flutter:   specialDietItems (complex): [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+[log] 🔍 Loading user data from Firestore for UID: OQ7TFsYpxAZBfNyLsloVJXImyRm1
+[log] 🚀 Proactively loading inventory for better UX...
+[log] 📦 Cache check: age=164s, valid=false
+[log] 🌐 Cache invalid or empty, loading fresh data
+[log] 🔄 Subsequent load - using complete endpoint
+[log] 🔄 DEBUG - Starting loadCompleteInventoryFromBackend
+[log] 📡 DEBUG - Calling backend getInventoryComplete
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/inventory/complete
+[log] API Request: GET /api/inventory/complete
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[log] ✅ User document found in Firestore
+[log] 🔧 cookingLevel: intermediate
+[log] 🔧 allergies: [Pescado, Soya]
+[log] 🔧 specialDiets: [Plant-based, Paleo]
+[log] 🔧 preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+[log] 🔧 Built UserPreferencesModel - cookingLevel: intermediate
+[log] 🚀 Proactively loading inventory for better UX...
+[log] ⏳ Already loading inventory, skipping
+[log] ✅ Proactive inventory loading completed
+flutter: 🔧 UserProfileProvider: Auth state changed
+flutter: 🔧 UserProfileProvider: Auth state updated with user - Raf
+flutter: 🔧 UserProfileProvider: Setting user - Raf
+flutter: 🔧 Preferences loaded:
+flutter:   - cookingLevel: intermediate
+flutter:   - allergies: [Pescado, Soya]
+flutter:   - specialDiets: [Plant-based, Paleo]
+flutter:   - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
+flutter: 🔧 ProfileScreen DEBUG - User preferences:
+flutter:   user: EXISTS
+flutter:   cookingLevel: "intermediate"
+flutter:   allergies: [Pescado, Soya]
+flutter:   allergyItems: [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter:   specialDiets: [Plant-based, Paleo]
+flutter:   specialDietItems: [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+flutter:   preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter:   profileState.isBackendSynced: true
+flutter:   authState.hasValue: true
+flutter:   authState.isLoading: false
+flutter:   Current time: 2025-06-30 21:38:02.385207
+flutter: 🔧 ProfileScreen - cookingLevel value: "intermediate"
+flutter: 🔧 ProfileScreen - cookingLevel type: String
+flutter: 🔧 ProfileScreen - preferredFoodTypes: [Coreana, Comida Saludable, Postres y Repostería, Tailandesa]
+flutter: 🔧 DEBUG allergies:
+flutter:   allergies (simple): [Pescado, Soya]
+flutter:   allergyItems (complex): [{emoji: 🐟, name: Pescado, isCustom: false}, {emoji: 🌱, name: Soya, isCustom: false}]
+flutter: 🔧 DEBUG special diets:
+flutter:   specialDiets (simple): [Plant-based, Paleo]
+flutter:   specialDietItems (complex): [{emoji: 🍃, name: Plant-based, isCustom: false}, {emoji: 🥗, name: Paleo, isCustom: false}]
+[log] User data refreshed from Firestore
+[log] UserPreferencesService: Firestore initialPreferencesCompleted = false
+[GoRouter] going to /allergy-selector?from=profile
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+The following StateNotifierListenerError was thrown building Builder:
+At least listener of the StateNotifier Instance of 'SelectedAllergiesNotifier' threw an exception
+when the notifier tried to update its state.
+
+The exceptions thrown are:
+
+Tried to modify a provider while the widget tree was building.
+If you are encountering this error, chances are you tried to modify a provider
+in a widget life-cycle, such as but not limited to:
+- build
+- initState
+- dispose
+- didUpdateWidget
+- didChangeDependencies
+
+Modifying a provider inside those life-cycles is not allowed, as it could
+lead to an inconsistent UI state. For example, two widgets could listen to the
+same provider, but incorrectly receive different states.
+
+To fix this problem, you have one of two solutions:
+- (preferred) Move the logic for modifying your provider outside of a widget
+  life-cycle. For example, maybe you could update your provider inside a button's
+  onPressed instead.
+
+- Delay your modification, such as by encapsulating the modification
+  in a `Future(() {...})`.
+  This will perform your update after the widget tree is done building.
+#0      _UncontrolledProviderScopeElement._debugCanModifyProviders (package:flutter_riverpod/src/framework.dart:349:7)
+#1      ProviderElementBase._notifyListeners.<anonymous closure> (package:riverpod/src/framework/element.dart:488:34)
+#2      ProviderElementBase._notifyListeners (package:riverpod/src/framework/element.dart:490:8)
+#3      ProviderElementBase.setState (package:riverpod/src/framework/element.dart:140:7)
+#4      StateNotifier.state= (package:state_notifier/state_notifier.dart:227:31)
+#5      SelectedAllergiesNotifier.initializeFromProfile (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:60:7)
+#6      _AllergySelectorScreenState._initializeAllergies (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:115:10)
+#7      _AllergySelectorScreenState.initState (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:93:5)
+#8      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5842:55)
+#9      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#10     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#11     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#12     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#13     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#14     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#15     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#16     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#17     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#18     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#19     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#20     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#21     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#22     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#23     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#24     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#25     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#26     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#27     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#28     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#29     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#30     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#31     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#32     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#33     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#34     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#35     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#36     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#37     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#38     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#39     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#40     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+#41     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7175:32)
+#42     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#43     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#44     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#45     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#46     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#47     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#48     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#49     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#50     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#51     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#52     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#53     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#54     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#55     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#56     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#57     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#58     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#59     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#60     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#61     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#62     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#63     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#64     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#65     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#66     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#67     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#68     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#69     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#70     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#71     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#72     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#73     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#74     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#75     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#76     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#77     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#78     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#79     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#80     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#81     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#82     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#83     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#84     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#85     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#86     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#87     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#88     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#89     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#90     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#91     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#92     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#93     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#94     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#95     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#96     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#97     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#98     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#99     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#100    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#101    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#102    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#103    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#104    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#105    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#106    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#107    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#108    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#109    SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#110    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#111    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#112    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#113    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#114    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#115    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#116    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#117    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#118    SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#119    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#120    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#121    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#122    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#123    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#124    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#125    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#126    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#127    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#128    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#129    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#130    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#131    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#132    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#133    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#134    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#135    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#136    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#137    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#138    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#139    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#140    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#141    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#142    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#143    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#144    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#145    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#146    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#147    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#148    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#149    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#150    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#151    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#152    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#153    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#154    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#155    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#156    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#157    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#158    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#159    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#160    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#161    SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#162    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#163    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#164    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#165    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#166    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#167    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#168    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#169    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#170    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#171    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#172    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#173    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#174    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#175    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#176    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#177    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#178    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#179    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#180    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#181    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#182    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#183    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#184    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#185    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#186    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#187    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#188    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#189    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#190    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#191    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#192    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#193    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#194    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#195    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#196    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#197    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#198    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#199    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#200    SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+#201    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#202    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#203    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#204    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#205    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#206    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#207    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#208    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#209    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#210    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#211    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#212    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#213    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#214    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#215    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#216    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#217    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#218    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#219    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#220    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#221    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#222    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#223    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#224    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#225    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#226    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#227    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+#228    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#229    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#230    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+#231    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#232    Element.updateChildren (package:flutter/src/widgets/framework.dart:4201:11)
+#233    MultiChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7192:17)
+#234    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#235    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#236    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#237    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#238    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#239    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#240    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#241    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#242    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#243    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#244    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#245    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#246    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#247    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#248    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#249    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#250    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#251    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#252    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#253    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#254    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#255    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#256    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#257    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#258    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#259    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#260    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#261    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#262    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#263    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#264    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#265    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#266    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#267    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#268    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#269    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7015:14)
+#270    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#271    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7015:14)
+#272    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#273    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#274    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#275    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#276    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#277    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#278    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#279    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#280    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#281    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#282    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#283    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#284    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#285    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#286    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#287    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#288    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#289    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#290    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#291    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#292    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#293    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#294    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#295    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#296    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#297    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#298    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#299    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#300    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#301    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#302    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#303    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#304    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#305    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#306    StatelessElement.update (package:flutter/src/widgets/framework.dart:5787:5)
+#307    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#308    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#309    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#310    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#311    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#312    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#313    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#314    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#315    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#316    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#317    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#318    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#319    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2694:15)
+#320    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+#321    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+#322    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1240:21)
+#323    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#324    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+#325    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+#326    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+#327    _invoke (dart:ui/hooks.dart:331:13)
+#328    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+#329    _drawFrame (dart:ui/hooks.dart:303:31)
+
+The relevant error-causing widget was:
+    MaterialApp MaterialApp:file:///Users/rafaelprimo/flutter-projects/zer0_waste_ai/lib/main.dart:106:24
+
+When the exception was thrown, this was the stack:
+#0      StateNotifier.state= (package:state_notifier/state_notifier.dart:240:7)
+#1      SelectedAllergiesNotifier.initializeFromProfile (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:60:7)
+#2      _AllergySelectorScreenState._initializeAllergies (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:115:10)
+#3      _AllergySelectorScreenState.initState (package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart:93:5)
+#4      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5842:55)
+#5      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+...     Normal element mounting (30 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7175:32)
+...     Normal element mounting (188 frames)
+#225    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#226    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+#227    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#228    Element.updateChildren (package:flutter/src/widgets/framework.dart:4201:11)
+#229    MultiChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7192:17)
+#230    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#231    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#232    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#233    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#234    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#235    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#236    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#237    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#238    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#239    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#240    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#241    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#242    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#243    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#244    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#245    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#246    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#247    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#248    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#249    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#250    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#251    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#252    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#253    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#254    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#255    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#256    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#257    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#258    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#259    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#260    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#261    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#262    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#263    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#264    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#265    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7015:14)
+#266    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#267    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7015:14)
+#268    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#269    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#270    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#271    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#272    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#273    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#274    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#275    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#276    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#277    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#278    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#279    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#280    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#281    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#282    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#283    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#284    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#285    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#286    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#287    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#288    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#289    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#290    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#291    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#292    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#293    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#294    StatefulElement.update (package:flutter/src/widgets/framework.dart:5899:5)
+#295    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#296    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#297    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#298    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#299    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#300    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#301    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#302    StatelessElement.update (package:flutter/src/widgets/framework.dart:5787:5)
+#303    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#304    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#305    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#306    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#307    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#308    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#309    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#310    ProxyElement.update (package:flutter/src/widgets/framework.dart:6041:5)
+#311    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#312    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#313    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#314    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#315    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2694:15)
+#316    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+#317    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+#318    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1240:21)
+#319    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#320    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+#321    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+#322    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+#323    _invoke (dart:ui/hooks.dart:331:13)
+#324    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+#325    _drawFrame (dart:ui/hooks.dart:303:31)
+
+════════════════════════════════════════════════════════════════════════════════
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Tried to modify a provider while the widget tree was building.
+If you are encountering this error, chances are you tried to modify a provider
+in a widget life-cycle, such as but not limited to:
+- build
+- initState
+- dispose
+- didUpdateWidget
+- didChangeDependencies
+
+Modifying a provider inside those life-cycles is not allowed, as it could
+lead to an inconsistent UI state. For example, two widgets could listen to the
+same provider, but incorrectly receive different states.
+
+To fix this problem, you have one of two solutions:
+- (preferred) Move the logic for modifying your provider outside of a widget
+  life-cycle. For example, maybe you could update your provider inside a button's
+  onPressed instead.
+
+- Delay your modification, such as by encapsulating the modification
+  in a `Future(() {...})`.
+  This will perform your update after the widget tree is done building.
+#0      _UncontrolledProviderScopeElement._debugCanModifyProvid<…>

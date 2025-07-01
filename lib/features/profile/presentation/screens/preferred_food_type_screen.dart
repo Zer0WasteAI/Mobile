@@ -46,30 +46,28 @@ class _PreferredFoodTypeScreenState
     // When coming from profile, always reinitialize to load current values
     if (_isInitialized && !widget.fromProfile) return;
 
-    // Reset state if coming from profile
-    if (widget.fromProfile) {
-      final notifier = ref.read(
-        selectedFoodTypesProviderWithPersistence.notifier,
-      );
-      notifier.reset();
-    }
-
     final foodTypesAsyncValue = ref.read(foodTypesProvider);
     final user = ref.read(authStateProvider).value;
 
+    log('🔧 _initializeFoodTypes - fromProfile: ${widget.fromProfile}');
+
     // Wait for food types to load if they haven't yet
     if (foodTypesAsyncValue is AsyncLoading) {
-      // ✅ UPDATED: Removed artificial delay
+      log('⏳ Food types still loading, waiting...');
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     // Get the list of all available food types
     final availableFoodTypes = ref.read(foodTypesProvider).value ?? [];
+    log(
+      '📋 Available food types: ${availableFoodTypes.map((f) => f.name).toList()}',
+    );
 
     // Get user's selected food types from profile
     final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
     final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
-    log('Initializing food types selector with:');
+    log('🔧 Initializing food types selector with:');
     log('- Legacy food type names: $userFoodTypes');
     log('- Food type items: $userFoodTypeItems');
 
@@ -79,6 +77,18 @@ class _PreferredFoodTypeScreenState
     if (userFoodTypeItems != null && userFoodTypeItems.isNotEmpty) {
       foodTypeNamesToInitialize =
           userFoodTypeItems.map((item) => item['name'] as String).toList();
+      log('✅ Using complex food type items');
+    } else {
+      log('✅ Using legacy food types');
+    }
+
+    // Reset state AFTER we have the data, especially when coming from profile
+    if (widget.fromProfile) {
+      final notifier = ref.read(
+        selectedFoodTypesProviderWithPersistence.notifier,
+      );
+      notifier.reset();
+      log('🔄 Reset food types state for profile editing');
     }
 
     // Initialize the selectedFoodTypesProviderWithPersistence with user's saved preferences
@@ -88,21 +98,35 @@ class _PreferredFoodTypeScreenState
       );
 
       for (final foodTypeName in foodTypeNamesToInitialize) {
+        log('🔍 Looking for food type: "$foodTypeName"');
+        bool found = false;
         for (final availableFoodType in availableFoodTypes) {
-          if (availableFoodType.name.toLowerCase() ==
-              foodTypeName.toLowerCase()) {
+          if (availableFoodType.name.toLowerCase().trim() ==
+              foodTypeName.toLowerCase().trim()) {
             notifier.toggleFoodType(availableFoodType);
-            log('Added food type to selection: ${availableFoodType.name}');
+            log('✅ Added food type to selection: ${availableFoodType.name}');
+            found = true;
             break;
           }
         }
+        if (!found) {
+          log('❌ Food type not found: "$foodTypeName"');
+        }
       }
+    } else {
+      log(
+        '⚠️ No food types to initialize or available food types list is empty',
+      );
+      log('   - foodTypeNamesToInitialize: $foodTypeNamesToInitialize');
+      log('   - availableFoodTypes count: ${availableFoodTypes.length}');
     }
 
     setState(() {
       _isInitialized = true;
       _isLoading = false;
     });
+
+    log('✅ Food types initialization completed');
   }
 
   @override

@@ -14,19 +14,18 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider
 import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
-final selectedAllergiesProvider = StateNotifierProvider<
-  SelectedAllergiesNotifier,
-  Set<String>
->((ref) {
-  // ✅ RESOLVED: Persistence loading not needed for onboarding (first-time setup)
-  // For profile editing with persistence, use ProfileAllergySelectorScreen instead
-  return SelectedAllergiesNotifier();
-});
+final selectedAllergiesProvider =
+    StateNotifierProvider<SelectedAllergiesNotifier, Set<String>>((ref) {
+      return SelectedAllergiesNotifier();
+    });
 
 class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
   SelectedAllergiesNotifier() : super({});
+  bool _isInitializing = false;
 
   void toggleAllergy(String allergyName) {
+    if (_isInitializing) return;
+
     final newState = Set<String>.from(state);
     if (newState.contains(allergyName)) {
       newState.remove(allergyName);
@@ -34,19 +33,57 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
       newState.add(allergyName);
     }
     state = newState;
-    log("Selected allergy names: $state");
+    log("Toggled allergy: $allergyName - Current state: $state");
   }
 
   void addCustomAllergy(String allergyName) {
+    if (_isInitializing) return;
+
     if (allergyName.isNotEmpty && !state.contains(allergyName)) {
       state = {...state, allergyName};
-      log("Selected allergy names: $state");
+      log("Added custom allergy: $allergyName - Current state: $state");
     }
   }
 
   void removeCustomAllergy(String allergyName) {
+    if (_isInitializing) return;
+
     state = {...state}..remove(allergyName);
-    log("Selected allergy names: $state");
+    log("Removed custom allergy: $allergyName - Current state: $state");
+  }
+
+  void initializeFromProfile(List<String> allergies) {
+    if (_isInitializing) return;
+    _isInitializing = true;
+
+    try {
+      // Crear un nuevo Set con las alergias
+      final newState = Set<String>.from(allergies);
+
+      // Solo actualizar si hay cambios
+      if (newState != state) {
+        state = newState;
+        log("Initialized allergies from profile: $state");
+      } else {
+        log("No changes needed during initialization");
+      }
+    } catch (e) {
+      log("Error initializing allergies: $e");
+    } finally {
+      _isInitializing = false;
+    }
+  }
+
+  void reset() {
+    if (_isInitializing) return;
+    _isInitializing = true;
+
+    try {
+      state = {};
+      log("Reset allergies state");
+    } finally {
+      _isInitializing = false;
+    }
   }
 }
 
@@ -55,7 +92,7 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
 /// INFO: Allergy selector for onboarding/first-time setup
 /// USAGE: Used during user registration and initial preferences setup
 /// NOTE: For profile editing with persistence, use ProfileAllergySelectorScreen
-class AllergySelectorScreen extends ConsumerWidget {
+class AllergySelectorScreen extends ConsumerStatefulWidget {
   const AllergySelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'allergy_selector';
@@ -65,36 +102,60 @@ class AllergySelectorScreen extends ConsumerWidget {
   final bool fromProfile;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AllergySelectorScreen> createState() =>
+      _AllergySelectorScreenState();
+}
+
+class _AllergySelectorScreenState extends ConsumerState<AllergySelectorScreen> {
+  bool _hasInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Mover la inicialización a después del primer frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAllergies();
+    });
+  }
+
+  Future<void> _initializeAllergies() async {
+    if (_hasInitialized) return;
+
+    final authState = ref.read(authStateProvider);
+    if (!authState.hasValue || !widget.fromProfile) {
+      _hasInitialized = true;
+      return;
+    }
+
+    final user = authState.value;
+    if (user == null) {
+      _hasInitialized = true;
+      return;
+    }
+
+    final userAllergies =
+        user.prefs.allergyItems.isNotEmpty
+            ? user.prefs.allergyItems
+                .map((item) => item['name'] as String)
+                .toList()
+            : user.prefs.allergies;
+
+    // Usar Future.microtask para asegurar que la actualización ocurra después del build
+    await Future.microtask(() {
+      if (!mounted) return;
+      final notifier = ref.read(selectedAllergiesProvider.notifier);
+      notifier.initializeFromProfile(userAllergies);
+    });
+
+    _hasInitialized = true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final selectedAllergyNames = ref.watch(selectedAllergiesProvider);
     final notifier = ref.read(selectedAllergiesProvider.notifier);
     final allergiesAsyncValue = ref.watch(allergiesProvider);
     final authState = ref.watch(authStateProvider);
-
-    // Load current allergies when entering the screen from profile
-    if (fromProfile && authState.hasValue) {
-      final user = authState.value;
-      if (user != null) {
-        final userAllergies =
-            user.prefs.allergyItems.isNotEmpty
-                ? user.prefs.allergyItems
-                    .map((item) => item['name'] as String)
-                    .toList()
-                : user.prefs.allergies;
-
-        // Always load when coming from profile, reset first to ensure clean state
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Clear current selections first
-          while (selectedAllergyNames.isNotEmpty) {
-            notifier.toggleAllergy(selectedAllergyNames.first);
-          }
-          // Then add user's saved allergies
-          for (final allergyName in userAllergies) {
-            notifier.toggleAllergy(allergyName);
-          }
-        });
-      }
-    }
 
     // Use Theme colors for consistency
     final theme = Theme.of(context);
@@ -116,7 +177,7 @@ class AllergySelectorScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: backgroundColor, // Use theme-based background
       appBar:
-          fromProfile
+          widget.fromProfile
               ? AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -253,7 +314,7 @@ class AllergySelectorScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               // Bottom Buttons
-              if (fromProfile) ...[
+              if (widget.fromProfile) ...[
                 // Show Save and Cancel buttons when editing from profile
                 Row(
                   children: [
