@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/models/meal_plan_models.dart';
 import '../providers/recipe_generation_providers.dart';
+import '../providers/meal_planning_providers.dart';
 import '../widgets/recipe_card_widget.dart';
 
 class RecipeGenerationScreen extends ConsumerStatefulWidget {
@@ -296,24 +297,103 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           child: RecipeCardWidget(
             recipe: recipe,
             onAddToPlan: () => _addRecipeToPlan(recipe),
+            onStartCooking: () => _onCookingComplete(recipe),
           ),
         );
       },
     );
   }
 
-  void _addRecipeToPlan(GeneratedRecipe recipe) {
-    // TODO: Implement add to meal plan functionality
-    // This will connect to the meal planning provider
+  Future<void> _addRecipeToPlan(GeneratedRecipe recipe) async {
+    try {
+      final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+      
+      // Convert GeneratedRecipe to Meal
+      final meal = Meal(
+        recipeTitle: recipe.title,
+        ingredientsNeeded: recipe.ingredients.map((ingredient) => 
+          MealIngredient(
+            name: ingredient.name,
+            quantity: ingredient.quantity.toInt(),
+            unit: ingredient.unit,
+          )
+        ).toList(),
+        prepTime: recipe.prepTime + recipe.cookTime,
+        calories: recipe.calories ?? 250,
+      );
+      
+      // Get current meal plan for the date
+      final existingPlan = await ref.read(mealPlanByDateProvider(dateString).future);
+      
+      // Create updated daily meals
+      DailyMeals updatedMeals;
+      if (existingPlan != null) {
+        // Update existing plan
+        updatedMeals = DailyMeals(
+          breakfast: widget.mealType == MealType.breakfast ? meal : existingPlan.meals.breakfast,
+          lunch: widget.mealType == MealType.lunch ? meal : existingPlan.meals.lunch,
+          dinner: widget.mealType == MealType.dinner ? meal : existingPlan.meals.dinner,
+        );
+        
+        // Update the existing plan
+        await ref.read(mealPlanningProvider.notifier).updateMealPlan(
+          dateString,
+          updatedMeals,
+        );
+      } else {
+        // Create new plan
+        updatedMeals = DailyMeals(
+          breakfast: widget.mealType == MealType.breakfast ? meal : null,
+          lunch: widget.mealType == MealType.lunch ? meal : null,
+          dinner: widget.mealType == MealType.dinner ? meal : null,
+        );
+        
+        // Save new plan
+        await ref.read(mealPlanningProvider.notifier).saveMealPlan(
+          dateString,
+          updatedMeals,
+        );
+      }
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${recipe.title} agregado al plan del ${widget.mealType.name.toLowerCase()}'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'Ver Plan',
+              onPressed: () {
+                context.pop(); // Return to planning screen
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al agregar receta al plan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  void _onCookingComplete(GeneratedRecipe recipe) {
+    // Show additional success message for completed cooking
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${recipe.title} agregado al plan del ${widget.mealType.name.toLowerCase()}'),
-        backgroundColor: Colors.green,
+        content: Text('¡Excelente! Has cocinado ${recipe.title} con éxito'),
+        backgroundColor: Colors.green.shade700,
+        duration: const Duration(seconds: 2),
         action: SnackBarAction(
-          label: 'Ver Plan',
-          onPressed: () {
-            context.pop(); // Return to planning screen
-          },
+          label: 'Agregar al Plan',
+          textColor: Colors.white,
+          onPressed: () => _addRecipeToPlan(recipe),
         ),
       ),
     );

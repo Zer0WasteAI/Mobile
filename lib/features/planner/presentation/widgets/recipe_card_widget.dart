@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
 import '../providers/recipe_generation_providers.dart';
+import '../../../recipes/presentation/widgets/recipe_cooking_mode.dart';
+import '../../../recipes/presentation/widgets/recipe_rating_dialog.dart';
 
 class RecipeCardWidget extends StatelessWidget {
   final GeneratedRecipe recipe;
   final VoidCallback onAddToPlan;
+  final VoidCallback? onStartCooking;
 
   const RecipeCardWidget({
     super.key,
     required this.recipe,
     required this.onAddToPlan,
+    this.onStartCooking,
   });
+  
+  /// Convert GeneratedRecipe to format expected by RecipeCookingMode
+  Map<String, dynamic> _convertGeneratedRecipeToStepsFormat(GeneratedRecipe recipe) {
+    return {
+      'title': recipe.title,
+      'description': recipe.description,
+      'cookingTime': recipe.prepTime + recipe.cookTime,
+      'difficulty': recipe.difficulty,
+      'ingredients': recipe.ingredients.map((ing) => ing.name).toList(),
+      'steps': recipe.instructions, // GeneratedRecipe already has instructions as List<String>
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +54,7 @@ class RecipeCardWidget extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildIngredients(textTheme, colorScheme),
                 const SizedBox(height: 16),
-                _buildActionButton(colorScheme),
+                _buildActionButton(context, colorScheme),
               ],
             ),
           ),
@@ -271,22 +287,115 @@ class RecipeCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(ColorScheme colorScheme) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onAddToPlan,
-        icon: const Icon(Icons.add_circle),
-        label: const Text('Agregar al Plan'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildActionButton(BuildContext context, ColorScheme colorScheme) {
+    if (onStartCooking != null) {
+      // Show both buttons when cooking functionality is available
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: onAddToPlan,
+              icon: const Icon(Icons.add_circle),
+              label: const Text('Agregar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Navigate to cooking mode
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RecipeCookingMode(
+                      recipe: _convertGeneratedRecipeToStepsFormat(recipe),
+                      onExit: () {
+                        Navigator.pop(context);
+                      },
+                      onComplete: () {
+                        // Show completion message with rating option
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('¡Felicidades! Has completado: ${recipe.title}'),
+                            backgroundColor: Colors.green,
+                            duration: const Duration(seconds: 4),
+                            action: SnackBarAction(
+                              label: 'Calificar',
+                              textColor: Colors.white,
+                              onPressed: () {
+                                // Show rating dialog for generated recipe
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => RecipeRatingDialog(
+                                    recipeName: recipe.title,
+                                    onSubmit: (rating, comment) {
+                                      // Here you could save the rating for generated recipes
+                                      // For now, just show a confirmation
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('¡Gracias por calificar "${recipe.title}" con $rating estrellas!'),
+                                          backgroundColor: Colors.amber.shade700,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                        
+                        // Call the provided callback if any
+                        onStartCooking?.call();
+                        
+                        // Return to previous screen
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Cocinar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.secondary,
+                foregroundColor: colorScheme.onSecondary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Show only add to plan button when cooking is not available
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: onAddToPlan,
+          icon: const Icon(Icons.add_circle),
+          label: const Text('Agregar al Plan'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

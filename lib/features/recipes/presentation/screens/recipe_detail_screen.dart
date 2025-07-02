@@ -9,6 +9,8 @@ import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooking_mode.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_rating_dialog.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Recipe recipe;
@@ -20,6 +22,71 @@ class RecipeDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
+  
+  /// Convert Recipe to format expected by RecipeCookingMode
+  Map<String, dynamic> _convertRecipeToStepsFormat(Recipe recipe) {
+    // Generate cooking steps based on ingredients and recipe type
+    List<String> steps = _generateCookingSteps(recipe);
+    
+    return {
+      'title': recipe.name,
+      'description': recipe.description,
+      'emoji': recipe.emoji,
+      'cookingTime': recipe.cookingTime,
+      'difficulty': recipe.difficulty,
+      'ingredients': recipe.ingredients,
+      'steps': steps,
+    };
+  }
+  
+  /// Generate cooking steps from recipe data
+  List<String> _generateCookingSteps(Recipe recipe) {
+    List<String> steps = [];
+    
+    // Step 1: Preparation
+    steps.add('Preparar todos los ingredientes: ${recipe.ingredients.take(3).join(', ')}${recipe.ingredients.length > 3 ? ' y más.' : '.'}');
+    
+    // Step 2: Initial cooking based on recipe type
+    if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('pasta'))) {
+      steps.add('Hervir agua con sal en una olla grande.');
+      steps.add('Agregar la pasta al agua hirviendo y cocinar según las instrucciones del paquete.');
+    } else if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('arroz'))) {
+      steps.add('Enjuagar el arroz hasta que el agua salga clara.');
+      steps.add('Cocinar el arroz con agua en proporción 2:1 durante 18-20 minutos.');
+    } else if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('huevo'))) {
+      steps.add('Batir los huevos en un bowl con sal y pimienta.');
+      steps.add('Calentar la sartén a fuego medio con un poco de aceite.');
+    } else {
+      steps.add('Calentar una sartén o olla a fuego medio.');
+      steps.add('Agregar aceite y calentar por 1-2 minutos.');
+    }
+    
+    // Step 3: Main cooking process
+    if (recipe.ingredients.any((ing) => ['cebolla', 'ajo'].any((base) => ing.toLowerCase().contains(base)))) {
+      steps.add('Sofreír cebolla y ajo hasta que estén dorados y fragantes (3-4 minutos).');
+    }
+    
+    // Step 4: Add main ingredients
+    steps.add('Agregar los ingredientes principales y cocinar según la receta.');
+    
+    // Step 5: Seasoning and final cooking
+    steps.add('Sazonar con sal, pimienta y especias al gusto.');
+    
+    // Step 6: Final cooking time based on difficulty
+    if (recipe.difficulty.toLowerCase() == 'fácil') {
+      steps.add('Cocinar por ${(recipe.cookingTime * 0.7).round()} minutos más, revolviendo ocasionalmente.');
+    } else if (recipe.difficulty.toLowerCase() == 'medio') {
+      steps.add('Cocinar a fuego medio por ${(recipe.cookingTime * 0.8).round()} minutos, ajustando la temperatura según sea necesario.');
+    } else {
+      steps.add('Cocinar con cuidado por ${recipe.cookingTime} minutos, siguiendo técnicas específicas.');
+    }
+    
+    // Step 7: Final touches
+    steps.add('Verificar la cocción y ajustar sazón si es necesario.');
+    steps.add('Servir caliente y disfrutar tu deliciosa ${recipe.name}.');
+    
+    return steps;
+  }
   Map<String, bool> _ingredientAvailability = {};
 
   @override
@@ -374,8 +441,58 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               // Start cooking button
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement start cooking functionality
+                  onPressed: () async {
+                    // Record recipe as started cooking in history
+                    await ref.read(recipeHistoryProvider.notifier).startCooking(widget.recipe);
+                    
+                    // Navigate to cooking mode with converted recipe
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecipeCookingMode(
+                          recipe: _convertRecipeToStepsFormat(widget.recipe),
+                          onExit: () {
+                            Navigator.pop(context);
+                          },
+                          onComplete: () {
+                            // Record recipe as completed in history
+                            ref.read(recipeHistoryProvider.notifier).completeCooking(widget.recipe);
+                            
+                            // Show completion message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('¡Felicidades! Has completado la receta: ${widget.recipe.name}'),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 3),
+                                action: SnackBarAction(
+                                  label: 'Calificar',
+                                  onPressed: () {
+                                    // Show rating dialog
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => RecipeRatingDialog(
+                                        recipeName: widget.recipe.name,
+                                        onSubmit: (rating, comment) {
+                                          // Save rating and comment to recipe history
+                                          ref.read(recipeHistoryProvider.notifier).completeCooking(
+                                            widget.recipe,
+                                            rating: rating.toDouble(),
+                                            notes: comment.isNotEmpty ? comment : null,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                            
+                            // Return to recipe detail
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.secondary,
