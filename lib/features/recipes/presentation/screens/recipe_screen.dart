@@ -394,26 +394,321 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen>
       );
     }
 
-    // Recipes list
+    // Get cached AI recipes
+    final aiRecipeState = ref.watch(aiRecipeProvider);
+    
+    // Recipes list with cached section
     return RefreshIndicator(
       onRefresh: () async {
         await ref.read(favoriteRecipesProvider.notifier).refresh();
       },
       color: primaryColor,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: displayedRecipes.length,
-        itemBuilder: (context, index) {
-          final recipe = displayedRecipes[index];
-          return _buildRecipeCard(
-            recipe,
-            cardColor,
-            primaryColor,
-            mainTextColor,
-            secondaryTextColor,
-            isDark,
+      child: CustomScrollView(
+        slivers: [
+          // Cached AI Recipes Section
+          if (aiRecipeState.hasRecentRecipes)
+            SliverToBoxAdapter(
+              child: _buildCachedRecipesSection(
+                context,
+                ref,
+                aiRecipeState,
+                isDark,
+                primaryColor,
+                mainTextColor,
+                secondaryTextColor,
+                cardColor,
+              ),
+            ),
+          
+          // Saved Recipes Section
+          if (displayedRecipes.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Mis Recetas Guardadas',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: mainTextColor,
+                  ),
+                ),
+              ),
+            ),
+          
+          // Saved Recipes List
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final recipe = displayedRecipes[index];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: _buildRecipeCard(
+                    recipe,
+                    cardColor,
+                    primaryColor,
+                    mainTextColor,
+                    secondaryTextColor,
+                    isDark,
+                  ),
+                );
+              },
+              childCount: displayedRecipes.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCachedRecipesSection(
+    BuildContext context,
+    WidgetRef ref,
+    AIRecipeState aiRecipeState,
+    bool isDark,
+    Color primaryColor,
+    Color mainTextColor,
+    Color secondaryTextColor,
+    Color cardColor,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with cache info
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Icon(
+                Icons.auto_awesome,
+                color: primaryColor,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Recetas Recientes (IA)',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: mainTextColor,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Force regenerate - clear cache
+                  ref.read(aiRecipeProvider.notifier).clearState();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Limpiar',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Cache status message
+        if (aiRecipeState.cacheStatusMessage.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    color: primaryColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    aiRecipeState.cacheStatusMessage,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        
+        // Horizontal scrollable recipes list
+        SizedBox(
+          height: 280,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: aiRecipeState.recipes.length,
+            itemBuilder: (context, index) {
+              final recipe = aiRecipeState.recipes[index];
+              return Container(
+                width: 200,
+                margin: const EdgeInsets.only(right: 12),
+                child: _buildCachedRecipeCard(
+                  recipe,
+                  cardColor,
+                  primaryColor,
+                  mainTextColor,
+                  secondaryTextColor,
+                  isDark,
+                ),
+              );
+            },
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildCachedRecipeCard(
+    Recipe recipe,
+    Color cardColor,
+    Color primaryColor,
+    Color mainTextColor,
+    Color secondaryTextColor,
+    bool isDark,
+  ) {
+    return Card(
+      color: cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: InkWell(
+        onTap: () {
+          context.pushNamed(
+            'recipe-detail',
+            pathParameters: {'id': recipe.id},
+            extra: recipe,
           );
         },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with AI badge
+              Row(
+                children: [
+                  Text(
+                    recipe.emoji,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade600,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 10,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          'IA',
+                          style: GoogleFonts.inter(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 8),
+              
+              // Recipe name
+              Text(
+                recipe.name,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: mainTextColor,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              const SizedBox(height: 4),
+              
+              // Description
+              Text(
+                recipe.description,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: secondaryTextColor,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              const Spacer(),
+              
+              // Footer with time and difficulty
+              Row(
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    size: 14,
+                    color: secondaryTextColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    recipe.formattedCookingTime,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      recipe.difficulty,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: primaryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

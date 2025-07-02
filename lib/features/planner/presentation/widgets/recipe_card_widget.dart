@@ -7,12 +7,14 @@ class RecipeCardWidget extends StatelessWidget {
   final GeneratedRecipe recipe;
   final VoidCallback onAddToPlan;
   final VoidCallback? onStartCooking;
+  final VoidCallback? onSaveRecipe;
 
   const RecipeCardWidget({
     super.key,
     required this.recipe,
     required this.onAddToPlan,
     this.onStartCooking,
+    this.onSaveRecipe,
   });
   
   /// Convert GeneratedRecipe to format expected by RecipeCookingMode
@@ -160,6 +162,23 @@ class RecipeCardWidget extends StatelessWidget {
             ),
           ),
         ),
+        if (onSaveRecipe != null)
+          GestureDetector(
+            onTap: onSaveRecipe,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.bookmark_border,
+                color: colorScheme.primary,
+                size: 20,
+              ),
+            ),
+          ),
+        if (onSaveRecipe != null) const SizedBox(width: 8),
         if (recipe.calories != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

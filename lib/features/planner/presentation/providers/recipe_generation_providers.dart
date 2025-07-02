@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/meal_plan_models.dart';
 import '../../../recipes/application/providers/ai_recipes_provider.dart';
 import '../../../recipes/domain/models/recipe_model.dart';
-import '../../../recipes/application/providers/recipe_backend_provider.dart';
 
 // Recipe generation state
 class RecipeGenerationState {
@@ -27,13 +26,28 @@ class RecipeGenerationState {
     bool? isLoading,
     String? error,
     String? imageTaskId,
+    DateTime? lastGenerated,
+    MealType? lastMealType,
   }) {
     return RecipeGenerationState(
       recipes: recipes ?? this.recipes,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       imageTaskId: imageTaskId ?? this.imageTaskId,
+      lastGenerated: lastGenerated ?? this.lastGenerated,
+      lastMealType: lastMealType ?? this.lastMealType,
     );
+  }
+  
+  // Check if recipes are still fresh (less than 1 hour old)
+  bool get areRecipesFresh {
+    if (lastGenerated == null) return false;
+    return DateTime.now().difference(lastGenerated!).inHours < 1;
+  }
+  
+  // Check if we have cached recipes for the same meal type
+  bool hasCachedRecipesFor(MealType mealType) {
+    return lastMealType == mealType && recipes.isNotEmpty && areRecipesFresh;
   }
 }
 
@@ -48,7 +62,14 @@ class RecipeGenerationNotifier extends StateNotifier<RecipeGenerationState> {
     int numRecipes = 5,
     List<String>? preferences,
     List<String>? categories,
+    bool forceRegenerate = false,
   }) async {
+    // Check if we have fresh cached recipes for this meal type
+    if (!forceRegenerate && state.hasCachedRecipesFor(mealType)) {
+      // Return cached recipes without making API call
+      return;
+    }
+    
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -79,7 +100,12 @@ class RecipeGenerationNotifier extends StateNotifier<RecipeGenerationState> {
         recipes: generatedRecipes,
         imageTaskId: 'ai-generated-task-id',
         isLoading: false,
+        lastGenerated: DateTime.now(),
+        lastMealType: mealType,
       );
+      
+      // Sync with main AI provider for unified cache
+      await _syncWithMainAIProvider(generatedRecipes);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -91,6 +117,94 @@ class RecipeGenerationNotifier extends StateNotifier<RecipeGenerationState> {
   void clearRecipes() {
     state = const RecipeGenerationState();
     _aiRecipeNotifier.clearState();
+  }
+  
+  /// Save a generated recipe to favorites
+  Future<bool> saveGeneratedRecipe(GeneratedRecipe recipe) async {
+    try {
+      // Convert GeneratedRecipe to Recipe format for saving
+      // ignore: unused_local_variable
+      final recipeData = {
+        'title': recipe.title,
+        'description': recipe.description,
+        'ingredients': recipe.ingredients.map((ing) => {
+          'name': ing.name,
+          'quantity': ing.quantity,
+          'unit': ing.unit,
+        }).toList(),
+        'instructions': recipe.instructions,
+        'prep_time': recipe.prepTime,
+        'cook_time': recipe.cookTime,
+        'servings': recipe.servings,
+        'difficulty': recipe.difficulty,
+        'calories': recipe.calories,
+        'dietary_info': recipe.dietaryInfo,
+      };
+      
+      await _aiRecipeNotifier.saveRecipe(Recipe(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: recipe.title,
+        description: recipe.description,
+        emoji: _getEmojiForRecipe(recipe.title),
+        ingredients: recipe.ingredients.map((ing) => ing.name).toList(),
+        requiredIngredientsCount: recipe.ingredients.length,
+        availableIngredientsCount: recipe.ingredients.length,
+        usesExpiringItems: false,
+        cookingTime: recipe.prepTime + recipe.cookTime,
+        difficulty: recipe.difficulty,
+        dietType: 'Generada por IA',
+        categories: recipe.dietaryInfo,
+      ));
+      
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  /// Get emoji for recipe based on title
+  String _getEmojiForRecipe(String title) {
+    final titleLower = title.toLowerCase();
+    if (titleLower.contains('pasta')) return '🍝';
+    if (titleLower.contains('ensalada')) return '🥗';
+    if (titleLower.contains('pollo')) return '🍗';
+    if (titleLower.contains('pescado')) return '🐟';
+    if (titleLower.contains('sopa')) return '🍲';
+    if (titleLower.contains('arroz')) return '🍚';
+    if (titleLower.contains('huevo')) return '🍳';
+    return '🍽️';
+  }
+  
+  /// Sync planner recipes with main AI provider for unified cache
+  Future<void> _syncWithMainAIProvider(List<GeneratedRecipe> generatedRecipes) async {
+    try {
+      // Convert GeneratedRecipe back to Recipe for the main provider
+      final recipes = generatedRecipes.map((genRecipe) => Recipe(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: genRecipe.title,
+        description: genRecipe.description,
+        emoji: _getEmojiForRecipe(genRecipe.title),
+        ingredients: genRecipe.ingredients.map((ing) => ing.name).toList(),
+        requiredIngredientsCount: genRecipe.ingredients.length,
+        availableIngredientsCount: genRecipe.ingredients.length,
+        usesExpiringItems: false,
+        cookingTime: genRecipe.prepTime + genRecipe.cookTime,
+        difficulty: genRecipe.difficulty,
+        dietType: 'Generada por IA',
+        categories: genRecipe.dietaryInfo,
+      )).toList();
+      
+      // Update main AI provider state to include these recipes
+      _aiRecipeNotifier.state = _aiRecipeNotifier.state.copyWith(
+        recipes: recipes,
+        lastGenerated: DateTime.now(),
+        generationType: 'planner',
+        hasGenerated: true,
+      );
+    } catch (e) {
+      // Log error but don't fail the main generation flow
+      // Log error but don't fail the main generation flow
+    }
   }
 
   // Helper methods for meal type specific generation

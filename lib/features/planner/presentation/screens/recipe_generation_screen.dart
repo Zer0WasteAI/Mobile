@@ -30,7 +30,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     _generateRecipes();
   }
 
-  Future<void> _generateRecipes() async {
+  Future<void> _generateRecipes({bool forceRegenerate = false}) async {
     setState(() {
       _isGenerating = true;
     });
@@ -39,6 +39,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
       await ref.read(recipeGenerationProvider.notifier).generateCustomRecipes(
         mealType: widget.mealType,
         numRecipes: 5,
+        forceRegenerate: forceRegenerate,
       );
     } catch (e) {
       if (mounted) {
@@ -81,7 +82,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
       ),
       body: Column(
         children: [
-          _buildHeader(colorScheme, textTheme),
+          _buildHeader(colorScheme, textTheme, recipeState),
           Expanded(
             child: _buildContent(colorScheme, textTheme, recipeState),
           ),
@@ -90,7 +91,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
 
-  Widget _buildHeader(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildHeader(ColorScheme colorScheme, TextTheme textTheme, RecipeGenerationState recipeState) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -151,19 +152,39 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
             child: Row(
               children: [
                 Icon(
-                  Icons.auto_awesome,
+                  recipeState.areRecipesFresh ? Icons.storage : Icons.auto_awesome,
                   color: colorScheme.onPrimary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Recetas generadas especialmente para tu ${widget.mealType.name.toLowerCase()}',
+                    recipeState.areRecipesFresh 
+                      ? 'Recetas guardadas para tu ${widget.mealType.name.toLowerCase()}'
+                      : 'Recetas generadas especialmente para tu ${widget.mealType.name.toLowerCase()}',
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onPrimary.withValues(alpha: 0.9),
                     ),
                   ),
                 ),
+                if (recipeState.areRecipesFresh)
+                  GestureDetector(
+                    onTap: () => _generateRecipes(forceRegenerate: true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Regenerar',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -298,6 +319,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
             recipe: recipe,
             onAddToPlan: () => _addRecipeToPlan(recipe),
             onStartCooking: () => _onCookingComplete(recipe),
+            onSaveRecipe: () => _saveRecipe(recipe),
           ),
         );
       },
@@ -397,5 +419,35 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         ),
       ),
     );
+  }
+  
+  Future<void> _saveRecipe(GeneratedRecipe recipe) async {
+    try {
+      final success = await ref.read(recipeGenerationProvider.notifier).saveGeneratedRecipe(recipe);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success 
+                ? '¡${recipe.title} guardada en tus favoritos!'
+                : 'Error al guardar la receta'
+            ),
+            backgroundColor: success ? Colors.green : Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 }
