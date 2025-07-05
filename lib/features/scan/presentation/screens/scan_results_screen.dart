@@ -46,6 +46,7 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
   late AnimationController _successController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _successAnimation;
+  bool _hasInitialized = false;
 
   @override
   void initState() {
@@ -64,6 +65,9 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
     _successAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
     );
+    
+    // Initialize provider listeners after first build
+    Future(() => _initializeProviderListeners());
   }
 
   @override
@@ -84,89 +88,10 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
       scanResultsProvider(widget.initialJsonData).notifier,
     );
 
-    // Watch appropriate recognition state based on itemType
-    if (widget.itemType == ScanItemType.ingredient) {
-      final simplifiedState = ref.watch(simplifiedRecognitionProvider);
-
-      // Initial sync after build is complete
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _syncImagesFromIngredientProvider(ref, simplifiedState, itemsNotifier);
-      });
-
-      // Listen for changes in SimplifiedRecognitionProvider to sync images and show notifications
-      ref.listen(simplifiedRecognitionProvider, (previous, current) {
-        // Sync images when recognition results change
-        _syncImagesFromIngredientProvider(ref, current, itemsNotifier);
-
-        // Show notification when all images are ready - with delay to ensure UI updates complete
-        if (previous?.imagesStatus == 'generating' &&
-            current.imagesStatus == 'ready' &&
-            context.mounted) {
-          // Wait for UI to complete the image updates before showing notification
-          Future.delayed(Duration(milliseconds: 1500), () {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('¡Imágenes de ingredientes listas!'),
-                    ],
-                  ),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 3),
-                ),
-              );
-            }
-          });
-        }
-      });
-    } else {
-      final foodState = ref.watch(simplifiedFoodRecognitionProvider);
-
-      // Initial sync after build is complete
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _syncImagesFromFoodProvider(ref, foodState, itemsNotifier);
-      });
-
-      // Listen for changes in SimplifiedFoodRecognitionProvider to sync images and show notifications
-      ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
-        log('🎧 [FOOD LISTENER] State change detected');
-        log('   Previous status: ${previous?.imagesStatus}');
-        log('   Current status: ${current.imagesStatus}');
-        log('   Foods count: ${current.result?.foods.length ?? 0}');
-
-        // Sync images when recognition results change
-        _syncImagesFromFoodProvider(ref, current, itemsNotifier);
-
-        // Show notification when all images are ready - with delay to ensure UI updates complete
-        if (previous?.imagesStatus == 'generating' &&
-            current.imagesStatus == 'ready' &&
-            context.mounted) {
-          log('🎉 [FOOD LISTENER] Scheduling notification after UI sync...');
-
-          // Wait for UI to complete the image updates before showing notification
-          Future.delayed(Duration(milliseconds: 1500), () {
-            if (context.mounted) {
-              log('🎉 [FOOD LISTENER] Showing notification: Images ready!');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('¡Imágenes de comidas listas!'),
-                    ],
-                  ),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 3),
-                ),
-              );
-            }
-          });
-        }
-      });
+    // Initialize providers on first build
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      Future(() => _initializeProviderListeners());
     }
 
     // Determine if the add button should be enabled
@@ -851,6 +776,87 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
     log('🏁 [SYNC FOODS] Sync process completed');
   }
 
+  /// Initialize provider listeners outside of build method
+  void _initializeProviderListeners() {
+    final itemsNotifier = ref.read(
+      scanResultsProvider(widget.initialJsonData).notifier,
+    );
+
+    if (widget.itemType == ScanItemType.ingredient) {
+      // Initial sync
+      final simplifiedState = ref.read(simplifiedRecognitionProvider);
+      _syncImagesFromIngredientProvider(ref, simplifiedState, itemsNotifier);
+
+      // Listen for changes in SimplifiedRecognitionProvider
+      ref.listen(simplifiedRecognitionProvider, (previous, current) {
+        _syncImagesFromIngredientProvider(ref, current, itemsNotifier);
+
+        // Show notification when all images are ready
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          Future.delayed(Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('¡Imágenes de ingredientes listas!'),
+                    ],
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          });
+        }
+      });
+    } else {
+      // Initial sync
+      final foodState = ref.read(simplifiedFoodRecognitionProvider);
+      _syncImagesFromFoodProvider(ref, foodState, itemsNotifier);
+
+      // Listen for changes in SimplifiedFoodRecognitionProvider
+      ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
+        log('🎧 [FOOD LISTENER] State change detected');
+        log('   Previous status: ${previous?.imagesStatus}');
+        log('   Current status: ${current.imagesStatus}');
+        log('   Foods count: ${current.result?.foods.length ?? 0}');
+
+        _syncImagesFromFoodProvider(ref, current, itemsNotifier);
+
+        // Show notification when all images are ready
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          log('🎉 [FOOD LISTENER] Scheduling notification after UI sync...');
+
+          Future.delayed(Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              log('🎉 [FOOD LISTENER] Showing notification: Images ready!');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('¡Imágenes de comidas listas!'),
+                    ],
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          });
+        }
+      });
+    }
+  }
+
   /// Show result message after manual refresh
   void _showRefreshResult(BuildContext context, String? error) {
     if (!context.mounted) return;
@@ -1060,7 +1066,7 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
                     : ItemCategory.ingredient;
 
             // Parse storage type from recognition result
-            StorageType storageType = StorageType.dry; // default
+            StorageType storageType = StorageType.ambient; // default
             if (recognizedItem.storageType != null) {
               switch (recognizedItem.storageType?.toLowerCase()) {
                 case 'refrigerated':
@@ -1071,12 +1077,16 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
                 case 'congelado':
                   storageType = StorageType.frozen;
                   break;
-                case 'dry':
-                case 'seco':
-                  storageType = StorageType.dry;
+                case 'pantry':
+                case 'despensa':
+                  storageType = StorageType.pantry;
+                  break;
+                case 'ambient':
+                case 'ambiente':
+                  storageType = StorageType.ambient;
                   break;
                 default:
-                  storageType = StorageType.dry;
+                  storageType = StorageType.ambient;
               }
             }
 
@@ -1124,7 +1134,7 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
           'expiration_date': item.expirationDate?.toIso8601String(),
           'tips': item.tips,
         };
-        
+
         await ref
             .read(inventoryRealProvider.notifier)
             .addSingleItemToInventory(itemData);

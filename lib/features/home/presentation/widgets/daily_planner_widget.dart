@@ -24,8 +24,8 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   @override
   void initState() {
     super.initState();
-    // Cargar los datos de planificación al inicializar
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Cargar los datos de planificación después del primer build
+    Future(() {
       ref.read(mealPlanningProvider.notifier).loadAllMealPlans();
     });
   }

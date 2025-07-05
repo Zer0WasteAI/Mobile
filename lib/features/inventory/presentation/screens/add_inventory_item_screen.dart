@@ -33,10 +33,13 @@ class _AddInventoryItemScreenState
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _tipsController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _caloriesController = TextEditingController();
+  final _servingQuantityController = TextEditingController();
 
   double _quantity = 1.0;
   DateTime? _expirationDate;
-  StorageType? _selectedStorageType;
+  StorageType _selectedStorageType = StorageType.refrigerated;
   ItemCategory _selectedCategory = ItemCategory.food; // Default to Food
   String? _selectedUnitType; // Initially null
 
@@ -47,12 +50,35 @@ class _AddInventoryItemScreenState
   bool _isSubmitting = false;
 
   // Define available units
-  final List<String> _availableUnits = ['unidades', 'kg', 'g', 'lt', 'ml'];
+  final Map<ItemCategory, List<String>> _categoryUnits = {
+    ItemCategory.food: ['unidades', 'porciones', 'platos'],
+    ItemCategory.ingredient: [
+      'unidades',
+      'kg',
+      'g',
+      'lt',
+      'ml',
+      'tazas',
+      'cucharadas',
+    ],
+  };
+
+  // Storage types based on category
+  final Map<ItemCategory, List<StorageType>> _categoryStorage = {
+    ItemCategory.food: [StorageType.refrigerated, StorageType.frozen],
+    ItemCategory.ingredient: [
+      StorageType.refrigerated,
+      StorageType.frozen,
+      StorageType.pantry,
+      StorageType.ambient,
+    ],
+  };
 
   @override
   void initState() {
     super.initState();
     _initializePrefilledData();
+    _selectedUnitType = _categoryUnits[_selectedCategory]!.first;
   }
 
   void _initializePrefilledData() {
@@ -79,8 +105,8 @@ class _AddInventoryItemScreenState
 
       // Set default values for scanned items
       _quantity = 1.0;
-      _selectedUnitType = 'unidades'; // Default unit for scanned items
-      _selectedStorageType = StorageType.pantry; // Default storage
+      _selectedUnitType = _categoryUnits[_selectedCategory]!.first;
+      _selectedStorageType = StorageType.refrigerated;
     }
   }
 
@@ -402,37 +428,20 @@ class _AddInventoryItemScreenState
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedUnitType,
+                decoration: const InputDecoration(labelText: 'Unidad'),
                 items:
-                    _availableUnits
-                        .map(
-                          (String unit) => DropdownMenuItem(
-                            value: unit,
-                            child: Text(
-                              unit,
-                              style: TextStyle(color: mainTextColor),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                onChanged: (value) {
+                    _categoryUnits[_selectedCategory]!.map((unit) {
+                      return DropdownMenuItem(value: unit, child: Text(unit));
+                    }).toList(),
+                onChanged: (String? newValue) {
                   setState(() {
-                    _selectedUnitType = value;
-                    // Reset quantity and update controller when unit changes
-                    if (value != null) {
-                      _quantity = _getMinimumQuantity(value);
-                      _updateQuantityController();
-                    }
+                    _selectedUnitType = newValue;
+                    // Reset quantity to minimum when changing units
+                    _quantity = _getMinQuantity();
                   });
                 },
-                decoration: inputDecorationHelper(
-                  hintText: 'Seleccionar unidad',
-                  icon: Icons.straighten_outlined, // Ruler icon
-                  hintStyle: hintTextStyle, // Pass the style
-                ),
                 validator:
                     (value) => value == null ? 'Selecciona una unidad' : null,
-                dropdownColor: isDark ? AppColors.darkSurface : Colors.white,
-                style: TextStyle(color: mainTextColor),
               ),
               const SizedBox(height: 20),
 
@@ -559,53 +568,37 @@ class _AddInventoryItemScreenState
               // --- Tipo de Almacenamiento ---
               Text(
                 'Tipo de Almacenamiento',
-                style: textTheme.titleMedium?.copyWith(
+                style: GoogleFonts.inter(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: mainTextColor,
                 ),
               ),
               const SizedBox(height: 8),
-              DropdownButtonFormField<StorageType>(
-                value: _selectedStorageType,
-                // Style the dropdown itself
-                style: TextStyle(
-                  color: mainTextColor,
-                ), // Text style for selected item
-                dropdownColor:
-                    isDark
-                        ? AppColors.darkSurface
-                        : Colors.white, // Background of dropdown menu
-                items:
-                    StorageType.values
-                        .map(
-                          (type) => DropdownMenuItem(
-                            value: type,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  type.icon,
-                                  size: 20,
-                                  color: secondaryTextColor,
-                                ), // Updated
-                                const SizedBox(width: 10),
-                                Text(
-                                  type.displayName,
-                                  style: TextStyle(color: mainTextColor),
-                                ), // Ensure item text adapts
-                              ],
-                            ),
+              Wrap(
+                spacing: 8,
+                children:
+                    _categoryStorage[_selectedCategory]!.map((type) {
+                      return ChoiceChip(
+                        label: Text(
+                          type.displayName,
+                          style: GoogleFonts.inter(
+                            color:
+                                _selectedStorageType == type
+                                    ? Colors.white
+                                    : mainTextColor,
                           ),
-                        )
-                        .toList(),
-                onChanged:
-                    (value) => setState(() => _selectedStorageType = value),
-                decoration: inputDecorationHelper(
-                  hintText: 'Seleccionar almacenamiento',
-                  icon: null, // Icon is inside items
-                  hintStyle: hintTextStyle, // Pass the style
-                ),
-                validator:
-                    (value) => value == null ? 'Selecciona un tipo' : null,
+                        ),
+                        selected: _selectedStorageType == type,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedStorageType = type;
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 20),
 
@@ -694,7 +687,6 @@ class _AddInventoryItemScreenState
                     _isSubmitting
                         ? null
                         : (_nameController.text.trim().isNotEmpty &&
-                            _selectedStorageType != null &&
                             _selectedUnitType != null &&
                             _expirationDate != null)
                         ? () async => await _saveItem()
@@ -728,6 +720,9 @@ class _AddInventoryItemScreenState
   void dispose() {
     _nameController.dispose();
     _tipsController.dispose();
+    _descriptionController.dispose();
+    _caloriesController.dispose();
+    _servingQuantityController.dispose();
     super.dispose();
   }
 
@@ -937,7 +932,7 @@ class _AddInventoryItemScreenState
           'name': _nameController.text.trim(),
           'quantity': _quantity,
           'type_unit': _selectedUnitType!,
-          'storage_type': _getStorageTypeForAPI(_selectedStorageType!),
+          'storage_type': _getStorageTypeForAPI(_selectedStorageType),
           'expiration_time': _getExpirationDays(),
           'time_unit': 'Días',
           'tips':
@@ -993,29 +988,31 @@ class _AddInventoryItemScreenState
   }
 
   // Helper methods for backend integration
-  String _getStorageTypeForAPI(StorageType storageType) {
-    switch (storageType) {
+  String _getStorageTypeForAPI(StorageType type) {
+    switch (type) {
       case StorageType.refrigerated:
-        return 'Refrigerador';
+        return 'refrigerated';
       case StorageType.frozen:
-        return 'Congelador';
+        return 'frozen';
       case StorageType.pantry:
-      case StorageType.dry:
+        return 'pantry';
       case StorageType.cellar:
+        return 'cellar';
       case StorageType.ambient:
+        return 'ambient';
       case StorageType.sunlight:
+        return 'sunlight';
       case StorageType.wineCellar:
+        return 'wine_cellar';
       case StorageType.bulk:
+        return 'bulk';
       case StorageType.fermentation:
-        return 'Despensa';
+        return 'fermentation';
     }
   }
 
   int _getExpirationDays() {
-    if (_expirationDate == null) return 7; // Default
-    final now = DateTime.now();
-    final difference = _expirationDate!.difference(now).inDays;
-    return difference > 0 ? difference : 1; // Minimum 1 day
+    return _selectedStorageType.daysToExpire;
   }
 
   // Helper methods for quantity logic (copied from other screens)
@@ -1057,8 +1054,9 @@ class _AddInventoryItemScreenState
     }
   }
 
-  void _updateQuantityController() {
-    // Implementation of _updateQuantityController method
+  double _getMinQuantity() {
+    // Implementation of _getMinQuantity method
+    return 1.0; // Placeholder return, actual implementation needed
   }
 
   Future<bool> _showDuplicateWarning() async {

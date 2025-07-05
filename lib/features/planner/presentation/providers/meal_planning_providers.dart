@@ -59,14 +59,15 @@ final mealPlanningProvider =
       ref,
     ) {
       final repository = ref.read(mealPlanRepositoryProvider);
-      return MealPlanningNotifier(repository);
+      return MealPlanningNotifier(repository, ref);
     });
 
 /// State notifier for meal planning operations
 class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
   final MealPlanRepository _repository;
+  final Ref _ref;
 
-  MealPlanningNotifier(this._repository) : super(const AsyncValue.data(null));
+  MealPlanningNotifier(this._repository, this._ref) : super(const AsyncValue.data(null));
 
   /// Save a new meal plan
   Future<void> saveMealPlan(String date, DailyMeals meals) async {
@@ -79,6 +80,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
       if (response['meal_plan'] != null) {
         final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
         state = AsyncValue.data(mealPlan);
+        // Invalidate the meal plan by date provider to refresh UI
+        _ref.invalidate(mealPlanByDateProvider(date));
       } else {
         state = const AsyncValue.data(null);
       }
@@ -98,6 +101,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
       if (response['meal_plan'] != null) {
         final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
         state = AsyncValue.data(mealPlan);
+        // Invalidate the meal plan by date provider to refresh UI
+        _ref.invalidate(mealPlanByDateProvider(date));
       } else {
         state = const AsyncValue.data(null);
       }

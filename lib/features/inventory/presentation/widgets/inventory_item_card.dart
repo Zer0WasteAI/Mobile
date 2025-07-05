@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension

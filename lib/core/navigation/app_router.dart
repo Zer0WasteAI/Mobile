@@ -363,10 +363,12 @@ class AppRouter {
                 (type) => type.toString().split('.').last == mealTypeStr,
                 orElse: () => MealType.lunch,
               );
+              final isManualPlan = state.uri.queryParameters['isManualPlan'] == 'true';
               
               return RecipeGenerationScreen(
                 selectedDate: selectedDate,
                 mealType: mealType,
+                isManualPlan: isManualPlan,
               );
             } catch (e) {
               WidgetsBinding.instance.addPostFrameCallback((_) {

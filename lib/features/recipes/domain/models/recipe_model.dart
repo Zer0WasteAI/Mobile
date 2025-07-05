@@ -9,21 +9,48 @@ abstract class Recipe with _$Recipe {
     required String id,
     required String name,
     required String description,
-    required String emoji,
+    String? imageUrl,
+    @Default('🍲') String emoji,
     required List<String> ingredients,
-    required int requiredIngredientsCount,
-    required int availableIngredientsCount,
-    required bool usesExpiringItems,
-    required int cookingTime,
-    required String difficulty,
-    required String dietType,
-    required List<String> categories,
+    int? requiredIngredientsCount,
+    int? availableIngredientsCount,
+    @Default(false) bool usesExpiringItems,
+    @Default(30) int cookingTime,
+    @Default('Medio') String difficulty,
+    @Default('Omnívora') String dietType,
+    @Default(['General']) List<String> categories,
   }) = _Recipe;
 
   factory Recipe.fromJson(Map<String, dynamic> json) => _$RecipeFromJson(json);
-}
 
-extension RecipeExtension on Recipe {
+  const Recipe._();
+
+  bool matchesSearch(String query) {
+    if (query.isEmpty) {
+      return true;
+    }
+
+    final lowercaseQuery = query.toLowerCase();
+    return name.toLowerCase().contains(lowercaseQuery) ||
+        description.toLowerCase().contains(lowercaseQuery) ||
+        ingredients.any(
+          (ingredient) => ingredient.toLowerCase().contains(lowercaseQuery),
+        ) ||
+        categories.any(
+          (category) => category.toLowerCase().contains(lowercaseQuery),
+        );
+  }
+
+  double get ingredientAvailabilityPercentage {
+    if (requiredIngredientsCount == null || availableIngredientsCount == null) {
+      return 0.0;
+    }
+    if (requiredIngredientsCount == 0) {
+      return 0.0;
+    }
+    return (availableIngredientsCount! / requiredIngredientsCount!) * 100;
+  }
+
   // Format cooking time as a human-readable string
   String get formattedCookingTime {
     if (cookingTime < 60) {
@@ -35,12 +62,6 @@ extension RecipeExtension on Recipe {
       return '$hours h';
     }
     return '$hours h $minutes min';
-  }
-
-  // Get ingredient availability percentage
-  double get ingredientAvailabilityPercentage {
-    if (requiredIngredientsCount == 0) return 0;
-    return (availableIngredientsCount / requiredIngredientsCount) * 100;
   }
 
   // Get difficulty level color
@@ -87,41 +108,8 @@ extension RecipeExtension on Recipe {
       case 'bajo en calorías':
         return '🥗';
       default:
-        return '🍽️';
+        return '��️';
     }
-  }
-
-  // Create a copy of this recipe with optional field updates
-  Recipe copyWith({
-    String? id,
-    String? name,
-    String? description,
-    String? emoji,
-    List<String>? ingredients,
-    int? requiredIngredientsCount,
-    int? availableIngredientsCount,
-    bool? usesExpiringItems,
-    int? cookingTime,
-    String? difficulty,
-    String? dietType,
-    List<String>? categories,
-  }) {
-    return Recipe(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      emoji: emoji ?? this.emoji,
-      ingredients: ingredients ?? this.ingredients,
-      requiredIngredientsCount:
-          requiredIngredientsCount ?? this.requiredIngredientsCount,
-      availableIngredientsCount:
-          availableIngredientsCount ?? this.availableIngredientsCount,
-      usesExpiringItems: usesExpiringItems ?? this.usesExpiringItems,
-      cookingTime: cookingTime ?? this.cookingTime,
-      difficulty: difficulty ?? this.difficulty,
-      dietType: dietType ?? this.dietType,
-      categories: categories ?? this.categories,
-    );
   }
 
   // Check if this recipe matches filter criteria
@@ -171,25 +159,5 @@ extension RecipeExtension on Recipe {
     }
 
     return true;
-  }
-
-  // Check if recipe matches search query
-  bool matchesSearch(String query) {
-    if (query.isEmpty) return true;
-
-    final lowercaseQuery = query.toLowerCase();
-
-    // Check name
-    if (name.toLowerCase().contains(lowercaseQuery)) return true;
-
-    // Check description
-    if (description.toLowerCase().contains(lowercaseQuery)) return true;
-
-    // Check ingredients
-    for (final ingredient in ingredients) {
-      if (ingredient.toLowerCase().contains(lowercaseQuery)) return true;
-    }
-
-    return false;
   }
 }

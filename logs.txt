@@ -1,9 +1,9 @@
 Launching lib/main.dart on iPhone 16 in debug mode...
-Xcode build done.                                           50.3s
-Connecting to VM Service at ws://127.0.0.1:55605/UAzXXgWdUxg=/ws
+Xcode build done.                                           40.9s
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
+Connecting to VM Service at ws://127.0.0.1:55135/46wD2zaw8PQ=/ws
 Connected to the VM Service.
-[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
-[ERROR:flutter/shell/platform/darwin/ios/framework/Source/FlutterDartVMServicePublisher.mm(129)] Could not register as server for FlutterDartVMServicePublisher, permission denied. Check your 'Local Network' permissions for this app in the Privacy section of the system Settings.
 flutter: Hive initialized successfully
 [GoRouter] setting initial location /home
 [GoRouter] Full paths for routes:
@@ -29,6 +29,7 @@ flutter: Hive initialized successfully
            ├─/recipes/all (AllRecipesScreen)
            ├─/recipe-library (AllRecipesScreen)
            ├─/recipe-generation (StatefulWidget)
+           ├─/manual-plan-creation (StatefulWidget)
            ├─/recipes/detail (StatefulWidget)
            ├─/recipes/my-recipes (MyRecipesScreen)
            ├─/recipes/custom-generation (CustomRecipeGenerationScreen)
@@ -72,6 +73,7 @@ flutter: Hive initialized successfully
              all-recipes => /recipes/all
              recipeLibrary => /recipe-library
              recipeGeneration => /recipe-generation
+             manualPlanCreation => /manual-plan-creation
              recipeDetail => /recipes/detail
              my-recipes => /recipes/my-recipes
              custom-recipe-generation => /recipes/custom-generation
@@ -99,12 +101,12 @@ flutter: Hive initialized successfully
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/planning/all
 [log] 🔑 Access token retrieved from secure storage
-[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
-[log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/recipes/saved
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/environmental_savings/calculations
 [log] API Request: GET /api/planning/all
-[log] API Request: GET /api/environmental_savings/calculations
 [log] API Request: GET /api/recipes/saved
+[log] API Request: GET /api/environmental_savings/calculations
 [log] API Response: 200 /api/recipes/saved
 [log] API Response: 200 /api/planning/all
 [log] API Response: 200 /api/environmental_savings/calculations
@@ -123,10 +125,10 @@ flutter: Hive initialized successfully
 [log] 🚀 First load - using fast endpoint
 [log] 🔄 DEBUG - Starting loadInventoryFromBackend
 [log] 📡 DEBUG - Calling backend getInventory
+[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, measurementUnit, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
 [log] 🔑 Access token retrieved from secure storage
 [log] 🔑 ApiService: JWT token injected for /api/inventory
 [log] API Request: GET /api/inventory
-[log] 🔧 Firestore data keys: [cookingLevel, specialDietItems, googleEmail, measurementUnit, favoriteRecipes, displayName, preferredFoodTypes, lastUpdatedAt, createdAt, googlePhotoUrl, id, allergyItems, initialPreferencesCompleted, email, allergies, phone, authProvider, emailVerified, specialDiets, photoURL, googleId, lastLoginAt]
 [log] API Response: 200 /api/inventory
 [log] 🔧 DEBUG - Parsing inventory data
 [log] 🔍 DEBUG - Ingredients found: 18
@@ -346,7 +348,7 @@ flutter: Hive initialized successfully
 [log] 🔑 ApiService: JWT token injected for /api/planning/get
 [log] API Request: GET /api/planning/get
 [log] API Error: 404 /api/planning/get
-[log] Error Data: {error: No hay plan de comidas para el 2025-07-01}
+[log] Error Data: {error: No hay plan de comidas para el 2025-07-05}
 [log] 🔍 Technical Error Details: Exception: Get meal plan by date error: DioException [bad response]: This exception was thrown because the response has a status code of 404 and RequestOptions.validateStatus was configured to throw for this status code.
       The status code of 404 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
       Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -355,27 +357,17 @@ flutter: Hive initialized successfully
       The status code of 404 has the following meaning: "Client error - the request contains bad syntax or cannot be fulfilled"
       Read more about status codes at https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
       In order to resolve this exception you typically have either to verify and fix your request code or you have to fix the server code.
-[GoRouter] getting location for name: "recipeGeneration", queryParameters: {date: 2025-07-01T10:34:39.941870, mealType: breakfast}
-[GoRouter] pushing /recipe-generation?date=2025-07-01T10%3A34%3A39.941870&mealType=breakfast
-[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Tried to modify a provider while the widget tree was building.
-If you are encountering this error, chances are you tried to modify a provider
-in a widget life-cycle, such as but not limited to:
-- build
-- initState
-- dispose
-- didUpdateWidget
-- didChangeDependencies
-
-Modifying a provider inside those life-cycles is not allowed, as it could
-lead to an inconsistent UI state. For example, two widgets could listen to the
-same provider, but incorrectly receive different states.
-
-To fix this problem, you have one of two solutions:
-- (preferred) Move the logic for modifying your provider outside of a widget
-  life-cycle. For example, maybe you could update your provider inside a button's
-  onPressed instead.
-
-- Delay your modification, such as by encapsulating the modification
-  in a `Future(() {...})`.
-  This will perform your update after the widget tree is done building.
-#0      _UncontrolledProviderScopeElement._debugCanModifyProvid<…>
+[GoRouter] getting location for name: "manualPlanCreation", queryParameters: {date: 2025-07-05T18:09:41.857681}
+[GoRouter] pushing /manual-plan-creation?date=2025-07-05T18%3A09%3A41.857681
+[GoRouter] pushing /recipe-generation?date=2025-07-05T18%3A09%3A41.857681&mealType=breakfast&isManualPlan=true
+[GoRouter] getting location for name: "recipeGeneration", queryParameters: {date: 2025-07-05T18:09:41.857681, mealType: breakfast, isManualPlan: true}
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/recipes/generate-custom
+[log] API Request: POST /api/recipes/generate-custom
+[log] API Response: 200 /api/recipes/generate-custom
+[log] 🔑 Access token retrieved from secure storage
+[log] 🔑 ApiService: JWT token injected for /api/planning/save
+[log] API Request: POST /api/planning/save
+[log] 🔍 DEBUG - Sending to /api/planning/save: {date: 2025-07-05, meals: [{title: Batido Energético de Frutas y Avena, duration: 30, difficulty: Intermedio, ingredients: [{name: Pan integral, quantity: 1, type_unit: unidad}, {name: Leche, quantity: 1, type_unit: unidad}, {name: Frutas mixtas (fresas, plátano, mango), quantity: 1, type_unit: unidad}, {name: Avena en hojuelas, quantity: 1, type_unit: unidad}, {name: Yogurt natural, quantity: 1, type_unit: unidad}], steps: [{step_order: 1, description: Preparar según receta}], generated_by_ai: true, category: desayuno, description: Receta generada por IA, recipe_title: Batido Energético de Frutas y Avena, ingredients_needed: [{name: Pan integral, quantity: 1, unit: unidad}, {name: Leche, quantity: 1, unit: unidad}, {name: Frutas mixtas (fresas, plátano, mango), quantity: 1, unit: unidad}, {name: Avena en hojuelas, quantity: 1, unit: unidad}, {name: Yogurt natural, quantity: 1, unit: unidad}], prep_time: 30, calories: 311, meal_type: breakfast}]}
+[log] API Response: 201 /api/planning/save
+[GoRouter] popping /home

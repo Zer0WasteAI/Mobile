@@ -27,7 +27,7 @@ abstract class RecipeState with _$RecipeState {
   const factory RecipeState({
     @Default(false) bool isLoading,
     @Default([]) List<Recipe> recipes,
-    @Default([]) List<Recipe> allRecipes, // Store all recipes for filtering
+    @Default([]) List<Recipe> allRecipes,
     String? errorMessage,
     // Smart mode specific
     int? expiringIngredientsUsedCount,
@@ -35,11 +35,32 @@ abstract class RecipeState with _$RecipeState {
     @Default('') String searchQuery,
     @Default(false) bool showOnlyWithMyIngredients,
     // Map of category value to Set of selected filter values
-    // e.g., {"Tipo de receta": {"entrada", "postre"}, "Tiempo de preparación": {"short_time"}}
     @Default({}) Map<String, Set<String>> selectedFilters,
     // ✅ RESOLVED: Comprehensive filter criteria already implemented:
     // - Recipe type, preparation time, difficulty, diet type, sustainability
     // - Sorting by name, cooking time, difficulty (in favorite_recipes_provider.dart)
     // - Search functionality, category filtering, ingredient availability toggle
+
+    // Cache and source tracking
+    @Default(false) bool hasLoadedCache,
+    @Default({}) Map<String, DateTime> lastGeneratedAt,
+    @Default({}) Map<String, String> recipeSource,
   }) = _RecipeState;
+
+  const RecipeState._();
+
+  bool get hasCachedRecipes => recipes.isNotEmpty && hasLoadedCache;
+
+  bool isRecipeFresh(String recipeId) {
+    if (!lastGeneratedAt.containsKey(recipeId)) return false;
+    final generatedAt = lastGeneratedAt[recipeId]!;
+    final now = DateTime.now();
+    return now.difference(generatedAt).inHours <
+        24; // Consider recipes fresh for 24 hours
+  }
+
+  String getRecipeSourceMessage(String recipeId) {
+    if (!recipeSource.containsKey(recipeId)) return '';
+    return recipeSource[recipeId] ?? '';
+  }
 }

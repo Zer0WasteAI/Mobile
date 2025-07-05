@@ -408,8 +408,8 @@ class _ManualPlanCreationScreenState
     );
   }
 
-  void _addMeal(MealType mealType) {
-    context.pushNamed(
+  void _addMeal(MealType mealType) async {
+    final result = await context.pushNamed(
       'recipeGeneration',
       queryParameters: {
         'date': widget.selectedDate.toIso8601String(),
@@ -417,6 +417,26 @@ class _ManualPlanCreationScreenState
         'isManualPlan': 'true',
       },
     );
+    
+    // Handle the returned meal
+    if (result is Meal) {
+      setState(() {
+        switch (mealType) {
+          case MealType.breakfast:
+            breakfast = result;
+            break;
+          case MealType.lunch:
+            lunch = result;
+            break;
+          case MealType.dinner:
+            dinner = result;
+            break;
+          case MealType.snack:
+            // Not used in this flow
+            break;
+        }
+      });
+    }
   }
 
   void _editMeal(MealType mealType) {

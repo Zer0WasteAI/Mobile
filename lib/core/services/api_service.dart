@@ -1452,12 +1452,27 @@ class ApiService {
     required Map<String, dynamic> meals,
   }) async {
     try {
+      // Convert meals map to list format expected by backend
+      List<Map<String, dynamic>> mealsList = [];
+      
+      meals.forEach((mealType, mealData) {
+        if (mealData != null) {
+          final mealMap = Map<String, dynamic>.from(mealData);
+          mealMap['meal_type'] = mealType; // Add meal_type field
+          mealsList.add(mealMap);
+        }
+      });
+      
+      final requestData = {'date': date, 'meals': mealsList};
+      log('🔍 DEBUG - Sending to /api/planning/save: ${requestData.toString()}');
+      
       final response = await _dio.post(
         _planningSave,
-        data: {'date': date, 'meals': meals},
+        data: requestData,
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      log('❌ DEBUG - Save meal plan error details: ${e.toString()}');
       throw Exception('Save meal plan error: ${e.toString()}');
     }
   }
@@ -1470,12 +1485,27 @@ class ApiService {
     required Map<String, dynamic> meals,
   }) async {
     try {
+      // Convert meals map to list format expected by backend
+      List<Map<String, dynamic>> mealsList = [];
+      
+      meals.forEach((mealType, mealData) {
+        if (mealData != null) {
+          final mealMap = Map<String, dynamic>.from(mealData);
+          mealMap['meal_type'] = mealType; // Add meal_type field
+          mealsList.add(mealMap);
+        }
+      });
+      
+      final requestData = {'date': date, 'meals': mealsList};
+      log('🔍 DEBUG - Sending to /api/planning/update: ${requestData.toString()}');
+      
       final response = await _dio.put(
         _planningUpdate,
-        data: {'date': date, 'meals': meals},
+        data: requestData,
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      log('❌ DEBUG - Update meal plan error details: ${e.toString()}');
       throw Exception('Update meal plan error: ${e.toString()}');
     }
   }

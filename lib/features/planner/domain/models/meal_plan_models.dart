@@ -106,8 +106,37 @@ class Meal {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson([String? mealType]) {
+    // Map meal type to proper category
+    String getCategory(String? mealType) {
+      switch (mealType) {
+        case 'breakfast':
+          return 'desayuno';
+        case 'lunch':
+          return 'almuerzo';
+        case 'dinner':
+          return 'cena';
+        default:
+          return 'desayuno'; // Default fallback
+      }
+    }
+    
     return {
+      // Map to the format the backend actually expects
+      'title': recipeTitle,
+      'duration': prepTime.toString(), // Convert to string
+      'difficulty': 'Intermedio', // Proper capitalization with accent
+      'ingredients': ingredientsNeeded.map((ingredient) => {
+        'name': ingredient.name,
+        'quantity': ingredient.quantity,
+        'unit': ingredient.unit, // Use unit as per API documentation
+      }).toList(),
+      'steps': [{'step_order': 1, 'description': 'Preparar según receta'}], // Proper step format
+      'generated_by_ai': true,
+      'category': getCategory(mealType), // Dynamic category based on meal type
+      'description': 'Receta generada por IA',
+      
+      // Keep original format for compatibility
       'recipe_title': recipeTitle,
       'ingredients_needed':
           ingredientsNeeded.map((ingredient) => ingredient.toJson()).toList(),
@@ -144,9 +173,9 @@ class DailyMeals {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> result = {};
-    if (breakfast != null) result['breakfast'] = breakfast!.toJson();
-    if (lunch != null) result['lunch'] = lunch!.toJson();
-    if (dinner != null) result['dinner'] = dinner!.toJson();
+    if (breakfast != null) result['breakfast'] = breakfast!.toJson('breakfast');
+    if (lunch != null) result['lunch'] = lunch!.toJson('lunch');
+    if (dinner != null) result['dinner'] = dinner!.toJson('dinner');
     return result;
   }
 

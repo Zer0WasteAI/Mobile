@@ -10,11 +10,13 @@ import '../widgets/recipe_card_widget.dart';
 class RecipeGenerationScreen extends ConsumerStatefulWidget {
   final DateTime selectedDate;
   final MealType mealType;
+  final bool isManualPlan;
 
   const RecipeGenerationScreen({
     super.key,
     required this.selectedDate,
     required this.mealType,
+    this.isManualPlan = false,
   });
 
   @override
@@ -27,7 +29,8 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
   @override
   void initState() {
     super.initState();
-    _generateRecipes();
+    // Generate recipes after first build
+    Future(() => _generateRecipes());
   }
 
   Future<void> _generateRecipes({bool forceRegenerate = false}) async {
@@ -328,8 +331,6 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
 
   Future<void> _addRecipeToPlan(GeneratedRecipe recipe) async {
     try {
-      final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
-      
       // Convert GeneratedRecipe to Meal
       final meal = Meal(
         recipeTitle: recipe.title,
@@ -343,6 +344,18 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         prepTime: recipe.prepTime + recipe.cookTime,
         calories: recipe.calories ?? 250,
       );
+      
+      // If this is from manual plan creation, just return the meal
+      if (widget.isManualPlan) {
+        if (mounted) {
+          // Return the meal to the manual plan creation screen
+          context.pop(meal);
+        }
+        return;
+      }
+      
+      // Otherwise, proceed with normal plan saving
+      final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
       
       // Get current meal plan for the date
       final existingPlan = await ref.read(mealPlanByDateProvider(dateString).future);
@@ -362,6 +375,9 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           dateString,
           updatedMeals,
         );
+        
+        // Invalidate the meal plan by date provider to refresh UI
+        ref.invalidate(mealPlanByDateProvider(dateString));
       } else {
         // Create new plan
         updatedMeals = DailyMeals(
@@ -375,6 +391,9 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           dateString,
           updatedMeals,
         );
+        
+        // Invalidate the meal plan by date provider to refresh UI
+        ref.invalidate(mealPlanByDateProvider(dateString));
       }
       
       // Show success message

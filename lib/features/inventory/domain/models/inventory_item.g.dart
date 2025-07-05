@@ -57,7 +57,6 @@ Map<String, dynamic> _$InventoryItemToJson(_InventoryItem instance) =>
 const _$StorageTypeEnumMap = {
   StorageType.refrigerated: 'refrigerated',
   StorageType.frozen: 'frozen',
-  StorageType.dry: 'dry',
   StorageType.pantry: 'pantry',
   StorageType.cellar: 'cellar',
   StorageType.ambient: 'ambient',

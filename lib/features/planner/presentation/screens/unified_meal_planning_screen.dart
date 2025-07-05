@@ -72,7 +72,7 @@ class _UnifiedMealPlanningScreenState
       body: CustomScrollView(
         slivers: [_buildAppBar(colorScheme, textTheme), _buildMainContent()],
       ),
-      floatingActionButton: _buildSmartFAB(),
+      floatingActionButton: _isWeeklyView ? _buildSmartFAB() : null,
     );
   }
 
@@ -391,11 +391,7 @@ class _UnifiedMealPlanningScreenState
   }
 
   String _getFABLabel() {
-    if (_isWeeklyView) {
-      return 'Generar Menú Semanal';
-    } else {
-      return 'Agregar Comida';
-    }
+    return 'Generar Menú Semanal';
   }
 
   Color _getFABColor() {

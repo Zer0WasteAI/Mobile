@@ -10,23 +10,29 @@ _Recipe _$RecipeFromJson(Map<String, dynamic> json) => _Recipe(
   id: json['id'] as String,
   name: json['name'] as String,
   description: json['description'] as String,
-  emoji: json['emoji'] as String,
+  imageUrl: json['imageUrl'] as String?,
+  emoji: json['emoji'] as String? ?? '🍲',
   ingredients:
       (json['ingredients'] as List<dynamic>).map((e) => e as String).toList(),
-  requiredIngredientsCount: (json['requiredIngredientsCount'] as num).toInt(),
-  availableIngredientsCount: (json['availableIngredientsCount'] as num).toInt(),
-  usesExpiringItems: json['usesExpiringItems'] as bool,
-  cookingTime: (json['cookingTime'] as num).toInt(),
-  difficulty: json['difficulty'] as String,
-  dietType: json['dietType'] as String,
+  requiredIngredientsCount: (json['requiredIngredientsCount'] as num?)?.toInt(),
+  availableIngredientsCount:
+      (json['availableIngredientsCount'] as num?)?.toInt(),
+  usesExpiringItems: json['usesExpiringItems'] as bool? ?? false,
+  cookingTime: (json['cookingTime'] as num?)?.toInt() ?? 30,
+  difficulty: json['difficulty'] as String? ?? 'Medio',
+  dietType: json['dietType'] as String? ?? 'Omnívora',
   categories:
-      (json['categories'] as List<dynamic>).map((e) => e as String).toList(),
+      (json['categories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const ['General'],
 );
 
 Map<String, dynamic> _$RecipeToJson(_Recipe instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'description': instance.description,
+  'imageUrl': instance.imageUrl,
   'emoji': instance.emoji,
   'ingredients': instance.ingredients,
   'requiredIngredientsCount': instance.requiredIngredientsCount,
