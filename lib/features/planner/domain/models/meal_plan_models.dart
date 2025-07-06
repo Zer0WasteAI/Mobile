@@ -63,14 +63,14 @@ class MealIngredient {
 
   factory MealIngredient.fromJson(Map<String, dynamic> json) {
     return MealIngredient(
-      name: json['name'] as String,
-      quantity: json['quantity'] as int,
-      unit: json['unit'] as String,
+      name: (json['name'] ?? '') as String,
+      quantity: (json['quantity'] ?? 0) as int,
+      unit: (json['type_unit'] ?? json['unit'] ?? '') as String, // Support both formats
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'quantity': quantity, 'unit': unit};
+    return {'name': name, 'quantity': quantity, 'type_unit': unit};
   }
 
   @override
@@ -93,16 +93,18 @@ class Meal {
 
   factory Meal.fromJson(Map<String, dynamic> json) {
     return Meal(
-      recipeTitle: json['recipe_title'] as String,
+      recipeTitle: (json['recipe_title'] ?? json['title'] ?? '') as String,
       ingredientsNeeded:
-          (json['ingredients_needed'] as List<dynamic>)
-              .map(
+          (json['ingredients_needed'] ?? json['ingredients'] ?? [])
+              .map<MealIngredient>(
                 (ingredient) =>
                     MealIngredient.fromJson(ingredient as Map<String, dynamic>),
               )
               .toList(),
-      prepTime: json['prep_time'] as int,
-      calories: json['calories'] as int,
+      prepTime: (json['prep_time'] ?? 
+                 (json['duration'] != null ? int.tryParse(json['duration'].toString()) : null) ?? 
+                 0) as int,
+      calories: (json['calories'] ?? 0) as int,
     );
   }
 
@@ -129,7 +131,7 @@ class Meal {
       'ingredients': ingredientsNeeded.map((ingredient) => {
         'name': ingredient.name,
         'quantity': ingredient.quantity,
-        'unit': ingredient.unit, // Use unit as per API documentation
+        'type_unit': ingredient.unit, // Backend expects type_unit not unit
       }).toList(),
       'steps': [{'step_order': 1, 'description': 'Preparar según receta'}], // Proper step format
       'generated_by_ai': true,
@@ -157,15 +159,15 @@ class DailyMeals {
   factory DailyMeals.fromJson(Map<String, dynamic> json) {
     return DailyMeals(
       breakfast:
-          json['breakfast'] != null
+          json['breakfast'] != null && json['breakfast'] is Map<String, dynamic>
               ? Meal.fromJson(json['breakfast'] as Map<String, dynamic>)
               : null,
       lunch:
-          json['lunch'] != null
+          json['lunch'] != null && json['lunch'] is Map<String, dynamic>
               ? Meal.fromJson(json['lunch'] as Map<String, dynamic>)
               : null,
       dinner:
-          json['dinner'] != null
+          json['dinner'] != null && json['dinner'] is Map<String, dynamic>
               ? Meal.fromJson(json['dinner'] as Map<String, dynamic>)
               : null,
     );
@@ -216,11 +218,13 @@ class MealPlanModel {
 
   factory MealPlanModel.fromJson(Map<String, dynamic> json) {
     return MealPlanModel(
-      uid: json['uid'] as String,
-      date: json['date'] as String,
-      meals: DailyMeals.fromJson(json['meals'] as Map<String, dynamic>),
-      totalCalories: json['total_calories'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      uid: (json['uid'] ?? '') as String,
+      date: (json['date'] ?? '') as String,
+      meals: DailyMeals.fromJson((json['meals'] ?? {}) as Map<String, dynamic>),
+      totalCalories: (json['total_calories'] ?? 0) as int,
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

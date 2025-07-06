@@ -16,12 +16,18 @@ final mealPlanByDateProvider = FutureProvider.family<MealPlanModel?, String>((
 ) async {
   final repository = ref.read(mealPlanRepositoryProvider);
   try {
+    print('[DEBUG] Fetching meal plan for date: $date');
     final response = await repository.getMealPlanByDate(date);
+    print('[DEBUG] Response received: $response');
     if (response['meal_plan'] != null) {
-      return MealPlanModel.fromJson(response['meal_plan']);
+      final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+      print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
+      return mealPlan;
     }
+    print('[DEBUG] No meal plan found in response');
     return null;
   } catch (e) {
+    print('[DEBUG] Error fetching meal plan: $e');
     return null;
   }
 });

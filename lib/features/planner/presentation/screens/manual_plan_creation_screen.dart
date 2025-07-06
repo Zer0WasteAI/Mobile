@@ -31,7 +31,7 @@ class _ManualPlanCreationScreenState
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Crear Plan Manual'),
+        title: const Text('Crear Plan Personalizado'),
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         elevation: 0,
@@ -152,7 +152,7 @@ class _ManualPlanCreationScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Plan Manual',
+                      'Plan Personalizado',
                       style: textTheme.headlineSmall?.copyWith(
                         color: colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
@@ -230,7 +230,7 @@ class _ManualPlanCreationScreenState
           const SizedBox(height: 8),
           const Text('1. Toca "Agregar" en cada comida que quieras planificar'),
           const SizedBox(height: 4),
-          const Text('2. Selecciona una receta o crea una personalizada'),
+          const Text('2. Selecciona una receta'),
           const SizedBox(height: 4),
           const Text('3. Revisa tu plan y guárdalo cuando esté listo'),
         ],
@@ -417,7 +417,7 @@ class _ManualPlanCreationScreenState
         'isManualPlan': 'true',
       },
     );
-    
+
     // Handle the returned meal
     if (result is Meal) {
       setState(() {
@@ -475,23 +475,65 @@ class _ManualPlanCreationScreenState
         lunch: lunch,
         dinner: dinner,
       );
+      final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+      print('[DEBUG] Manual plan creation - saving for date: $dateString');
+      print('[DEBUG] Widget selected date: ${widget.selectedDate}');
 
-      // Save using the meal planning provider
-      await ref
-          .read(mealPlanningProvider.notifier)
-          .saveMealPlan(
-            DateFormat('yyyy-MM-dd').format(widget.selectedDate),
-            dailyMeals,
+      try {
+        // First, try to save as a new plan
+        await ref
+            .read(mealPlanningProvider.notifier)
+            .saveMealPlan(dateString, dailyMeals);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Plan guardado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
           );
+          // Navigate back to unified planning screen in daily view with the date
+          print(
+            '[DEBUG] Navigating back to unified planning with date: $dateString',
+          );
+          context.go(
+            '/unified-planning?date=${widget.selectedDate.toIso8601String()}',
+          );
+        }
+      } catch (saveError) {
+        // Check if the error is about existing plan
+        final errorMessage = saveError.toString().toLowerCase();
+        if (errorMessage.contains('ya existe') ||
+            errorMessage.contains('already exists')) {
+          // Plan already exists, try to update instead
+          try {
+            await ref
+                .read(mealPlanningProvider.notifier)
+                .updateMealPlan(dateString, dailyMeals);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Plan guardado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.pop();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Plan actualizado exitosamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Navigate back to unified planning screen in daily view with the date
+              print(
+                '[DEBUG] Navigating back to unified planning after update with date: $dateString',
+              );
+              context.go(
+                '/unified-planning?date=${widget.selectedDate.toIso8601String()}',
+              );
+            }
+          } catch (updateError) {
+            // If update also fails, rethrow the original error
+            rethrow;
+          }
+        } else {
+          // If it's not about existing plan, rethrow the original error
+          rethrow;
+        }
       }
     } catch (e) {
       if (mounted) {

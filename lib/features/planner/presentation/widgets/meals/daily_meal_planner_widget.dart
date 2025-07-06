@@ -169,68 +169,39 @@ class _DailyMealPlannerWidgetState
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                final dateString = DateFormat(
+                  'yyyy-MM-dd',
+                ).format(widget.selectedDate);
+                print('[DEBUG] Refreshing meal plan for date: $dateString');
+                print('[DEBUG] Selected date widget: ${widget.selectedDate}');
+                ref.invalidate(mealPlanByDateProvider(dateString));
+                
+                // Show a loading snackbar to confirm the action
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Actualizando plan para $dateString...'),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Actualizar'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).primaryColor,
+              ),
+            ),
             const SizedBox(height: 24),
             Column(
               children: [
-                // Plan Automático Card
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: InkWell(
-                    onTap: () => _generateAutomaticPlan(),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.auto_awesome,
-                              color: Theme.of(context).primaryColor,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Plan Automático',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'IA analiza tu inventario y crea un plan optimizado',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey[400],
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 // Plan Manual Card
                 Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: InkWell(
                     onTap: () => _createManualPlan(),
                     borderRadius: BorderRadius.circular(16),
@@ -241,7 +212,9 @@ class _DailyMealPlannerWidgetState
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.secondary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -256,17 +229,15 @@ class _DailyMealPlannerWidgetState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Plan Manual',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  'Plan Personalizado',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Tú eliges qué cocinar en cada comida del día',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
+                                  'Crea tu propio plan de comidas a tu gusto',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.grey[600]),
                                 ),
                               ],
                             ),
@@ -560,93 +531,11 @@ class _DailyMealPlannerWidgetState
     );
   }
 
-  void _generateAutomaticPlan() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(
-                  'Generando plan automático...',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'La IA está creando el plan perfecto para ti',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-    );
-
-    // Generate automatic plan using AI
-    _generateAutomaticMealPlan();
-  }
-
   void _createManualPlan() {
     context.pushNamed(
       'manualPlanCreation',
       queryParameters: {'date': widget.selectedDate.toIso8601String()},
     );
-  }
-
-  Future<void> _generateAutomaticMealPlan() async {
-    try {
-      // Get user preferences (you can enhance this by reading from user profile)
-      final List<Map<String, dynamic>> ingredients = []; // Get from inventory
-
-      // Generate the plan using the backend service
-      final response = await ref
-          .read(mealPlanRepositoryProvider)
-          .generateMealPlan(ingredients: ingredients);
-
-      if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
-
-        // Save the generated plan
-        final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
-        await ref
-            .read(mealPlanningProvider.notifier)
-            .saveMealPlan(
-              dateString,
-              mealPlan.meals,
-            );
-        
-        // Invalidate the meal plan by date provider to refresh UI
-        ref.invalidate(mealPlanByDateProvider(dateString));
-
-        if (mounted) {
-          Navigator.pop(context); // Close loading dialog
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('¡Plan automático generado exitosamente!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } else {
-        throw Exception('No se pudo generar el plan de comidas');
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al generar plan: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   void _duplicatePlan(MealPlanModel mealPlan) {

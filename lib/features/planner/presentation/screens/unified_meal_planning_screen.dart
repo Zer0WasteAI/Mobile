@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/meals/daily_meal_planner_widget.dart';
 import '../widgets/unified_planning_widget.dart';
 import '../../domain/models/meal_plan_models.dart';
-import '../providers/planner_providers.dart';
+import '../providers/meal_planning_providers.dart';
 
 class UnifiedMealPlanningScreen extends ConsumerStatefulWidget {
   final DateTime? initialDate;
@@ -19,7 +19,7 @@ class UnifiedMealPlanningScreen extends ConsumerStatefulWidget {
 
 class _UnifiedMealPlanningScreenState
     extends ConsumerState<UnifiedMealPlanningScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _fabAnimationController;
   late AnimationController _headerAnimationController;
   late PageController _pageController;
@@ -33,6 +33,12 @@ class _UnifiedMealPlanningScreenState
     super.initState();
     _selectedDate = widget.initialDate ?? DateTime.now();
     _focusedWeekStart = _getWeekStart(_selectedDate);
+    
+    // If we have an initial date (coming from manual plan creation), switch to daily view
+    if (widget.initialDate != null) {
+      _isWeeklyView = false;
+      print('[DEBUG] Initial date provided: ${widget.initialDate}, switching to daily view');
+    }
 
     _fabAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -48,14 +54,32 @@ class _UnifiedMealPlanningScreenState
 
     _fabAnimationController.forward();
     _headerAnimationController.forward();
+    
+    // Add observer to refresh data when app resumes
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _fabAnimationController.dispose();
     _headerAnimationController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // Refresh meal plan data when app resumes
+      _refreshMealPlanData();
+    }
+  }
+
+  void _refreshMealPlanData() {
+    final dateString = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    ref.invalidate(mealPlanByDateProvider(dateString));
   }
 
   DateTime _getWeekStart(DateTime date) {
@@ -251,11 +275,13 @@ class _UnifiedMealPlanningScreenState
   }
 
   Widget _buildDailyView() {
+    print('[DEBUG] Building daily view with selected date: $_selectedDate');
     return Container(
       key: const ValueKey('daily'),
       child: DailyMealPlannerWidget(
         selectedDate: _selectedDate,
         onDateChanged: (date) {
+          print('[DEBUG] Date changed in daily view: $date');
           setState(() {
             _selectedDate = date;
             _focusedWeekStart = _getWeekStart(date);
@@ -366,6 +392,11 @@ class _UnifiedMealPlanningScreenState
       setState(() {
         _isWeeklyView = isWeekly;
       });
+      
+      // If switching to daily view, refresh the meal plan data
+      if (!isWeekly) {
+        _refreshMealPlanData();
+      }
     }
   }
 

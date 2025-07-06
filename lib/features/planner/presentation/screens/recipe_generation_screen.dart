@@ -44,6 +44,30 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         numRecipes: 5,
         forceRegenerate: forceRegenerate,
       );
+      
+      // Show success message only when force regenerating
+      if (mounted && forceRegenerate) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('¡Nuevas recetas generadas para ${widget.mealType.name.toLowerCase()}!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'Ver',
+              textColor: Colors.white,
+              onPressed: () {
+                // Scroll to top to see new recipes
+                if (mounted) {
+                  Scrollable.ensureVisible(
+                    context,
+                    duration: const Duration(milliseconds: 500),
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,8 +101,14 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: _generateRecipes,
-            icon: const Icon(Icons.refresh),
+            onPressed: _isGenerating ? null : () => _generateRecipes(forceRegenerate: true),
+            icon: _isGenerating 
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.refresh),
             tooltip: 'Generar nuevas recetas',
           ),
         ],
@@ -172,19 +202,47 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
                 ),
                 if (recipeState.areRecipesFresh)
                   GestureDetector(
-                    onTap: () => _generateRecipes(forceRegenerate: true),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    onTap: _isGenerating ? null : () => _generateRecipes(forceRegenerate: true),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Regenerar',
-                        style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onPrimary,
-                          fontWeight: FontWeight.w600,
+                        color: _isGenerating 
+                          ? colorScheme.onPrimary.withValues(alpha: 0.1)
+                          : colorScheme.onPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: colorScheme.onPrimary.withValues(alpha: 0.3),
+                          width: 1,
                         ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_isGenerating)
+                            SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                              ),
+                            )
+                          else
+                            Icon(
+                              Icons.auto_awesome,
+                              color: colorScheme.onPrimary,
+                              size: 16,
+                            ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isGenerating ? 'Generando...' : 'Regenerar',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -386,11 +444,27 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           dinner: widget.mealType == MealType.dinner ? meal : null,
         );
         
-        // Save new plan
-        await ref.read(mealPlanningProvider.notifier).saveMealPlan(
-          dateString,
-          updatedMeals,
-        );
+        // Save new plan with fallback to update if already exists
+        try {
+          await ref.read(mealPlanningProvider.notifier).saveMealPlan(
+            dateString,
+            updatedMeals,
+          );
+        } catch (saveError) {
+          // Check if the error is about existing plan
+          final errorMessage = saveError.toString().toLowerCase();
+          if (errorMessage.contains('ya existe') || 
+              errorMessage.contains('already exists')) {
+            // Plan already exists, try to update instead
+            await ref.read(mealPlanningProvider.notifier).updateMealPlan(
+              dateString,
+              updatedMeals,
+            );
+          } else {
+            // If it's not about existing plan, rethrow the error
+            rethrow;
+          }
+        }
         
         // Invalidate the meal plan by date provider to refresh UI
         ref.invalidate(mealPlanByDateProvider(dateString));
