@@ -1,15 +1,27 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 // Enum para los tipos de unidades
 enum MeasurementUnit { metric, imperial }
 
 // Provider para las unidades seleccionadas
-final selectedUnitProvider = StateProvider<MeasurementUnit>(
-  (ref) => MeasurementUnit.metric,
-);
+final selectedUnitProvider = StateProvider<MeasurementUnit>((ref) {
+  // Inicializar con el valor del usuario actual si existe
+  final user = ref.watch(authControllerProvider).value;
+  final measurementUnit = user?.prefs.measurementUnit ?? 'metric';
+
+  log('Loading measurement unit from user data: $measurementUnit');
+
+  if (measurementUnit == 'imperial') {
+    return MeasurementUnit.imperial;
+  }
+  return MeasurementUnit.metric;
+});
 
 class UnitsScreen extends ConsumerWidget {
   const UnitsScreen({super.key});
@@ -20,6 +32,14 @@ class UnitsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedUnit = ref.watch(selectedUnitProvider);
+    final authRepository = ref.watch(authRepositoryProvider);
+    final user = ref.watch(authControllerProvider).value;
+
+    // Log the current user's measurement unit setting
+    log(
+      'Current user measurement unit in Firestore: ${user?.prefs.measurementUnit}',
+    );
+    log('Current selected unit in UI: $selectedUnit');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -97,9 +117,52 @@ class UnitsScreen extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Guardar y volver
-                  context.pop();
+                onPressed: () async {
+                  // Convertir enum a string para guardar en Firestore
+                  final String unitValue =
+                      selectedUnit == MeasurementUnit.metric
+                          ? 'metric'
+                          : 'imperial';
+
+                  log('Saving measurement unit: $unitValue');
+
+                  // Guardar la selección en Firestore
+                  try {
+                    await authRepository.saveUserMeasurementUnit(unitValue);
+                    log('Successfully saved measurement unit to Firestore');
+
+                    // Actualizar el controlador de autenticación para reflejar los cambios
+                    await ref
+                        .read(authControllerProvider.notifier)
+                        .refreshUserFromFirestore();
+
+                    // Verify the user was updated
+                    final updatedUser = ref.read(authControllerProvider).value;
+                    log(
+                      'Updated user measurement unit: ${updatedUser?.prefs.measurementUnit}',
+                    );
+
+                    // Mostrar mensaje de éxito y volver
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Unidades guardadas correctamente'),
+                          backgroundColor: Color(0xFF00BFA5),
+                        ),
+                      );
+                      context.pop();
+                    }
+                  } catch (e) {
+                    log('Error saving measurement unit: $e');
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al guardar: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00BFA5),

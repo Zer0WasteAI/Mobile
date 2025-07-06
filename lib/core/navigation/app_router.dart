@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +17,9 @@ import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_s
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_confirm_screen.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/screens/splash_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/simplified_recognition_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/simplified_food_recognition_screen.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/screens/recognition_type_selector_screen.dart';
 import 'dart:io';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart'; // Import the new screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart'; // Import Cooking Level screen
@@ -25,13 +30,12 @@ import 'package:zer0_waste_ai/features/inventory/presentation/screens/ingredient
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_detail_screen.dart'; // Import FoodDetailScreen
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart'; // Import RecipeMode
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/ai_recipe_generation_screen.dart'; // Import AIRecipeGenerationScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/all_recipes_screen.dart'; // Import AllRecipesScreen
 import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_cooking_level_selector_screen.dart'; // Import profile cooking level screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_preferred_food_type_screen.dart'; // Import profile food type screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_allergy_selector_screen.dart'; // Import profile allergy screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/profile_special_diet_selector_screen.dart'; // Import profile special diet screen
+// Profile-specific selector screens removed - now using unified screens with context parameter
 import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/units_screen.dart'; // Import units screen
@@ -40,6 +44,10 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_poli
 import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_screen.dart'; // Import AboutAppScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/my_recipes_screen.dart'; // Import MyRecipesScreen
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recipe_generation_screen.dart'; // Import CustomRecipeGenerationScreen
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -65,23 +73,16 @@ const String ingredientDetailRouteName = 'ingredientDetail';
 const String foodDetailRouteName = 'foodDetail';
 const String addScanItemRouteName = 'addScanItem';
 const String scanConfirmRouteName = ScanConfirmScreen.routeName;
-const String scanResultsRouteName = ScanResultsScreen.routeName;
+const String scanResultsRouteName = 'scan_results';
 const String allergySelectorRouteName = AllergySelectorScreen.routeName;
 const String cookingLevelSelectorRouteName =
     CookingLevelSelectorScreen.routeName;
 const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
 const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
+const String allRecipesRouteName = AllRecipesScreen.routeName;
 
-// Profile-specific selector route names
-const String profileCookingLevelSelectorRouteName =
-    ProfileCookingLevelSelectorScreen.routeName;
-const String profilePreferredFoodTypeRouteName =
-    ProfilePreferredFoodTypeScreen.routeName;
-const String profileAllergySelectorRouteName =
-    ProfileAllergySelectorScreen.routeName;
-const String profileSpecialDietSelectorRouteName =
-    ProfileSpecialDietSelectorScreen.routeName;
+// Profile-specific selector route names removed - now using unified screens
 const String notificationsRouteName = NotificationsScreen.routeName;
 const String languageRouteName = LanguageScreen.routeName;
 const String unitsRouteName = UnitsScreen.routeName;
@@ -91,42 +92,6 @@ const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
 const String aboutAppRouteName = AboutAppScreen.routeName;
 const String supportRouteName = SupportScreen.routeName;
 
-/// Router provider
-final routerProvider = Provider<GoRouter>((ref) {
-  final router = AppRouter.createRouter(ref);
-
-  // Listen to route changes and update the navigation provider
-  router.routerDelegate.addListener(() {
-    // Use the root navigator key context to get the current location safely
-    final context = router.routerDelegate.navigatorKey.currentContext;
-    if (context != null) {
-      // Use GoRouter.of(context).location to get the current displayed route
-      final routeMatchList = router.routerDelegate.currentConfiguration.matches;
-      if (routeMatchList.isNotEmpty) {
-        final currentLocation = routeMatchList.last.matchedLocation;
-
-        // Only update if the location is one of the main tab routes
-        if ([
-          '/home',
-          '/inventory',
-          '/recipes',
-          '/profile',
-        ].contains(currentLocation)) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            // Check if the provider's state needs updating
-            if (ref.read(currentNavigationProvider) != currentLocation) {
-              ref.read(currentNavigationProvider.notifier).state =
-                  currentLocation;
-            }
-          });
-        }
-      }
-    }
-  });
-
-  return router;
-});
-
 /// App router configuration
 class AppRouter {
   /// GoRouter instance factory
@@ -134,12 +99,102 @@ class AppRouter {
     // Create the HeroController
     final heroController = HeroController();
 
+    // Watch auth state for redirect logic
+    final authState = ref.watch(authStateProvider);
+
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/splash',
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
+      redirect: (context, state) {
+        // Handle loading state
+        if (authState.isLoading) {
+          log('🔄 Router: Auth state loading - staying on current location');
+          return null;
+        }
+
+        final isLoggedIn = authState.value != null;
+        final user = authState.value;
+
+        // Check preferences completion directly from user data and UserPreferencesService
+        final userPreferencesState = ref.watch(userPreferencesProvider);
+        
+        // First try to get the value directly from user data (most reliable)
+        final userHasCompletedPreferences = user?.initialPreferencesCompleted ?? false;
+        
+        // Use UserPreferencesService as fallback
+        final serviceHasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
+        final isPreferencesLoading = userPreferencesState.isLoading;
+        
+        // Use user data if available, otherwise fall back to service
+        final hasCompletedPreferences = userHasCompletedPreferences || serviceHasCompletedPreferences;
+        
+        log('🔍 Router: userHasCompleted=$userHasCompletedPreferences, serviceHasCompleted=$serviceHasCompletedPreferences, final=$hasCompletedPreferences');
+
+        final isGoingToLogin = state.matchedLocation == '/login';
+        final isGoingToRegister = state.matchedLocation == '/register';
+        final isGoingToForgotPassword =
+            state.matchedLocation == '/forgot-password';
+        final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+        final isGoingToSplash = state.matchedLocation == '/splash';
+        final isGoingToAuthFlow =
+            state.matchedLocation.startsWith('/allergy-selector') ||
+            state.matchedLocation.startsWith('/cooking-level-selector') ||
+            state.matchedLocation.startsWith('/preferred-food-type') ||
+            state.matchedLocation.startsWith('/special-diet-selector');
+
+        log(
+          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, isPreferencesLoading: $isPreferencesLoading, location: ${state.matchedLocation}',
+        );
+
+        // If preferences are still loading and user is logged in, wait
+        if (isLoggedIn && isPreferencesLoading && !isGoingToSplash) {
+          log('🔄 Router: Preferences loading - staying on current location');
+          return null;
+        }
+
+        // If not logged in and not going to auth/onboarding screens, redirect to login
+        if (!isLoggedIn &&
+            !isGoingToLogin &&
+            !isGoingToRegister &&
+            !isGoingToForgotPassword &&
+            !isGoingToOnboarding &&
+            !isGoingToSplash &&
+            !isGoingToAuthFlow) {
+          log('🔄 Redirecting to login - user not authenticated');
+          return '/login';
+        }
+
+        // If logged in, check preferences completion
+        if (isLoggedIn && user != null && !isPreferencesLoading) {
+          // If user has completed preferences but trying to go to auth/onboarding screens, redirect to home
+          if (hasCompletedPreferences &&
+              (isGoingToLogin ||
+                  isGoingToRegister ||
+                  isGoingToForgotPassword ||
+                  isGoingToOnboarding ||
+                  isGoingToSplash ||
+                  isGoingToAuthFlow)) {
+            log('🔄 Redirecting to home - user has completed preferences');
+            return '/home';
+          }
+
+          // If user has NOT completed preferences and trying to go to protected screens, redirect to onboarding
+          if (!hasCompletedPreferences &&
+              !isGoingToAuthFlow &&
+              !isGoingToSplash &&
+              state.matchedLocation != '/allergy-selector') {
+            log(
+              '🔄 Redirecting to onboarding - user needs to complete preferences',
+            );
+            return '/allergy-selector';
+          }
+        }
+
+        return null; // No redirect needed
+      },
       routes: [
         GoRoute(
           path: '/splash',
@@ -170,25 +225,41 @@ class AppRouter {
         GoRoute(
           path: AllergySelectorScreen.routePath,
           name: allergySelectorRouteName,
-          builder: (context, state) => const AllergySelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return AllergySelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Cooking Level Selector Screen route here (top-level)
         GoRoute(
           path: CookingLevelSelectorScreen.routePath,
           name: cookingLevelSelectorRouteName,
-          builder: (context, state) => const CookingLevelSelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return CookingLevelSelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Preferred Food Type Screen route here (top-level)
         GoRoute(
           path: PreferredFoodTypeScreen.routePath,
           name: preferredFoodTypeRouteName,
-          builder: (context, state) => const PreferredFoodTypeScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return PreferredFoodTypeScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the Special Diet Selector Screen route here (top-level)
         GoRoute(
           path: SpecialDietSelectorScreen.routePath,
           name: specialDietSelectorRouteName,
-          builder: (context, state) => const SpecialDietSelectorScreen(),
+          builder: (context, state) {
+            // Check if coming from profile via query parameter
+            final fromProfile = state.uri.queryParameters['from'] == 'profile';
+            return SpecialDietSelectorScreen(fromProfile: fromProfile);
+          },
         ),
         // Add the ScanConfirmScreen route here (top-level)
         GoRoute(
@@ -203,7 +274,7 @@ class AppRouter {
 
             // Validate the extracted data
             if (images == null || images.isEmpty || originType == null) {
-              print(
+              log(
                 "Error: ScanConfirmScreen missing images or originType. Redirecting.",
               );
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -225,14 +296,14 @@ class AppRouter {
         ),
         // Add the ScanResultsScreen route
         GoRoute(
-          path: ScanResultsScreen.routePath,
+          path: '/scan/results',
           name: scanResultsRouteName,
           builder: (context, state) {
             // Extract data passed from ScanConfirmScreen (or analysis step)
             final Map<String, dynamic>? extraData =
                 state.extra as Map<String, dynamic>?;
-            // TODO: Replace List<String> with the actual result type from analysis
-            // Expecting the raw JSON list now
+
+            // Extract the recognized items JSON data from the analysis
             final List<Map<String, dynamic>> initialJsonData =
                 extraData?['recognizedItemsJson']
                     as List<Map<String, dynamic>>? ??
@@ -247,27 +318,53 @@ class AppRouter {
             );
           },
         ),
+        // ✨ NEW: Simplified Recognition Screen (for testing)
+        GoRoute(
+          path: SimplifiedRecognitionScreen.routeName,
+          name: 'simplifiedRecognition',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const SimplifiedRecognitionScreen(),
+        ),
+        // ✨ NEW: Simplified Food Recognition Screen
+        GoRoute(
+          path: '/simplified-food-recognition',
+          name: 'simplifiedFoodRecognition',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const SimplifiedFoodRecognitionScreen(),
+        ),
+        // ✨ NEW: Recognition Type Selector Screen
+        GoRoute(
+          path: RecognitionTypeSelectorScreen.routePath,
+          name: RecognitionTypeSelectorScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const RecognitionTypeSelectorScreen(),
+        ),
         // Add the route for AddInventoryItemScreen (top-level for simplicity now)
         GoRoute(
           path: AddInventoryItemScreen.routePath, // '/inventory/add'
           name: addInventoryItemRouteName,
-          builder: (context, state) => const AddInventoryItemScreen(),
+          builder: (context, state) {
+            // Handle pre-filled data from scan results
+            final prefilledItems = state.extra as List<Map<String, dynamic>>?;
+            return AddInventoryItemScreen(prefilledItems: prefilledItems);
+          },
         ),
         // Route for Ingredient Detail Screen
         GoRoute(
-          path: '/inventory/ingredient/:itemId', // Define path with parameter
+          path:
+              '/inventory/ingredient/:ingredientName', // Define path with parameter
           name: ingredientDetailRouteName,
           builder: (context, state) {
-            final itemId = state.pathParameters['itemId'];
-            if (itemId == null) {
+            final ingredientName = state.pathParameters['ingredientName'];
+            if (ingredientName == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/inventory');
               });
               return const Scaffold(
-                body: Center(child: Text('Item ID missing')),
+                body: Center(child: Text('Ingredient name missing')),
               );
             }
-            return IngredientDetailScreen(itemId: itemId);
+            return IngredientDetailScreen(ingredientName: ingredientName);
           },
         ),
         // Route for Food Detail Screen
@@ -284,7 +381,20 @@ class AppRouter {
                 body: Center(child: Text('Item ID missing')),
               );
             }
-            return FoodDetailScreen(itemId: itemId);
+            // Parse the itemId to extract foodName and addedAt
+            // Expected format: "foodName_addedAt" (from FoodDetail.uniqueId)
+            final parts = itemId.split('_');
+            if (parts.length < 2) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: const Center(child: Text('Invalid food ID format')),
+              );
+            }
+            final foodName = parts[0];
+            final addedAt = parts
+                .sublist(1)
+                .join('_'); // In case addedAt contains underscores
+            return FoodDetailScreen(foodName: foodName, addedAt: addedAt);
           },
         ),
         // Route for AI Recipe Generation Screen
@@ -292,6 +402,13 @@ class AppRouter {
           path: '/recipes/ai-generation',
           name: aiRecipeGenerationRouteName,
           builder: (context, state) => const AIRecipeGenerationScreen(),
+        ),
+        // Route for All Recipes Screen
+        GoRoute(
+          path: AllRecipesScreen.routePath,
+          name: allRecipesRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const AllRecipesScreen(),
         ),
         // Route for Recipe Detail Screen
         GoRoute(
@@ -311,6 +428,20 @@ class AppRouter {
             return RecipeDetailScreen(recipe: recipe);
           },
         ),
+        // Route for My Recipes Screen
+        GoRoute(
+          path: MyRecipesScreen.routePath,
+          name: MyRecipesScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const MyRecipesScreen(),
+        ),
+        // Route for Custom Recipe Generation Screen
+        GoRoute(
+          path: CustomRecipeGenerationScreen.routePath,
+          name: CustomRecipeGenerationScreen.routeName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const CustomRecipeGenerationScreen(),
+        ),
         // Route for Impact Panel
         GoRoute(
           path: '/impact',
@@ -324,6 +455,13 @@ class AppRouter {
           name: plannerRouteName,
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const PlannerScreen(),
+        ),
+        // Route for Meal Planning
+        GoRoute(
+          path: '/meal-planning',
+          name: 'mealPlanning',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) => const MealPlanningScreen(),
         ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(
@@ -420,7 +558,7 @@ class AppRouter {
                 } else if (itemTypeString == 'food') {
                   itemType = ScanItemType.food;
                 } else {
-                  print(
+                  log(
                     'Invalid itemType in route: $itemTypeString, defaulting to ingredient',
                   );
                   itemType =
@@ -431,28 +569,7 @@ class AppRouter {
             ),
           ],
         ),
-        // Add the profile-specific preference screens routes
-        GoRoute(
-          path: ProfileCookingLevelSelectorScreen.routePath,
-          name: profileCookingLevelSelectorRouteName,
-          builder:
-              (context, state) => const ProfileCookingLevelSelectorScreen(),
-        ),
-        GoRoute(
-          path: ProfilePreferredFoodTypeScreen.routePath,
-          name: profilePreferredFoodTypeRouteName,
-          builder: (context, state) => const ProfilePreferredFoodTypeScreen(),
-        ),
-        GoRoute(
-          path: ProfileAllergySelectorScreen.routePath,
-          name: profileAllergySelectorRouteName,
-          builder: (context, state) => const ProfileAllergySelectorScreen(),
-        ),
-        GoRoute(
-          path: ProfileSpecialDietSelectorScreen.routePath,
-          name: profileSpecialDietSelectorRouteName,
-          builder: (context, state) => const ProfileSpecialDietSelectorScreen(),
-        ),
+        // Profile-specific preference screens routes removed - now using unified screens with context parameter
         // Add the notifications screen route
         GoRoute(
           path: NotificationsScreen.routePath,

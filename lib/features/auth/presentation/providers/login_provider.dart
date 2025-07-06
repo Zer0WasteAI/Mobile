@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/features/auth/data/datasources/auth_api.dart';
 import 'package:zer0_waste_ai/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:zer0_waste_ai/features/auth/domain/entities/user_entity.dart';
+import 'package:zer0_waste_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:zer0_waste_ai/features/auth/domain/usecases/login_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/viewmodels/login_controller.dart';
 
@@ -154,15 +154,10 @@ class LoginNotifier extends AutoDisposeAsyncNotifier<UserEntity?> {
   }
 }
 
-/// Auth API provider
-final authApiProvider = Provider<AuthApi>((ref) {
-  return MockAuthApi();
-});
-
-/// Auth repository provider
-final authRepositoryProvider = Provider<AuthRepositoryImpl>((ref) {
-  final authApi = ref.watch(authApiProvider);
-  return AuthRepositoryImpl(authApi);
+/// Auth repository provider - using the real implementation
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  // Use the real AuthRepositoryImpl instead of mock
+  return AuthRepositoryImpl();
 });
 
 /// Login use case provider

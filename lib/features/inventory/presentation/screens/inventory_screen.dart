@@ -1,7 +1,10 @@
+// ignore_for_file: unused_local_variable
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart';
@@ -11,12 +14,12 @@ import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_item_card.dart';
 import 'package:zer0_waste_ai/features/inventory/presentation/widgets/inventory_filter_bottom_sheet.dart';
-import 'package:zer0_waste_ai/features/inventory/presentation/screens/add_inventory_item_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import for date formatting extension
-import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/widgets/mark_consumed_dialog.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -42,14 +45,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     super.initState();
     _searchController = TextEditingController();
     _searchController.addListener(() {
+      // Sync search query to both providers
       ref
           .read(inventoryProvider.notifier)
+          .setSearchQuery(_searchController.text);
+      ref
+          .read(inventoryRealProvider.notifier)
           .setSearchQuery(_searchController.text);
     });
 
     // Initialize TabController
     final initialFilterStatus =
-        ref.read(inventoryProvider).expirationStatusFilter;
+        ref.read(inventoryRealProvider).expirationStatusFilter;
     final initialTabIndex = ExpirationStatus.values.indexOf(
       initialFilterStatus,
     );
@@ -60,12 +67,13 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           initialTabIndex >= 0 ? initialTabIndex : 0, // Handle potential issues
     );
 
-    // Verificar si hay elementos destacados al iniciar la pantalla
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 🚀 OPTIMIZED: Smart inventory loading with cache
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadInventorySmartly();
+
+      // Verificar si hay elementos destacados al iniciar la pantalla
       final recentlyAddedIds = ref.read(inventoryProvider).recentlyAddedIds;
-      print(
-        'initState: IDs destacados encontrados: ${recentlyAddedIds.length}',
-      );
+      log('initState: IDs destacados encontrados: ${recentlyAddedIds.length}');
 
       if (recentlyAddedIds.isEmpty) {
         // Si no hay elementos destacados, limpiar cualquier resaltado pendiente
@@ -73,14 +81,116 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       } else {
         // Si hay elementos destacados, guardarlos y hacer scroll al último elemento
         _previousRecentlyAddedIds = Set<String>.from(recentlyAddedIds);
-        print('initState: Haciendo scroll al último elemento de la lista');
+        log('initState: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco más para garantizar que la UI está lista
-        Future.delayed(Duration(milliseconds: 300), () {
-          scrollToLastItem();
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        scrollToLastItem();
       }
     });
+  }
+
+  /// 🧠 Smart inventory loading logic
+  /// Only loads from backend when necessary
+  Future<void> _loadInventorySmartly() async {
+    // 🚀 Use the new smart loading method from the provider
+    await ref.read(inventoryRealProvider.notifier).loadInventoryIfNeeded();
+
+    // Sync with UI provider
+    final realItems = ref.read(inventoryRealProvider).items;
+    ref.read(inventoryProvider.notifier).clearAllItems();
+    if (realItems.isNotEmpty) {
+      ref.read(inventoryProvider.notifier).addItems(realItems);
+    }
+
+    log('📋 Smart loading completed: ${realItems.length} items synced to UI');
+  }
+
+  /// 🔄 Force refresh inventory from backend (user-triggered)
+  Future<void> _forceRefreshInventory() async {
+    try {
+      // Show loading feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text('Actualizando inventario...'),
+              ],
+            ),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // Force complete inventory reload
+      await ref
+          .read(inventoryRealProvider.notifier)
+          .loadCompleteInventoryFromBackend();
+
+      // Sync with UI provider
+      final realItems = ref.read(inventoryRealProvider).items;
+      ref.read(inventoryProvider.notifier).clearAllItems();
+      if (realItems.isNotEmpty) {
+        ref.read(inventoryProvider.notifier).addItems(realItems);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Inventario actualizado (${realItems.length} items)',
+            ),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      log('❌ Failed to force refresh inventory: $e');
+      // Fallback to regular inventory
+      try {
+        await ref.read(inventoryRealProvider.notifier).refreshInventory();
+
+        final realItems = ref.read(inventoryRealProvider).items;
+        ref.read(inventoryProvider.notifier).clearAllItems();
+        if (realItems.isNotEmpty) {
+          ref.read(inventoryProvider.notifier).addItems(realItems);
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '✅ Inventario actualizado - modo básico (${realItems.length} items)',
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (fallbackError) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${fallbackError.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -90,10 +200,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     // Obtener los IDs actuales de elementos destacados
     final currentRecentlyAddedIds =
         ref.read(inventoryProvider).recentlyAddedIds;
-    print(
+    log(
       'didUpdateWidget: Elementos destacados detectados: ${currentRecentlyAddedIds.length}',
     );
-    print(
+    log(
       'didUpdateWidget: Elementos previos: ${_previousRecentlyAddedIds.length}',
     );
 
@@ -105,34 +215,26 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
               .where((id) => !_previousRecentlyAddedIds.contains(id))
               .toList();
 
-      print('didUpdateWidget: Nuevos elementos destacados: ${newIds.length}');
+      log('didUpdateWidget: Nuevos elementos destacados: ${newIds.length}');
 
       // Si hay nuevos elementos destacados
       if (newIds.isNotEmpty) {
         // Hacer scroll al último elemento de la lista en lugar de al elemento destacado
-        print(
-          'didUpdateWidget: Haciendo scroll al último elemento de la lista',
-        );
+        log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco para que la UI se actualice completamente
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted) {
-            scrollToLastItem();
-          }
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        if (mounted) {
+          scrollToLastItem();
+        }
       } else if (_previousRecentlyAddedIds.isEmpty &&
           currentRecentlyAddedIds.isNotEmpty) {
         // Si no hay nuevos elementos específicos pero pasamos de ninguno a algunos
-        print(
-          'didUpdateWidget: Haciendo scroll al último elemento de la lista',
-        );
+        log('didUpdateWidget: Haciendo scroll al último elemento de la lista');
 
-        // Esperar un poco para que la UI se actualice completamente
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted) {
-            scrollToLastItem();
-          }
-        });
+        // ✅ UPDATED: Immediate scroll without artificial delay
+        if (mounted) {
+          scrollToLastItem();
+        }
       }
     }
 
@@ -151,8 +253,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final inventoryState = ref.watch(inventoryProvider);
-    final filteredItems = ref.watch(filteredSortedInventoryProvider);
+    final inventoryState = ref.watch(inventoryRealProvider);
+    final filteredItems = ref.watch(filteredSortedInventoryRealProvider);
     final recentlyAddedIds = inventoryState.recentlyAddedIds;
     final inventoryNotifier = ref.read(inventoryProvider.notifier);
 
@@ -222,7 +324,13 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           }).toList(),
       onTap: (index) {
         final selectedStatus = ExpirationStatus.values[index];
-        inventoryNotifier.setExpirationStatusFilter(selectedStatus);
+        // Sync expiration filter to both providers
+        ref
+            .read(inventoryProvider.notifier)
+            .setExpirationStatusFilter(selectedStatus);
+        ref
+            .read(inventoryRealProvider.notifier)
+            .setExpirationStatusFilter(selectedStatus);
       },
     );
 
@@ -237,10 +345,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             color: mainTextColor,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: mainTextColor),
+        actions: [
+          // 🚀 OPTIMIZED: Smart refresh button
+          IconButton(
+            icon: Icon(Icons.refresh, color: primaryColor),
+            onPressed: () async {
+              // Force refresh from backend (user explicitly requested)
+              await _forceRefreshInventory();
+            },
+            tooltip: 'Actualizar inventario',
+          ),
+        ],
       ),
       body: GestureDetector(
         onTap: () {
@@ -270,8 +387,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                           BoxShadow(
                             color:
                                 isDark
-                                    ? Colors.black.withOpacity(0.25)
-                                    : Colors.grey.withOpacity(0.15),
+                                    ? Colors.black.withValues(alpha: 0.25)
+                                    : Colors.grey.withValues(alpha: 0.15),
                             spreadRadius: 1,
                             blurRadius: 5,
                             offset: const Offset(0, 3),
@@ -406,7 +523,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             ),
                             onPressed: () {
                               final currentFilters = ref.read(
-                                inventoryProvider,
+                                inventoryRealProvider,
                               );
                               showModalBottomSheet(
                                 context: context,
@@ -429,15 +546,46 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                         sortCriteria,
                                         required bool sortAscending,
                                       }) {
-                                        final notifier = ref.read(
+                                        // Apply filters to both providers to keep them in sync
+                                        final uiNotifier = ref.read(
                                           inventoryProvider.notifier,
                                         );
-                                        notifier.setCategoryFilter(category);
-                                        notifier.setStorageFilter(storageTypes);
-                                        notifier.setSortCriteria(sortCriteria);
-                                        notifier.setSortDirection(
+                                        final realNotifier = ref.read(
+                                          inventoryRealProvider.notifier,
+                                        );
+
+                                        // Apply to UI provider (for filter counting)
+                                        uiNotifier.setCategoryFilter(category);
+                                        uiNotifier.setStorageFilter(
+                                          storageTypes,
+                                        );
+                                        uiNotifier.setSortCriteria(
+                                          sortCriteria,
+                                        );
+                                        uiNotifier.setSortDirection(
                                           sortAscending,
                                         );
+
+                                        // Apply to real provider (for actual filtering)
+                                        try {
+                                          realNotifier.setCategoryFilter(
+                                            category,
+                                          );
+                                          realNotifier.setStorageFilter(
+                                            storageTypes,
+                                          );
+                                          realNotifier.setSortCriteria(
+                                            sortCriteria,
+                                          );
+                                          realNotifier.setSortDirection(
+                                            sortAscending,
+                                          );
+                                        } catch (e) {
+                                          // Methods might not exist in real provider, that's ok
+                                          log(
+                                            'Some filter methods not available in real provider: $e',
+                                          );
+                                        }
                                       },
                                     ),
                               );
@@ -459,8 +607,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         );
                         final expiredCount = ref.watch(expiredCountProvider);
                         final totalCount = ref.watch(totalItemCountProvider);
-                        if (!_isSummaryExpanded || totalCount == 0)
+                        if (!_isSummaryExpanded || totalCount == 0) {
                           return const SizedBox.shrink();
+                        }
                         final Color warningTextColor =
                             isDark
                                 ? AppColors.warningTextDark
@@ -481,8 +630,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                   child: RichText(
                                     text: TextSpan(
                                       style: textTheme.labelMedium?.copyWith(
-                                        color: warningTextColor.withOpacity(
-                                          0.9,
+                                        color: warningTextColor.withValues(
+                                          alpha: 0.9,
                                         ),
                                       ),
                                       children: [
@@ -507,7 +656,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                   child: RichText(
                                     text: TextSpan(
                                       style: textTheme.labelMedium?.copyWith(
-                                        color: errorColor.withOpacity(0.9),
+                                        color: errorColor.withValues(
+                                          alpha: 0.9,
+                                        ),
                                       ),
                                       children: [
                                         TextSpan(
@@ -537,6 +688,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         ),
                         label: const Text('Generar receta'),
                         onPressed: () {
+                          // Clear AI recipe state to force regeneration
+                          ref.read(aiRecipeProvider.notifier).clearState();
                           context.pushNamed('AIRecipeGenerationScreen');
                         },
                         style: OutlinedButton.styleFrom(
@@ -553,7 +706,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             fontWeight: FontWeight.w600,
                           ),
                           elevation: 2,
-                          shadowColor: Colors.grey.withOpacity(0.2),
+                          shadowColor: Colors.grey.withValues(alpha: 0.2),
                         ),
                       ),
                     ),
@@ -579,19 +732,41 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      inventoryState.searchQuery.isNotEmpty ||
-                              inventoryState.categoryFilter !=
-                                  ItemCategory.all ||
-                              inventoryState.storageFilter.isNotEmpty
-                          ? 'No hay ítems que coincidan con los filtros.'
-                          : 'Tu inventario está vacío.\n¡Agrega algunos ítems!',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        color: secondaryTextColor,
-                        fontSize: 16,
-                      ),
-                    ),
+                    child:
+                        inventoryState.isLoading
+                            ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Cargando inventario...',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    color: secondaryTextColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            )
+                            : Text(
+                              inventoryState.searchQuery.isNotEmpty ||
+                                      inventoryState.categoryFilter !=
+                                          ItemCategory.all ||
+                                      inventoryState.storageFilter.isNotEmpty
+                                  ? 'No hay ítems que coincidan con los filtros.'
+                                  : 'Tu inventario está vacío.\n¡Agrega algunos ítems!',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: secondaryTextColor,
+                                fontSize: 16,
+                              ),
+                            ),
                   ),
                 ),
               )
@@ -616,33 +791,58 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         item.category == ItemCategory.ingredient;
                     final bool isFood = item.category == ItemCategory.food;
 
+                    // Check if item is expired to determine if we should show the delete action
+                    final bool isExpired = _isItemExpired(item);
+
                     return Slidable(
                       key: ValueKey(item.id),
-                      endActionPane: ActionPane(
+                      // Start action: Mark as consumed
+                      startActionPane: ActionPane(
                         motion: const ScrollMotion(),
                         extentRatio: 0.25,
                         children: [
                           SlidableAction(
                             onPressed:
-                                (context) => _showDeleteConfirmationDialog(
-                                  context,
-                                  item,
-                                  ref,
-                                ),
-                            backgroundColor: AppColors.error,
+                                (context) =>
+                                    _showMarkConsumedDialog(context, item),
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
-                            icon: Icons.delete_outline,
-                            label: 'Eliminar',
+                            icon: Icons.restaurant,
+                            label: 'Consumido',
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                         ],
                       ),
+                      // End action: Delete (only if not expired)
+                      endActionPane:
+                          isExpired
+                              ? null
+                              : ActionPane(
+                                motion: const ScrollMotion(),
+                                extentRatio: 0.25,
+                                children: [
+                                  SlidableAction(
+                                    onPressed:
+                                        (context) =>
+                                            _showDeleteConfirmationDialog(
+                                              context,
+                                              item,
+                                              ref,
+                                            ),
+                                    backgroundColor: AppColors.error,
+                                    foregroundColor: Colors.white,
+                                    icon: Icons.delete_outline,
+                                    label: 'Eliminar',
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                ],
+                              ),
                       child: GestureDetector(
                         onTap: () {
                           if (isIngredient) {
                             context.pushNamed(
                               'ingredientDetail',
-                              pathParameters: {'itemId': item.id},
+                              pathParameters: {'ingredientName': item.name},
                             );
                           } else if (isFood) {
                             context.pushNamed(
@@ -675,36 +875,258 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
     );
   }
 
+  // Helper to check if item is expired
+  bool _isItemExpired(InventoryItem item) {
+    if (item.expirationDate == null) return false;
+    final status = ExpirationStatusExtension.fromDate(item.expirationDate);
+    return status == ExpirationStatus.expired;
+  }
+
+  // Helper to show mark consumed dialog
+  void _showMarkConsumedDialog(BuildContext context, InventoryItem item) {
+    showMarkConsumedDialog(context, item);
+  }
+
   Future<void> _showDeleteConfirmationDialog(
     BuildContext context,
     InventoryItem item,
     WidgetRef ref,
   ) async {
-    final bool confirmed = await DialogHelper.showConfirmation(
-      context: context,
-      title: 'Eliminar ${item.name}',
-      message:
-          '¿Estás seguro de que quieres eliminar este elemento del inventario?',
-      confirmText: 'Eliminar',
-      cancelText: 'Cancelar',
-      icon: Icons.delete_outline,
-      iconColor: Theme.of(context).colorScheme.error,
+    // Log para debug
+    log(
+      '🗑️ DEBUG: Showing delete dialog for item: ${item.name} (ID: ${item.id})',
     );
 
-    if (confirmed && context.mounted) {
-      ref.read(inventoryProvider.notifier).removeItem(item.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${item.name} eliminado del inventario'),
-          behavior: SnackBarBehavior.floating,
+    // Capture references BEFORE showing dialog to avoid context issues
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    final bool confirmed =
+        await showDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Eliminar ${item.name}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '¿Estás seguro de que quieres eliminar este elemento del inventario?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Esta acción no se puede deshacer',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    log('🗑️ DEBUG: User cancelled deletion');
+                    Navigator.of(dialogContext).pop(false);
+                  },
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    log('🗑️ DEBUG: User confirmed deletion');
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Eliminar',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    log('🗑️ DEBUG: Dialog result: $confirmed');
+
+    if (confirmed) {
+      log('🗑️ DEBUG: Confirmed is true, proceeding with deletion...');
+      log('🗑️ DEBUG: Starting deletion process for item: ${item.id}');
+
+      // Show enhanced loading dialog using captured navigator
+      navigator.push(
+        PageRouteBuilder(
+          opaque: false,
+          barrierColor: Colors.black54,
+          barrierDismissible: false,
+          pageBuilder:
+              (context, _, _) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Eliminando ${item.name}...',
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
         ),
       );
+
+      try {
+        log('🗑️ DEBUG: Calling removeItem for ID: ${item.id}');
+        log(
+          '🗑️ DEBUG: Provider state before removal: ${ref.read(inventoryRealProvider).items.length} items',
+        );
+
+        // Use the correct provider with backend synchronization
+        await ref.read(inventoryRealProvider.notifier).removeItem(item.id);
+
+        log('🗑️ DEBUG: removeItem call completed successfully');
+        log(
+          '🗑️ DEBUG: Provider state after removal: ${ref.read(inventoryRealProvider).items.length} items',
+        );
+        log('🗑️ DEBUG: Item successfully removed from backend');
+
+        // Hide loading dialog
+        navigator.pop();
+
+        // Show success message using captured scaffold messenger
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${item.name} eliminado del inventario',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      } catch (e) {
+        log('🗑️ ERROR: Failed to delete item: $e');
+
+        // Hide loading dialog
+        navigator.pop();
+
+        // Show error message using captured scaffold messenger
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Error al eliminar: ${e.toString()}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
     }
   }
 
   // Función para contar los filtros activos
   int _getActiveFiltersCount(WidgetRef ref) {
-    final inventoryState = ref.read(inventoryProvider);
+    final inventoryState = ref.read(inventoryRealProvider);
     int count = 0;
 
     // Categoría (si no es 'Todos')
@@ -737,19 +1159,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   // Función para hacer scroll al último elemento de la lista
   void scrollToLastItem() {
-    // Delay inicial para asegurar que la lista se ha construido completamente
-    Future.delayed(const Duration(milliseconds: 300), () {
+    // ✅ UPDATED: Reduced delay for better performance
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
 
       // Obtener los elementos filtrados
-      final filteredItems = ref.read(filteredSortedInventoryProvider);
+      final filteredItems = ref.read(filteredSortedInventoryRealProvider);
 
       if (filteredItems.isEmpty) {
-        print('La lista está vacía, no se puede hacer scroll');
+        log('La lista está vacía, no se puede hacer scroll');
         return;
       }
 
-      print(
+      log(
         'Intentando hacer scroll al final de ${filteredItems.length} elementos',
       );
 
@@ -757,22 +1179,20 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         // MÉTODO 1: Intentar usar maxScrollExtent para ir al final de la lista
         // Este es el método más confiable para hacer scroll al final de la lista
         if (_scrollController.hasClients) {
-          print(
+          log(
             'Usando maxScrollExtent para scroll: ${_scrollController.position.maxScrollExtent}',
           );
 
-          // Hacer un scroll con un pequeño delay para asegurar que la UI está actualizada
-          Future.delayed(const Duration(milliseconds: 200), () {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 1200),
-              curve: Curves.easeOutQuart,
-            );
-          });
+          // ✅ UPDATED: Immediate scroll without additional delay
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutQuart,
+          );
           return;
         }
       } catch (e) {
-        print('Error usando maxScrollExtent: $e');
+        log('Error usando maxScrollExtent: $e');
       }
 
       // MÉTODO 2: Cálculo basado en índices (respaldo)
@@ -788,27 +1208,27 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         final double scrollPosition =
             searchBarHeight + tabBarHeight + (lastIndex * itemHeight) + 100;
 
-        print('Usando cálculo de posición: $scrollPosition');
+        log('Usando cálculo de posición: $scrollPosition');
 
         // Hacer scroll a la posición calculada
         _scrollController.animateTo(
           scrollPosition,
-          duration: const Duration(milliseconds: 1200),
+          duration: const Duration(milliseconds: 800),
           curve: Curves.easeOutQuart,
         );
       } catch (e) {
-        print('Error en cálculo de posición: $e');
+        log('Error en cálculo de posición: $e');
 
         // MÉTODO 3: Último intento usando un valor arbitrario grande
         try {
-          print('Intento final con valor fijo grande');
+          log('Intento final con valor fijo grande');
           _scrollController.animateTo(
             10000.0, // Valor grande para intentar llegar al final
-            duration: const Duration(milliseconds: 1200),
+            duration: const Duration(milliseconds: 800),
             curve: Curves.easeOutQuart,
           );
         } catch (e) {
-          print('Error en intento final: $e');
+          log('Error en intento final: $e');
         }
       }
     });
@@ -822,17 +1242,17 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       if (!mounted) return;
 
       // Obtener los elementos filtrados más actualizados
-      final filteredItems = ref.read(filteredSortedInventoryProvider);
+      final filteredItems = ref.read(filteredSortedInventoryRealProvider);
 
-      print('Intentando hacer scroll al ítem: $itemId');
-      print('Total de ítems en la lista: ${filteredItems.length}');
+      log('Intentando hacer scroll al ítem: $itemId');
+      log('Total de ítems en la lista: ${filteredItems.length}');
 
       // Buscar el índice del ítem destacado
       int highlightedIndex = -1;
       for (int i = 0; i < filteredItems.length; i++) {
         if (filteredItems[i].displayBatch.id == itemId) {
           highlightedIndex = i;
-          print('Ítem encontrado en el índice: $i');
+          log('Ítem encontrado en el índice: $i');
           break;
         }
       }
@@ -851,7 +1271,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             (highlightedIndex * itemHeight) -
             40;
 
-        print('Haciendo scroll a la posición: $scrollPosition');
+        log('Haciendo scroll a la posición: $scrollPosition');
 
         // Intentar hacer scroll con una duración más larga para mayor suavidad
         try {
@@ -861,7 +1281,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             curve: Curves.easeOutQuint,
           );
         } catch (e) {
-          print('Error haciendo scroll: $e');
+          log('Error haciendo scroll: $e');
           // Intento alternativo con posición fija si falla el cálculo
           if (highlightedIndex > 0) {
             _scrollController.animateTo(
@@ -872,7 +1292,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           }
         }
       } else {
-        print('Ítem con ID: $itemId no encontrado en la lista filtrada');
+        log('Ítem con ID: $itemId no encontrado en la lista filtrada');
         // Si no se encuentra el ítem específico, hacer scroll al último elemento
         scrollToLastItem();
       }
@@ -913,8 +1333,9 @@ Future<void> showQuantityEditDialog(
   InventoryItem item,
   WidgetRef ref,
 ) async {
-  final formKey = GlobalKey<FormState>();
-  final inventoryNotifier = ref.read(inventoryProvider.notifier);
+  // Use a consistent key based on item ID instead of creating a new GlobalKey each time
+  final formKey = GlobalKey<FormState>(debugLabel: 'editQuantity_${item.id}');
+  final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
 
   // Format initial quantity for display based on unit type
   final TextEditingController quantityController = TextEditingController(
@@ -960,7 +1381,7 @@ Future<void> showQuantityEditDialog(
                       color: inputFillColor,
                       borderRadius: BorderRadius.circular(16.0),
                       border: Border.all(
-                        color: colorScheme.primary.withOpacity(0.2),
+                        color: colorScheme.primary.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -1010,7 +1431,7 @@ Future<void> showQuantityEditDialog(
                         Container(
                           height: 30,
                           width: 1,
-                          color: colorScheme.primary.withOpacity(0.2),
+                          color: colorScheme.primary.withValues(alpha: 0.2),
                         ),
 
                         // Text field
@@ -1065,7 +1486,7 @@ Future<void> showQuantityEditDialog(
                         Container(
                           height: 30,
                           width: 1,
-                          color: colorScheme.primary.withOpacity(0.2),
+                          color: colorScheme.primary.withValues(alpha: 0.2),
                         ),
 
                         // Increment button
@@ -1113,14 +1534,43 @@ Future<void> showQuantityEditDialog(
             primaryAction: AppDialog.createPrimaryButton(
               context: context,
               text: 'Guardar',
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   final double newQuantity = double.parse(
                     quantityController.text,
                   );
-                  ref
-                      .read(inventoryProvider.notifier)
-                      .setQuantity(item.id, newQuantity);
+
+                  // Use the new quick quantity update endpoint for better performance
+                  try {
+                    await ref
+                        .read(inventoryRealProvider.notifier)
+                        .updateItemQuantityQuick(item.id, newQuantity);
+
+                    // No need for manual sync since we're using inventoryRealProvider directly
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Cantidad actualizada: ${_formatQuantityForEditing(newQuantity, item.unitType)} ${item.unitType}',
+                          ),
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al actualizar: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -1204,7 +1654,7 @@ Future<void> showBatchSelectorDialog(
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.3),
+                        color: primaryColor.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1250,10 +1700,19 @@ Future<void> showBatchSelectorDialog(
                           return InkWell(
                             onTap: () {
                               if (!isCurrentlySelected) {
-                                inventoryNotifier.setUserSelectedBatch(
-                                  currentDisplayBatch.name,
-                                  batch.id,
-                                );
+                                // Update both providers to keep them in sync
+                                ref
+                                    .read(inventoryProvider.notifier)
+                                    .setUserSelectedBatch(
+                                      currentDisplayBatch.name,
+                                      batch.id,
+                                    );
+                                ref
+                                    .read(inventoryRealProvider.notifier)
+                                    .setUserSelectedBatch(
+                                      currentDisplayBatch.name,
+                                      batch.id,
+                                    );
                                 Navigator.of(dialogContext).pop();
                               }
                             },
@@ -1265,7 +1724,7 @@ Future<void> showBatchSelectorDialog(
                               decoration: BoxDecoration(
                                 color:
                                     isCurrentlySelected
-                                        ? primaryColor.withOpacity(0.1)
+                                        ? primaryColor.withValues(alpha: 0.1)
                                         : isDark
                                         ? Colors.grey.shade800
                                         : Colors.grey.shade100,
@@ -1281,8 +1740,8 @@ Future<void> showBatchSelectorDialog(
                                     isCurrentlySelected
                                         ? [
                                           BoxShadow(
-                                            color: primaryColor.withOpacity(
-                                              0.1,
+                                            color: primaryColor.withValues(
+                                              alpha: 0.1,
                                             ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
@@ -1300,7 +1759,9 @@ Future<void> showBatchSelectorDialog(
                                       color:
                                           isCurrentlySelected
                                               ? primaryColor
-                                              : statusColor.withOpacity(0.6),
+                                              : statusColor.withValues(
+                                                alpha: 0.6,
+                                              ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),

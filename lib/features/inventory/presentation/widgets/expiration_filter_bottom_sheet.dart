@@ -77,8 +77,9 @@ class _ExpirationFilterBottomSheetState
               itemBuilder: (context, index) {
                 final status = availableStatuses[index];
                 // Don't show the 'all' option in the multi-select sheet
-                if (status == ExpirationStatus.all)
+                if (status == ExpirationStatus.all) {
                   return const SizedBox.shrink();
+                }
 
                 final isSelected = _selectedStatuses.contains(status);
                 return CheckboxListTile(

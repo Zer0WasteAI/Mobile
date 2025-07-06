@@ -2,195 +2,278 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
-import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
+import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
-class WelcomeHeader extends StatelessWidget {
+class WelcomeHeader extends ConsumerWidget {
   const WelcomeHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Get colors from theme
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color mainTextColor =
-        isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final Color secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
-    final Color primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Avatar y texto a la izquierda
-        Expanded(
-          child: Row(
-            children: [
-              // Avatar más grande
-              const UserAvatar(size: 52),
-              const SizedBox(width: 16),
-              // Mensaje de bienvenida
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    // Define colors based on theme
+    final Color backgroundColor =
+        isDark ? AppColors.darkBackground : const Color(0xFFFAF9F6);
+    final Color textColor =
+        isDark ? AppColors.darkMainText : const Color(0xFF3A3A3A);
+    final Color secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : const Color(0xFF70605A);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: authState.when(
+          data: (user) {
+            if (user == null) {
+              return _buildLoadingState(textColor, secondaryTextColor);
+            }
+
+            final displayName = user.displayName ?? 'Usuario';
+            final firstName = displayName.split(' ').first;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Hola, Rafael 👋',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: mainTextColor,
-                        height: 1.2,
+                    // Saludo personalizado
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _getGreeting(),
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: secondaryTextColor,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            firstName,
+                            style: GoogleFonts.inter(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '¿Listo para salvar alimentos hoy?',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: secondaryTextColor,
-                        height: 1.2,
+
+                    // Avatar del usuario
+                    InkWell(
+                      onTap: () {
+                        // Navigate to profile screen
+                        context.go('/profile');
+                      },
+                      borderRadius: BorderRadius.circular(
+                        24,
+                      ), // Circular ripple effect
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              isDark
+                                  ? AppColors.darkPrimary.withValues(alpha: 0.2)
+                                  : AppColors.lightPrimary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                          border: Border.all(
+                            color:
+                                isDark
+                                    ? AppColors.darkPrimary
+                                    : AppColors.lightPrimary,
+                            width: 2,
+                          ),
+                        ),
+                        child:
+                            user.photoURL != null
+                                ? ClipOval(
+                                  child: Image.network(
+                                    user.photoURL!,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.person,
+                                        color:
+                                            isDark
+                                                ? AppColors.darkPrimary
+                                                : AppColors.lightPrimary,
+                                        size: 24,
+                                      );
+                                    },
+                                  ),
+                                )
+                                : Icon(
+                                  Icons.person,
+                                  color:
+                                      isDark
+                                          ? AppColors.darkPrimary
+                                          : AppColors.lightPrimary,
+                                  size: 24,
+                                ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        // EcoCoins a la derecha
-        const EcoCoinBadge(),
-      ],
-    );
-  }
-}
 
-class UserAvatar extends StatelessWidget {
-  final double size;
+                const SizedBox(height: 20),
 
-  const UserAvatar({super.key, this.size = 38});
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color backgroundColor = primaryColor.withOpacity(0.15);
-    final Color textColor = primaryColor;
-
-    return GestureDetector(
-      onTap: () {
-        // Navegar al perfil
-        context.go('/profile');
-      },
-      child: Stack(
-        children: [
-          // Avatar principal
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: primaryColor, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Hero(
-              tag: 'user-avatar',
-              child: CircleAvatar(
-                backgroundColor: backgroundColor,
-                child: Text(
-                  'R',
-                  style: GoogleFonts.inter(
-                    color: textColor,
-                    fontSize: size * 0.45,
-                    fontWeight: FontWeight.bold,
+                // Mensaje motivacional
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color:
+                        isDark
+                            ? AppColors.darkPrimary.withValues(alpha: 0.1)
+                            : AppColors.lightPrimary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color:
+                          isDark
+                              ? AppColors.darkPrimary.withValues(alpha: 0.3)
+                              : AppColors.lightPrimary.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.eco,
+                        color:
+                            isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '¡Cada acción cuenta para un planeta más sostenible!',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: textColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
-          ),
-          // Badge pequeño que indique que es clicable
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: size * 0.35,
-              height: size * 0.35,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDark ? Colors.black : Colors.white,
-                  width: 1.5,
-                ),
-              ),
-              child: Icon(Icons.person, color: Colors.white, size: size * 0.2),
-            ),
-          ),
-        ],
+              ],
+            );
+          },
+          loading: () => _buildLoadingState(textColor, secondaryTextColor),
+          error: (error, stackTrace) => _buildErrorState(textColor),
+        ),
       ),
     );
   }
-}
 
-class EcoCoinBadge extends ConsumerWidget {
-  const EcoCoinBadge({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Get colors from theme
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final Color mainTextColor =
-        isDark ? AppColors.darkMainText : AppColors.lightMainText;
-
-    final coins = ref.watch(ecoCoinsProvider);
-
-    return GestureDetector(
-      onTap: () {
-        // Navegar al perfil
-        context.go('/profile');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: primaryColor.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildLoadingState(Color textColor, Color secondaryTextColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset(
-              'assets/icons/home/eco_coin.png',
-              width: 18,
-              height: 18,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 16,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: secondaryTextColor.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 28,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: textColor.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              '$coins',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: secondaryTextColor.withValues(alpha: 0.3),
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 20),
+        Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: secondaryTextColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildErrorState(Color textColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Error al cargar',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: textColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'No se pudo cargar la información del usuario',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: textColor.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Buenos días';
+    } else if (hour < 18) {
+      return 'Buenas tardes';
+    } else {
+      return 'Buenas noches';
+    }
   }
 }

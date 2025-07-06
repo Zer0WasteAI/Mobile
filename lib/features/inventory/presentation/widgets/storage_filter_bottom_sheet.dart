@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Assuming AppColors exists
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 
 class StorageFilterBottomSheet extends StatefulWidget {

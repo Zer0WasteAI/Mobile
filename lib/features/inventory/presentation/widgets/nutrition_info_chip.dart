@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// A reusable chip widget for displaying nutrition information
+/// with an icon and label in a styled container
 class NutritionInfoChip extends StatelessWidget {
   final IconData icon;
   final String label;

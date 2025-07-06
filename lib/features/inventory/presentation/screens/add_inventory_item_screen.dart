@@ -1,21 +1,23 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
+
+import 'package:image_picker/image_picker.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:flutter/services.dart'; // Import for InputFormatters
+import 'package:zer0_waste_ai/core/services/api_service.dart';
+
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_state.dart'; // Importar para InventorySortCriteria
 import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart'; // Importar ExpirationStatus
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 
 class AddInventoryItemScreen extends ConsumerStatefulWidget {
-  const AddInventoryItemScreen({super.key});
+  final List<Map<String, dynamic>>? prefilledItems;
+
+  const AddInventoryItemScreen({super.key, this.prefilledItems});
 
   // Define route name and path for GoRouter
   static const String routeName = 'addInventoryItem';
@@ -30,100 +32,57 @@ class _AddInventoryItemScreenState
     extends ConsumerState<AddInventoryItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _emojiController = TextEditingController();
+  final _tipsController = TextEditingController();
+
   double _quantity = 1.0;
   DateTime? _expirationDate;
   StorageType? _selectedStorageType;
   ItemCategory _selectedCategory = ItemCategory.food; // Default to Food
   String? _selectedUnitType; // Initially null
-  final _uuid = const Uuid();
 
-  // Lista de emojis de comida predefinidos
-  final List<String> _foodEmojis = [
-    '🍎',
-    '🍐',
-    '🍊',
-    '🍋',
-    '🍌',
-    '🍉',
-    '🍇',
-    '🍓',
-    '🫐',
-    '🍈',
-    '🍒',
-    '🍑',
-    '🥭',
-    '🍍',
-    '🥥',
-    '🥝',
-    '🍅',
-    '🥑',
-    '🥦',
-    '🥬',
-    '🥒',
-    '🌶️',
-    '🌽',
-    '🥕',
-    '🧅',
-    '🧄',
-    '🥔',
-    '🍠',
-    '🥐',
-    '🥯',
-    '🍞',
-    '🥖',
-    '🥨',
-    '🧀',
-    '🥚',
-    '🍳',
-    '🧈',
-    '🥞',
-    '🧇',
-    '🥓',
-    '🍔',
-    '🍟',
-    '🍕',
-    '🌭',
-    '🥪',
-    '🌮',
-    '🌯',
-    '🥙',
-    '🧆',
-    '🥘',
-    '🍲',
-    '🥣',
-    '🥗',
-    '🍿',
-    '🧈',
-    '🧂',
-    '🥫',
-    '🍱',
-    '🍘',
-    '🍙',
-    '🍚',
-    '🍛',
-    '🍜',
-    '🍝',
-    '🍣',
-    '🍤',
-    '🍥',
-    '🥮',
-    '🍢',
-    '🧁',
-    '🍰',
-    '🎂',
-    '🍭',
-    '🍬',
-    '🍫',
-    '🍪',
-    '🥛',
-    '☕',
-    '🧃',
-    '🥤',
-  ];
+  // Image handling
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isImageUploading = false;
+  bool _isSubmitting = false;
 
   // Define available units
   final List<String> _availableUnits = ['unidades', 'kg', 'g', 'lt', 'ml'];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePrefilledData();
+  }
+
+  void _initializePrefilledData() {
+    if (widget.prefilledItems != null && widget.prefilledItems!.isNotEmpty) {
+      // Use the first item for pre-filling (in case multiple items were scanned)
+      final firstItem = widget.prefilledItems!.first;
+
+      // Pre-fill the name field
+      if (firstItem['name'] != null) {
+        _nameController.text = firstItem['name'].toString();
+      }
+
+      // Pre-fill category if available
+      if (firstItem['category'] != null) {
+        final categoryString = firstItem['category'].toString().toLowerCase();
+        if (categoryString.contains('food') ||
+            categoryString.contains('alimento')) {
+          _selectedCategory = ItemCategory.food;
+        } else if (categoryString.contains('ingredient') ||
+            categoryString.contains('ingrediente')) {
+          _selectedCategory = ItemCategory.ingredient;
+        }
+      }
+
+      // Set default values for scanned items
+      _quantity = 1.0;
+      _selectedUnitType = 'unidades'; // Default unit for scanned items
+      _selectedStorageType = StorageType.pantry; // Default storage
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,12 +112,13 @@ class _AddInventoryItemScreenState
     final Color chipUnselectedTextColor = secondaryTextColor;
     final Color chipUnselectedBorderColor =
         isDark ? AppColors.darkOutline : Colors.grey.shade300;
+    // ignore: unused_local_variable
     final Color snackbarColor = primaryColor;
     // ------------------------- //
 
     // --- Define Consistent Hint Style --- //
     final TextStyle hintTextStyle = GoogleFonts.inter(
-      color: secondaryTextColor.withOpacity(0.8),
+      color: secondaryTextColor.withValues(alpha: 0.8),
       fontSize:
           textTheme.bodyMedium?.fontSize ??
           14, // Use theme body size or fallback
@@ -227,6 +187,42 @@ class _AddInventoryItemScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- Pre-filled Data Banner ---
+              if (widget.prefilledItems != null &&
+                  widget.prefilledItems!.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: primaryColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.qr_code_scanner,
+                        color: primaryColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Datos pre-llenados desde escaneo',
+                          style: GoogleFonts.inter(
+                            color: primaryColor,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // --- Nombre del Alimento ---
               Text(
                 'Nombre del Alimento',
@@ -251,6 +247,16 @@ class _AddInventoryItemScreenState
                   if (value == null || value.trim().isEmpty) {
                     return 'Por favor ingresa un nombre';
                   }
+                  if (value.trim().length < 2) {
+                    return 'El nombre debe tener al menos 2 caracteres';
+                  }
+                  if (value.trim().length > 50) {
+                    return 'El nombre no puede exceder 50 caracteres';
+                  }
+                  // Validar que no contenga solo números
+                  if (RegExp(r'^\d+$').hasMatch(value.trim())) {
+                    return 'El nombre no puede ser solo números';
+                  }
                   return null;
                 },
                 textCapitalization: TextCapitalization.sentences,
@@ -258,9 +264,103 @@ class _AddInventoryItemScreenState
               ),
               const SizedBox(height: 20),
 
-              // --- Emoji / Icono ---
+              // --- Imagen del Producto ---
               Text(
-                'Emoji o Ícono (Opcional)',
+                'Imagen del Producto',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: mainTextColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _showImageSourceDialog,
+                child: Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color:
+                          _selectedImage != null
+                              ? primaryColor
+                              : Colors.grey.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child:
+                      _selectedImage != null
+                          ? Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImage = null;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                          : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo,
+                                size: 40,
+                                color: primaryColor,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Toca para agregar imagen',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                              Text(
+                                'Galería o Cámara',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: secondaryTextColor.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // --- Tips/Consejos ---
+              Text(
+                'Tips/Consejos (Opcional)',
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: mainTextColor,
@@ -268,33 +368,26 @@ class _AddInventoryItemScreenState
               ),
               const SizedBox(height: 8),
               TextFormField(
-                controller: _emojiController,
-                style: TextStyle(
-                  color: mainTextColor,
-                  fontSize: 22, // Emoji más grande
-                ),
+                controller: _tipsController,
+                style: TextStyle(color: mainTextColor),
+                maxLines: 3,
+                maxLength: 200,
                 decoration: inputDecorationHelper(
-                  hintText:
-                      _emojiController.text.isEmpty ? 'Seleccionar emoji' : '',
+                  hintText: 'Ej: Mantener en lugar fresco y seco...',
+                  icon: Icons.lightbulb_outline,
                   hintStyle: hintTextStyle,
-                  prefixIcon: IconButton(
-                    icon: Icon(
-                      Icons.emoji_emotions_outlined,
-                      color: primaryColor,
-                    ),
-                    tooltip: 'Seleccionar emoji',
-                    onPressed: _showEmojiSelector,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.auto_awesome, color: primaryColor),
-                    tooltip: 'Generar con IA',
-                    onPressed: _showAIDialog,
-                  ),
                 ),
-                textAlign: TextAlign.center,
-                readOnly: true, // Deshabilitar entrada directa
-                onTap:
-                    _showEmojiSelector, // También muestra el selector al hacer clic en el campo
+                validator: (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (value.trim().length < 5) {
+                      return 'Los tips deben tener al menos 5 caracteres';
+                    }
+                    if (value.trim().length > 200) {
+                      return 'Los tips no pueden exceder 200 caracteres';
+                    }
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
 
@@ -439,6 +532,25 @@ class _AddInventoryItemScreenState
                   if (_expirationDate == null) {
                     return 'Por favor selecciona una fecha de expiración';
                   }
+                  // Validar que la fecha no sea en el pasado
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  final selectedDate = DateTime(
+                    _expirationDate!.year,
+                    _expirationDate!.month,
+                    _expirationDate!.day,
+                  );
+
+                  if (selectedDate.isBefore(today)) {
+                    return 'La fecha de expiración no puede ser en el pasado';
+                  }
+
+                  // Validar que no sea más de 5 años en el futuro
+                  final maxDate = today.add(const Duration(days: 365 * 5));
+                  if (selectedDate.isAfter(maxDate)) {
+                    return 'La fecha no puede ser más de 5 años en el futuro';
+                  }
+
                   return null;
                 },
               ),
@@ -554,24 +666,46 @@ class _AddInventoryItemScreenState
 
               // --- Botón Guardar ---
               ElevatedButton.icon(
-                icon: Icon(
-                  Icons.save_outlined,
-                  size: 20,
-                  color: onPrimaryColor,
+                icon:
+                    _isSubmitting
+                        ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              onPrimaryColor,
+                            ),
+                          ),
+                        )
+                        : Icon(
+                          Icons.save_outlined,
+                          size: 20,
+                          color: onPrimaryColor,
+                        ),
+                label: Text(
+                  _isSubmitting
+                      ? (_isImageUploading
+                          ? 'Subiendo imagen...'
+                          : 'Guardando...')
+                      : 'Agregar al Inventario',
                 ),
-                label: Text('Agregar al Inventario'),
                 onPressed:
-                    (_nameController.text.trim().isNotEmpty &&
+                    _isSubmitting
+                        ? null
+                        : (_nameController.text.trim().isNotEmpty &&
                             _selectedStorageType != null &&
                             _selectedUnitType != null &&
                             _expirationDate != null)
-                        ? _saveItem
+                        ? () async => await _saveItem()
                         : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: onPrimaryColor,
-                  disabledBackgroundColor: primaryColor.withOpacity(0.5),
-                  disabledForegroundColor: onPrimaryColor.withOpacity(0.7),
+                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.5),
+                  disabledForegroundColor: onPrimaryColor.withValues(
+                    alpha: 0.7,
+                  ),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24.0),
@@ -589,102 +723,119 @@ class _AddInventoryItemScreenState
     );
   }
 
-  // Mostrar el selector de emojis
-  void _showEmojiSelector() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final availableHeight = MediaQuery.of(context).size.height * 0.7;
-        return Dialog(
-          backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Selecciona un emoji',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    constraints: BoxConstraints(
-                      maxHeight: availableHeight * 0.6,
-                    ),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const ScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 6,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                          ),
-                      itemCount: _foodEmojis.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _emojiController.text = _foodEmojis[index];
-                            });
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outline.withOpacity(0.3),
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _foodEmojis[index],
-                                style: const TextStyle(fontSize: 24),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Cancelar',
-                      style: GoogleFonts.inter(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   // Add methods back
   @override
   void dispose() {
     _nameController.dispose();
-    _emojiController.dispose();
+    _tipsController.dispose();
     super.dispose();
+  }
+
+  // Image handling methods
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Seleccionar imagen',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildImageSourceOption(
+                      context,
+                      'Cámara',
+                      Icons.camera_alt,
+                      () => _pickImage(ImageSource.camera),
+                    ),
+                    _buildImageSourceOption(
+                      context,
+                      'Galería',
+                      Icons.photo_library,
+                      () => _pickImage(ImageSource.gallery),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+    );
+  }
+
+  Widget _buildImageSourceOption(
+    BuildContext context,
+    String title,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pop();
+        onTap();
+      },
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 30, color: Theme.of(context).primaryColor),
+          ),
+          const SizedBox(height: 8),
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al seleccionar imagen: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -693,7 +844,6 @@ class _AddInventoryItemScreenState
       initialDate: _expirationDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-      // TODO: Add theme for DatePicker if needed
     );
     if (picked != null && picked != _expirationDate) {
       setState(() {
@@ -702,66 +852,170 @@ class _AddInventoryItemScreenState
     }
   }
 
-  void _saveItem() {
+  Future<void> _saveItem() async {
     if (_formKey.currentState!.validate()) {
-      // Generar un ID único para el nuevo ítem
-      final String newItemId = _uuid.v4();
+      // Validaciones adicionales antes de enviar
+      if (_quantity <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La cantidad debe ser mayor a 0'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-      final newItem = InventoryItem(
-        id: newItemId,
-        name: _nameController.text.trim(),
-        image:
-            _emojiController.text.trim().isEmpty
-                ? '❓'
-                : _emojiController.text.trim(),
-        quantity: _quantity,
-        unitType: _selectedUnitType!,
-        expirationDate: _expirationDate,
-        storageType: _selectedStorageType!,
-        category: _selectedCategory,
-        addedDate: DateTime.now(),
-      );
+      if (_selectedUnitType != null) {
+        final minQuantity = _getMinimumQuantity(_selectedUnitType!);
+        if (_quantity < minQuantity) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'La cantidad mínima para ${_selectedUnitType!} es $minQuantity',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
 
-      // Añadir el nuevo ítem al inventario
-      ref.read(inventoryProvider.notifier).addItems([newItem]);
+      setState(() {
+        _isSubmitting = true;
+      });
 
-      // Limpiar los filtros para asegurar que el elemento nuevo sea visible
-      final inventoryNotifier = ref.read(inventoryProvider.notifier);
-      inventoryNotifier.setSearchQuery(''); // Limpiar búsqueda
-      inventoryNotifier.setCategoryFilter(
-        ItemCategory.all,
-      ); // Mostrar todas las categorías
-      inventoryNotifier.setStorageFilter(
-        {},
-      ); // Limpiar filtros de almacenamiento
-      inventoryNotifier.setExpirationStatusFilter(
-        ExpirationStatus.all,
-      ); // Mostrar todos los estados
+      try {
+        String? uploadedImagePath;
 
-      // Establecer ordenación por fecha de adición (descendente, para que los nuevos aparezcan primero)
-      inventoryNotifier.setSortCriteria(InventorySortCriteria.addedDate);
-      inventoryNotifier.setSortDirection(
-        false,
-      ); // false = descendente (más reciente primero)
+        // Step 1: Upload image if selected
+        if (_selectedImage != null) {
+          setState(() {
+            _isImageUploading = true;
+          });
 
-      // Use theme-aware color for SnackBar
-      final bool isDark = Theme.of(context).brightness == Brightness.dark;
-      final Color snackbarColor =
-          isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+          try {
+            final uploadResponse = await ApiService.instance.uploadImage(
+              imageFile: _selectedImage!,
+              imageType:
+                  _selectedCategory == ItemCategory.food
+                      ? 'food'
+                      : 'ingredient',
+              itemName: _nameController.text.trim(),
+            );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${newItem.name} agregado al inventario'),
-          backgroundColor: snackbarColor,
-        ),
-      );
+            uploadedImagePath = uploadResponse['image_path'] as String?;
+            log('✅ Image uploaded successfully: $uploadedImagePath');
+          } catch (e) {
+            log('❌ Failed to upload image: $e');
+            // Continue without image if upload fails
+          } finally {
+            setState(() {
+              _isImageUploading = false;
+            });
+          }
+        }
 
-      // Salir de la pantalla y volver al inventario
-      if (mounted) {
-        print('Elemento añadido con ID: $newItemId');
-        Navigator.of(context).pop();
+        // Step 2: Check for duplicate names (optional warning)
+        final existingItems = ref.read(inventoryRealProvider).items;
+        final itemName = _nameController.text.trim().toLowerCase();
+        final hasDuplicate = existingItems.any(
+          (item) => item.name.toLowerCase() == itemName,
+        );
+
+        if (hasDuplicate) {
+          final shouldContinue = await _showDuplicateWarning();
+          if (!shouldContinue) {
+            setState(() {
+              _isSubmitting = false;
+            });
+            return;
+          }
+        }
+
+        // Step 3: Create item data for backend
+        final itemData = {
+          'name': _nameController.text.trim(),
+          'quantity': _quantity,
+          'type_unit': _selectedUnitType!,
+          'storage_type': _getStorageTypeForAPI(_selectedStorageType!),
+          'expiration_time': _getExpirationDays(),
+          'time_unit': 'Días',
+          'tips':
+              _tipsController.text.trim().isEmpty
+                  ? null
+                  : _tipsController.text.trim(),
+        };
+
+        // Step 3: Add item to backend inventory
+        final response = await ref
+            .read(inventoryRealProvider.notifier)
+            .addSingleItemToInventory(itemData);
+
+        log('✅ Item added to backend successfully: $response');
+
+        // Step 4: Refresh inventory to show new item
+        await ref.read(inventoryRealProvider.notifier).refreshInventory();
+
+        // Step 5: Success feedback
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${_nameController.text.trim()} agregado al inventario',
+              ),
+              backgroundColor: Theme.of(context).primaryColor,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        log('❌ Failed to save item: $e');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al guardar: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
       }
     }
+  }
+
+  // Helper methods for backend integration
+  String _getStorageTypeForAPI(StorageType storageType) {
+    switch (storageType) {
+      case StorageType.refrigerated:
+        return 'Refrigerador';
+      case StorageType.frozen:
+        return 'Congelador';
+      case StorageType.pantry:
+      case StorageType.dry:
+      case StorageType.cellar:
+      case StorageType.ambient:
+      case StorageType.sunlight:
+      case StorageType.wineCellar:
+      case StorageType.bulk:
+      case StorageType.fermentation:
+        return 'Despensa';
+    }
+  }
+
+  int _getExpirationDays() {
+    if (_expirationDate == null) return 7; // Default
+    final now = DateTime.now();
+    final difference = _expirationDate!.difference(now).inDays;
+    return difference > 0 ? difference : 1; // Minimum 1 day
   }
 
   // Helper methods for quantity logic (copied from other screens)
@@ -807,29 +1061,28 @@ class _AddInventoryItemScreenState
     // Implementation of _updateQuantityController method
   }
 
-  // --- Dialog for AI Confirmation ---
-  Future<void> _showAIDialog() async {
-    final bool confirmed = await DialogHelper.showConfirmation(
-      context: context,
-      title: 'Generar con IA',
-      message: '¿Deseas que la IA sugiera un emoji o icono para este alimento?',
-      confirmText: 'Generar',
-      cancelText: 'Cancelar',
-      icon: Icons.auto_awesome,
-      iconColor: Theme.of(context).colorScheme.primary,
-    );
-
-    if (confirmed) {
-      // TODO: Implementar generación de emoji/icono con IA
-      print(
-        'AI Generation triggered! Esta funcionalidad está pendiente de implementación.',
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Funcionalidad de IA pendiente de implementación.'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-      );
-    }
+  Future<bool> _showDuplicateWarning() async {
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Elemento Similar Encontrado'),
+                content: Text(
+                  'Ya existe un elemento con el nombre "${_nameController.text.trim()}" en tu inventario. '
+                  '¿Deseas continuar agregando este elemento?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Continuar'),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
   }
 }

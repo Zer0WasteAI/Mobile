@@ -1,15 +1,53 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // Reutilizamos el mismo enum y provider del selector original
 enum CookingLevel { beginner, intermediate, advanced }
 
+// Extension para convertir enum a string para almacenamiento
+extension CookingLevelExtension on CookingLevel {
+  String toStorageString() {
+    switch (this) {
+      case CookingLevel.beginner:
+        return 'beginner';
+      case CookingLevel.intermediate:
+        return 'intermediate';
+      case CookingLevel.advanced:
+        return 'advanced';
+    }
+  }
+
+  static CookingLevel fromStorageString(String? value) {
+    switch (value) {
+      case 'beginner':
+        return CookingLevel.beginner;
+      case 'intermediate':
+        return CookingLevel.intermediate;
+      case 'advanced':
+        return CookingLevel.advanced;
+      default:
+        return CookingLevel.beginner; // Default value
+    }
+  }
+}
+
 final selectedCookingLevelProvider =
     StateNotifierProvider<SelectedCookingLevelNotifier, CookingLevel?>((ref) {
-      // TODO: Load saved preference if available (e.g., from SharedPreferences)
-      return SelectedCookingLevelNotifier(null); // Start with nothing selected
+      // Inicializar con el nivel del usuario, si está disponible
+      final user = ref.read(authStateProvider).value;
+      final String? storedLevel = user?.prefs.cookingLevel;
+      if (storedLevel != null) {
+        return SelectedCookingLevelNotifier(
+          CookingLevelExtension.fromStorageString(storedLevel),
+        );
+      }
+      return SelectedCookingLevelNotifier(null);
     });
 
 class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
@@ -17,7 +55,6 @@ class SelectedCookingLevelNotifier extends StateNotifier<CookingLevel?> {
 
   void selectLevel(CookingLevel level) {
     state = level;
-    // TODO: Save selected preference (e.g., to SharedPreferences)
   }
 }
 
@@ -31,6 +68,8 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLevel = ref.watch(selectedCookingLevelProvider);
     final notifier = ref.read(selectedCookingLevelProvider.notifier);
+    final authRepository = ref.read(authRepositoryProvider);
+    final authController = ref.read(authControllerProvider.notifier);
 
     final colorScheme = Theme.of(context).colorScheme;
     const cardRadius = Radius.circular(16.0);
@@ -89,7 +128,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -109,7 +148,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -128,7 +167,7 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                       selectedColor: colorScheme.primary,
                       unselectedBorderColor: colorScheme.outlineVariant,
                       selectedBackgroundColor: colorScheme.primaryContainer
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       unselectedBackgroundColor: colorScheme.surface,
                       textColor: colorScheme.onSurface,
                       secondaryTextColor: colorScheme.onSurfaceVariant,
@@ -147,20 +186,60 @@ class ProfileCookingLevelSelectorScreen extends ConsumerWidget {
                   onPressed:
                       selectedLevel == null
                           ? null
-                          : () {
-                            // Guardar y volver al perfil
-                            print('Nivel seleccionado: $selectedLevel');
-                            // TODO: Implementar lógica para guardar el nivel de cocina
-                            context.pop(); // Volver al perfil
+                          : () async {
+                            // Mostrar indicador de carga
+                            if (context.mounted) {
+                              showLoadingSnackBar(
+                                context,
+                                message: 'Guardando nivel de cocina...',
+                              );
+                            }
+
+                            try {
+                              // Guardar en Firestore
+                              final levelString =
+                                  selectedLevel.toStorageString();
+                              log('Guardando nivel de cocina: $levelString');
+
+                              await authRepository.saveUserCookingLevel(
+                                levelString,
+                              );
+
+                              // Actualizar datos del usuario en memoria
+                              await authController.refreshUserFromFirestore();
+
+                              if (context.mounted) {
+                                // Mostrar mensaje de éxito
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Nivel de cocina actualizado',
+                                    ),
+                                    backgroundColor: colorScheme.primary,
+                                  ),
+                                );
+                                // Volver al perfil
+                                context.pop();
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al guardar: $e'),
+                                    backgroundColor: colorScheme.error,
+                                  ),
+                                );
+                              }
+                            }
                           },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
-                    disabledBackgroundColor: colorScheme.primary.withOpacity(
-                      0.5,
+                    disabledBackgroundColor: colorScheme.primary.withValues(
+                      alpha: 0.5,
                     ),
-                    disabledForegroundColor: colorScheme.onPrimary.withOpacity(
-                      0.7,
+                    disabledForegroundColor: colorScheme.onPrimary.withValues(
+                      alpha: 0.7,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -241,7 +320,7 @@ class _CookingLevelCard extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: selectedColor.withOpacity(0.1),
+                  color: selectedColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ClipRRect(

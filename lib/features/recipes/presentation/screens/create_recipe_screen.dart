@@ -1,9 +1,12 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_backend_provider.dart';
 
 class CreateRecipeScreen extends ConsumerStatefulWidget {
   const CreateRecipeScreen({super.key});
@@ -39,7 +42,8 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
   // Para controlar la edición de ingredientes
   final _ingredientNameController = TextEditingController();
   final _ingredientQuantityController = TextEditingController();
-  TextEditingController _ingredientUnitController = TextEditingController();
+  final TextEditingController _ingredientUnitController =
+      TextEditingController();
 
   // Datos para selectores
   final Map<String, String> _recipeTypes = {
@@ -168,7 +172,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
   }
 
   // Método para guardar la receta
-  void _saveRecipe() {
+  Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -189,31 +193,79 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
       return;
     }
 
-    // Aquí se construiría el objeto receta y se guardaría
-    final recipe = {
-      'name': _nameController.text,
-      'description': _descriptionController.text,
-      'type': _selectedRecipeType,
-      'difficulty': _selectedDifficulty,
-      'preparationTime': _preparationTime,
-      'emoji': _selectedEmoji,
-      'ingredients': _ingredients,
-      'steps': _steps,
-      'tags': _selectedTags.toList(),
-      'sustainabilityOptions': _selectedSustainabilityOptions.toList(),
-      'notes': _notesController.text,
-    };
-
-    // TODO: Guardar la receta en la base de datos o enviar a API
-    print('Receta a guardar: $recipe');
-
-    // Mostrar confirmación y volver a la pantalla anterior
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Receta guardada correctamente')),
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    // Volver a la pantalla anterior
-    Navigator.of(context).pop();
+    try {
+      // Construir el objeto receta en el formato esperado por la API
+      final recipeData = {
+        'title': _nameController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'ingredients':
+            _ingredients.map((ingredient) {
+              return {
+                'name': ingredient['name'],
+                'quantity': ingredient['quantity'],
+                'unit': ingredient['unit'],
+              };
+            }).toList(),
+        'instructions': _steps.where((step) => step.trim().isNotEmpty).toList(),
+        'prep_time': _preparationTime,
+        'difficulty': _selectedDifficulty,
+        'category': _selectedRecipeType,
+        'diet_type':
+            _selectedTags.contains('Vegetariana')
+                ? 'Vegetariana'
+                : _selectedTags.contains('Vegana')
+                ? 'Vegana'
+                : 'Omnívora',
+        'tags': _selectedTags.toList(),
+        'sustainability_options': _selectedSustainabilityOptions.toList(),
+        'notes': _notesController.text.trim(),
+        'emoji': _selectedEmoji.isNotEmpty ? _selectedEmoji : '🍽️',
+      };
+
+      // Guardar la receta usando el provider
+      final recipeBackend = ref.read(recipeBackendProvider);
+      final result = await recipeBackend.saveRecipe(recipeData);
+
+      // Cerrar indicador de carga
+      if (mounted) Navigator.of(context).pop();
+
+      log('Receta guardada exitosamente: $result');
+
+      // Mostrar confirmación
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Receta guardada correctamente!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Volver a la pantalla anterior
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      // Cerrar indicador de carga
+      if (mounted) Navigator.of(context).pop();
+
+      log('Error al guardar receta: $error');
+
+      // Mostrar error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar la receta: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -288,7 +340,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child:
@@ -346,7 +398,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                               decoration: BoxDecoration(
                                 color:
                                     _selectedEmoji == emoji
-                                        ? primaryColor.withOpacity(0.2)
+                                        ? primaryColor.withValues(alpha: 0.2)
                                         : Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -654,7 +706,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                         Icon(
                           Icons.shopping_basket_outlined,
                           size: 48,
-                          color: secondaryTextColor.withOpacity(0.5),
+                          color: secondaryTextColor.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -779,7 +831,9 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                             decoration: InputDecoration(
                               hintText: 'Describe el paso ${index + 1}',
                               hintStyle: GoogleFonts.inter(
-                                color: secondaryTextColor.withOpacity(0.7),
+                                color: secondaryTextColor.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                               filled: true,
                               fillColor: fieldBackgroundColor,
@@ -849,7 +903,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                           });
                         },
                         backgroundColor: fieldBackgroundColor,
-                        selectedColor: primaryColor.withOpacity(0.2),
+                        selectedColor: primaryColor.withValues(alpha: 0.2),
                         checkmarkColor: primaryColor,
                         labelStyle: GoogleFonts.inter(
                           color: isSelected ? primaryColor : secondaryTextColor,
@@ -893,7 +947,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                           });
                         },
                         backgroundColor: fieldBackgroundColor,
-                        selectedColor: Colors.green.withOpacity(0.2),
+                        selectedColor: Colors.green.withValues(alpha: 0.2),
                         checkmarkColor: Colors.green,
                         labelStyle: GoogleFonts.inter(
                           color: isSelected ? Colors.green : secondaryTextColor,
@@ -922,7 +976,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                 decoration: InputDecoration(
                   hintText: 'Consejos, variaciones, etc. (opcional)',
                   hintStyle: GoogleFonts.inter(
-                    color: secondaryTextColor.withOpacity(0.7),
+                    color: secondaryTextColor.withValues(alpha: 0.7),
                   ),
                   filled: true,
                   fillColor: fieldBackgroundColor,

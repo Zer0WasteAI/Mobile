@@ -1,14 +1,15 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
 import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // Import the extension
-import 'package:zer0_waste_ai/features/inventory/domain/enums/item_category.dart'; // Import ItemCategory
+import 'package:zer0_waste_ai/features/inventory/presentation/widgets/expired_item_actions_bottom_sheet.dart';
+// Import ItemCategory
 import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // Import for _showQuantityEditDialog
 
 class InventoryItemCard extends ConsumerWidget {
@@ -41,8 +42,10 @@ class InventoryItemCard extends ConsumerWidget {
     final today = DateUtils.dateOnly(now);
     final differenceInDays = expirationDay.difference(today).inDays;
 
-    if (differenceInDays < 0) return AppColors.error.withOpacity(0.15);
-    if (differenceInDays <= 3) return expirationWarningColor.withOpacity(0.3);
+    if (differenceInDays < 0) return AppColors.error.withValues(alpha: 0.15);
+    if (differenceInDays <= 3) {
+      return expirationWarningColor.withValues(alpha: 0.3);
+    }
     return Colors.transparent;
   }
 
@@ -87,7 +90,7 @@ class InventoryItemCard extends ConsumerWidget {
             border: Border.all(
               color:
                   isHighlighted
-                      ? primaryColor.withOpacity(0.8)
+                      ? primaryColor.withValues(alpha: 0.8)
                       : cardBorderColor,
               width: isHighlighted ? 1.5 : 1.0,
             ),
@@ -95,8 +98,8 @@ class InventoryItemCard extends ConsumerWidget {
               BoxShadow(
                 color:
                     isHighlighted
-                        ? primaryColor.withOpacity(0.15)
-                        : Colors.grey.withOpacity(0.08),
+                        ? primaryColor.withValues(alpha: 0.15)
+                        : Colors.grey.withValues(alpha: 0.08),
                 spreadRadius: isHighlighted ? 2 : 1,
                 blurRadius: isHighlighted ? 6 : 4,
                 offset: const Offset(0, 2),
@@ -111,16 +114,11 @@ class InventoryItemCard extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                // Image/Emoji
+                // Image/Emoji with real image support
                 SizedBox(
                   width: 36, // Reduced width
                   height: 36, // Reduced height
-                  child: Center(
-                    child: Text(
-                      item.image, // Display emoji directly
-                      style: const TextStyle(fontSize: 24), // Smaller emoji
-                    ),
-                  ),
+                  child: _buildItemImage(item),
                 ),
                 const SizedBox(width: 8.0), // Reduced spacing
                 // Item Details
@@ -163,10 +161,10 @@ class InventoryItemCard extends ConsumerWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.15),
+                                  color: primaryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: primaryColor.withOpacity(0.3),
+                                    color: primaryColor.withValues(alpha: 0.3),
                                     width: 1.0,
                                   ),
                                 ),
@@ -291,7 +289,7 @@ class InventoryItemCard extends ConsumerWidget {
                       vertical: 4.0, // Minimal padding
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.08),
+                      color: Colors.grey.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Column(
@@ -328,7 +326,7 @@ class InventoryItemCard extends ConsumerWidget {
                         Icon(
                           Icons.edit,
                           size: 11, // Smaller icon
-                          color: primaryColor.withOpacity(0.8),
+                          color: primaryColor.withValues(alpha: 0.8),
                         ),
                       ],
                     ),
@@ -341,8 +339,111 @@ class InventoryItemCard extends ConsumerWidget {
         // Etiqueta "Nuevo" animada
         if (isHighlighted)
           Positioned(top: 0, right: 0, child: PulsingNewBadge()),
+
+        // Botón de acciones para items expirados
+        if (_isItemExpired(item))
+          Positioned(
+            top: 8,
+            left: 8,
+            child: _buildExpiredActionButton(context),
+          ),
       ],
     );
+  }
+
+  // Helper to check if item is expired
+  bool _isItemExpired(InventoryItem item) {
+    if (item.expirationDate == null) return false;
+    final status = ExpirationStatusExtension.fromDate(item.expirationDate);
+    return status == ExpirationStatus.expired;
+  }
+
+  // Helper to build expired action button
+  Widget _buildExpiredActionButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder:
+              (context) => ExpiredItemActionsBottomSheet(
+                expiredItem: item,
+                onActionCompleted: () {
+                  // Refresh the parent view if needed
+                },
+              ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.error.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.warning_outlined,
+          color: Colors.white,
+          size: 16,
+        ),
+      ),
+    );
+  }
+
+  // Helper to build item image with fallback to emoji
+  Widget _buildItemImage(InventoryItem item) {
+    // If item has a real image URL and it's not null
+    if (item.imageUrl != null && item.imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.network(
+          item.imageUrl!,
+          width: 36,
+          height: 36,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.grey.shade400,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            // If image fails to load, show emoji as fallback
+            return Center(
+              child: Text(item.image, style: const TextStyle(fontSize: 24)),
+            );
+          },
+        ),
+      );
+    } else {
+      // No image URL available, show emoji
+      return Center(
+        child: Text(item.image, style: const TextStyle(fontSize: 24)),
+      );
+    }
   }
 
   // Helper to format quantity display
@@ -360,6 +461,7 @@ class InventoryItemCard extends ConsumerWidget {
   }
 
   // Helper to get minimum quantity based on unit type
+  // ignore: unused_element
   double _getMinimumQuantity(String unitType) {
     switch (unitType.toLowerCase()) {
       case 'kg':
@@ -376,7 +478,7 @@ class InventoryItemCard extends ConsumerWidget {
 
 /// Widget que muestra una etiqueta "Nuevo" con efecto pulsante
 class PulsingNewBadge extends StatefulWidget {
-  const PulsingNewBadge({Key? key}) : super(key: key);
+  const PulsingNewBadge({super.key});
 
   @override
   State<PulsingNewBadge> createState() => _PulsingNewBadgeState();
@@ -427,7 +529,7 @@ class _PulsingNewBadgeState extends State<PulsingNewBadge>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF5252).withOpacity(0.3),
+                  color: const Color(0xFFFF5252).withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

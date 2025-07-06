@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/providers/splash_provider.dart';
 import 'package:zer0_waste_ai/features/splash/presentation/viewmodels/splash_controller.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 import 'dart:async';
 
 /// Splash screen
@@ -16,7 +17,8 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with TickerProviderStateMixin {
   // Animation controllers
   late AnimationController _controller;
   late AnimationController _pulseController;
@@ -71,10 +73,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
     // Pulse animation (subtle scale effect)
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(
-        parent: _pulseController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
     // Start main animation
@@ -115,21 +114,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     final textTheme = Theme.of(context).textTheme;
 
     // Listen to splash state changes
-    ref.listen<SplashState>(
-      splashControllerProvider,
-      (previous, current) {
-        // Navigate based on onboarding status when splash is completed
-        if (current.status == SplashStatus.completed) {
-          if (current.onboardingSeen) {
-            // If onboarding has been seen, go to login
-            context.go('/login');
-          } else {
-            // If onboarding has not been seen, go to onboarding
-            context.go('/onboarding');
-          }
+    ref.listen<SplashState>(splashControllerProvider, (previous, current) {
+      // Navigate based on onboarding status when splash is completed
+      if (current.status == SplashStatus.completed) {
+        if (current.onboardingSeen) {
+          // If onboarding has been seen, go to login
+          context.go('/login');
+        } else {
+          // If onboarding has not been seen, go to onboarding
+          context.go('/onboarding');
         }
-      },
-    );
+      }
+    });
 
     return Scaffold(
       backgroundColor: colorScheme.primary,
@@ -155,7 +151,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                   builder: (context, child) {
                     // Apply both the initial scale animation and the continuous pulse animation
                     return Transform.scale(
-                      scale: _logoAnimation.value * (_showText ? _pulseAnimation.value : 1.0),
+                      scale:
+                          _logoAnimation.value *
+                          (_showText ? _pulseAnimation.value : 1.0),
                       child: child,
                     );
                   },
@@ -164,7 +162,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
@@ -207,18 +205,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                 AnimatedOpacity(
                   opacity: _showLoading ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 500),
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
-                      strokeWidth: 3,
-                    ),
+                  child: const LottieLoadingWidget.food(
+                    width: 80,
+                    height: 80,
+                    showMessage: false,
                   ),
                 ),
               ],

@@ -1,0 +1,2085 @@
+// ignore_for_file: unused_local_variable, unused_element
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/widgets/planner_widget_builders.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/widgets/planner_dialog_manager.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/widgets/tutorial/planner_tutorial_manager.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/widgets/analytics/planner_analytics_manager.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/widgets/calendar/week_selector.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_library_screen.dart';
+
+// Extensión para capitalizar strings (con nombre único para evitar conflicto)
+extension StringExtensionPlanner on String {
+  String capitalizePlanner() {
+    return isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
+  }
+}
+
+// All providers and models are now imported from their proper locations
+
+class PlannerScreen extends ConsumerWidget {
+  const PlannerScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Inicializar los datos de localización para español
+    initializeDateFormatting('es_ES', null);
+
+    // Verificar si hay una fecha seleccionada desde la home
+    final selectedDate = ref.watch(selectedDateProvider);
+    // Si hay una fecha seleccionada, usar esa fecha para el proveedor de la semana actual
+    if (selectedDate != null) {
+      // Obtener el lunes de la semana de la fecha seleccionada
+      final monday = selectedDate.subtract(
+        Duration(days: selectedDate.weekday - 1),
+      );
+      // Actualizar el proveedor de la semana actual y limpiar el proveedor de la fecha seleccionada
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(currentWeekProvider.notifier).state = monday;
+        ref.read(selectedDateProvider.notifier).state = null;
+        // También seleccionar el día
+        ref.read(selectedDayProvider.notifier).state = selectedDate;
+      });
+    }
+
+    final currentWeek = ref.watch(currentWeekProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final backgroundColor =
+        isDark ? AppColors.darkBackground : const Color(0xFFFAF9F6);
+    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+
+    // Estado de expansión del calendario
+    final isCalendarExpanded = ref.watch(isCalendarExpandedProvider);
+
+    // Verificar si es la primera vez que el usuario utiliza la app
+    final isFirstTimeUser = ref.read(isFirstPlanningProvider);
+
+    // Verificar si ya se mostró la guía de iconos
+    final hasShownIconGuide = ref.watch(hasShownIconGuideProvider);
+
+    // Mostrar el tutorial de onboarding si es la primera vez
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isFirstTimeUser) {
+        PlannerTutorialManager.showOnboardingTutorial(context, ref);
+      } else if (!hasShownIconGuide) {
+        PlannerTutorialManager.showOnboardingTutorial(context, ref);
+      }
+    });
+
+    // Calcular los días de la semana
+    final weekDays = List.generate(
+      7,
+      (index) => currentWeek.add(Duration(days: index)),
+    );
+
+    // Obtener el día seleccionado
+    final selectedDay = ref.watch(selectedDayProvider);
+
+    // Si no hay día seleccionado, seleccionar el día actual si está en esta semana
+    // o el primer día de la semana si no
+    if (selectedDay == null) {
+      final today = DateTime.now();
+      final inCurrentWeek = weekDays.any(
+        (day) =>
+            day.year == today.year &&
+            day.month == today.month &&
+            day.day == today.day,
+      );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (inCurrentWeek) {
+          ref.read(selectedDayProvider.notifier).state = today;
+        } else {
+          ref.read(selectedDayProvider.notifier).state = weekDays.first;
+        }
+      });
+    }
+
+    // Verificar si hay una comida seleccionada desde la home
+    final selectedMeal = ref.watch(selectedMealProvider);
+    // Si hay una comida seleccionada, mostrar sus detalles y limpiar el proveedor
+    if (selectedMeal != null) {
+      // Formatear la fecha actual para usarla como clave
+      final dateKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      // Asegurarse que el mapa del proveedor existe
+      final mealPlans = ref.read(mealPlansProvider);
+      // ignore: unnecessary_null_comparison
+      if (mealPlans != null) {
+        // Obtener las comidas planificadas para la fecha
+        final mealsForDate = mealPlans[dateKey] ?? [];
+
+        // Verificar si la comida seleccionada existe en el planificador
+        final mealExists = mealsForDate.any(
+          (meal) => meal.id == selectedMeal.id,
+        );
+
+        // Mostrar los detalles después de que se construya el widget solo si la comida existe
+        if (mealExists) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showMealDetails(context, ref, selectedMeal, dateKey);
+            // Limpiar el proveedor de la comida seleccionada
+            ref.read(selectedMealProvider.notifier).state = null;
+          });
+        }
+      }
+
+      // Siempre limpiar el proveedor para evitar intentos repetidos
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedMealProvider.notifier).state = null;
+      });
+    }
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: textColor),
+          onPressed: () => Navigator.of(context).pop(),
+          tooltip: 'Volver',
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: textColor),
+        actions: [
+          // Botón de ayuda para mostrar la guía de iconos
+          IconButton(
+            icon: Icon(Icons.help_outline, color: textColor),
+            onPressed: () => _showIconGuide(context, ref, forceShow: true),
+            tooltip: 'Guía de iconos',
+          ),
+          // Botón de historial
+          IconButton(
+            icon: Stack(
+              children: [
+                Icon(Icons.history_outlined, color: textColor),
+                // Posicionar un indicador visual si hay historial
+                if (ref.watch(planningHistoryProvider).isNotEmpty)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      height: 8,
+                      width: 8,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00BFA5),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () => PlannerAnalyticsManager.showPlanningHistory(context, ref),
+            tooltip: 'Historial de planificación',
+          ),
+          // Botón de biblioteca de recetas
+          IconButton(
+            icon: Icon(Icons.restaurant_menu, color: textColor),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RecipeLibraryScreen(),
+                ),
+              );
+            },
+            tooltip: 'Biblioteca de recetas',
+          ),
+          // Botón de planificación de comidas
+          IconButton(
+            icon: Icon(Icons.calendar_today, color: textColor),
+            onPressed: () {
+              Navigator.pushNamed(context, '/meal-planning');
+            },
+            tooltip: 'Planificación de Comidas',
+          ),
+          IconButton(
+            icon: Icon(Icons.shopping_cart_outlined, color: textColor),
+            onPressed: () => PlannerAnalyticsManager.showShoppingList(context, ref),
+            tooltip: 'Lista de compra',
+          ),
+          IconButton(
+            icon: Icon(Icons.analytics_outlined, color: textColor),
+            onPressed: () => PlannerAnalyticsManager.showStats(context, ref),
+            tooltip: 'Estadísticas de impacto',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Título de la pantalla
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Text(
+              'Planificación Semanal',
+              style: GoogleFonts.inter(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+          ),
+
+          // Sección del calendario con funcionalidad de toggle
+          Column(
+            children: [
+              // Selector de semana (siempre visible)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      DateFormat('MMMM yyyy', 'es_ES').format(currentWeek),
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const WeekSelector(),
+                  ],
+                ),
+              ),
+
+              // Días de la semana (visibles solo cuando está expandido)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: isCalendarExpanded ? 98 : 0, // 90 + 8 de margen
+                curve: Curves.easeInOut,
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: _buildWeekDays(context, weekDays, textColor, ref),
+                ),
+              ),
+
+              // Botón de toggle más grande y fácil de presionar
+              InkWell(
+                onTap: () {
+                  ref.read(isCalendarExpandedProvider.notifier).state =
+                      !isCalendarExpanded;
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 30,
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 50,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isCalendarExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 20,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Vista de día seleccionado
+          if (selectedDay != null)
+            Expanded(
+              child: _buildDayPlanner(
+                context,
+                ref,
+                selectedDay,
+                textColor,
+                primaryColor,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Mostrar un selector de mes/semana
+  // Mostrar diálogo para agregar una comida
+  void _showAddMealDialog(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime day, {
+    MealType? initialType,
+  }) {
+    final dateKey = DateFormat('yyyy-MM-dd').format(day);
+
+    AddMealDialog.show(
+      context,
+      ref,
+      day,
+      initialType: initialType,
+      onMealAdded: (selectedMeal, dateKey) {
+        // Actualizar fecha de último uso
+        ref.read(allRecipesProvider.notifier).updateLastUsed(selectedMeal.id);
+
+        // Agregar la comida con validaciones
+        _addMealWithValidation(
+          context,
+          ref,
+          selectedMeal,
+          dateKey,
+          expectedType: initialType,
+        );
+      },
+    );
+  }
+
+  // Método original reemplazado - contenido removido
+  void _showAddMealDialogOriginal(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime day, {
+    MealType? initialType,
+  }) {
+    final dateKey = DateFormat('yyyy-MM-dd').format(day);
+    final formattedDate = DateFormat('EEEE d MMMM', 'es_ES').format(day);
+
+    // Comida seleccionada actualmente para agregar
+    MealPlan? selectedMeal;
+
+    // Obtener todas las recetas, favoritos y recientes
+    final allRecipes = ref.read(allRecipesProvider);
+    final favorites = ref.read(favoriteRecipesProvider);
+    final recents = ref.read(recentRecipesProvider);
+
+    // Filtrar por tipo de comida (si se especificó)
+    final filteredAll =
+        initialType != null
+            ? allRecipes.where((recipe) => recipe.type == initialType).toList()
+            : allRecipes;
+
+    final filteredFavorites =
+        initialType != null
+            ? favorites.where((recipe) => recipe.type == initialType).toList()
+            : favorites;
+
+    final filteredRecents =
+        initialType != null
+            ? recents.where((recipe) => recipe.type == initialType).toList()
+            : recents;
+
+    // Definir las pestañas
+    const tabs = ['Todas', 'Favoritas', 'Recientes'];
+    int selectedTabIndex = 0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              // Determinar qué lista mostrar según la pestaña seleccionada
+              List<MealPlan> currentList;
+              switch (selectedTabIndex) {
+                case 1:
+                  currentList = filteredFavorites;
+                  break;
+                case 2:
+                  currentList = filteredRecents;
+                  break;
+                case 0:
+                default:
+                  currentList = filteredAll;
+              }
+
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Indicador visual para arrastrar
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+
+                    // Título y fecha
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Añadir comida',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            formattedDate.capitalizePlanner(),
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: const Color(0xFF00BFA5),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Filtro por tipo de comida
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: MealType.values.length,
+                          itemBuilder: (context, index) {
+                            final type = MealType.values[index];
+                            final isSelected = initialType == type;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                label: Text(type.name),
+                                selected: isSelected,
+                                backgroundColor: Colors.grey.shade100,
+                                selectedColor: type.color.withValues(
+                                  alpha: 0.2,
+                                ),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    initialType = selected ? type : null;
+                                  });
+                                },
+                                labelStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color:
+                                      isSelected
+                                          ? type.color
+                                          : Colors.grey.shade700,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.w500
+                                          : FontWeight.normal,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Pestañas para alternar entre Todas, Favoritas, Recientes
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: List.generate(
+                          tabs.length,
+                          (index) => Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedTabIndex = index;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color:
+                                          selectedTabIndex == index
+                                              ? const Color(0xFF00BFA5)
+                                              : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  tabs[index],
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight:
+                                        selectedTabIndex == index
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                    color:
+                                        selectedTabIndex == index
+                                            ? const Color(0xFF00BFA5)
+                                            : Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Lista de recetas según la pestaña seleccionada
+                    Expanded(
+                      child:
+                          currentList.isEmpty
+                              ? _buildEmptyRecipesState(context)
+                              : ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                itemCount: currentList.length,
+                                itemBuilder: (context, index) {
+                                  final recipe = currentList[index];
+                                  final isSelected =
+                                      selectedMeal?.id == recipe.id;
+
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedMeal =
+                                            isSelected ? null : recipe;
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isSelected
+                                                ? const Color(
+                                                  0xFF00BFA5,
+                                                ).withValues(alpha: 0.05)
+                                                : Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color:
+                                              isSelected
+                                                  ? const Color(0xFF00BFA5)
+                                                  : Colors.grey.shade200,
+                                          width: isSelected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // Imagen o icono
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                                  topLeft: Radius.circular(10),
+                                                  bottomLeft: Radius.circular(
+                                                    10,
+                                                  ),
+                                                ),
+                                            child: SizedBox(
+                                              width: 80,
+                                              height: 80,
+                                              child:
+                                                  recipe.imageUrl.startsWith(
+                                                        'assets/',
+                                                      )
+                                                      ? Image.asset(
+                                                        recipe.imageUrl,
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                      : Container(
+                                                        color: recipe.type.color
+                                                            .withValues(
+                                                              alpha: 0.2,
+                                                            ),
+                                                        child: Icon(
+                                                          recipe.type.icon,
+                                                          color:
+                                                              recipe.type.color,
+                                                          size: 40,
+                                                        ),
+                                                      ),
+                                            ),
+                                          ),
+                                          // Información
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(12),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  // Etiqueta de tipo
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: recipe.type.color
+                                                          .withValues(
+                                                            alpha: 0.1,
+                                                          ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      recipe.type.name,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            recipe.type.color,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  // Nombre
+                                                  Text(
+                                                    recipe.name,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  // Detalles
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.schedule,
+                                                        size: 12,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        '${recipe.prepTimeMinutes} min',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors
+                                                                      .grey
+                                                                      .shade600,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Icon(
+                                                        Icons
+                                                            .local_fire_department,
+                                                        size: 12,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        '${recipe.calories} kcal',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors
+                                                                      .grey
+                                                                      .shade600,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          // Indicador de selección
+                                          if (isSelected)
+                                            Container(
+                                              margin: const EdgeInsets.only(
+                                                right: 12,
+                                              ),
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF00BFA5),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                    ),
+
+                    // Botón de IA
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                        bottom: 10,
+                      ),
+                      child: Row(
+                        children: [
+                          // Botón Sugerir con IA
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _showAiSuggestionDialog(context, initialType, (
+                                  suggestedMeal,
+                                ) {
+                                  setState(() {
+                                    selectedMeal = suggestedMeal;
+                                  });
+                                }, ref);
+                              },
+                              icon: Icon(
+                                Icons.auto_awesome,
+                                color: const Color(0xFF00BFA5),
+                              ),
+                              label: Text('Sugerir con IA'),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: const Color(0xFF00BFA5),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Espacio entre botones
+                          const SizedBox(width: 10),
+
+                          // Botón Explorar más recetas
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                // Cerrar diálogo actual
+                                Navigator.pop(context);
+                                // Abrir biblioteca de recetas
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            const RecipeLibraryScreen(),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.restaurant_menu,
+                                color: const Color(0xFF00BFA5),
+                              ),
+                              label: Text('Explorar más'),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: const Color(0xFF00BFA5),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Botón para agregar
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      child: ElevatedButton(
+                        onPressed:
+                            selectedMeal == null
+                                ? null
+                                : () {
+                                  // Cerrar el diálogo
+                                  Navigator.pop(context);
+
+                                  // Actualizar fecha de último uso
+                                  ref
+                                      .read(allRecipesProvider.notifier)
+                                      .updateLastUsed(selectedMeal!.id);
+
+                                  // Agregar la comida con validaciones
+                                  _addMealWithValidation(
+                                    context,
+                                    ref,
+                                    selectedMeal!,
+                                    dateKey,
+                                    expectedType: initialType,
+                                  );
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00BFA5),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          disabledBackgroundColor: Colors.grey.shade300,
+                        ),
+                        child: const Text('Agregar a mi plan'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+    );
+  }
+
+  // Widget para mostrar un estado vacío cuando no hay recetas
+  Widget _buildEmptyRecipesState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.no_food, size: 60, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'No se encontraron recetas',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Prueba con otro filtro o añade recetas nuevas',
+            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Método para abrir la biblioteca de recetas en modo selección
+  void _openRecipeLibraryForSelection(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime day,
+    MealType? initialType,
+  ) {
+    final dateKey = DateFormat('yyyy-MM-dd').format(day);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => RecipeLibraryScreen(
+              selectionMode: true,
+              initialMealType: initialType,
+              onRecipeSelected: (MealPlan selectedRecipe) {
+                // Actualizar fecha de último uso
+                ref
+                    .read(allRecipesProvider.notifier)
+                    .updateLastUsed(selectedRecipe.id);
+
+                // Agregar la comida con validaciones
+                _addMealWithValidation(
+                  context,
+                  ref,
+                  selectedRecipe,
+                  dateKey,
+                  expectedType: initialType,
+                );
+
+                // Regresar a la pantalla anterior después de seleccionar
+                Navigator.pop(context);
+              },
+            ),
+      ),
+    );
+  }
+
+  // Mostrar diálogo para sugerencias IA
+  void _showAiSuggestionDialog(
+    BuildContext context,
+    MealType? initialType,
+    Function(MealPlan) onSelect,
+    WidgetRef ref,
+  ) {
+    final ingredients = TextEditingController();
+    final dietaryTags = <String>[];
+    final mealType = initialType ?? MealType.lunch;
+
+    // Todas las etiquetas dietéticas disponibles
+    final allDietaryTags = [
+      'Vegetariano',
+      'Vegano',
+      'Sin gluten',
+      'Sin lácteos',
+      'Alto en proteínas',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return Container(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  MediaQuery.of(context).viewInsets.bottom + 20,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '✨ Sugerencia Inteligente',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Nuestra IA te recomendará recetas basadas en tus preferencias y los ingredientes que ya tienes',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+
+                      // Ingredientes disponibles
+                      Row(
+                        children: [
+                          Text(
+                            'Ingredientes disponibles',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            '(Opcional)',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Si no ingresas ingredientes, te recomendaremos recetas populares',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: ingredients,
+                        decoration: InputDecoration(
+                          hintText: 'Escribe ingredientes separados por comas',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                        maxLines: 2,
+                      ),
+
+                      SizedBox(height: 16),
+
+                      // Preferencias dietéticas
+                      Row(
+                        children: [
+                          Text(
+                            'Preferencias dietéticas',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            '(Opcional)',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Selecciona si tienes alguna preferencia dietética específica',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            allDietaryTags.map((tag) {
+                              final isSelected = dietaryTags.contains(tag);
+                              return FilterChip(
+                                label: Text(tag),
+                                selected: isSelected,
+                                backgroundColor: Colors.grey.shade100,
+                                selectedColor: const Color(
+                                  0xFF00BFA5,
+                                ).withValues(alpha: 0.2),
+                                checkmarkColor: const Color(0xFF00BFA5),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      dietaryTags.add(tag);
+                                    } else {
+                                      dietaryTags.remove(tag);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                      ),
+
+                      SizedBox(height: 24),
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Preparar parámetros para la sugerencia
+                          Builder(
+                            builder: (context) {
+                              final params = <String, dynamic>{
+                                'mealType': mealType,
+                                'dietaryTags': dietaryTags,
+                                'availableIngredients':
+                                    ingredients.text.isEmpty
+                                        ? null
+                                        : ingredients.text
+                                            .split(',')
+                                            .map((e) => e.trim())
+                                            .toList(),
+                              };
+
+                              return Column(
+                                children: [
+                                  // Botón para generar
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      // Invalidar el provider para generar nuevas sugerencias
+                                      ref.invalidate(
+                                        aiSuggestionsProvider(params),
+                                      );
+                                    },
+                                    icon: Icon(Icons.autorenew),
+                                    label: Text('Generar sugerencia'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF00BFA5),
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 20),
+
+                                  // Resultado de la sugerencia
+                                  ref
+                                      .watch(aiSuggestionsProvider(params))
+                                      .when(
+                                        data: (suggestions) {
+                                          if (suggestions.isEmpty) {
+                                            return Text(
+                                              'No se encontraron sugerencias con esos criterios',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            );
+                                          }
+
+                                          // Mostrar la primera sugerencia
+                                          final suggestion = suggestions.first;
+
+                                          return Column(
+                                            children: [
+                                              // Título de sugerencia
+                                              Text(
+                                                'Te recomendamos:',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                              ),
+                                              SizedBox(height: 12),
+
+                                              // Receta sugerida
+                                              Container(
+                                                padding: EdgeInsets.all(16),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade50,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.grey.shade200,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    // Imagen
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      child: Image.asset(
+                                                        suggestion.imageUrl,
+                                                        width: 80,
+                                                        height: 80,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 16),
+
+                                                    // Info
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Container(
+                                                            padding:
+                                                                EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color: suggestion
+                                                                  .type
+                                                                  .color
+                                                                  .withValues(
+                                                                    alpha: 0.1,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    4,
+                                                                  ),
+                                                            ),
+                                                            child: Text(
+                                                              suggestion
+                                                                  .type
+                                                                  .name,
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 10,
+                                                                color:
+                                                                    suggestion
+                                                                        .type
+                                                                        .color,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 4),
+                                                          Text(
+                                                            suggestion.name,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                ),
+                                                          ),
+                                                          SizedBox(height: 4),
+                                                          Text(
+                                                            suggestion
+                                                                    .ingredients
+                                                                    .take(3)
+                                                                    .join(
+                                                                      ', ',
+                                                                    ) +
+                                                                (suggestion
+                                                                            .ingredients
+                                                                            .length >
+                                                                        3
+                                                                    ? '...'
+                                                                    : ''),
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors
+                                                                      .grey
+                                                                      .shade600,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              SizedBox(height: 16),
+
+                                              // Botón para seleccionar
+                                              OutlinedButton(
+                                                onPressed: () {
+                                                  // Seleccionar esta receta
+                                                  onSelect(suggestion);
+                                                  Navigator.pop(context);
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: const Color(
+                                                    0xFF00BFA5,
+                                                  ),
+                                                  side: BorderSide(
+                                                    color: const Color(
+                                                      0xFF00BFA5,
+                                                    ),
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  minimumSize: Size(
+                                                    double.infinity,
+                                                    44,
+                                                  ),
+                                                ),
+                                                child: Text('Usar esta receta'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                        loading:
+                                            () => Center(
+                                              child: Column(
+                                                children: [
+                                                  CircularProgressIndicator(
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                          Color
+                                                        >(
+                                                          const Color(
+                                                            0xFF00BFA5,
+                                                          ),
+                                                        ),
+                                                  ),
+                                                  SizedBox(height: 16),
+                                                  Text(
+                                                    'Buscando la mejor receta para ti...',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      color:
+                                                          Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                        error:
+                                            (error, stack) => Text(
+                                              'Error al generar sugerencias. Inténtalo de nuevo.',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                      ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+    );
+  }
+
+  // Mostrar diálogo para editar una comida
+  void _showEditMealDialog(
+    BuildContext context,
+    WidgetRef ref,
+    MealPlan meal,
+    String dateKey,
+  ) {
+    final formattedDate = DateFormat(
+      'EEEE d MMMM',
+      'es_ES',
+    ).format(DateFormat('yyyy-MM-dd').parse(dateKey));
+
+    // Obtener todas las recetas
+    final allRecipes = ref.read(allRecipesProvider);
+
+    // Filtrar recetas del mismo tipo
+    final recipes =
+        allRecipes.where((recipe) => recipe.type == meal.type).toList();
+
+    // Comida seleccionada actualmente
+    MealPlan selectedMeal = meal;
+
+    // Obtener favoritos y recientes
+    final favorites =
+        ref
+            .read(favoriteRecipesProvider)
+            .where((r) => r.type == meal.type)
+            .toList();
+    final recents =
+        ref
+            .read(recentRecipesProvider)
+            .where((r) => r.type == meal.type)
+            .toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return DefaultTabController(
+                length: 3,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.85,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Indicador visual para arrastrar
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+
+                      // Título y fecha
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Reemplazar comida',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              formattedDate.capitalizePlanner(),
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                color: const Color(0xFF00BFA5),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Comida actual a reemplazar
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amber.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.swap_horiz,
+                              color: Colors.amber.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Vas a reemplazar: ${meal.name}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: Colors.amber.shade800,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Tabs para categorías
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: TabBar(
+                          indicatorColor: const Color(0xFF00BFA5),
+                          labelColor: const Color(0xFF00BFA5),
+                          unselectedLabelColor: Colors.grey,
+                          tabs: [
+                            Tab(text: 'Todas'),
+                            Tab(text: 'Favoritas'),
+                            Tab(text: 'Recientes'),
+                          ],
+                        ),
+                      ),
+
+                      // Lista de recetas según tab seleccionada
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            // Todas las recetas
+                            RecipeListBuilder.buildRecipeList(
+                              context,
+                              setState,
+                              recipes,
+                              selectedMeal,
+                              (meal) => setState(() => selectedMeal = meal),
+                              ref,
+                            ),
+
+                            // Favoritas
+                            RecipeListBuilder.buildRecipeList(
+                              context,
+                              setState,
+                              favorites,
+                              selectedMeal,
+                              (meal) => setState(() => selectedMeal = meal),
+                              ref,
+                            ),
+
+                            // Recientes
+                            RecipeListBuilder.buildRecipeList(
+                              context,
+                              setState,
+                              recents,
+                              selectedMeal,
+                              (meal) => setState(() => selectedMeal = meal),
+                              ref,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Botón de IA
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            // Mostrar diálogo de sugerencia IA
+                            _showAiSuggestionDialog(context, meal.type, (
+                              suggestedMeal,
+                            ) {
+                              setState(() {
+                                selectedMeal = suggestedMeal;
+                              });
+                            }, ref);
+                          },
+                          icon: Icon(
+                            Icons.auto_awesome,
+                            color: const Color(0xFF00BFA5),
+                          ),
+                          label: Text('Sugerir con IA'),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: const Color(0xFF00BFA5)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Botón para reemplazar
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Cerrar el diálogo
+                            Navigator.pop(context);
+
+                            // Actualizar fecha de uso
+                            ref
+                                .read(allRecipesProvider.notifier)
+                                .updateLastUsed(selectedMeal.id);
+
+                            // Actualizar el plan reemplazando la comida anterior con la nueva seleccionada
+                            ref
+                                .read(mealPlansProvider.notifier)
+                                .editMeal(dateKey, meal, selectedMeal);
+
+                            // Mostrar confirmación
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Comida reemplazada correctamente',
+                                ),
+                                backgroundColor: const Color(0xFF00BFA5),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00BFA5),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Reemplazar comida'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+    );
+  }
+
+  // Mostrar lista de compra
+  void _showOnboardingTutorial(BuildContext context, WidgetRef ref) {
+    // Crear un controlador para manejar las páginas del tutorial
+    final PageController pageController = PageController();
+
+    // Definir los pasos del tutorial
+    final tutorialSteps = [
+      {
+        'title': '¡Bienvenido a tu planificador semanal!',
+        'description':
+            'Planifica tus comidas de forma inteligente y reduce el desperdicio de alimentos.',
+        'icon': Icons.restaurant_menu,
+        'color': const Color(0xFF00BFA5),
+      },
+      {
+        'title': 'Selecciona un día',
+        'description':
+            'Toca en cualquier día de la semana para planificar tus comidas.',
+        'icon': Icons.calendar_today,
+        'color': Colors.blue,
+      },
+      {
+        'title': 'Añade comidas',
+        'description':
+            'Puedes agregar desayunos, almuerzos, cenas y snacks. Toca el botón "+" para empezar.',
+        'icon': Icons.add_circle_outline,
+        'color': Colors.orange,
+      },
+      {
+        'title': 'Sugerencias inteligentes',
+        'description':
+            'Nuestra IA puede recomendarte recetas basadas en tus preferencias e ingredientes disponibles.',
+        'icon': Icons.auto_awesome,
+        'color': Colors.purple,
+      },
+      {
+        'title': '¡Listo para empezar!',
+        'description':
+            'Ahora ya conoces lo básico para comenzar a planificar tus comidas y reducir el desperdicio.',
+        'icon': Icons.check_circle_outline,
+        'color': Colors.green,
+      },
+    ];
+
+    // Variable para controlar la página actual - movida fuera del builder
+    int currentPage = 0;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return Dialog(
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: SizedBox(
+                  height: 400,
+                  child: Column(
+                    children: [
+                      // Contenido principal
+                      Expanded(
+                        child: PageView.builder(
+                          controller: pageController,
+                          itemCount: tutorialSteps.length,
+                          onPageChanged: (page) {
+                            setState(() {
+                              currentPage = page;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final step = tutorialSteps[index];
+                            return Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Icono
+                                  Container(
+                                    width: 100,
+                                    height: 77,
+                                    decoration: BoxDecoration(
+                                      color: (step['color'] as Color)
+                                          .withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      step['icon'] as IconData,
+                                      size: 48,
+                                      color: step['color'] as Color,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Título
+                                  Text(
+                                    step['title'] as String,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Descripción
+                                  Text(
+                                    step['description'] as String,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Indicadores de página
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            tutorialSteps.length,
+                            (index) => Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color:
+                                    currentPage == index
+                                        ? const Color(0xFF00BFA5)
+                                        : Colors.grey.shade300,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Botones de navegación
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Botón omitir
+                            TextButton(
+                              onPressed: () {
+                                // Marcar como no primera vez
+                                ref
+                                    .read(isFirstPlanningProvider.notifier)
+                                    .state = false;
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                'Omitir',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+
+                            // Botón siguiente o finalizar
+                            ElevatedButton(
+                              onPressed: () {
+                                if (currentPage < tutorialSteps.length - 1) {
+                                  pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                } else {
+                                  // Marcar como no primera vez
+                                  ref
+                                      .read(isFirstPlanningProvider.notifier)
+                                      .state = false;
+                                  Navigator.pop(context);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF00BFA5),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                              child: Text(
+                                currentPage < tutorialSteps.length - 1
+                                    ? 'Siguiente'
+                                    : 'Comenzar',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+    );
+  }
+
+  // Método para mostrar animación de éxito
+  void _showSuccessAnimation(BuildContext context, String message) {
+    // Usar un overlay para mostrar una animación flotante
+    final overlay = Overlay.of(context);
+
+    // Creamos la entrada del overlay
+    late final OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            bottom: 100,
+            width: MediaQuery.of(context).size.width,
+            child: Center(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: value,
+                    child: Opacity(opacity: value, child: child),
+                  );
+                },
+                onEnd: () {
+                  // Después de mostrar la animación, esperar un poco y eliminarla
+                  Future.delayed(const Duration(seconds: 2), () {
+                    entry.remove();
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00BFA5),
+                    borderRadius: BorderRadius.circular(50),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icono que se anima
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.elasticOut,
+                        builder: (context, value, child) {
+                          return Transform.scale(scale: value, child: child);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Color(0xFF00BFA5),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Mensaje sin formato especial que cause subrayado
+                      Text(
+                        message,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+    );
+
+    // Mostrar el overlay
+    overlay.insert(entry);
+  }
+
+  // Método para mostrar una guía de los iconos
+  void _showIconGuide(
+    BuildContext context,
+    WidgetRef ref, {
+    bool forceShow = false,
+  }) {
+    // Si no se fuerza la visualización y ya se ha mostrado antes, no hacer nada
+    if (!forceShow && ref.read(hasShownIconGuideProvider)) {
+      return;
+    }
+
+    // Esperar a que se construya la UI
+    Future.delayed(const Duration(milliseconds: 500), () {
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: const Color(0xFF00BFA5),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Guía de iconos',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildIconGuideItem(
+                    Icons.history_outlined,
+                    'Historial de planificación',
+                    'Accede a tus planificaciones anteriores',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildIconGuideItem(
+                    Icons.restaurant_menu,
+                    'Biblioteca de recetas',
+                    'Explora todas las recetas disponibles',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildIconGuideItem(
+                    Icons.shopping_cart_outlined,
+                    'Lista de compra',
+                    'Genera una lista basada en tu plan semanal',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildIconGuideItem(
+                    Icons.analytics_outlined,
+                    'Estadísticas de impacto',
+                    'Visualiza el impacto positivo de tu planificación',
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: Text(
+                    'No mostrar de nuevo',
+                    style: GoogleFonts.inter(color: Colors.grey.shade600),
+                  ),
+                  onPressed: () {
+                    ref.read(hasShownIconGuideProvider.notifier).state = true;
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00BFA5),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    ref.read(hasShownIconGuideProvider.notifier).state = true;
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Entendido'),
+                ),
+              ],
+            ),
+      );
+    });
+  }
+
+  // Widget auxiliar para cada ítem de la guía de iconos
+  Widget _buildIconGuideItem(IconData icon, String title, String description) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFF00BFA5), size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

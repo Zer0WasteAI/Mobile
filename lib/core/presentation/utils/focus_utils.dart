@@ -12,8 +12,7 @@ class UnfocusOnTap extends StatelessWidget {
   final FocusNode focusNode;
   final Widget child;
 
-  const UnfocusOnTap({Key? key, required this.focusNode, required this.child})
-    : super(key: key);
+  const UnfocusOnTap({super.key, required this.focusNode, required this.child});
 
   @override
   Widget build(BuildContext context) {

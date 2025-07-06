@@ -26,7 +26,7 @@ class ImpactFactCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: accentColor.withOpacity(0.3), width: 1),
+        side: BorderSide(color: accentColor.withValues(alpha: 0.3), width: 1),
       ),
       color: cardColor,
       child: Padding(
@@ -39,7 +39,7 @@ class ImpactFactCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(

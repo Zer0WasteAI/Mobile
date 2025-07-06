@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -52,34 +54,58 @@ class ScanOptionsModal extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           // Options Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Column(
             children: [
-              _buildOptionButton(
+              // First row - Traditional scan options
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildOptionButton(
+                    context: context,
+                    ref: ref,
+                    iconPath:
+                        'assets/images/scan/ingredient.png', // Existing path
+                    label: 'Ingrediente',
+                    onPressed: () {
+                      // Close modal
+                      ref.read(isScanModalOpenProvider.notifier).state = false;
+                      // Navigate to add ingredient screen
+                      context.go('/scan/add/ingredient');
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  _buildOptionButton(
+                    context: context,
+                    ref: ref,
+                    iconPath: 'assets/images/scan/food.png', // Existing path
+                    label: 'Food',
+                    onPressed: () {
+                      // Close modal
+                      ref.read(isScanModalOpenProvider.notifier).state = false;
+                      // Navigate to add food screen
+                      context.go('/scan/add/food');
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Second row - AI Recognition option
+              /*_buildWideOptionButton(
                 context: context,
                 ref: ref,
-                iconPath: 'assets/images/scan/ingredient.png', // Existing path
-                label: 'Ingrediente',
+                icon: Icons.auto_awesome,
+                label: '🤖 Reconocimiento IA',
+                subtitle: 'Elige qué reconocer con inteligencia artificial',
                 onPressed: () {
                   // Close modal
                   ref.read(isScanModalOpenProvider.notifier).state = false;
-                  // Navigate to add ingredient screen
-                  context.go('/scan/add/ingredient');
+                  // Navigate to recognition type selector
+                  context.go('/recognition-selector');
                 },
               ),
-              const SizedBox(width: 16),
-              _buildOptionButton(
-                context: context,
-                ref: ref,
-                iconPath: 'assets/images/scan/food.png', // Existing path
-                label: 'Food',
-                onPressed: () {
-                  // Close modal
-                  ref.read(isScanModalOpenProvider.notifier).state = false;
-                  // Navigate to add food screen
-                  context.go('/scan/add/food');
-                },
-              ),
+              */
             ],
           ),
           const SizedBox(height: 10), // Padding at the bottom
@@ -126,6 +152,84 @@ class ScanOptionsModal extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _buildWideOptionButton({
+    required BuildContext context,
+    required WidgetRef ref,
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required VoidCallback onPressed,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor =
+        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Card(
+        color: theme.colorScheme.surface,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                primaryColor.withValues(alpha: 0.1),
+                primaryColor.withValues(alpha: 0.05),
+              ],
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: primaryColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: theme.colorScheme.onSurfaceVariant,
+                size: 20,
               ),
             ],
           ),

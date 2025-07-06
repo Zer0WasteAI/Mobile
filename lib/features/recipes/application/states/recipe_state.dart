@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
 part 'recipe_state.freezed.dart';
 
 // Model for a single Recipe (adjust fields as needed)
 @freezed
-class Recipe with _$Recipe {
+abstract class Recipe with _$Recipe {
   const factory Recipe({
     required String id,
     required String name,
@@ -24,10 +23,11 @@ class Recipe with _$Recipe {
 
 // State for the Recipe Screen
 @freezed
-class RecipeState with _$RecipeState {
+abstract class RecipeState with _$RecipeState {
   const factory RecipeState({
     @Default(false) bool isLoading,
     @Default([]) List<Recipe> recipes,
+    @Default([]) List<Recipe> allRecipes, // Store all recipes for filtering
     String? errorMessage,
     // Smart mode specific
     int? expiringIngredientsUsedCount,
@@ -37,6 +37,9 @@ class RecipeState with _$RecipeState {
     // Map of category value to Set of selected filter values
     // e.g., {"Tipo de receta": {"entrada", "postre"}, "Tiempo de preparación": {"short_time"}}
     @Default({}) Map<String, Set<String>> selectedFilters,
-    // TODO: Add other filter criteria (sort, categories, etc.)
+    // ✅ RESOLVED: Comprehensive filter criteria already implemented:
+    // - Recipe type, preparation time, difficulty, diet type, sustainability
+    // - Sorting by name, cooking time, difficulty (in favorite_recipes_provider.dart)
+    // - Search functionality, category filtering, ingredient availability toggle
   }) = _RecipeState;
 }

@@ -12,6 +12,7 @@ class DialogHelper {
     IconData? icon,
     Color? iconColor,
     String? emoji,
+    String? imageUrl,
   }) async {
     return showDialog<void>(
       context: context,
@@ -22,6 +23,7 @@ class DialogHelper {
           icon: icon,
           iconColor: iconColor,
           emoji: emoji,
+          imageUrl: imageUrl,
           content: Text(
             message,
             style: TextStyle(
@@ -50,6 +52,7 @@ class DialogHelper {
     IconData? icon,
     Color? iconColor,
     String? emoji,
+    String? imageUrl,
   }) async {
     final result = await showDialog<bool>(
       context: context,
@@ -60,6 +63,7 @@ class DialogHelper {
           icon: icon,
           iconColor: iconColor,
           emoji: emoji,
+          imageUrl: imageUrl,
           content: Text(
             message,
             style: TextStyle(
@@ -101,7 +105,9 @@ class DialogHelper {
     String? Function(String?)? validator,
   }) async {
     final TextEditingController controller = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>(
+      debugLabel: 'inputDialog_${DateTime.now().millisecondsSinceEpoch}',
+    );
 
     return showDialog<String>(
       context: context,
@@ -128,7 +134,7 @@ class DialogHelper {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: secondaryTextColor.withOpacity(0.9),
+                    color: secondaryTextColor.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),

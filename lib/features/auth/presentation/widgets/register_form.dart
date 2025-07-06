@@ -24,7 +24,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
 
   late TextEditingController _nameController;
   late TextEditingController _emailController;
-  late TextEditingController _phoneController;
   late TextEditingController _passwordController;
   late TextEditingController _confirmPasswordController;
 
@@ -33,23 +32,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     super.initState();
     _nameController = TextEditingController();
     _emailController = TextEditingController();
-    _phoneController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
-
-    ref.listenManual(registerNotifierProvider, (previous, next) {
-      // Accede al estado síncrono a través del notifier
-      final currentState =
-          ref.read(registerNotifierProvider.notifier).registerState;
-      _updateControllerTextIfNeeded(_nameController, currentState.name);
-      _updateControllerTextIfNeeded(_emailController, currentState.email);
-      _updateControllerTextIfNeeded(_phoneController, currentState.phone);
-      _updateControllerTextIfNeeded(_passwordController, currentState.password);
-      _updateControllerTextIfNeeded(
-        _confirmPasswordController,
-        currentState.confirmPassword,
-      );
-    }, fireImmediately: true);
   }
 
   @override
@@ -57,41 +41,23 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     // Disponer controladores
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _updateControllerTextIfNeeded(
-    TextEditingController controller,
-    String newStateText,
-  ) {
-    if (controller.text != newStateText) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          controller.text = newStateText;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length),
-          );
-        }
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Get register state
+    // Get register state using the correct providers
+    final registerState = ref.watch(registerStateProvider);
     final registerNotifier = ref.watch(registerNotifierProvider.notifier);
-    final registerState = registerNotifier.registerState;
-    final registerAsync = ref.watch(registerNotifierProvider);
 
     // Get theme data
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     // Check if loading
-    final isLoading = registerAsync.isLoading;
+    final isLoading = registerState.isLoading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -120,25 +86,14 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           ),
           const SizedBox(height: 20),
 
-          // Phone field
-          CustomTextField(
-            controller: _phoneController,
-            label: 'Número de Teléfono (opcional)',
-            hint: 'Ingresa tu número de teléfono',
-            icon: FontAwesomeIcons.phone,
-            errorText: registerState.phoneError,
-            onChanged: (value) => registerNotifier.updatePhone(value),
-          ),
-          const SizedBox(height: 20),
-
           // Password field
           CustomTextField(
             controller: _passwordController,
             label: 'Contraseña',
             hint: 'Ingresa tu contraseña',
-            icon: FontAwesomeIcons.lock,
             isPassword: true,
             isPasswordVisible: _isPasswordVisible,
+            icon: FontAwesomeIcons.lock,
             errorText: registerState.passwordError,
             onChanged: (value) => registerNotifier.updatePassword(value),
             onToggleVisibility: () {
@@ -154,9 +109,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             controller: _confirmPasswordController,
             label: 'Confirmar Contraseña',
             hint: 'Confirma tu contraseña',
-            icon: FontAwesomeIcons.lock,
             isPassword: true,
             isPasswordVisible: _isConfirmPasswordVisible,
+            icon: FontAwesomeIcons.lock,
             errorText: registerState.confirmPasswordError,
             onChanged: (value) => registerNotifier.updateConfirmPassword(value),
             onToggleVisibility: () {
@@ -172,103 +127,61 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             height: 56,
             child: ElevatedButton(
               onPressed:
-                  registerState.isValid && !isLoading
-                      ? () => registerNotifier.register()
-                      : null,
+                  isLoading || !registerState.isValid
+                      ? null
+                      : () => registerNotifier.register(),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
                     isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: (isDark
-                        ? AppColors.darkPrimary
-                        : AppColors.lightPrimary)
-                    .withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 0,
               ),
               child:
                   isLoading
-                      ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                      : Text(
+                      ? const CircularProgressIndicator.adaptive()
+                      : const Text(
                         'Crear Cuenta',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
-          // Divider
-          Row(
-            children: [
-              Expanded(
-                child: Divider(
-                  color: isDark ? Colors.white30 : Colors.black26,
-                  thickness: 1,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'o regístrate con',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        isDark
-                            ? AppColors.darkSecondaryText
-                            : AppColors.lightSecondaryText,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Divider(
-                  color: isDark ? Colors.white30 : Colors.black26,
-                  thickness: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
-
-          // Social buttons
+          // Social login buttons
           SocialButtonsRow(
             onGoogleTap: () => registerNotifier.loginWithGoogle(),
             onFacebookTap: () => registerNotifier.loginWithFacebook(),
             onAppleTap: () => registerNotifier.loginWithApple(),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
           // Login link
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '¿Ya tienes una cuenta? ',
-                style: theme.textTheme.bodySmall?.copyWith(
+                '¿Ya tienes una cuenta?',
+                style: TextStyle(
                   color:
                       isDark
                           ? AppColors.darkSecondaryText
                           : AppColors.lightSecondaryText,
                 ),
               ),
-              GestureDetector(
-                onTap: widget.onLogin,
+              TextButton(
+                onPressed: widget.onLogin,
                 child: Text(
-                  'Iniciar Sesión',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  'Inicia Sesión',
+                  style: TextStyle(
                     color:
                         isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart'; // Import Material for BuildContext
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,11 +69,11 @@ class AddScanItemController extends StateNotifier<AddScanItemState> {
             isLoading: false,
           );
           imagesPickedSuccessfully = true;
-          print('Picked ${newFiles.length} images from gallery.');
+          log('Picked ${newFiles.length} images from gallery.');
         } else {
           // No images picked or context became unmounted
           state = state.copyWith(isLoading: false);
-          print('Gallery picking cancelled or no images selected.');
+          log('Gallery picking cancelled or no images selected.');
         }
       } else if (source == ImageSource.camera) {
         final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -88,15 +89,15 @@ class AddScanItemController extends StateNotifier<AddScanItemState> {
             isLoading: false,
           );
           imagesPickedSuccessfully = true;
-          print('Added image from camera: ${pickedFile.path}');
+          log('Added image from camera: ${pickedFile.path}');
         } else {
           // No image picked or context became unmounted
           state = state.copyWith(isLoading: false);
-          print('Camera image picking cancelled.');
+          log('Camera image picking cancelled.');
         }
       }
     } catch (e) {
-      print('Error picking images: $e');
+      log('Error picking images: $e');
       if (context.mounted) {
         state = state.copyWith(
           isLoading: false,
@@ -114,7 +115,7 @@ class AddScanItemController extends StateNotifier<AddScanItemState> {
     if (imagesPickedSuccessfully &&
         finalImageList.isNotEmpty &&
         context.mounted) {
-      print(
+      log(
         "Attempting navigation to /scan/confirm from $originType with ${finalImageList.length} images.",
       );
       // Pass both images and origin type in a Map

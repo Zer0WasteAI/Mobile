@@ -6,6 +6,7 @@ import 'package:zer0_waste_ai/features/auth/presentation/providers/register_prov
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/animated_logo.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/widgets/register_form.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/allergy_selector_screen.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 
 /// Register screen
 class RegisterScreen extends ConsumerWidget {
@@ -15,6 +16,7 @@ class RegisterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch register state
+    // ignore: unused_local_variable
     final registerAsync = ref.watch(registerNotifierProvider);
 
     // Get theme data
@@ -23,13 +25,20 @@ class RegisterScreen extends ConsumerWidget {
 
     // Handle register success
     ref.listen<AsyncValue>(registerNotifierProvider, (_, state) {
-      state.whenData((user) {
+      state.whenData((user) async {
         if (user != null) {
-          // TODO: Check if this is the user's first time registering/logging in.
-          // If first time, navigate to AllergySelectorScreen, otherwise to /home.
-          // For now, always navigate to allergy selector after registration.
-          context.go(AllergySelectorScreen.routePath);
-          // context.go('/home'); // Original navigation
+          // Check if this is the user's first time registering/logging in
+          final userProfileState = ref.read(userProfileProvider);
+          final hasCompletedPreferences =
+              userProfileState.user?.initialPreferencesCompleted ?? false;
+
+          if (hasCompletedPreferences) {
+            // User has already completed preferences, go to home
+            context.go('/home');
+          } else {
+            // First time user or user hasn't completed preferences, go to onboarding
+            context.go(AllergySelectorScreen.routePath);
+          }
         }
       });
 

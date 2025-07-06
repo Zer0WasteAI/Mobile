@@ -14,6 +14,7 @@ class MoreOptionsModal extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    // ignore: unused_local_variable
     final colorScheme = theme.colorScheme;
 
     // Colores basados en el tema
@@ -34,7 +35,7 @@ class MoreOptionsModal extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -54,7 +55,7 @@ class MoreOptionsModal extends ConsumerWidget {
                 height: 3,
                 margin: const EdgeInsets.only(top: 4),
                 decoration: BoxDecoration(
-                  color: secondaryTextColor.withOpacity(0.3),
+                  color: secondaryTextColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(1.5),
                 ),
               ),
@@ -120,6 +121,22 @@ class MoreOptionsModal extends ConsumerWidget {
                 },
               ),
 
+              const Divider(height: 24),
+
+              _buildOptionItem(
+                context,
+                ref,
+                icon: FontAwesomeIcons.utensils,
+                iconColor: Colors.green,
+                title: 'Planificación de Comidas',
+                subtitle: 'Planifica tus comidas diarias con IA',
+                onTap: () {
+                  onClose();
+                  // Navegación a la planificación de comidas
+                  context.push('/meal-planning');
+                },
+              ),
+
               const SizedBox(height: 24),
 
               // Botón para cerrar más prominente
@@ -176,7 +193,7 @@ class MoreOptionsModal extends ConsumerWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(child: FaIcon(icon, color: iconColor, size: 20)),
