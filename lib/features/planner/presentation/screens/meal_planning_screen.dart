@@ -601,7 +601,7 @@ class _MealPlanningScreenState extends ConsumerState<MealPlanningScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              meal.recipeTitle,
+              _cleanRecipeTitle(meal.recipeTitle),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -684,7 +684,7 @@ class _MealPlanningScreenState extends ConsumerState<MealPlanningScreen> {
             const SizedBox(height: 8),
             if (meal != null) ...[
               Text(
-                meal.recipeTitle,
+                _cleanRecipeTitle(meal.recipeTitle),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -995,5 +995,11 @@ class _MealPlanningScreenState extends ConsumerState<MealPlanningScreen> {
             ],
           ),
     );
+  }
+
+  // Método para limpiar el título de la receta
+  String _cleanRecipeTitle(String title) {
+    // Eliminar patrones como "(1)" o "(2)" al final del título
+    return title.replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
   }
 }

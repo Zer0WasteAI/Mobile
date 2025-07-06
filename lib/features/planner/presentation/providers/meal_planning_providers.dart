@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../domain/models/meal_plan_models.dart';
 import '../../data/repositories/meal_plan_repository_impl.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
+import '../../application/providers/meal_planning_providers.dart' as app_providers;
 
 /// Provider for meal plan repository
 final mealPlanRepositoryProvider = Provider<MealPlanRepository>((ref) {
@@ -29,21 +30,32 @@ final mealPlanByDateProvider = FutureProvider.family<MealPlanModel?, String>((
           mealPlanData.containsKey('dinner')) {
         print('[DEBUG] API returned direct meal data without meals wrapper');
         
+        // Primero creamos el objeto DailyMeals para poder calcular las calorías
+        final dailyMeals = DailyMeals.fromJson(mealPlanData);
+        
+        // Calculamos las calorías totales
+        int totalCalories = 0;
+        if (dailyMeals.breakfast != null) totalCalories += dailyMeals.breakfast!.calories;
+        if (dailyMeals.lunch != null) totalCalories += dailyMeals.lunch!.calories;
+        if (dailyMeals.dinner != null) totalCalories += dailyMeals.dinner!.calories;
+        
+        print('[DEBUG] Calculated total calories: $totalCalories');
+        
         // Necesitamos adaptar la estructura para nuestro modelo
         final adaptedData = {
           'uid': '',  // Generará un ID automático
           'date': date,
           'meals': mealPlanData,  // Los datos de comidas están en el nivel superior
-          'total_calories': 0  // Se calculará automáticamente
+          'total_calories': totalCalories  // Usamos el valor calculado
         };
         
         final mealPlan = MealPlanModel.fromJson(adaptedData);
-        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
+        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}, calories: ${mealPlan.totalCalories}');
         return mealPlan;
       } else {
         // Formato normal
         final mealPlan = MealPlanModel.fromJson(mealPlanData);
-        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
+        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}, calories: ${mealPlan.totalCalories}');
         return mealPlan;
       }
     }
@@ -105,16 +117,32 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
   Future<void> saveMealPlan(String date, DailyMeals meals) async {
     state = const AsyncValue.loading();
     try {
+      // Calcular calorías totales antes de enviar
+      int totalCalories = 0;
+      if (meals.breakfast != null) totalCalories += meals.breakfast!.calories;
+      if (meals.lunch != null) totalCalories += meals.lunch!.calories;
+      if (meals.dinner != null) totalCalories += meals.dinner!.calories;
+      
+      print('[DEBUG] Saving meal plan with calculated calories: $totalCalories');
+      
       final response = await _repository.saveMealPlan(
         date: date,
         meals: meals.toJson(),
       );
       if (response['meal_plan'] != null) {
+        // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
         final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        
+        // Si la respuesta no incluye calorías totales, las añadimos
+        if (!mealPlanData.containsKey('total_calories') || mealPlanData['total_calories'] == 0) {
+          mealPlanData['total_calories'] = totalCalories;
+        }
+        
         final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
-        // Invalidate the meal plan by date provider to refresh UI
+        // Invalidate both providers to refresh UI
         _ref.invalidate(mealPlanByDateProvider(date));
+        _ref.invalidate(app_providers.mealPlanningProvider);
       } else {
         state = const AsyncValue.data(null);
       }
@@ -127,16 +155,32 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
   Future<void> updateMealPlan(String date, DailyMeals meals) async {
     state = const AsyncValue.loading();
     try {
+      // Calcular calorías totales antes de enviar
+      int totalCalories = 0;
+      if (meals.breakfast != null) totalCalories += meals.breakfast!.calories;
+      if (meals.lunch != null) totalCalories += meals.lunch!.calories;
+      if (meals.dinner != null) totalCalories += meals.dinner!.calories;
+      
+      print('[DEBUG] Updating meal plan with calculated calories: $totalCalories');
+      
       final response = await _repository.updateMealPlan(
         date: date,
         meals: meals.toJson(),
       );
       if (response['meal_plan'] != null) {
+        // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
         final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        
+        // Si la respuesta no incluye calorías totales, las añadimos
+        if (!mealPlanData.containsKey('total_calories') || mealPlanData['total_calories'] == 0) {
+          mealPlanData['total_calories'] = totalCalories;
+        }
+        
         final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
-        // Invalidate the meal plan by date provider to refresh UI
+        // Invalidate both providers to refresh UI
         _ref.invalidate(mealPlanByDateProvider(date));
+        _ref.invalidate(app_providers.mealPlanningProvider);
       } else {
         state = const AsyncValue.data(null);
       }
@@ -151,6 +195,9 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
     try {
       await _repository.deleteMealPlan(date);
       state = const AsyncValue.data(null);
+      // Invalidate both providers to refresh UI
+      _ref.invalidate(mealPlanByDateProvider(date));
+      _ref.invalidate(mealPlanningProvider);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
@@ -164,7 +211,25 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
         ingredients: ingredients,
       );
       if (response['meal_plan'] != null) {
+        // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
         final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        
+        // Verificar si necesitamos calcular calorías
+        if (!mealPlanData.containsKey('total_calories') || mealPlanData['total_calories'] == 0) {
+          // Crear temporalmente el objeto para calcular calorías
+          final tempMealPlan = MealPlanModel.fromJson(mealPlanData);
+          
+          // Calcular calorías totales
+          int totalCalories = 0;
+          if (tempMealPlan.meals.breakfast != null) totalCalories += tempMealPlan.meals.breakfast!.calories;
+          if (tempMealPlan.meals.lunch != null) totalCalories += tempMealPlan.meals.lunch!.calories;
+          if (tempMealPlan.meals.dinner != null) totalCalories += tempMealPlan.meals.dinner!.calories;
+          
+          // Actualizar el mapa con las calorías calculadas
+          mealPlanData['total_calories'] = totalCalories;
+          print('[DEBUG] Generated meal plan with calculated calories: $totalCalories');
+        }
+        
         final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
       } else {
@@ -181,7 +246,36 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
     try {
       final response = await _repository.getMealPlanByDate(date);
       if (response['meal_plan'] != null) {
+        // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
         final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        
+        // Verificar si necesitamos calcular calorías
+        if (!mealPlanData.containsKey('total_calories') || mealPlanData['total_calories'] == 0) {
+          // Primero verificamos si es una estructura directa de comidas o tiene wrapper 'meals'
+          Map<String, dynamic> mealsData;
+          if (mealPlanData.containsKey('meals')) {
+            mealsData = Map<String, dynamic>.from(mealPlanData['meals'] as Map);
+          } else if (mealPlanData.containsKey('breakfast') || mealPlanData.containsKey('lunch') || 
+                    mealPlanData.containsKey('dinner')) {
+            mealsData = mealPlanData;
+          } else {
+            mealsData = {};
+          }
+          
+          // Crear objeto DailyMeals para calcular calorías
+          final dailyMeals = DailyMeals.fromJson(mealsData);
+          
+          // Calcular calorías totales
+          int totalCalories = 0;
+          if (dailyMeals.breakfast != null) totalCalories += dailyMeals.breakfast!.calories;
+          if (dailyMeals.lunch != null) totalCalories += dailyMeals.lunch!.calories;
+          if (dailyMeals.dinner != null) totalCalories += dailyMeals.dinner!.calories;
+          
+          // Actualizar el mapa con las calorías calculadas
+          mealPlanData['total_calories'] = totalCalories;
+          print('[DEBUG] Loaded meal plan with calculated calories: $totalCalories');
+        }
+        
         final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
       } else {

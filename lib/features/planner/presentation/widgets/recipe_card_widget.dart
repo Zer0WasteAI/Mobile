@@ -20,7 +20,7 @@ class RecipeCardWidget extends StatelessWidget {
   /// Convert GeneratedRecipe to format expected by RecipeCookingMode
   Map<String, dynamic> _convertGeneratedRecipeToStepsFormat(GeneratedRecipe recipe) {
     return {
-      'title': recipe.title,
+      'title': _cleanRecipeTitle(recipe.title),
       'description': recipe.description,
       'cookingTime': recipe.prepTime + recipe.cookTime,
       'difficulty': recipe.difficulty,
@@ -156,7 +156,7 @@ class RecipeCardWidget extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            recipe.title,
+            _cleanRecipeTitle(recipe.title),
             style: textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -175,22 +175,6 @@ class RecipeCardWidget extends StatelessWidget {
                 Icons.bookmark_border,
                 color: colorScheme.primary,
                 size: 20,
-              ),
-            ),
-          ),
-        if (onSaveRecipe != null) const SizedBox(width: 8),
-        if (recipe.calories != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: colorScheme.secondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '${recipe.calories} kcal',
-              style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.secondary,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -343,7 +327,7 @@ class RecipeCardWidget extends StatelessWidget {
                         // Show completion message with rating option
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('¡Felicidades! Has completado: ${recipe.title}'),
+                            content: Text('¡Felicidades! Has completado: ${_cleanRecipeTitle(recipe.title)}'),
                             backgroundColor: Colors.green,
                             duration: const Duration(seconds: 4),
                             action: SnackBarAction(
@@ -354,13 +338,13 @@ class RecipeCardWidget extends StatelessWidget {
                                 showDialog(
                                   context: context,
                                   builder: (context) => RecipeRatingDialog(
-                                    recipeName: recipe.title,
+                                    recipeName: _cleanRecipeTitle(recipe.title),
                                     onSubmit: (rating, comment) {
                                       // Here you could save the rating for generated recipes
                                       // For now, just show a confirmation
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('¡Gracias por calificar "${recipe.title}" con $rating estrellas!'),
+                                          content: Text('¡Gracias por calificar "${_cleanRecipeTitle(recipe.title)}" con $rating estrellas!'),
                                           backgroundColor: Colors.amber.shade700,
                                           duration: const Duration(seconds: 2),
                                         ),
@@ -416,5 +400,10 @@ class RecipeCardWidget extends StatelessWidget {
         ),
       );
     }
+  }
+
+  // Función para limpiar nombres de recetas removiendo sufijos como (1), (2), etc.
+  String _cleanRecipeTitle(String title) {
+    return title.replaceAll(RegExp(r'\s*\(\d+\)$'), '').trim();
   }
 }

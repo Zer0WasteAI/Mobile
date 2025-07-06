@@ -2,40 +2,41 @@ import 'package:flutter/material.dart';
 import '../../domain/models/meal_plan_models.dart';
 
 class MealCreationCard extends StatelessWidget {
-  final Meal meal;
+  final Meal? meal;
   final MealType mealType;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onAddMeal;
+  final Function(Meal?) onMealChanged;
 
   const MealCreationCard({
     super.key,
-    required this.meal,
+    this.meal,
     required this.mealType,
-    required this.onEdit,
-    required this.onDelete,
+    required this.onAddMeal,
+    required this.onMealChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
+    if (meal == null) {
+      return _buildEmptyCard(context);
+    }
+
+    return _buildMealCard(context, textTheme);
+  }
+
+  // Método para limpiar el título de la receta
+  String _cleanRecipeTitle(String title) {
+    // Eliminar patrones como "(1)" o "(2)" al final del título
+    return title.replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
+  }
+
+  Widget _buildMealCard(BuildContext context, TextTheme textTheme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: mealType.color.withValues(alpha: 0.3),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +61,7 @@ class MealCreationCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      meal.recipeTitle,
+                      _cleanRecipeTitle(meal!.recipeTitle),
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -69,26 +70,13 @@ class MealCreationCard extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.schedule,
-                          size: 16,
+                          Icons.access_time,
+                          size: 14,
                           color: Colors.grey[600],
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${meal.prepTime} min',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(
-                          Icons.local_fire_department,
-                          size: 16,
-                          color: Colors.orange,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${meal.calories} kcal',
+                          '${meal!.prepTime} min',
                           style: textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -98,79 +86,111 @@ class MealCreationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      onEdit();
-                      break;
-                    case 'delete':
-                      onDelete();
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, size: 18),
-                        SizedBox(width: 8),
-                        Text('Cambiar'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, size: 18, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Eliminar', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.blue[400]),
+                onPressed: onAddMeal,
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red[400]),
+                onPressed: () => onMealChanged(null),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Ingredientes:',
-            style: textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ingredientes:',
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                ...meal!.ingredientsNeeded.take(3).map(
+                  (ingredient) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('• ', style: textTheme.bodySmall),
+                        Expanded(
+                          child: Text(
+                            ingredient.toString(),
+                            style: textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (meal!.ingredientsNeeded.length > 3)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '+${meal!.ingredientsNeeded.length - 3} más...',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: meal.ingredientsNeeded.take(4).map((ingredient) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyCard(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: onAddMeal,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(6),
+                  color: mealType.color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                child: Text(
-                  ingredient.name,
-                  style: textTheme.bodySmall,
-                ),
-              );
-            }).toList(),
-          ),
-          if (meal.ingredientsNeeded.length > 4)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                '+${meal.ingredientsNeeded.length - 4} más',
-                style: textTheme.bodySmall?.copyWith(
+                child: Icon(
+                  Icons.add,
                   color: mealType.color,
-                  fontWeight: FontWeight.w500,
+                  size: 24,
                 ),
               ),
-            ),
-        ],
+              const SizedBox(height: 12),
+              Text(
+                'Agregar ${mealType.name}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: mealType.color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Toca para seleccionar una receta',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

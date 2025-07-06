@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -33,11 +35,13 @@ class _UnifiedMealPlanningScreenState
     super.initState();
     _selectedDate = widget.initialDate ?? DateTime.now();
     _focusedWeekStart = _getWeekStart(_selectedDate);
-    
+
     // If we have an initial date (coming from manual plan creation), switch to daily view
     if (widget.initialDate != null) {
       _isWeeklyView = false;
-      print('[DEBUG] Initial date provided: ${widget.initialDate}, switching to daily view');
+      print(
+        '[DEBUG] Initial date provided: ${widget.initialDate}, switching to daily view',
+      );
     }
 
     _fabAnimationController = AnimationController(
@@ -54,7 +58,7 @@ class _UnifiedMealPlanningScreenState
 
     _fabAnimationController.forward();
     _headerAnimationController.forward();
-    
+
     // Add observer to refresh data when app resumes
     WidgetsBinding.instance.addObserver(this);
   }
@@ -392,7 +396,7 @@ class _UnifiedMealPlanningScreenState
       setState(() {
         _isWeeklyView = isWeekly;
       });
-      
+
       // If switching to daily view, refresh the meal plan data
       if (!isWeekly) {
         _refreshMealPlanData();
@@ -607,7 +611,9 @@ class _UnifiedMealPlanningScreenState
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),

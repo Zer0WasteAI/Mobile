@@ -68,7 +68,7 @@ class MealCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  meal.recipeTitle,
+                  _cleanRecipeTitle(meal.recipeTitle),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -82,19 +82,6 @@ class MealCardWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       '${meal.prepTime} min',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.local_fire_department,
-                      size: 14,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${meal.calories} cal',
                       style: Theme.of(
                         context,
                       ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
@@ -148,6 +135,10 @@ class MealCardWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _cleanRecipeTitle(String title) {
+    return title.replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
   }
 
   Widget _buildContent(BuildContext context) {

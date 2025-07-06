@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
-import 'package:zer0_waste_ai/features/planner/application/providers/meal_planning_providers.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 /// Widget que muestra la planificación de comidas para el día actual
@@ -24,10 +23,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   @override
   void initState() {
     super.initState();
-    // Cargar los datos de planificación después del primer build
-    Future(() {
-      ref.read(mealPlanningProvider.notifier).loadAllMealPlans();
-    });
+    // No necesitamos cargar datos manualmente ya que usaremos el provider directo
   }
 
   @override
@@ -47,11 +43,36 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     final today = DateTime.now();
     final dateKey = DateFormat('yyyy-MM-dd').format(today);
 
-    // Obtener el estado de planificación de comidas
-    final mealPlanningState = ref.watch(mealPlanningProvider);
+    // Obtener el plan de comidas para hoy usando el mismo provider que la vista diaria
+    final mealPlanAsync = ref.watch(mealPlanByDateProvider(dateKey));
 
-    // Obtener las comidas planificadas para hoy desde el nuevo provider
-    final todayMealPlan = mealPlanningState.mealPlans[dateKey];
+    return mealPlanAsync.when(
+      data: (todayMealPlan) => _buildContent(
+        context,
+        today,
+        todayMealPlan,
+        isDark,
+        primaryColor,
+        textColor,
+        secondaryTextColor,
+        cardColor,
+      ),
+      loading: () => _buildLoadingCard(cardColor),
+      error: (error, _) => _buildErrorCard(cardColor, textColor),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    DateTime today,
+    MealPlanModel? todayMealPlan,
+    bool isDark,
+    Color primaryColor,
+    Color textColor,
+    Color secondaryTextColor,
+    Color cardColor,
+  ) {
+    // Obtener las comidas planificadas para hoy
     final todayMeals = todayMealPlan?.meals.allMeals ?? [];
 
     // Organizar las comidas por tipo usando el nuevo modelo
@@ -155,7 +176,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                         const SizedBox(height: 2),
                         Text(
                           todayMeals.isEmpty
-                              ? 'No hay comidas planificadas'
+                              ? 'Sin plan para hoy'
                               : _buildMealSummary(mealsByType),
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -164,29 +185,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        // Mostrar calorías totales si hay comidas
-                        if (todayMealPlan != null && todayMeals.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.local_fire_department,
-                                  size: 12,
-                                  color: AppColors.breakfastColor,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${todayMealPlan.meals.totalCalories} kcal',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: AppColors.breakfastColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -552,7 +550,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  meal.recipeTitle,
+                  meal.recipeTitle.cleanName(),
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -560,25 +558,12 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      '${meal.calories} kcal',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: AppColors.breakfastColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${meal.prepTime} min',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: secondaryTextColor,
-                      ),
-                    ),
-                  ],
+                Text(
+                  '${meal.prepTime} min',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: secondaryTextColor,
+                  ),
                 ),
               ],
             ),
@@ -657,11 +642,63 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
       ),
     );
   }
+
+  Widget _buildLoadingCard(Color cardColor) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: cardColor,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      child: const Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircularProgressIndicator(strokeWidth: 2),
+            SizedBox(width: 16),
+            Text('Cargando plan del día...'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(Color cardColor, Color textColor) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: cardColor,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Error al cargar el plan',
+                style: GoogleFonts.inter(color: textColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // Extensión para capitalizar strings
 extension StringExtension on String {
   String capitalize() {
     return isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
+  }
+
+  // Limpiar nombres removiendo sufijos como (1), (2), etc.
+  String cleanName() {
+    return replaceAll(RegExp(r'\s*\(\d+\)$'), '').trim();
   }
 }

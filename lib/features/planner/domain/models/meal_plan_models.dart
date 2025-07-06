@@ -114,26 +114,26 @@ class Meal {
     }
     
     // Parse calories properly - can be integer, double, string, or null
-    int calories = 0;
+    int calories = 250; // Valor predeterminado de calorías
     if (json['calories'] != null) {
       if (json['calories'] is int) {
         calories = json['calories'] as int;
       } else if (json['calories'] is double) {
         calories = (json['calories'] as double).toInt();
       } else if (json['calories'] is String) {
-        calories = int.tryParse(json['calories'] as String) ?? 0;
+        calories = int.tryParse(json['calories'] as String) ?? 250;
       }
     }
     
     // Parse prep_time properly - can be integer, double, string, or null
-    int prepTime = 0;
+    int prepTime = 30; // Valor predeterminado de tiempo de preparación
     if (json['prep_time'] != null) {
       if (json['prep_time'] is int) {
         prepTime = json['prep_time'] as int;
       } else if (json['prep_time'] is double) {
         prepTime = (json['prep_time'] as double).toInt();
       } else if (json['prep_time'] is String) {
-        prepTime = int.tryParse(json['prep_time'] as String) ?? 0;
+        prepTime = int.tryParse(json['prep_time'] as String) ?? 30;
       }
     } else if (json['duration'] != null) {
       if (json['duration'] is int) {
@@ -141,7 +141,7 @@ class Meal {
       } else if (json['duration'] is double) {
         prepTime = (json['duration'] as double).toInt();
       } else if (json['duration'] is String) {
-        prepTime = int.tryParse(json['duration'] as String) ?? 0;
+        prepTime = int.tryParse(json['duration'] as String) ?? 30;
       }
     }
     

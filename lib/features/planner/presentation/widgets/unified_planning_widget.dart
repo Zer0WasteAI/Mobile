@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/meal_plan_models.dart';
-import '../../application/providers/meal_planning_providers.dart';
+import '../providers/meal_planning_providers.dart';
 
 class UnifiedPlanningWidget extends ConsumerStatefulWidget {
   final DateTime focusedWeekStart;
@@ -261,30 +261,35 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
   List<Widget> _buildRealMealIcons(DateTime date, int mealCount) {
     if (mealCount == 0) return [];
     
-    final mealPlanningState = ref.watch(mealPlanningProvider);
     final dateKey = DateFormat('yyyy-MM-dd').format(date);
-    final dayPlan = mealPlanningState.mealPlans[dateKey];
+    final mealPlanAsync = ref.watch(mealPlanByDateProvider(dateKey));
     
-    if (dayPlan == null) return [];
-    
-    // Obtener tipos únicos de comidas que realmente existen
-    final List<Widget> icons = [];
-    final meals = dayPlan.meals;
-    
-    // Solo mostrar iconos para comidas que realmente existen (verificar null primero)
-    if (meals.breakfast != null) {
-      icons.add(_buildRealMealIcon(MealType.breakfast));
-    }
-    if (meals.lunch != null) {
-      if (icons.isNotEmpty) icons.add(const SizedBox(height: 4));
-      icons.add(_buildRealMealIcon(MealType.lunch));
-    }
-    if (meals.dinner != null) {
-      if (icons.isNotEmpty) icons.add(const SizedBox(height: 4));
-      icons.add(_buildRealMealIcon(MealType.dinner));
-    }
-    
-    return icons;
+    return mealPlanAsync.when(
+      data: (mealPlan) {
+        if (mealPlan == null) return [];
+        
+        // Obtener tipos únicos de comidas que realmente existen
+        final List<Widget> icons = [];
+        final meals = mealPlan.meals;
+        
+        // Solo mostrar iconos para comidas que realmente existen (verificar null primero)
+        if (meals.breakfast != null) {
+          icons.add(_buildRealMealIcon(MealType.breakfast));
+        }
+        if (meals.lunch != null) {
+          if (icons.isNotEmpty) icons.add(const SizedBox(height: 4));
+          icons.add(_buildRealMealIcon(MealType.lunch));
+        }
+        if (meals.dinner != null) {
+          if (icons.isNotEmpty) icons.add(const SizedBox(height: 4));
+          icons.add(_buildRealMealIcon(MealType.dinner));
+        }
+        
+        return icons;
+      },
+      loading: () => [],
+      error: (_, _) => [],
+    );
   }
 
   Widget _buildRealMealIcon(MealType mealType) {
@@ -308,7 +313,6 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
   }
 
   Widget _buildDayFooter(DateTime date) {
-    final calories = _getRealCalories(date);
     final mealCount = _getRealMealCount(date);
     
     return Container(
@@ -325,14 +329,6 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
           if (mealCount > 0) ...[
             Column(
               children: [
-                Text(
-                  '$calories kcal',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
                 Text(
                   '$mealCount comida${mealCount > 1 ? 's' : ''}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -406,20 +402,14 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
 
   // Real data methods - Connected with actual meal planning providers
   int _getRealMealCount(DateTime date) {
-    final mealPlanningState = ref.watch(mealPlanningProvider);
     final dateKey = DateFormat('yyyy-MM-dd').format(date);
-    final dayPlan = mealPlanningState.mealPlans[dateKey];
+    final mealPlanAsync = ref.watch(mealPlanByDateProvider(dateKey));
     
-    // Solo contar comidas que realmente existen
-    return dayPlan?.meals.allMeals.length ?? 0;
+    return mealPlanAsync.when(
+      data: (mealPlan) => mealPlan?.meals.allMeals.length ?? 0,
+      loading: () => 0,
+      error: (_, _) => 0,
+    );
   }
 
-  int _getRealCalories(DateTime date) {
-    final mealPlanningState = ref.watch(mealPlanningProvider);
-    final dateKey = DateFormat('yyyy-MM-dd').format(date);
-    final dayPlan = mealPlanningState.mealPlans[dateKey];
-    
-    // Solo mostrar calorías si hay comidas reales
-    return dayPlan?.meals.totalCalories ?? 0;
-  }
 }

@@ -271,8 +271,8 @@ class _ManualPlanCreationScreenState
           MealCreationCard(
             meal: meal,
             mealType: mealType,
-            onEdit: () => _editMeal(mealType),
-            onDelete: () => _deleteMeal(mealType),
+            onAddMeal: () => _editMeal(mealType),
+            onMealChanged: (newMeal) => _deleteMeal(mealType),
           )
         else
           _buildAddMealCard(mealType, color),

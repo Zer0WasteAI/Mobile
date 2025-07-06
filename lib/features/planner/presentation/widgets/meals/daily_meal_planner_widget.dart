@@ -1,9 +1,13 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../domain/models/meal_plan_models.dart';
 import '../../providers/meal_planning_providers.dart';
+import '../../../application/providers/meal_planning_providers.dart'
+    as app_providers;
 import 'meal_card_widget.dart';
 
 class DailyMealPlannerWidget extends ConsumerStatefulWidget {
@@ -110,7 +114,9 @@ class _DailyMealPlannerWidgetState
 
     print('[DEBUG] Building meal plan content: ${mealPlan.uid}');
     print('[DEBUG] MealPlan structure: $mealPlan');
-    print('[DEBUG] Breakfast data: ${mealPlan.meals.breakfast?.recipeTitle ?? 'null'}');
+    print(
+      '[DEBUG] Breakfast data: ${mealPlan.meals.breakfast?.recipeTitle ?? 'null'}',
+    );
     print('[DEBUG] Meal count: ${mealPlan.meals.allMeals.length}');
     print('[DEBUG] Total calories: ${mealPlan.totalCalories}');
 
@@ -184,7 +190,7 @@ class _DailyMealPlannerWidgetState
                 print('[DEBUG] Refreshing meal plan for date: $dateString');
                 print('[DEBUG] Selected date widget: ${widget.selectedDate}');
                 ref.invalidate(mealPlanByDateProvider(dateString));
-                
+
                 // Show a loading snackbar to confirm the action
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -268,23 +274,16 @@ class _DailyMealPlannerWidgetState
 
   Widget _buildPlanSummary(MealPlanModel mealPlan) {
     // Debug logs para verificar los datos del plan
-    print('[DEBUG] Building plan summary: date=${mealPlan.date}, uid=${mealPlan.uid}');
-    print('[DEBUG] Meals: breakfast=${mealPlan.meals.breakfast != null}, lunch=${mealPlan.meals.lunch != null}, dinner=${mealPlan.meals.dinner != null}');
-    print('[DEBUG] Total calories: ${mealPlan.totalCalories}, Meal count: ${mealPlan.meals.allMeals.length}');
-    
-    // Asegurarnos de calcular valores correctos
-    int totalCalories = mealPlan.totalCalories;
+    print(
+      '[DEBUG] Building plan summary: date=${mealPlan.date}, uid=${mealPlan.uid}',
+    );
+    print(
+      '[DEBUG] Meals: breakfast=${mealPlan.meals.breakfast != null}, lunch=${mealPlan.meals.lunch != null}, dinner=${mealPlan.meals.dinner != null}',
+    );
+    print('[DEBUG] Meal count: ${mealPlan.meals.allMeals.length}');
+
     int mealCount = mealPlan.meals.allMeals.length;
-    
-    // Si hay desayuno pero totalCalories es 0, podemos intentar calcular las calorías manualmente
-    if (mealCount > 0 && totalCalories == 0) {
-      print('[DEBUG] Recalculating calories as total is 0');
-      if (mealPlan.meals.breakfast != null) totalCalories += mealPlan.meals.breakfast!.calories;
-      if (mealPlan.meals.lunch != null) totalCalories += mealPlan.meals.lunch!.calories;
-      if (mealPlan.meals.dinner != null) totalCalories += mealPlan.meals.dinner!.calories;
-      print('[DEBUG] Recalculated calories: $totalCalories');
-    }
-    
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -315,21 +314,6 @@ class _DailyMealPlannerWidgetState
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.local_fire_department,
-                      color: Colors.orange,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$totalCalories calorías',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.restaurant, color: Colors.green, size: 18),
@@ -363,11 +347,15 @@ class _DailyMealPlannerWidgetState
     required VoidCallback onAdd,
   }) {
     // Debug logs para verificar qué datos están llegando
-    print('[DEBUG] Building meal section for $title: ${meal != null ? 'Has meal' : 'No meal'}');
+    print(
+      '[DEBUG] Building meal section for $title: ${meal != null ? 'Has meal' : 'No meal'}',
+    );
     if (meal != null) {
-      print('[DEBUG] Meal details: title=${meal.recipeTitle}, calories=${meal.calories}, ingredients=${meal.ingredientsNeeded.length}');
+      print(
+        '[DEBUG] Meal details: title=${meal.recipeTitle}, ingredients=${meal.ingredientsNeeded.length}',
+      );
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -548,36 +536,51 @@ class _DailyMealPlannerWidgetState
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
-                  
+
                   // Implementar lógica de eliminación de comida
-                  final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
-                  
+                  final dateString = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(widget.selectedDate);
+
                   try {
                     // Obtener el plan actual
-                    final existingPlan = await ref.read(mealPlanByDateProvider(dateString).future);
-                    
+                    final existingPlan = await ref.read(
+                      mealPlanByDateProvider(dateString).future,
+                    );
+
                     if (existingPlan != null) {
                       // Crear un nuevo plan sin la comida seleccionada
                       final updatedMeals = DailyMeals(
-                        breakfast: mealType == MealType.breakfast ? null : existingPlan.meals.breakfast,
-                        lunch: mealType == MealType.lunch ? null : existingPlan.meals.lunch,
-                        dinner: mealType == MealType.dinner ? null : existingPlan.meals.dinner,
+                        breakfast:
+                            mealType == MealType.breakfast
+                                ? null
+                                : existingPlan.meals.breakfast,
+                        lunch:
+                            mealType == MealType.lunch
+                                ? null
+                                : existingPlan.meals.lunch,
+                        dinner:
+                            mealType == MealType.dinner
+                                ? null
+                                : existingPlan.meals.dinner,
                       );
-                      
+
                       // Actualizar el plan
-                      await ref.read(mealPlanningProvider.notifier).updateMealPlan(
-                        dateString,
-                        updatedMeals,
-                      );
-                      
-                      // Invalidar el provider para refrescar la UI
+                      await ref
+                          .read(mealPlanningProvider.notifier)
+                          .updateMealPlan(dateString, updatedMeals);
+
+                      // Invalidar ambos providers para refrescar la UI
                       ref.invalidate(mealPlanByDateProvider(dateString));
-                      
+                      ref.invalidate(app_providers.mealPlanningProvider);
+
                       // Mostrar mensaje de éxito
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('${mealType.name} eliminado del plan'),
+                            content: Text(
+                              '${mealType.name} eliminado del plan',
+                            ),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -608,13 +611,5 @@ class _DailyMealPlannerWidgetState
       'manualPlanCreation',
       queryParameters: {'date': widget.selectedDate.toIso8601String()},
     );
-  }
-
-  void _duplicatePlan(MealPlanModel mealPlan) {
-    // Implement plan duplication logic
-  }
-
-  void _generateShoppingList(MealPlanModel mealPlan) {
-    // Navigate to shopping list generation
   }
 }

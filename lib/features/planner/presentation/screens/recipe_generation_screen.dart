@@ -391,7 +391,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     try {
       // Convert GeneratedRecipe to Meal
       final meal = Meal(
-        recipeTitle: recipe.title,
+        recipeTitle: _cleanRecipeTitle(recipe.title),
         ingredientsNeeded: recipe.ingredients.map((ingredient) => 
           MealIngredient(
             name: ingredient.name,
@@ -400,7 +400,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           )
         ).toList(),
         prepTime: recipe.prepTime + recipe.cookTime,
-        calories: recipe.calories ?? 250,
+        calories: 0, // Sin calorías
       );
       
       // If this is from manual plan creation, just return the meal
@@ -502,7 +502,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     // Show additional success message for completed cooking
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('¡Excelente! Has cocinado ${recipe.title} con éxito'),
+        content: Text('¡Excelente! Has cocinado ${_cleanRecipeTitle(recipe.title)} con éxito'),
         backgroundColor: Colors.green.shade700,
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
@@ -523,7 +523,7 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           SnackBar(
             content: Text(
               success 
-                ? '¡${recipe.title} guardada en tus favoritos!'
+                ? '¡${_cleanRecipeTitle(recipe.title)} guardada en tus favoritos!'
                 : 'Error al guardar la receta'
             ),
             backgroundColor: success ? Colors.green : Colors.red,
@@ -542,5 +542,10 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         );
       }
     }
+  }
+
+  // Función para limpiar nombres de recetas removiendo sufijos como (1), (2), etc.
+  String _cleanRecipeTitle(String title) {
+    return title.replaceAll(RegExp(r'\s*\(\d+\)$'), '').trim();
   }
 }
