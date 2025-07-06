@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../domain/models/meal_plan_models.dart';
 import '../../providers/meal_planning_providers.dart';
 import 'meal_card_widget.dart';
-import 'add_meal_bottom_sheet.dart';
 
 class DailyMealPlannerWidget extends ConsumerStatefulWidget {
   final DateTime selectedDate;
@@ -105,8 +104,15 @@ class _DailyMealPlannerWidgetState
 
   Widget _buildMealPlanContent(MealPlanModel? mealPlan) {
     if (mealPlan == null) {
+      print('[DEBUG] No meal plan available, showing empty plan');
       return _buildEmptyPlan();
     }
+
+    print('[DEBUG] Building meal plan content: ${mealPlan.uid}');
+    print('[DEBUG] MealPlan structure: $mealPlan');
+    print('[DEBUG] Breakfast data: ${mealPlan.meals.breakfast?.recipeTitle ?? 'null'}');
+    print('[DEBUG] Meal count: ${mealPlan.meals.allMeals.length}');
+    print('[DEBUG] Total calories: ${mealPlan.totalCalories}');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -136,7 +142,7 @@ class _DailyMealPlannerWidgetState
             onAdd: () => _addMeal(MealType.dinner),
           ),
           const SizedBox(height: 20),
-          _buildActionButtons(mealPlan),
+          //_buildActionButtons(mealPlan),
         ],
       ),
     );
@@ -261,6 +267,24 @@ class _DailyMealPlannerWidgetState
   }
 
   Widget _buildPlanSummary(MealPlanModel mealPlan) {
+    // Debug logs para verificar los datos del plan
+    print('[DEBUG] Building plan summary: date=${mealPlan.date}, uid=${mealPlan.uid}');
+    print('[DEBUG] Meals: breakfast=${mealPlan.meals.breakfast != null}, lunch=${mealPlan.meals.lunch != null}, dinner=${mealPlan.meals.dinner != null}');
+    print('[DEBUG] Total calories: ${mealPlan.totalCalories}, Meal count: ${mealPlan.meals.allMeals.length}');
+    
+    // Asegurarnos de calcular valores correctos
+    int totalCalories = mealPlan.totalCalories;
+    int mealCount = mealPlan.meals.allMeals.length;
+    
+    // Si hay desayuno pero totalCalories es 0, podemos intentar calcular las calorías manualmente
+    if (mealCount > 0 && totalCalories == 0) {
+      print('[DEBUG] Recalculating calories as total is 0');
+      if (mealPlan.meals.breakfast != null) totalCalories += mealPlan.meals.breakfast!.calories;
+      if (mealPlan.meals.lunch != null) totalCalories += mealPlan.meals.lunch!.calories;
+      if (mealPlan.meals.dinner != null) totalCalories += mealPlan.meals.dinner!.calories;
+      print('[DEBUG] Recalculated calories: $totalCalories');
+    }
+    
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -300,7 +324,7 @@ class _DailyMealPlannerWidgetState
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${mealPlan.totalCalories} calorías',
+                      '$totalCalories calorías',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -311,7 +335,7 @@ class _DailyMealPlannerWidgetState
                     Icon(Icons.restaurant, color: Colors.green, size: 18),
                     const SizedBox(width: 4),
                     Text(
-                      '${mealPlan.meals.allMeals.length} comidas planificadas',
+                      '$mealCount comidas planificadas',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -338,6 +362,12 @@ class _DailyMealPlannerWidgetState
     required Meal? meal,
     required VoidCallback onAdd,
   }) {
+    // Debug logs para verificar qué datos están llegando
+    print('[DEBUG] Building meal section for $title: ${meal != null ? 'Has meal' : 'No meal'}');
+    if (meal != null) {
+      print('[DEBUG] Meal details: title=${meal.recipeTitle}, calories=${meal.calories}, ingredients=${meal.ingredientsNeeded.length}');
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -404,7 +434,7 @@ class _DailyMealPlannerWidgetState
     );
   }
 
-  Widget _buildActionButtons(MealPlanModel mealPlan) {
+  /*Widget _buildActionButtons(MealPlanModel mealPlan) {
     return Row(
       children: [
         Expanded(
@@ -428,7 +458,7 @@ class _DailyMealPlannerWidgetState
         ),
       ],
     );
-  }
+  }*/
 
   Widget _buildErrorState(Object error) {
     return Center(
@@ -480,27 +510,24 @@ class _DailyMealPlannerWidgetState
   }
 
   void _addMeal(MealType mealType) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder:
-          (context) => AddMealBottomSheet(
-            mealType: mealType,
-            selectedDate: widget.selectedDate,
-          ),
+    // Navegar a la pantalla de generación de recetas en lugar de mostrar el bottom sheet
+    context.pushNamed(
+      'recipeGeneration',
+      queryParameters: {
+        'date': widget.selectedDate.toIso8601String(),
+        'mealType': mealType.toString().split('.').last,
+      },
     );
   }
 
   void _editMeal(MealType mealType, Meal meal) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder:
-          (context) => AddMealBottomSheet(
-            mealType: mealType,
-            selectedDate: widget.selectedDate,
-            existingMeal: meal,
-          ),
+    // Navegar a la pantalla de generación de recetas para editar
+    context.pushNamed(
+      'recipeGeneration',
+      queryParameters: {
+        'date': widget.selectedDate.toIso8601String(),
+        'mealType': mealType.toString().split('.').last,
+      },
     );
   }
 
@@ -519,9 +546,54 @@ class _DailyMealPlannerWidgetState
                 child: const Text('Cancelar'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
-                  // Implement delete meal logic
+                  
+                  // Implementar lógica de eliminación de comida
+                  final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+                  
+                  try {
+                    // Obtener el plan actual
+                    final existingPlan = await ref.read(mealPlanByDateProvider(dateString).future);
+                    
+                    if (existingPlan != null) {
+                      // Crear un nuevo plan sin la comida seleccionada
+                      final updatedMeals = DailyMeals(
+                        breakfast: mealType == MealType.breakfast ? null : existingPlan.meals.breakfast,
+                        lunch: mealType == MealType.lunch ? null : existingPlan.meals.lunch,
+                        dinner: mealType == MealType.dinner ? null : existingPlan.meals.dinner,
+                      );
+                      
+                      // Actualizar el plan
+                      await ref.read(mealPlanningProvider.notifier).updateMealPlan(
+                        dateString,
+                        updatedMeals,
+                      );
+                      
+                      // Invalidar el provider para refrescar la UI
+                      ref.invalidate(mealPlanByDateProvider(dateString));
+                      
+                      // Mostrar mensaje de éxito
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${mealType.name} eliminado del plan'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    // Mostrar mensaje de error
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al eliminar la comida: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text('Eliminar'),

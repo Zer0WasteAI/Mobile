@@ -96,7 +96,7 @@ class _UnifiedMealPlanningScreenState
       body: CustomScrollView(
         slivers: [_buildAppBar(colorScheme, textTheme), _buildMainContent()],
       ),
-      floatingActionButton: _isWeeklyView ? _buildSmartFAB() : null,
+      //floatingActionButton: _isWeeklyView ? _buildSmartFAB() : null,
     );
   }
 
@@ -342,7 +342,7 @@ class _UnifiedMealPlanningScreenState
     );
   }
 
-  Widget _buildSmartFAB() {
+  /*Widget _buildSmartFAB() {
     return ScaleTransition(
       scale: _fabAnimationController,
       child: FloatingActionButton.extended(
@@ -353,7 +353,7 @@ class _UnifiedMealPlanningScreenState
         elevation: 8,
       ),
     );
-  }
+  }*/
 
   // Helper methods
   String _getHeaderSubtitle() {

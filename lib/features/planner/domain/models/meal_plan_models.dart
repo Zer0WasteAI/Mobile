@@ -62,9 +62,22 @@ class MealIngredient {
   });
 
   factory MealIngredient.fromJson(Map<String, dynamic> json) {
+    // Parse quantity properly - can be integer, double, string, or null
+    int quantity = 1;
+    
+    if (json['quantity'] != null) {
+      if (json['quantity'] is int) {
+        quantity = json['quantity'] as int;
+      } else if (json['quantity'] is double) {
+        quantity = (json['quantity'] as double).toInt();
+      } else if (json['quantity'] is String) {
+        quantity = int.tryParse(json['quantity'] as String) ?? 1;
+      }
+    }
+    
     return MealIngredient(
       name: (json['name'] ?? '') as String,
-      quantity: (json['quantity'] ?? 0) as int,
+      quantity: quantity,
       unit: (json['type_unit'] ?? json['unit'] ?? '') as String, // Support both formats
     );
   }
@@ -92,19 +105,57 @@ class Meal {
   });
 
   factory Meal.fromJson(Map<String, dynamic> json) {
+    List<dynamic> ingredients = [];
+    
+    if (json['ingredients_needed'] != null) {
+      ingredients = json['ingredients_needed'] as List<dynamic>;
+    } else if (json['ingredients'] != null) {
+      ingredients = json['ingredients'] as List<dynamic>;
+    }
+    
+    // Parse calories properly - can be integer, double, string, or null
+    int calories = 0;
+    if (json['calories'] != null) {
+      if (json['calories'] is int) {
+        calories = json['calories'] as int;
+      } else if (json['calories'] is double) {
+        calories = (json['calories'] as double).toInt();
+      } else if (json['calories'] is String) {
+        calories = int.tryParse(json['calories'] as String) ?? 0;
+      }
+    }
+    
+    // Parse prep_time properly - can be integer, double, string, or null
+    int prepTime = 0;
+    if (json['prep_time'] != null) {
+      if (json['prep_time'] is int) {
+        prepTime = json['prep_time'] as int;
+      } else if (json['prep_time'] is double) {
+        prepTime = (json['prep_time'] as double).toInt();
+      } else if (json['prep_time'] is String) {
+        prepTime = int.tryParse(json['prep_time'] as String) ?? 0;
+      }
+    } else if (json['duration'] != null) {
+      if (json['duration'] is int) {
+        prepTime = json['duration'] as int;
+      } else if (json['duration'] is double) {
+        prepTime = (json['duration'] as double).toInt();
+      } else if (json['duration'] is String) {
+        prepTime = int.tryParse(json['duration'] as String) ?? 0;
+      }
+    }
+    
     return Meal(
       recipeTitle: (json['recipe_title'] ?? json['title'] ?? '') as String,
-      ingredientsNeeded:
-          (json['ingredients_needed'] ?? json['ingredients'] ?? [])
-              .map<MealIngredient>(
-                (ingredient) =>
-                    MealIngredient.fromJson(ingredient as Map<String, dynamic>),
-              )
-              .toList(),
-      prepTime: (json['prep_time'] ?? 
-                 (json['duration'] != null ? int.tryParse(json['duration'].toString()) : null) ?? 
-                 0) as int,
-      calories: (json['calories'] ?? 0) as int,
+      ingredientsNeeded: ingredients
+          .map<MealIngredient>((ingredient) {
+            // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
+            final Map<String, dynamic> ingredientMap = Map<String, dynamic>.from(ingredient as Map);
+            return MealIngredient.fromJson(ingredientMap);
+          })
+          .toList(),
+      prepTime: prepTime,
+      calories: calories,
     );
   }
 
@@ -157,18 +208,21 @@ class DailyMeals {
   const DailyMeals({this.breakfast, this.lunch, this.dinner});
 
   factory DailyMeals.fromJson(Map<String, dynamic> json) {
+    // Debug para ver el contenido del JSON
+    print('[DEBUG] DailyMeals.fromJson: ${json.keys}');
+    
     return DailyMeals(
       breakfast:
-          json['breakfast'] != null && json['breakfast'] is Map<String, dynamic>
-              ? Meal.fromJson(json['breakfast'] as Map<String, dynamic>)
+          json['breakfast'] != null
+              ? Meal.fromJson(Map<String, dynamic>.from(json['breakfast'] as Map))
               : null,
       lunch:
-          json['lunch'] != null && json['lunch'] is Map<String, dynamic>
-              ? Meal.fromJson(json['lunch'] as Map<String, dynamic>)
+          json['lunch'] != null
+              ? Meal.fromJson(Map<String, dynamic>.from(json['lunch'] as Map))
               : null,
       dinner:
-          json['dinner'] != null && json['dinner'] is Map<String, dynamic>
-              ? Meal.fromJson(json['dinner'] as Map<String, dynamic>)
+          json['dinner'] != null
+              ? Meal.fromJson(Map<String, dynamic>.from(json['dinner'] as Map))
               : null,
     );
   }
@@ -181,21 +235,51 @@ class DailyMeals {
     return result;
   }
 
+  @override
+  String toString() {
+    return 'DailyMeals(breakfast: ${breakfast != null}, lunch: ${lunch != null}, dinner: ${dinner != null})';
+  }
+
   /// INFO: Calculate total calories for the day
   int get totalCalories {
     int total = 0;
-    if (breakfast != null) total += breakfast!.calories;
-    if (lunch != null) total += lunch!.calories;
-    if (dinner != null) total += dinner!.calories;
+    if (breakfast != null) {
+      print('[DEBUG] Breakfast calories: ${breakfast!.calories}');
+      total += breakfast!.calories;
+    }
+    if (lunch != null) {
+      print('[DEBUG] Lunch calories: ${lunch!.calories}');
+      total += lunch!.calories;
+    }
+    if (dinner != null) {
+      print('[DEBUG] Dinner calories: ${dinner!.calories}');
+      total += dinner!.calories;
+    }
+    print('[DEBUG] Total calories calculated: $total');
     return total;
   }
 
   /// INFO: Get all meals as a list (non-null meals only)
   List<Meal> get allMeals {
+    print('[DEBUG] Checking all meals in DailyMeals');
+    print('[DEBUG] Breakfast: ${breakfast != null}');
+    print('[DEBUG] Lunch: ${lunch != null}');
+    print('[DEBUG] Dinner: ${dinner != null}');
+    
     final List<Meal> meals = [];
-    if (breakfast != null) meals.add(breakfast!);
-    if (lunch != null) meals.add(lunch!);
-    if (dinner != null) meals.add(dinner!);
+    if (breakfast != null) {
+      print('[DEBUG] Adding breakfast to allMeals: ${breakfast!.recipeTitle}');
+      meals.add(breakfast!);
+    }
+    if (lunch != null) {
+      print('[DEBUG] Adding lunch to allMeals: ${lunch!.recipeTitle}');
+      meals.add(lunch!);
+    }
+    if (dinner != null) {
+      print('[DEBUG] Adding dinner to allMeals: ${dinner!.recipeTitle}');
+      meals.add(dinner!);
+    }
+    print('[DEBUG] Total meals collected: ${meals.length}');
     return meals;
   }
 }
@@ -217,11 +301,34 @@ class MealPlanModel {
   });
 
   factory MealPlanModel.fromJson(Map<String, dynamic> json) {
+    // Debug para ver el contenido completo que recibimos
+    print('[DEBUG] MealPlanModel.fromJson: ${json.keys}');
+    
+    // Crear DailyMeals
+    DailyMeals meals = DailyMeals.fromJson(
+      json['meals'] != null 
+      ? Map<String, dynamic>.from(json['meals'] as Map)
+      : {}
+    );
+    
+    // Calcular calorías manualmente en caso de que no vengan en el JSON
+    int totalCalories = json['total_calories'] != null 
+        ? (json['total_calories'] is int 
+            ? json['total_calories'] as int 
+            : int.tryParse(json['total_calories'].toString()) ?? meals.totalCalories)
+        : meals.totalCalories;
+    
+    // Asegurar que el UID no sea vacío
+    String uid = (json['uid'] ?? '').toString();
+    if (uid.isEmpty) {
+      uid = "plan_${json['date'] ?? DateTime.now().toString()}";
+    }
+    
     return MealPlanModel(
-      uid: (json['uid'] ?? '') as String,
+      uid: uid,
       date: (json['date'] ?? '') as String,
-      meals: DailyMeals.fromJson((json['meals'] ?? {}) as Map<String, dynamic>),
-      totalCalories: (json['total_calories'] ?? 0) as int,
+      meals: meals,
+      totalCalories: totalCalories,
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -236,6 +343,11 @@ class MealPlanModel {
       'total_calories': totalCalories,
       'created_at': createdAt.toIso8601String(),
     };
+  }
+
+  @override
+  String toString() {
+    return 'MealPlanModel(uid: $uid, date: $date, meals: $meals, totalCalories: $totalCalories)';
   }
 
   /// INFO: Create a copy with updated values
@@ -279,7 +391,7 @@ class MealPlanResponse {
     return MealPlanResponse(
       message: json['message'] as String,
       mealPlan: MealPlanModel.fromJson(
-        json['meal_plan'] as Map<String, dynamic>,
+        Map<String, dynamic>.from(json['meal_plan'] as Map),
       ),
     );
   }
@@ -296,7 +408,7 @@ class GetMealPlanResponse {
       mealPlan:
           json['meal_plan'] != null
               ? MealPlanModel.fromJson(
-                json['meal_plan'] as Map<String, dynamic>,
+                Map<String, dynamic>.from(json['meal_plan'] as Map),
               )
               : null,
     );
@@ -314,7 +426,7 @@ class GetAllMealPlansResponse {
       mealPlans:
           (json['meal_plans'] as List<dynamic>)
               .map(
-                (plan) => MealPlanModel.fromJson(plan as Map<String, dynamic>),
+                (plan) => MealPlanModel.fromJson(Map<String, dynamic>.from(plan as Map)),
               )
               .toList(),
     );

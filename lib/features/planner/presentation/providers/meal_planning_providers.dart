@@ -19,12 +19,34 @@ final mealPlanByDateProvider = FutureProvider.family<MealPlanModel?, String>((
     print('[DEBUG] Fetching meal plan for date: $date');
     final response = await repository.getMealPlanByDate(date);
     print('[DEBUG] Response received: $response');
+    
     if (response['meal_plan'] != null) {
-      final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
-      print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
-      return mealPlan;
+      // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
+      final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+      
+      // Verificamos si la respuesta API tiene la estructura esperada (no es una estructura con 'meals')
+      if (mealPlanData.containsKey('breakfast') || mealPlanData.containsKey('lunch') || 
+          mealPlanData.containsKey('dinner')) {
+        print('[DEBUG] API returned direct meal data without meals wrapper');
+        
+        // Necesitamos adaptar la estructura para nuestro modelo
+        final adaptedData = {
+          'uid': '',  // Generará un ID automático
+          'date': date,
+          'meals': mealPlanData,  // Los datos de comidas están en el nivel superior
+          'total_calories': 0  // Se calculará automáticamente
+        };
+        
+        final mealPlan = MealPlanModel.fromJson(adaptedData);
+        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
+        return mealPlan;
+      } else {
+        // Formato normal
+        final mealPlan = MealPlanModel.fromJson(mealPlanData);
+        print('[DEBUG] Successfully parsed meal plan: ${mealPlan.date}');
+        return mealPlan;
+      }
     }
-    print('[DEBUG] No meal plan found in response');
     return null;
   } catch (e) {
     print('[DEBUG] Error fetching meal plan: $e');
@@ -38,7 +60,11 @@ final allMealPlansProvider = FutureProvider<List<MealPlanModel>>((ref) async {
   try {
     final response = await repository.getAllMealPlans();
     final mealPlansData = response['meal_plans'] as List<dynamic>;
-    return mealPlansData.map((plan) => MealPlanModel.fromJson(plan)).toList();
+    return mealPlansData.map((plan) {
+      // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
+      final planData = Map<String, dynamic>.from(plan as Map);
+      return MealPlanModel.fromJson(planData);
+    }).toList();
   } catch (e) {
     return [];
   }
@@ -84,7 +110,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
         meals: meals.toJson(),
       );
       if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+        final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
         // Invalidate the meal plan by date provider to refresh UI
         _ref.invalidate(mealPlanByDateProvider(date));
@@ -105,7 +132,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
         meals: meals.toJson(),
       );
       if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+        final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
         // Invalidate the meal plan by date provider to refresh UI
         _ref.invalidate(mealPlanByDateProvider(date));
@@ -136,7 +164,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
         ingredients: ingredients,
       );
       if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+        final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
       } else {
         state = const AsyncValue.data(null);
@@ -152,7 +181,8 @@ class MealPlanningNotifier extends StateNotifier<AsyncValue<MealPlanModel?>> {
     try {
       final response = await _repository.getMealPlanByDate(date);
       if (response['meal_plan'] != null) {
-        final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+        final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+        final mealPlan = MealPlanModel.fromJson(mealPlanData);
         state = AsyncValue.data(mealPlan);
       } else {
         state = const AsyncValue.data(null);
@@ -213,7 +243,8 @@ final weeklyMealPlansProvider =
         try {
           final response = await repository.getMealPlanByDate(dateString);
           if (response['meal_plan'] != null) {
-            final mealPlan = MealPlanModel.fromJson(response['meal_plan']);
+            final mealPlanData = Map<String, dynamic>.from(response['meal_plan'] as Map);
+            final mealPlan = MealPlanModel.fromJson(mealPlanData);
             plans.add(mealPlan);
           }
         } catch (e) {
@@ -232,7 +263,11 @@ final mealPlanHistoryProvider = FutureProvider<List<MealPlanModel>>((
   try {
     final response = await repository.getMealPlanHistory();
     final mealPlansData = response['meal_plans'] as List<dynamic>;
-    return mealPlansData.map((plan) => MealPlanModel.fromJson(plan)).toList();
+    return mealPlansData.map((plan) {
+      // Convertir explícitamente el mapa dinámico a Map<String, dynamic>
+      final planData = Map<String, dynamic>.from(plan as Map);
+      return MealPlanModel.fromJson(planData);
+    }).toList();
   } catch (e) {
     return [];
   }
