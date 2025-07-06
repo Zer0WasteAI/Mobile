@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_backend_provider.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
 
 class AllRecipesScreen extends ConsumerStatefulWidget {
   const AllRecipesScreen({super.key});
@@ -374,9 +374,6 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
   }
 
   Widget _buildRecipeCard(Recipe recipe) {
-    final favoriteState = ref.watch(favoriteRecipesProvider);
-    final isFavorite = favoriteState.isFavorite(recipe.id);
-    final isSaving = favoriteState.isRecipeSaving(recipe.id);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -405,26 +402,15 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: IconButton(
-                    onPressed: isSaving ? null : () => _toggleFavorite(recipe),
-                    icon:
-                        isSaving
-                            ? const LottieLoadingWidget.small(
-                              width: 20,
-                              height: 20,
-                            )
-                            : Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color:
-                                  isFavorite
-                                      ? Colors.red
-                                      : Colors.grey.shade600,
-                            ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.9),
-                      padding: const EdgeInsets.all(8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: FavoriteButton(
+                      recipe: recipe,
+                      size: 20,
+                      showBackground: false,
                     ),
                   ),
                 ),
@@ -518,10 +504,6 @@ class _AllRecipesScreenState extends ConsumerState<AllRecipesScreen> {
     );
   }
 
-  Future<void> _toggleFavorite(Recipe recipe) async {
-    final favoriteNotifier = ref.read(favoriteRecipesProvider.notifier);
-    await favoriteNotifier.toggleFavorite(recipe);
-  }
 
   void _navigateToRecipeDetail(Recipe recipe) {
     context.pushNamed('recipeDetail', extra: recipe);

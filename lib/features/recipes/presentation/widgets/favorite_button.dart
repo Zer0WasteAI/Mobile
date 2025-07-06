@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
+import 'package:zer0_waste_ai/features/favorites/presentation/providers/favorite_recipe_providers.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
 /// INFO: Reusable favorite button widget
 /// USAGE: Add to any recipe UI to enable favoriting functionality
-/// ADVICE: Automatically syncs with backend and shows loading states
+/// ADVICE: Automatically syncs with Firestore and shows loading states
 class FavoriteButton extends ConsumerWidget {
   final Recipe recipe;
   final double? size;
@@ -26,87 +26,100 @@ class FavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavorited = ref.watch(isRecipeFavoritedProvider(recipe.id));
-    final isLoading = ref.watch(isRecipeSavingProvider(recipe.id));
-    final favoritesNotifier = ref.read(favoriteRecipesProvider.notifier);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    final favoriteActionState = ref.watch(favoriteActionProvider);
+    final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
     final effectiveFavoriteColor = favoriteColor ?? Colors.red.shade400;
     final effectiveUnfavoriteColor = unfavoriteColor ?? Colors.grey.shade400;
 
-    Widget iconWidget;
+    return isFavoriteAsync.when(
+      data: (isFavorited) {
+        final isLoading = favoriteActionState.isLoading;
+        
+        Widget iconWidget;
 
-    if (isLoading) {
-      iconWidget = SizedBox(
+        if (isLoading) {
+          iconWidget = SizedBox(
+            width: size! * 0.8,
+            height: size! * 0.8,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(effectiveFavoriteColor),
+            ),
+          );
+        } else {
+          iconWidget = Icon(
+            isFavorited ? Icons.favorite : Icons.favorite_border,
+            color: isFavorited ? effectiveFavoriteColor : effectiveUnfavoriteColor,
+            size: size,
+          );
+        }
+
+        final button = IconButton(
+          icon: iconWidget,
+          onPressed: isLoading
+              ? null
+              : () async {
+                  onToggle?.call();
+
+                  await favoriteActionNotifier.toggleFavorite(
+                    recipe.id,
+                    recipe.name,
+                    recipe.description,
+                    recipe.ingredients,
+                    [], // instructions not available in Recipe model
+                    0, // prepTime not available in Recipe model
+                    recipe.cookingTime,
+                    1, // servings not available in Recipe model
+                    recipe.difficulty,
+                    imagePath: recipe.imageUrl,
+                    mealType: recipe.categories.isNotEmpty ? recipe.categories.first : null,
+                  );
+
+                  if (context.mounted) {
+                    final message = isFavorited
+                        ? '${recipe.name} eliminada de favoritas'
+                        : '${recipe.name} guardada en favoritas';
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(message),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+          tooltip: isFavorited ? 'Quitar de favoritas' : 'Agregar a favoritas',
+        );
+
+        if (!showBackground) {
+          return button;
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isFavorited
+                ? effectiveFavoriteColor.withValues(alpha: 0.1)
+                : Colors.grey.shade100,
+            shape: BoxShape.circle,
+          ),
+          child: button,
+        );
+      },
+      loading: () => SizedBox(
         width: size! * 0.8,
         height: size! * 0.8,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation(effectiveFavoriteColor),
         ),
-      );
-    } else {
-      iconWidget = Icon(
-        isFavorited ? Icons.favorite : Icons.favorite_border,
-        color: isFavorited ? effectiveFavoriteColor : effectiveUnfavoriteColor,
-        size: size,
-      );
-    }
-
-    final button = IconButton(
-      icon: iconWidget,
-      onPressed:
-          isLoading
-              ? null
-              : () async {
-                // Call optional callback first
-                onToggle?.call();
-
-                // Toggle favorite status
-                final success = await favoritesNotifier.toggleFavorite(recipe);
-
-                // Show feedback to user
-                if (context.mounted) {
-                  final message =
-                      isFavorited
-                          ? '${recipe.name} eliminada de favoritas'
-                          : '${recipe.name} guardada en favoritas';
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      duration: const Duration(seconds: 2),
-                      action:
-                          success
-                              ? SnackBarAction(
-                                label: 'Deshacer',
-                                textColor: Colors.white,
-                                onPressed: () async {
-                                  await favoritesNotifier.toggleFavorite(
-                                    recipe,
-                                  );
-                                },
-                              )
-                              : null,
-                    ),
-                  );
-                }
-              },
-      tooltip: isFavorited ? 'Quitar de favoritas' : 'Agregar a favoritas',
-    );
-
-    if (!showBackground) {
-      return button;
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color:
-            isFavorited
-                ? effectiveFavoriteColor.withValues(alpha: 0.1)
-                : Colors.grey.shade100,
-        shape: BoxShape.circle,
       ),
-      child: button,
+      error: (_, _) => Icon(
+        Icons.favorite_border,
+        color: effectiveUnfavoriteColor,
+        size: size,
+      ),
     );
   }
 }
@@ -125,61 +138,86 @@ class FloatingFavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavorited = ref.watch(isRecipeFavoritedProvider(recipe.id));
-    final isLoading = ref.watch(isRecipeSavingProvider(recipe.id));
-    final favoritesNotifier = ref.read(favoriteRecipesProvider.notifier);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    final favoriteActionState = ref.watch(favoriteActionProvider);
+    final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
-    return FloatingActionButton(
-      onPressed:
-          isLoading
+    return isFavoriteAsync.when(
+      data: (isFavorited) {
+        final isLoading = favoriteActionState.isLoading;
+
+        return FloatingActionButton(
+          onPressed: isLoading
               ? null
               : () async {
-                onToggle?.call();
+                  onToggle?.call();
 
-                final success = await favoritesNotifier.toggleFavorite(recipe);
-
-                if (context.mounted) {
-                  final message =
-                      isFavorited
-                          ? '${recipe.name} eliminada de favoritas'
-                          : '${recipe.name} guardada en favoritas';
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      duration: const Duration(seconds: 2),
-                      action:
-                          success
-                              ? SnackBarAction(
-                                label: 'Deshacer',
-                                textColor: Colors.white,
-                                onPressed: () async {
-                                  await favoritesNotifier.toggleFavorite(
-                                    recipe,
-                                  );
-                                },
-                              )
-                              : null,
-                    ),
+                  await favoriteActionNotifier.toggleFavorite(
+                    recipe.id,
+                    recipe.name,
+                    recipe.description,
+                    recipe.ingredients,
+                    [], // instructions not available in Recipe model
+                    0, // prepTime not available in Recipe model
+                    recipe.cookingTime,
+                    1, // servings not available in Recipe model
+                    recipe.difficulty,
+                    imagePath: recipe.imageUrl,
+                    mealType: recipe.categories.isNotEmpty ? recipe.categories.first : null,
                   );
-                }
-              },
-      backgroundColor: isFavorited ? Colors.red.shade400 : Colors.grey.shade300,
-      foregroundColor: Colors.white,
-      child:
-          isLoading
+
+                  if (context.mounted) {
+                    final message = isFavorited
+                        ? '${recipe.name} eliminada de favoritas'
+                        : '${recipe.name} guardada en favoritas';
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(message),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+          backgroundColor: isFavorited ? Colors.red.shade400 : Colors.grey.shade300,
+          foregroundColor: Colors.white,
+          child: isLoading
               ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Colors.white),
-                ),
-              )
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
               : Icon(
-                isFavorited ? Icons.favorite : Icons.favorite_border,
-                size: 28,
-              ),
+                  isFavorited ? Icons.favorite : Icons.favorite_border,
+                  size: 28,
+                ),
+        );
+      },
+      loading: () => FloatingActionButton(
+        onPressed: null,
+        backgroundColor: Colors.grey.shade300,
+        foregroundColor: Colors.white,
+        child: const SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation(Colors.white),
+          ),
+        ),
+      ),
+      error: (_, _) => FloatingActionButton(
+        onPressed: null,
+        backgroundColor: Colors.grey.shade300,
+        foregroundColor: Colors.white,
+        child: const Icon(
+          Icons.favorite_border,
+          size: 28,
+        ),
+      ),
     );
   }
 }
@@ -194,56 +232,96 @@ class CompactFavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavorited = ref.watch(isRecipeFavoritedProvider(recipe.id));
-    final isLoading = ref.watch(isRecipeSavingProvider(recipe.id));
-    final favoritesNotifier = ref.read(favoriteRecipesProvider.notifier);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    final favoriteActionState = ref.watch(favoriteActionProvider);
+    final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
-    return GestureDetector(
-      onTap:
-          isLoading
+    return isFavoriteAsync.when(
+      data: (isFavorited) {
+        final isLoading = favoriteActionState.isLoading;
+
+        return GestureDetector(
+          onTap: isLoading
               ? null
               : () async {
-                onToggle?.call();
+                  onToggle?.call();
 
-                // ignore: unused_local_variable
-                final success = await favoritesNotifier.toggleFavorite(recipe);
-
-                if (context.mounted) {
-                  final message =
-                      isFavorited
-                          ? 'Eliminada de favoritas'
-                          : 'Guardada en favoritas';
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      duration: const Duration(seconds: 1),
-                    ),
+                  await favoriteActionNotifier.toggleFavorite(
+                    recipe.id,
+                    recipe.name,
+                    recipe.description,
+                    recipe.ingredients,
+                    [], // instructions not available in Recipe model
+                    0, // prepTime not available in Recipe model
+                    recipe.cookingTime,
+                    1, // servings not available in Recipe model
+                    recipe.difficulty,
+                    imagePath: recipe.imageUrl,
+                    mealType: recipe.categories.isNotEmpty ? recipe.categories.first : null,
                   );
-                }
-              },
-      child: Container(
+
+                  if (context.mounted) {
+                    final message = isFavorited
+                        ? 'Eliminada de favoritas'
+                        : 'Guardada en favoritas';
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(message),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isFavorited ? Colors.red.shade50 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: isLoading
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
+                    ),
+                  )
+                : Icon(
+                    isFavorited ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorited ? Colors.red.shade400 : Colors.grey.shade500,
+                    size: 16,
+                  ),
+          ),
+        );
+      },
+      loading: () => Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isFavorited ? Colors.red.shade50 : Colors.grey.shade100,
+          color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
         ),
-        child:
-            isLoading
-                ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
-                  ),
-                )
-                : Icon(
-                  isFavorited ? Icons.favorite : Icons.favorite_border,
-                  color:
-                      isFavorited ? Colors.red.shade400 : Colors.grey.shade500,
-                  size: 16,
-                ),
+        child: SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
+          ),
+        ),
+      ),
+      error: (_, _) => Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.favorite_border,
+          color: Colors.grey.shade500,
+          size: 16,
+        ),
       ),
     );
   }
@@ -265,77 +343,145 @@ class FavoriteButtonWithCount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavorited = ref.watch(isRecipeFavoritedProvider(recipe.id));
-    final isLoading = ref.watch(isRecipeSavingProvider(recipe.id));
-    final favoritesNotifier = ref.read(favoriteRecipesProvider.notifier);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    final favoriteActionState = ref.watch(favoriteActionProvider);
+    final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap:
-              isLoading
+    return isFavoriteAsync.when(
+      data: (isFavorited) {
+        final isLoading = favoriteActionState.isLoading;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: isLoading
                   ? null
                   : () async {
-                    onToggle?.call();
+                      onToggle?.call();
 
-                    // ignore: unused_local_variable
-                    final success = await favoritesNotifier.toggleFavorite(
-                      recipe,
-                    );
-
-                    if (context.mounted) {
-                      final message =
-                          isFavorited
-                              ? '${recipe.name} eliminada de favoritas'
-                              : '${recipe.name} guardada en favoritas';
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(message),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      await favoriteActionNotifier.toggleFavorite(
+                        recipe.id,
+                        recipe.name,
+                        recipe.description,
+                        recipe.ingredients,
+                        [], // instructions not available in Recipe model
+                        0, // prepTime not available in Recipe model  
+                        recipe.cookingTime,
+                        1, // servings not available in Recipe model
+                        recipe.difficulty,
+                        imagePath: recipe.imageUrl,
+                        mealType: recipe.categories.isNotEmpty ? recipe.categories.first : null,
                       );
-                    }
-                  },
-          child: Container(
+
+                      if (context.mounted) {
+                        final message = isFavorited
+                            ? '${recipe.name} eliminada de favoritas'
+                            : '${recipe.name} guardada en favoritas';
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(message),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isFavorited ? Colors.red.shade50 : Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
+                        ),
+                      )
+                    : Icon(
+                        isFavorited ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorited ? Colors.red.shade400 : Colors.grey.shade500,
+                        size: 20,
+                      ),
+              ),
+            ),
+            if (favoriteCount != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '$favoriteCount',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+      loading: () => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isFavorited ? Colors.red.shade50 : Colors.grey.shade100,
+              color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child:
-                isLoading
-                    ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
-                      ),
-                    )
-                    : Icon(
-                      isFavorited ? Icons.favorite : Icons.favorite_border,
-                      color:
-                          isFavorited
-                              ? Colors.red.shade400
-                              : Colors.grey.shade500,
-                      size: 20,
-                    ),
-          ),
-        ),
-        if (favoriteCount != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            '$favoriteCount',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(Colors.red.shade400),
+              ),
             ),
           ),
+          if (favoriteCount != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '$favoriteCount',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
+      error: (_, _) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.favorite_border,
+              color: Colors.grey.shade500,
+              size: 20,
+            ),
+          ),
+          if (favoriteCount != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '$favoriteCount',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

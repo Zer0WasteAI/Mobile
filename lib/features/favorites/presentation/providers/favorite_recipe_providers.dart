@@ -36,13 +36,23 @@ final isFavoriteProvider = FutureProvider.family<bool, String>((ref, recipeId) a
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(favoriteRecipeRepositoryProvider);
   
-  return authState.when(
+  return await authState.when(
     data: (user) async {
       if (user == null) return false;
-      return await repository.isFavorite(recipeId, user.id);
+      try {
+        return await repository.isFavorite(recipeId, user.id);
+      } catch (e) {
+        // Handle permission denied and other errors gracefully
+        if (e.toString().contains('permission-denied')) {
+          print('Permission denied for favorites - user may need to re-authenticate');
+          return false; // Default to not favorite if permission denied
+        }
+        print('Error checking favorite status: $e');
+        return false; // Default to not favorite on any error
+      }
     },
-    loading: () => false,
-    error: (_, _) => false,
+    loading: () async => false,
+    error: (_, _) async => false,
   );
 });
 
@@ -64,7 +74,10 @@ class FavoriteActionNotifier extends StateNotifier<AsyncValue<void>> {
     
     final authState = _ref.read(authStateProvider);
     
-    if (authState.value == null) return;
+    if (authState.value == null) {
+      state = AsyncValue.error('Usuario no autenticado', StackTrace.current);
+      return;
+    }
     
     final userId = authState.value!.id;
     state = const AsyncValue.loading();
@@ -75,16 +88,39 @@ class FavoriteActionNotifier extends StateNotifier<AsyncValue<void>> {
       if (isFavorite) {
         await _repository.removeFavorite(recipeId, userId);
       } else {
+        // Parse ingredients to extract quantity and unit if available
+        final favoriteIngredients = ingredients.map((ing) {
+          // Check if ingredient has format "quantity unit name"
+          final parts = ing.split(' ');
+          if (parts.length >= 3) {
+            final quantityStr = parts[0];
+            final unit = parts[1];
+            final name = parts.sublist(2).join(' ');
+            
+            final quantity = double.tryParse(quantityStr);
+            if (quantity != null) {
+              return FavoriteIngredient(
+                name: name,
+                quantity: quantity,
+                unit: unit,
+              );
+            }
+          }
+          
+          // Fallback: treat as simple ingredient name
+          return FavoriteIngredient(
+            name: ing,
+            quantity: 1.0,
+            unit: '',
+          );
+        }).toList();
+        
         final favoriteRecipe = FavoriteRecipe(
           id: recipeId,
           userId: userId,
           title: title,
           description: description,
-          ingredients: ingredients.map((ing) => FavoriteIngredient(
-            name: ing,
-            quantity: 1.0,
-            unit: 'unidad',
-          )).toList(),
+          ingredients: favoriteIngredients,
           instructions: instructions,
           prepTime: prepTime,
           cookTime: cookTime,
@@ -103,7 +139,15 @@ class FavoriteActionNotifier extends StateNotifier<AsyncValue<void>> {
       
       state = const AsyncValue.data(null);
     } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
+      // Handle permission denied errors with user-friendly message
+      if (error.toString().contains('permission-denied')) {
+        state = AsyncValue.error(
+          'No tienes permisos para guardar favoritos. Intenta cerrar sesión y volver a iniciar.',
+          stackTrace,
+        );
+      } else {
+        state = AsyncValue.error(error, stackTrace);
+      }
     }
   }
 }

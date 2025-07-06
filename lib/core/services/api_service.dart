@@ -76,11 +76,8 @@ class ApiService {
   static const String _recipesGenerateFromInventory =
       '/api/recipes/generate-from-inventory';
   static const String _recipesGenerateCustom = '/api/recipes/generate-custom';
-  static const String _recipesSave = '/api/recipes/save';
-  static const String _recipesSaved = '/api/recipes/saved';
   static const String _recipesAll = '/api/recipes/all';
   static const String _recipesDefault = '/api/recipes/default';
-  static const String _recipesDelete = '/api/recipes/delete';
 
   // INFO: NEW - Admin endpoints (5 endpoints)
   static const String _adminUsers = '/api/admin/users';
@@ -1313,31 +1310,6 @@ class ApiService {
     }
   }
 
-  /// INFO: Save a generated or custom recipe to user's collection
-  /// USAGE: Save complete recipe data including ingredients, instructions, and metadata
-  /// RETURNS: Saved recipe with UID and timestamp
-  Future<Map<String, dynamic>> saveRecipe(
-    Map<String, dynamic> recipeData,
-  ) async {
-    try {
-      final response = await _dio.post(_recipesSave, data: recipeData);
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Save recipe error: ${e.toString()}');
-    }
-  }
-
-  /// INFO: Get all user's saved/favorite recipes
-  /// USAGE: Retrieve user's personal recipe collection
-  /// RETURNS: Array of saved recipes with metadata and count
-  Future<Map<String, dynamic>> getSavedRecipes() async {
-    try {
-      final response = await _dio.get(_recipesSaved);
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Get saved recipes error: ${e.toString()}');
-    }
-  }
 
   /// INFO: Get all available recipes (public + user's)
   /// USAGE: Retrieve complete recipe database for browsing
@@ -1372,20 +1344,6 @@ class ApiService {
     }
   }
 
-  /// INFO: Delete a user's saved recipe
-  /// USAGE: Remove recipe from user's collection by title
-  /// RETURNS: Confirmation message
-  Future<Map<String, dynamic>> deleteRecipe(String recipeTitle) async {
-    try {
-      final response = await _dio.delete(
-        _recipesDelete,
-        data: {'title': recipeTitle},
-      );
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Delete recipe error: ${e.toString()}');
-    }
-  }
 
   /// INFO: Generate recipe based on specific ingredients list (used by inventory module)
   /// USAGE: Generate recipe with specific ingredients from inventory

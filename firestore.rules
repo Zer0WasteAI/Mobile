@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Rules for favorite_recipes collection
+    match /favorite_recipes/{favoriteId} {
+      // Temporarily allow read/write for authenticated users (for testing)
+      // TODO: Make more restrictive once user authentication is properly set up
+      allow read, write: if request.auth != null;
+    }
+    
+    // Solo acceso al documento del usuario autenticado
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Subcolecciones como preferences, etc.
+      match /{subCollection=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

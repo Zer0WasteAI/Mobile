@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Recipe {
 
- String get id; String get name; String get description; String? get imageUrl; String get emoji; List<String> get ingredients; int? get requiredIngredientsCount; int? get availableIngredientsCount; bool get usesExpiringItems; int get cookingTime; String get difficulty; String get dietType; List<String> get categories;
+ String get id; String get name; String get description; String? get imageUrl; String get emoji; List<String> get ingredients; List<String> get instructions; int? get requiredIngredientsCount; int? get availableIngredientsCount; bool get usesExpiringItems; int get cookingTime; String get difficulty; String get dietType; List<String> get categories;
 /// Create a copy of Recipe
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $RecipeCopyWith<Recipe> get copyWith => _$RecipeCopyWithImpl<Recipe>(this as Rec
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Recipe&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&const DeepCollectionEquality().equals(other.ingredients, ingredients)&&(identical(other.requiredIngredientsCount, requiredIngredientsCount) || other.requiredIngredientsCount == requiredIngredientsCount)&&(identical(other.availableIngredientsCount, availableIngredientsCount) || other.availableIngredientsCount == availableIngredientsCount)&&(identical(other.usesExpiringItems, usesExpiringItems) || other.usesExpiringItems == usesExpiringItems)&&(identical(other.cookingTime, cookingTime) || other.cookingTime == cookingTime)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&const DeepCollectionEquality().equals(other.categories, categories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Recipe&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&const DeepCollectionEquality().equals(other.ingredients, ingredients)&&const DeepCollectionEquality().equals(other.instructions, instructions)&&(identical(other.requiredIngredientsCount, requiredIngredientsCount) || other.requiredIngredientsCount == requiredIngredientsCount)&&(identical(other.availableIngredientsCount, availableIngredientsCount) || other.availableIngredientsCount == availableIngredientsCount)&&(identical(other.usesExpiringItems, usesExpiringItems) || other.usesExpiringItems == usesExpiringItems)&&(identical(other.cookingTime, cookingTime) || other.cookingTime == cookingTime)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&const DeepCollectionEquality().equals(other.categories, categories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,emoji,const DeepCollectionEquality().hash(ingredients),requiredIngredientsCount,availableIngredientsCount,usesExpiringItems,cookingTime,difficulty,dietType,const DeepCollectionEquality().hash(categories));
+int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,emoji,const DeepCollectionEquality().hash(ingredients),const DeepCollectionEquality().hash(instructions),requiredIngredientsCount,availableIngredientsCount,usesExpiringItems,cookingTime,difficulty,dietType,const DeepCollectionEquality().hash(categories));
 
 @override
 String toString() {
-  return 'Recipe(id: $id, name: $name, description: $description, imageUrl: $imageUrl, emoji: $emoji, ingredients: $ingredients, requiredIngredientsCount: $requiredIngredientsCount, availableIngredientsCount: $availableIngredientsCount, usesExpiringItems: $usesExpiringItems, cookingTime: $cookingTime, difficulty: $difficulty, dietType: $dietType, categories: $categories)';
+  return 'Recipe(id: $id, name: $name, description: $description, imageUrl: $imageUrl, emoji: $emoji, ingredients: $ingredients, instructions: $instructions, requiredIngredientsCount: $requiredIngredientsCount, availableIngredientsCount: $availableIngredientsCount, usesExpiringItems: $usesExpiringItems, cookingTime: $cookingTime, difficulty: $difficulty, dietType: $dietType, categories: $categories)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $RecipeCopyWith<$Res>  {
   factory $RecipeCopyWith(Recipe value, $Res Function(Recipe) _then) = _$RecipeCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String description, String? imageUrl, String emoji, List<String> ingredients, int? requiredIngredientsCount, int? availableIngredientsCount, bool usesExpiringItems, int cookingTime, String difficulty, String dietType, List<String> categories
+ String id, String name, String description, String? imageUrl, String emoji, List<String> ingredients, List<String> instructions, int? requiredIngredientsCount, int? availableIngredientsCount, bool usesExpiringItems, int cookingTime, String difficulty, String dietType, List<String> categories
 });
 
 
@@ -66,7 +66,7 @@ class _$RecipeCopyWithImpl<$Res>
 
 /// Create a copy of Recipe
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? emoji = null,Object? ingredients = null,Object? requiredIngredientsCount = freezed,Object? availableIngredientsCount = freezed,Object? usesExpiringItems = null,Object? cookingTime = null,Object? difficulty = null,Object? dietType = null,Object? categories = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? emoji = null,Object? ingredients = null,Object? instructions = null,Object? requiredIngredientsCount = freezed,Object? availableIngredientsCount = freezed,Object? usesExpiringItems = null,Object? cookingTime = null,Object? difficulty = null,Object? dietType = null,Object? categories = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -74,6 +74,7 @@ as String,description: null == description ? _self.description : description // 
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,ingredients: null == ingredients ? _self.ingredients : ingredients // ignore: cast_nullable_to_non_nullable
+as List<String>,instructions: null == instructions ? _self.instructions : instructions // ignore: cast_nullable_to_non_nullable
 as List<String>,requiredIngredientsCount: freezed == requiredIngredientsCount ? _self.requiredIngredientsCount : requiredIngredientsCount // ignore: cast_nullable_to_non_nullable
 as int?,availableIngredientsCount: freezed == availableIngredientsCount ? _self.availableIngredientsCount : availableIngredientsCount // ignore: cast_nullable_to_non_nullable
 as int?,usesExpiringItems: null == usesExpiringItems ? _self.usesExpiringItems : usesExpiringItems // ignore: cast_nullable_to_non_nullable
@@ -92,7 +93,7 @@ as List<String>,
 @JsonSerializable()
 
 class _Recipe extends Recipe {
-  const _Recipe({required this.id, required this.name, required this.description, this.imageUrl, this.emoji = '🍲', required final  List<String> ingredients, this.requiredIngredientsCount, this.availableIngredientsCount, this.usesExpiringItems = false, this.cookingTime = 30, this.difficulty = 'Medio', this.dietType = 'Omnívora', final  List<String> categories = const ['General']}): _ingredients = ingredients,_categories = categories,super._();
+  const _Recipe({required this.id, required this.name, required this.description, this.imageUrl, this.emoji = '🍲', required final  List<String> ingredients, final  List<String> instructions = const [], this.requiredIngredientsCount, this.availableIngredientsCount, this.usesExpiringItems = false, this.cookingTime = 30, this.difficulty = 'Medio', this.dietType = 'Omnívora', final  List<String> categories = const ['General']}): _ingredients = ingredients,_instructions = instructions,_categories = categories,super._();
   factory _Recipe.fromJson(Map<String, dynamic> json) => _$RecipeFromJson(json);
 
 @override final  String id;
@@ -105,6 +106,13 @@ class _Recipe extends Recipe {
   if (_ingredients is EqualUnmodifiableListView) return _ingredients;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_ingredients);
+}
+
+ final  List<String> _instructions;
+@override@JsonKey() List<String> get instructions {
+  if (_instructions is EqualUnmodifiableListView) return _instructions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_instructions);
 }
 
 @override final  int? requiredIngredientsCount;
@@ -134,16 +142,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Recipe&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&const DeepCollectionEquality().equals(other._ingredients, _ingredients)&&(identical(other.requiredIngredientsCount, requiredIngredientsCount) || other.requiredIngredientsCount == requiredIngredientsCount)&&(identical(other.availableIngredientsCount, availableIngredientsCount) || other.availableIngredientsCount == availableIngredientsCount)&&(identical(other.usesExpiringItems, usesExpiringItems) || other.usesExpiringItems == usesExpiringItems)&&(identical(other.cookingTime, cookingTime) || other.cookingTime == cookingTime)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&const DeepCollectionEquality().equals(other._categories, _categories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Recipe&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&const DeepCollectionEquality().equals(other._ingredients, _ingredients)&&const DeepCollectionEquality().equals(other._instructions, _instructions)&&(identical(other.requiredIngredientsCount, requiredIngredientsCount) || other.requiredIngredientsCount == requiredIngredientsCount)&&(identical(other.availableIngredientsCount, availableIngredientsCount) || other.availableIngredientsCount == availableIngredientsCount)&&(identical(other.usesExpiringItems, usesExpiringItems) || other.usesExpiringItems == usesExpiringItems)&&(identical(other.cookingTime, cookingTime) || other.cookingTime == cookingTime)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&const DeepCollectionEquality().equals(other._categories, _categories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,emoji,const DeepCollectionEquality().hash(_ingredients),requiredIngredientsCount,availableIngredientsCount,usesExpiringItems,cookingTime,difficulty,dietType,const DeepCollectionEquality().hash(_categories));
+int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,emoji,const DeepCollectionEquality().hash(_ingredients),const DeepCollectionEquality().hash(_instructions),requiredIngredientsCount,availableIngredientsCount,usesExpiringItems,cookingTime,difficulty,dietType,const DeepCollectionEquality().hash(_categories));
 
 @override
 String toString() {
-  return 'Recipe(id: $id, name: $name, description: $description, imageUrl: $imageUrl, emoji: $emoji, ingredients: $ingredients, requiredIngredientsCount: $requiredIngredientsCount, availableIngredientsCount: $availableIngredientsCount, usesExpiringItems: $usesExpiringItems, cookingTime: $cookingTime, difficulty: $difficulty, dietType: $dietType, categories: $categories)';
+  return 'Recipe(id: $id, name: $name, description: $description, imageUrl: $imageUrl, emoji: $emoji, ingredients: $ingredients, instructions: $instructions, requiredIngredientsCount: $requiredIngredientsCount, availableIngredientsCount: $availableIngredientsCount, usesExpiringItems: $usesExpiringItems, cookingTime: $cookingTime, difficulty: $difficulty, dietType: $dietType, categories: $categories)';
 }
 
 
@@ -154,7 +162,7 @@ abstract mixin class _$RecipeCopyWith<$Res> implements $RecipeCopyWith<$Res> {
   factory _$RecipeCopyWith(_Recipe value, $Res Function(_Recipe) _then) = __$RecipeCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String description, String? imageUrl, String emoji, List<String> ingredients, int? requiredIngredientsCount, int? availableIngredientsCount, bool usesExpiringItems, int cookingTime, String difficulty, String dietType, List<String> categories
+ String id, String name, String description, String? imageUrl, String emoji, List<String> ingredients, List<String> instructions, int? requiredIngredientsCount, int? availableIngredientsCount, bool usesExpiringItems, int cookingTime, String difficulty, String dietType, List<String> categories
 });
 
 
@@ -171,7 +179,7 @@ class __$RecipeCopyWithImpl<$Res>
 
 /// Create a copy of Recipe
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? emoji = null,Object? ingredients = null,Object? requiredIngredientsCount = freezed,Object? availableIngredientsCount = freezed,Object? usesExpiringItems = null,Object? cookingTime = null,Object? difficulty = null,Object? dietType = null,Object? categories = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? emoji = null,Object? ingredients = null,Object? instructions = null,Object? requiredIngredientsCount = freezed,Object? availableIngredientsCount = freezed,Object? usesExpiringItems = null,Object? cookingTime = null,Object? difficulty = null,Object? dietType = null,Object? categories = null,}) {
   return _then(_Recipe(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -179,6 +187,7 @@ as String,description: null == description ? _self.description : description // 
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,ingredients: null == ingredients ? _self._ingredients : ingredients // ignore: cast_nullable_to_non_nullable
+as List<String>,instructions: null == instructions ? _self._instructions : instructions // ignore: cast_nullable_to_non_nullable
 as List<String>,requiredIngredientsCount: freezed == requiredIngredientsCount ? _self.requiredIngredientsCount : requiredIngredientsCount // ignore: cast_nullable_to_non_nullable
 as int?,availableIngredientsCount: freezed == availableIngredientsCount ? _self.availableIngredientsCount : availableIngredientsCount // ignore: cast_nullable_to_non_nullable
 as int?,usesExpiringItems: null == usesExpiringItems ? _self.usesExpiringItems : usesExpiringItems // ignore: cast_nullable_to_non_nullable

@@ -39,8 +39,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     };
   }
   
-  /// Generate cooking steps from recipe data
+  /// Generate cooking steps from recipe data (fallback when instructions not available)
   List<String> _generateCookingSteps(Recipe recipe) {
+    // If recipe has real instructions, use those instead
+    if (recipe.instructions.isNotEmpty) {
+      return recipe.instructions;
+    }
+    
+    // Fallback: Generate generic steps
     List<String> steps = [];
     
     // Step 1: Preparation
@@ -84,6 +90,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     // Step 7: Final touches
     steps.add('Verificar la cocción y ajustar sazón si es necesario.');
     steps.add('Servir caliente y disfrutar tu deliciosa ${recipe.name}.');
+    
     
     return steps;
   }
@@ -329,11 +336,13 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               color: isAvailable ? primaryColor : Colors.grey,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              ingredient,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                color: textColor,
+                            Expanded(
+                              child: Text(
+                                ingredient,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  color: textColor,
+                                ),
                               ),
                             ),
                           ],
@@ -344,6 +353,74 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ],
               ),
             ),
+            
+            // Instructions (only show if available)
+            if (widget.recipe.instructions.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: cardColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Instrucciones',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: widget.recipe.instructions.length,
+                      itemBuilder: (context, index) {
+                        final instruction = widget.recipe.instructions[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: primaryColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  instruction,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: textColor,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

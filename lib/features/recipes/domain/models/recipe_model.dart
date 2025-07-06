@@ -12,6 +12,7 @@ abstract class Recipe with _$Recipe {
     String? imageUrl,
     @Default('🍲') String emoji,
     required List<String> ingredients,
+    @Default([]) List<String> instructions,
     int? requiredIngredientsCount,
     int? availableIngredientsCount,
     @Default(false) bool usesExpiringItems,

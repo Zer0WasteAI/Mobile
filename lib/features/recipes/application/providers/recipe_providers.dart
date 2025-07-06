@@ -6,7 +6,6 @@ import 'package:zer0_waste_ai/features/recipes/application/states/recipe_state.d
 import 'package:zer0_waste_ai/features/recipes/domain/repositories/recipe_repository.dart';
 import 'package:zer0_waste_ai/features/recipes/data/repositories/recipe_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/recipe_generation_providers.dart';
 
 enum RecipeMode { explore, smart }
@@ -22,7 +21,7 @@ final savedRecipesProvider = Provider<AsyncValue<List<Map<String, dynamic>>>>((
 ) {
   // Watch other recipe providers
   final aiRecipes = ref.watch(generatedRecipesProvider);
-  final favoriteRecipes = ref.watch(favoriteRecipesListProvider);
+  // final favoriteRecipes = ref.watch(favoriteRecipesListProvider); // Removed - using Firestore now
   final plannerRecipes = ref.watch(plannerGeneratedRecipesProvider);
 
   try {
@@ -44,21 +43,7 @@ final savedRecipesProvider = Provider<AsyncValue<List<Map<String, dynamic>>>>((
         },
       ),
 
-      // Add favorite recipes
-      ...favoriteRecipes.map(
-        (recipe) => {
-          'uid': recipe.id,
-          'title': recipe.name,
-          'description': recipe.description,
-          'imageUrl': null,
-          'difficulty': recipe.difficulty,
-          'ingredients': recipe.ingredients,
-          'cookingTime': recipe.cookingTime,
-          'dietType': recipe.dietType,
-          'categories': recipe.categories,
-          'source': 'favorite',
-        },
-      ),
+      // Favorite recipes now handled by Firestore provider in favorites module
 
       // Add planner-generated recipes
       ...plannerRecipes.map(

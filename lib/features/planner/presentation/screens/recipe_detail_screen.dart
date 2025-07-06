@@ -20,9 +20,18 @@ class RecipeDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final recipeId = '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
+    final recipeId =
+        '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
     final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteAction = ref.watch(favoriteActionProvider.notifier);
+
+    // Debug: Print any errors
+    isFavoriteAsync.whenOrNull(
+      error: (error, stackTrace) {
+        print('Favorites error for $recipeId: $error');
+        print('Stack trace: $stackTrace');
+      },
+    );
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -47,15 +56,17 @@ class RecipeDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    child: recipe.imagePath != null && recipe.imageStatus == 'ready'
-                        ? Image.network(
-                            recipe.imagePath!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _buildPlaceholderImage(colorScheme);
-                            },
-                          )
-                        : _buildPlaceholderImage(colorScheme),
+                    child:
+                        recipe.imagePath != null &&
+                                recipe.imageStatus == 'ready'
+                            ? Image.network(
+                              recipe.imagePath!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _buildPlaceholderImage(colorScheme);
+                              },
+                            )
+                            : _buildPlaceholderImage(colorScheme),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -74,41 +85,87 @@ class RecipeDetailScreen extends ConsumerWidget {
             ),
             actions: [
               isFavoriteAsync.when(
-                data: (isFavorite) => IconButton(
-                  onPressed: () async {
-                    await favoriteAction.toggleFavorite(
-                      recipeId,
-                      recipe.title,
-                      recipe.description,
-                      recipe.ingredients.map((ing) => ing.name).toList(),
-                      recipe.instructions,
-                      recipe.prepTime,
-                      recipe.cookTime,
-                      recipe.servings,
-                      recipe.difficulty,
-                      imagePath: recipe.imagePath,
-                      mealType: mealType ?? _detectMealType(recipe.title),
-                    );
-                  },
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : colorScheme.onPrimary,
-                    size: 28,
-                  ),
-                ),
-                loading: () => const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                error: (_, _) => IconButton(
-                  onPressed: null,
-                  icon: Icon(
-                    Icons.favorite_border,
-                    color: colorScheme.onPrimary,
-                    size: 28,
-                  ),
-                ),
+                data:
+                    (isFavorite) => IconButton(
+                      onPressed: () async {
+                        try {
+                          await favoriteAction.toggleFavorite(
+                            recipeId,
+                            recipe.title,
+                            recipe.description,
+                            recipe.ingredients.map((ing) => ing.name).toList(),
+                            recipe.instructions,
+                            recipe.prepTime,
+                            recipe.cookTime,
+                            recipe.servings,
+                            recipe.difficulty,
+                            imagePath: recipe.imagePath,
+                            mealType: mealType ?? _detectMealType(recipe.title),
+                          );
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error al actualizar favoritos: $e',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : colorScheme.onPrimary,
+                        size: 28,
+                      ),
+                    ),
+                loading:
+                    () => const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                error:
+                    (error, stackTrace) => IconButton(
+                      onPressed: () async {
+                        // Try to refresh the provider and attempt toggle again
+                        ref.invalidate(isFavoriteProvider(recipeId));
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        try {
+                          await favoriteAction.toggleFavorite(
+                            recipeId,
+                            recipe.title,
+                            recipe.description,
+                            recipe.ingredients.map((ing) => ing.name).toList(),
+                            recipe.instructions,
+                            recipe.prepTime,
+                            recipe.cookTime,
+                            recipe.servings,
+                            recipe.difficulty,
+                            imagePath: recipe.imagePath,
+                            mealType: mealType ?? _detectMealType(recipe.title),
+                          );
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error al agregar/quitar de favoritos: $e',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: Icon(
+                        Icons.favorite_border,
+                        color: colorScheme.onPrimary,
+                        size: 28,
+                      ),
+                    ),
               ),
             ],
           ),
@@ -128,7 +185,8 @@ class RecipeDetailScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   _buildInstructions(textTheme, colorScheme),
                   const SizedBox(height: 32),
-                  if (onAddToPlan != null) _buildActionButton(context, colorScheme),
+                  if (onAddToPlan != null)
+                    _buildActionButton(context, colorScheme),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -210,12 +268,7 @@ class RecipeDetailScreen extends ConsumerWidget {
           colorScheme,
         ),
         const SizedBox(width: 24),
-        _buildMetric(
-          Icons.star,
-          recipe.difficulty,
-          textTheme,
-          colorScheme,
-        ),
+        _buildMetric(Icons.star, recipe.difficulty, textTheme, colorScheme),
       ],
     );
   }
@@ -375,10 +428,7 @@ class RecipeDetailScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_circle),
         label: Text(
           'Agregar al Plan',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: colorScheme.primary,
@@ -399,7 +449,7 @@ class RecipeDetailScreen extends ConsumerWidget {
 
   String _detectMealType(String title) {
     final lowerTitle = title.toLowerCase();
-    if (lowerTitle.contains('desayuno') || 
+    if (lowerTitle.contains('desayuno') ||
         lowerTitle.contains('breakfast') ||
         lowerTitle.contains('avena') ||
         lowerTitle.contains('tostada') ||
@@ -407,17 +457,17 @@ class RecipeDetailScreen extends ConsumerWidget {
         lowerTitle.contains('huevo') ||
         lowerTitle.contains('pancake')) {
       return 'Desayuno';
-    } else if (lowerTitle.contains('almuerzo') || 
-               lowerTitle.contains('lunch') ||
-               lowerTitle.contains('sopa') ||
-               lowerTitle.contains('ensalada')) {
+    } else if (lowerTitle.contains('almuerzo') ||
+        lowerTitle.contains('lunch') ||
+        lowerTitle.contains('sopa') ||
+        lowerTitle.contains('ensalada')) {
       return 'Almuerzo';
-    } else if (lowerTitle.contains('cena') || 
-               lowerTitle.contains('dinner') ||
-               lowerTitle.contains('pasta') ||
-               lowerTitle.contains('pollo') ||
-               lowerTitle.contains('pescado') ||
-               lowerTitle.contains('carne')) {
+    } else if (lowerTitle.contains('cena') ||
+        lowerTitle.contains('dinner') ||
+        lowerTitle.contains('pasta') ||
+        lowerTitle.contains('pollo') ||
+        lowerTitle.contains('pescado') ||
+        lowerTitle.contains('carne')) {
       return 'Cena';
     } else {
       return 'Comida'; // Tipo genérico

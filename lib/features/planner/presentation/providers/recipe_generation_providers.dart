@@ -301,28 +301,44 @@ class RecipeGenerationNotifier extends StateNotifier<RecipeGenerationState> {
   }
 
   GeneratedRecipe _convertToGeneratedRecipe(Recipe recipe, MealType mealType) {
-    // Convert ingredients from strings to RecipeIngredient objects
+    // Parse ingredients to extract quantity, unit, and name
     final ingredients =
-        recipe.ingredients
-            .map(
-              (ingredient) => RecipeIngredient(
-                name: ingredient,
-                quantity: 1.0,
-                unit: 'unidad',
-              ),
-            )
-            .toList();
+        recipe.ingredients.map((ingredient) {
+          // Check if ingredient already has quantity and unit format like "1 cup flour"
+          final parts = ingredient.split(' ');
+          if (parts.length >= 3) {
+            // Try to parse "quantity unit name" format
+            final quantityStr = parts[0];
+            final unit = parts[1];
+            final name = parts.sublist(2).join(' ');
+
+            final quantity = double.tryParse(quantityStr);
+            if (quantity != null) {
+              return RecipeIngredient(
+                name: name,
+                quantity: quantity,
+                unit: unit,
+              );
+            }
+          }
+
+          // Fallback: treat whole string as ingredient name without explicit quantity
+          return RecipeIngredient(name: ingredient, quantity: 1.0, unit: '');
+        }).toList();
 
     return GeneratedRecipe(
       title: recipe.name,
       description: recipe.description,
       ingredients: ingredients,
-      instructions: [
-        'Preparar todos los ingredientes necesarios',
-        'Seguir las técnicas de cocción apropiadas para ${mealType.name.toLowerCase()}',
-        'Combinar ingredientes según la receta',
-        'Servir y disfrutar',
-      ],
+      instructions:
+          recipe.instructions.isNotEmpty
+              ? recipe.instructions
+              : [
+                'Preparar todos los ingredientes necesarios',
+                'Seguir las técnicas de cocción apropiadas para ${mealType.name.toLowerCase()}',
+                'Combinar ingredientes según la receta',
+                'Servir y disfrutar',
+              ], // Use real instructions from backend or fallback
       prepTime: (recipe.cookingTime * 0.3).round(), // 30% del tiempo total
       cookTime: (recipe.cookingTime * 0.7).round(), // 70% del tiempo total
       servings: 2, // Default serving size
@@ -380,25 +396,50 @@ class GeneratedRecipe {
   });
 
   factory GeneratedRecipe.fromJson(Map<String, dynamic> json) {
+    // Parse steps from backend response (backend uses 'steps' not 'instructions')
+    final stepsData =
+        json['steps'] as List? ?? json['instructions'] as List? ?? [];
+    final instructions =
+        stepsData
+            .map((stepData) {
+              if (stepData is Map<String, dynamic>) {
+                return stepData['description']?.toString() ?? '';
+              }
+              return stepData.toString();
+            })
+            .where((instruction) => instruction.isNotEmpty)
+            .toList();
+
+    // Parse ingredients with quantity and type_unit
+    final ingredientsData = json['ingredients'] as List? ?? [];
+    final ingredients =
+        ingredientsData.map((ingredient) {
+          if (ingredient is Map<String, dynamic>) {
+            return RecipeIngredient(
+              name: ingredient['name']?.toString() ?? '',
+              quantity: (ingredient['quantity'] as num?)?.toDouble() ?? 1.0,
+              unit:
+                  ingredient['type_unit']?.toString() ??
+                  ingredient['unit']?.toString() ??
+                  '',
+            );
+          }
+          return RecipeIngredient(
+            name: ingredient.toString(),
+            quantity: 1.0,
+            unit: '',
+          );
+        }).toList();
+
     return GeneratedRecipe(
       title: json['title'] as String,
       description: json['description'] as String,
-      ingredients:
-          (json['ingredients'] as List<dynamic>)
-              .map(
-                (ingredient) => RecipeIngredient.fromJson(
-                  ingredient as Map<String, dynamic>,
-                ),
-              )
-              .toList(),
-      instructions:
-          (json['instructions'] as List<dynamic>)
-              .map((instruction) => instruction as String)
-              .toList(),
-      prepTime: json['prep_time'] as int,
-      cookTime: json['cook_time'] as int,
-      servings: json['servings'] as int,
-      difficulty: json['difficulty'] as String,
+      ingredients: ingredients,
+      instructions: instructions,
+      prepTime: json['prep_time'] as int? ?? 15,
+      cookTime: json['cook_time'] as int? ?? 30,
+      servings: json['servings'] as int? ?? 2,
+      difficulty: json['difficulty'] as String? ?? 'Fácil',
       calories: json['calories'] as int?,
       dietaryInfo:
           (json['dietary_info'] as List<dynamic>?)
@@ -462,7 +503,7 @@ class RecipeIngredient {
     return RecipeIngredient(
       name: json['name'] as String,
       quantity: (json['quantity'] as num).toDouble(),
-      unit: json['unit'] as String,
+      unit: json['type_unit'] as String? ?? json['unit'] as String? ?? '',
     );
   }
 

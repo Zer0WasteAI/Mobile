@@ -121,7 +121,7 @@ class RecipeCardWidget extends ConsumerWidget {
               color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
             ),
           ),
-          if (recipe.imageStatus == 'generating')
+          /*if (recipe.imageStatus == 'generating')
             Positioned(
               bottom: 8,
               right: 8,
@@ -157,13 +157,19 @@ class RecipeCardWidget extends ConsumerWidget {
                 ),
               ),
             ),
+        */
         ],
       ),
     );
   }
 
-  Widget _buildHeader(TextTheme textTheme, ColorScheme colorScheme, WidgetRef ref) {
-    final recipeId = '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
+  Widget _buildHeader(
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+    WidgetRef ref,
+  ) {
+    final recipeId =
+        '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
     final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteAction = ref.watch(favoriteActionProvider.notifier);
     return Row(
@@ -175,65 +181,69 @@ class RecipeCardWidget extends ConsumerWidget {
           ),
         ),
         isFavoriteAsync.when(
-          data: (isFavorite) => InkWell(
-            onTap: () async {
-              await favoriteAction.toggleFavorite(
-                recipeId,
-                recipe.title,
-                recipe.description,
-                recipe.ingredients.map((ing) => ing.name).toList(),
-                recipe.instructions,
-                recipe.prepTime,
-                recipe.cookTime,
-                recipe.servings,
-                recipe.difficulty,
-                imagePath: recipe.imagePath,
-                mealType: _detectMealType(recipe.title),
-              );
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: isFavorite 
-                    ? colorScheme.primary.withValues(alpha: 0.2)
-                    : colorScheme.primary.withValues(alpha: 0.1),
+          data:
+              (isFavorite) => InkWell(
+                onTap: () async {
+                  await favoriteAction.toggleFavorite(
+                    recipeId,
+                    recipe.title,
+                    recipe.description,
+                    recipe.ingredients.map((ing) => ing.name).toList(),
+                    recipe.instructions,
+                    recipe.prepTime,
+                    recipe.cookTime,
+                    recipe.servings,
+                    recipe.difficulty,
+                    imagePath: recipe.imagePath,
+                    mealType: _detectMealType(recipe.title),
+                  );
+                },
                 borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color:
+                        isFavorite
+                            ? colorScheme.primary.withValues(alpha: 0.2)
+                            : colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : colorScheme.primary,
+                    size: 20,
+                  ),
+                ),
               ),
-              child: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: isFavorite ? Colors.red : colorScheme.primary,
-                size: 20,
+          loading:
+              () => Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colorScheme.primary,
+                  ),
+                ),
               ),
-            ),
-          ),
-          loading: () => Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colorScheme.primary,
+          error:
+              (_, _) => Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.favorite_border,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
               ),
-            ),
-          ),
-          error: (_, _) => Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.favorite_border,
-              color: colorScheme.primary,
-              size: 20,
-            ),
-          ),
         ),
       ],
     );
@@ -391,7 +401,7 @@ class RecipeCardWidget extends ConsumerWidget {
 
   String _detectMealType(String title) {
     final lowerTitle = title.toLowerCase();
-    if (lowerTitle.contains('desayuno') || 
+    if (lowerTitle.contains('desayuno') ||
         lowerTitle.contains('breakfast') ||
         lowerTitle.contains('avena') ||
         lowerTitle.contains('tostada') ||
@@ -399,17 +409,17 @@ class RecipeCardWidget extends ConsumerWidget {
         lowerTitle.contains('huevo') ||
         lowerTitle.contains('pancake')) {
       return 'Desayuno';
-    } else if (lowerTitle.contains('almuerzo') || 
-               lowerTitle.contains('lunch') ||
-               lowerTitle.contains('sopa') ||
-               lowerTitle.contains('ensalada')) {
+    } else if (lowerTitle.contains('almuerzo') ||
+        lowerTitle.contains('lunch') ||
+        lowerTitle.contains('sopa') ||
+        lowerTitle.contains('ensalada')) {
       return 'Almuerzo';
-    } else if (lowerTitle.contains('cena') || 
-               lowerTitle.contains('dinner') ||
-               lowerTitle.contains('pasta') ||
-               lowerTitle.contains('pollo') ||
-               lowerTitle.contains('pescado') ||
-               lowerTitle.contains('carne')) {
+    } else if (lowerTitle.contains('cena') ||
+        lowerTitle.contains('dinner') ||
+        lowerTitle.contains('pasta') ||
+        lowerTitle.contains('pollo') ||
+        lowerTitle.contains('pescado') ||
+        lowerTitle.contains('carne')) {
       return 'Cena';
     } else {
       return 'Comida'; // Tipo genérico
@@ -420,11 +430,12 @@ class RecipeCardWidget extends ConsumerWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeDetailScreen(
-          recipe: recipe,
-          onAddToPlan: onAddToPlan,
-          mealType: _detectMealType(recipe.title),
-        ),
+        builder:
+            (context) => RecipeDetailScreen(
+              recipe: recipe,
+              onAddToPlan: onAddToPlan,
+              mealType: _detectMealType(recipe.title),
+            ),
       ),
     );
   }

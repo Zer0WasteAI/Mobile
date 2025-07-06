@@ -3,7 +3,7 @@ import 'package:zer0_waste_ai/features/impact/application/providers/impact_provi
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
 import 'dart:developer';
 
-import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_providers.dart';
+import 'package:zer0_waste_ai/features/favorites/presentation/providers/favorite_recipe_providers.dart';
 
 // --- Data Models ---
 class Recipe {
@@ -66,30 +66,30 @@ final inventorySummaryProvider = Provider<InventorySummary>((ref) {
 });
 
 final recipeSuggestionsProvider = FutureProvider<List<Recipe>>((ref) async {
-  final savedRecipesAsyncValue = ref.watch(savedRecipesProvider);
+  // Watch favorites from Firestore (these are recipes saved as favorites)
+  final favoritesAsyncValue = ref.watch(userFavoritesProvider);
 
-  return savedRecipesAsyncValue.when(
-    data: (recipes) {
-      if (recipes.isEmpty) {
+  return favoritesAsyncValue.when(
+    data: (favoriteRecipes) {
+      if (favoriteRecipes.isEmpty) {
         return []; // Return empty list if no favorites
       }
-      // Map the dynamic list to a list of Recipe objects
-      return recipes.map((recipeData) {
-        final recipe = recipeData;
+      
+      // Convert FavoriteRecipe objects to Recipe objects for home display
+      return favoriteRecipes.map((favoriteRecipe) {
         return Recipe(
-          id: recipe['uid'] ?? '',
-          title: recipe['title'] ?? 'Receta sin título',
-          imageUrl:
-              recipe['imageUrl'] ??
+          id: favoriteRecipe.id,
+          title: favoriteRecipe.title,
+          imageUrl: favoriteRecipe.imagePath ?? 
               'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80',
-          difficulty: recipe['difficulty'] ?? 'Desconocida',
+          difficulty: favoriteRecipe.difficulty,
         );
       }).toList();
     },
     loading: () => [], // Return empty list while loading
     error: (error, stackTrace) {
       // Log the error and return an empty list on failure
-      log('Error fetching saved recipes: $error');
+      log('Error fetching favorite recipes: $error');
       return [];
     },
   );

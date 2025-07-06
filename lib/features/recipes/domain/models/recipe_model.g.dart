@@ -14,6 +14,11 @@ _Recipe _$RecipeFromJson(Map<String, dynamic> json) => _Recipe(
   emoji: json['emoji'] as String? ?? '🍲',
   ingredients:
       (json['ingredients'] as List<dynamic>).map((e) => e as String).toList(),
+  instructions:
+      (json['instructions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
   requiredIngredientsCount: (json['requiredIngredientsCount'] as num?)?.toInt(),
   availableIngredientsCount:
       (json['availableIngredientsCount'] as num?)?.toInt(),
@@ -35,6 +40,7 @@ Map<String, dynamic> _$RecipeToJson(_Recipe instance) => <String, dynamic>{
   'imageUrl': instance.imageUrl,
   'emoji': instance.emoji,
   'ingredients': instance.ingredients,
+  'instructions': instance.instructions,
   'requiredIngredientsCount': instance.requiredIngredientsCount,
   'availableIngredientsCount': instance.availableIngredientsCount,
   'usesExpiringItems': instance.usesExpiringItems,
