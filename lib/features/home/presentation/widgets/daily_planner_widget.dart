@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,16 +49,17 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     final mealPlanAsync = ref.watch(mealPlanByDateProvider(dateKey));
 
     return mealPlanAsync.when(
-      data: (todayMealPlan) => _buildContent(
-        context,
-        today,
-        todayMealPlan,
-        isDark,
-        primaryColor,
-        textColor,
-        secondaryTextColor,
-        cardColor,
-      ),
+      data:
+          (todayMealPlan) => _buildContent(
+            context,
+            today,
+            todayMealPlan,
+            isDark,
+            primaryColor,
+            textColor,
+            secondaryTextColor,
+            cardColor,
+          ),
       loading: () => _buildLoadingCard(cardColor),
       error: (error, _) => _buildErrorCard(cardColor, textColor),
     );
@@ -194,7 +197,10 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
+                          colors: [
+                            primaryColor,
+                            primaryColor.withValues(alpha: 0.8),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -550,7 +556,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  meal.recipeTitle.cleanName(),
+                  _cleanRecipeTitle(meal.recipeTitle),
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -570,13 +576,13 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           ),
 
           // Botón de acción
-          IconButton(
+          /*IconButton(
             icon: Icon(Icons.more_vert, size: 16, color: Colors.grey.shade500),
             onPressed: () {
               // Mostrar opciones para la comida
               _showMealOptions(context, meal);
             },
-          ),
+          ),*/
         ],
       ),
     );
@@ -632,7 +638,9 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     // usando el provider correspondiente
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Comida "${meal.recipeTitle}" eliminada'),
+        content: Text(
+          'Comida "${_cleanRecipeTitle(meal.recipeTitle)}" eliminada',
+        ),
         action: SnackBarAction(
           label: 'Deshacer',
           onPressed: () {
@@ -643,12 +651,15 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     );
   }
 
+  // Función helper para limpiar títulos de recetas
+  String _cleanRecipeTitle(String title) {
+    return title.replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
+  }
+
   Widget _buildLoadingCard(Color cardColor) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: cardColor,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       child: const Padding(
@@ -667,9 +678,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   Widget _buildErrorCard(Color cardColor, Color textColor) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: cardColor,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       child: Padding(
@@ -699,6 +708,6 @@ extension StringExtension on String {
 
   // Limpiar nombres removiendo sufijos como (1), (2), etc.
   String cleanName() {
-    return replaceAll(RegExp(r'\s*\(\d+\)$'), '').trim();
+    return replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
   }
 }
