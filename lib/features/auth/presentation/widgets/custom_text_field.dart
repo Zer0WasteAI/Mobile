@@ -34,6 +34,12 @@ class CustomTextField extends StatelessWidget {
   /// Text editing controller
   final TextEditingController? controller;
 
+  /// Keyboard type
+  final TextInputType? keyboardType;
+
+  /// Validator function
+  final String? Function(String?)? validator;
+
   /// Constructor
   const CustomTextField({
     super.key,
@@ -47,6 +53,8 @@ class CustomTextField extends StatelessWidget {
     this.isPasswordVisible = false,
     this.isValid = false,
     this.controller,
+    this.keyboardType,
+    this.validator,
   });
 
   @override
@@ -86,6 +94,7 @@ class CustomTextField extends StatelessWidget {
             controller: controller,
             obscureText: isPassword && !isPasswordVisible,
             onChanged: onChanged,
+            keyboardType: keyboardType,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: isDark ? AppColors.darkMainText : AppColors.lightMainText,
             ),

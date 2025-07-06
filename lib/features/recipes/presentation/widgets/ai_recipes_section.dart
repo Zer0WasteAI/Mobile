@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
 
 /// Widget que muestra una sección destacada con las recetas generadas por IA
@@ -22,7 +22,8 @@ class AIRecipesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recipes = ref.watch(aiRecipesProvider);
+    final aiRecipeState = ref.watch(aiRecipeProvider);
+    final recipes = aiRecipeState.recipes;
 
     if (recipes.isEmpty) {
       return const SizedBox.shrink(); // No mostrar nada si no hay recetas
@@ -60,7 +61,7 @@ class AIRecipesSection extends ConsumerWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.2),
+                      color: primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: primaryColor, width: 1),
                     ),
@@ -209,7 +210,7 @@ class AIRecipesSection extends ConsumerWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.2),
+                      color: primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(

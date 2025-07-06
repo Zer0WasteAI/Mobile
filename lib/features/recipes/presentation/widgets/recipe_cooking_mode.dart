@@ -7,11 +7,11 @@ class RecipeCookingMode extends StatefulWidget {
   final VoidCallback onComplete;
 
   const RecipeCookingMode({
-    Key? key,
+    super.key,
     required this.recipe,
     required this.onExit,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<RecipeCookingMode> createState() => _RecipeCookingModeState();
@@ -120,7 +120,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: textColor.withOpacity(0.8),
+                    color: textColor.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -130,7 +130,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                     child: LinearProgressIndicator(
                       value: ((_currentStep + 1) / steps.length),
                       minHeight: 8,
-                      backgroundColor: primaryColor.withOpacity(0.2),
+                      backgroundColor: primaryColor.withValues(alpha: 0.2),
                       valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     ),
                   ),
@@ -168,7 +168,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
               color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 5,
                   offset: const Offset(0, -1),
                 ),
@@ -189,7 +189,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        backgroundColor: Colors.grey.withValues(alpha: 0.2),
                         foregroundColor: textColor,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -273,7 +273,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -295,7 +295,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -340,9 +340,9 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.1),
+                  color: Colors.amber.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +366,7 @@ class _RecipeCookingModeState extends State<RecipeCookingMode> {
                             _getCookingTip(step),
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: textColor.withOpacity(0.8),
+                              color: textColor.withValues(alpha: 0.8),
                             ),
                           ),
                         ],

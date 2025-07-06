@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -5,16 +7,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/add_item_dialog.dart'; // Import the shared dialog
 import 'package:zer0_waste_ai/core/presentation/widgets/selectable_item_chip.dart'; // Import the shared chip
+import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 import 'package:zer0_waste_ai/features/profile/application/providers/allergies_provider.dart';
-import 'package:zer0_waste_ai/features/profile/domain/models/allergy.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/cooking_level_selector_screen.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 
 // --- Riverpod State Management (Selected Allergy Names) ---
-final selectedAllergiesProvider =
-    StateNotifierProvider<SelectedAllergiesNotifier, Set<String>>((ref) {
-      // TODO: Implement loading from persistence if needed
-      return SelectedAllergiesNotifier();
-    });
+final selectedAllergiesProvider = StateNotifierProvider<
+  SelectedAllergiesNotifier,
+  Set<String>
+>((ref) {
+  // ✅ RESOLVED: Persistence loading not needed for onboarding (first-time setup)
+  // For profile editing with persistence, use ProfileAllergySelectorScreen instead
+  return SelectedAllergiesNotifier();
+});
 
 class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
   SelectedAllergiesNotifier() : super({});
@@ -27,29 +33,35 @@ class SelectedAllergiesNotifier extends StateNotifier<Set<String>> {
       newState.add(allergyName);
     }
     state = newState;
-    print("Selected allergy names: $state");
+    log("Selected allergy names: $state");
   }
 
   void addCustomAllergy(String allergyName) {
     if (allergyName.isNotEmpty && !state.contains(allergyName)) {
       state = {...state, allergyName};
-      print("Selected allergy names: $state");
+      log("Selected allergy names: $state");
     }
   }
 
   void removeCustomAllergy(String allergyName) {
     state = {...state}..remove(allergyName);
-    print("Selected allergy names: $state");
+    log("Selected allergy names: $state");
   }
 }
 
 // --- Screen Widget ---
 
+/// INFO: Allergy selector for onboarding/first-time setup
+/// USAGE: Used during user registration and initial preferences setup
+/// NOTE: For profile editing with persistence, use ProfileAllergySelectorScreen
 class AllergySelectorScreen extends ConsumerWidget {
-  const AllergySelectorScreen({super.key});
+  const AllergySelectorScreen({super.key, this.fromProfile = false});
 
   static const String routeName = 'allergy_selector';
   static const String routePath = '/allergy-selector';
+
+  /// Whether this screen was navigated from profile (for back navigation)
+  final bool fromProfile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,6 +72,7 @@ class AllergySelectorScreen extends ConsumerWidget {
     // Use Theme colors for consistency
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    // ignore: unused_local_variable
     final bool isDarkMode = theme.brightness == Brightness.dark;
 
     // Define colors based on theme (adjust as needed)
@@ -67,7 +80,9 @@ class AllergySelectorScreen extends ConsumerWidget {
     final Color backgroundColor = colorScheme.surface; // Use surface from theme
     final Color defaultChipTextColor =
         colorScheme.onSurfaceVariant; // Muted text
-    final Color defaultChipBorderColor = colorScheme.outline.withOpacity(0.5);
+    final Color defaultChipBorderColor = colorScheme.outline.withValues(
+      alpha: 0.5,
+    );
     final Color secondaryTextColorForDialog =
         colorScheme.onSurfaceVariant; // For dialog text
 
@@ -204,11 +219,87 @@ class AllergySelectorScreen extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed:
                       allergiesAsyncValue.hasValue
-                          ? () {
-                            print(
+                          ? () async {
+                            // Mostrar indicador de carga
+                            if (context.mounted) {
+                              showLoadingSnackBar(
+                                context,
+                                message: 'Guardando alergias...',
+                              );
+                            }
+
+                            log(
                               'Selected allergy names: $selectedAllergyNames',
                             );
-                            context.go(CookingLevelSelectorScreen.routePath);
+
+                            // Save allergies to Firestore before navigating
+                            try {
+                              final authRepository = ref.read(
+                                authRepositoryProvider,
+                              );
+                              final allergies =
+                                  ref.read(allergiesProvider).value ?? [];
+
+                              // Create allergy items with metadata (emoji, isCustom)
+                              final List<Map<String, dynamic>> allergyItems =
+                                  [];
+
+                              for (final allergyName in selectedAllergyNames) {
+                                // Find if it's a predefined allergy
+                                final predefinedAllergy =
+                                    allergies
+                                        .where((a) => a.name == allergyName)
+                                        .firstOrNull;
+
+                                if (predefinedAllergy != null) {
+                                  // Predefined allergy
+                                  allergyItems.add({
+                                    'name': predefinedAllergy.name,
+                                    'emoji': predefinedAllergy.emoji,
+                                    'isCustom': false,
+                                  });
+                                } else {
+                                  // Custom allergy
+                                  allergyItems.add({
+                                    'name': allergyName,
+                                    'emoji':
+                                        '🚫', // Default emoji for custom allergies
+                                    'isCustom': true,
+                                  });
+                                }
+                              }
+
+                              // Save both simple list and complex structure
+                              await authRepository
+                                  .saveUserAllergyItemsWithMetadata(
+                                    allergyItems,
+                                  );
+
+                              log(
+                                '✅ Allergies saved to Firestore successfully',
+                              );
+
+                              // Navigate based on context
+                              if (context.mounted) {
+                                if (fromProfile) {
+                                  // From profile - go back to profile
+                                  context.pop();
+                                } else {
+                                  // From onboarding - continue to next step
+                                  context.go(
+                                    CookingLevelSelectorScreen.routePath,
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              log('❌ Error saving allergies: $e');
+                              // Still navigate even if save fails
+                              if (context.mounted) {
+                                context.go(
+                                  CookingLevelSelectorScreen.routePath,
+                                );
+                              }
+                            }
                           }
                           : null,
                   style: ElevatedButton.styleFrom(

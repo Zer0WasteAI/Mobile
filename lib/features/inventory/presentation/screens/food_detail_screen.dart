@@ -1,833 +1,884 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/expiration_status.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/enums/storage_type.dart';
-import 'package:zer0_waste_ai/features/inventory/presentation/widgets/nutrition_info_chip.dart'; // Assuming this widget exists or will be created
-import 'package:zer0_waste_ai/features/inventory/presentation/screens/inventory_screen.dart'; // For batch dialog
-import 'package:zer0_waste_ai/core/utils/date_extensions.dart'; // For date formatting
-import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_consumed_screen.dart'; // Nueva pantalla que crearemos
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/food_detail.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_backend_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/consumption_tracking.dart';
+import 'package:zer0_waste_ai/features/inventory/presentation/screens/food_consumed_screen.dart';
 
-// TODO: Define route name constant if needed elsewhere
-// const String foodDetailRouteName = 'foodDetail';
+// ✅ RESOLVED: Route name constant already defined in app_router.dart as 'foodDetailRouteName'
 
-class FoodDetailScreen extends ConsumerWidget {
-  final String itemId;
+class FoodDetailScreen extends ConsumerStatefulWidget {
+  final String foodName;
+  final String addedAt;
 
-  const FoodDetailScreen({super.key, required this.itemId});
+  const FoodDetailScreen({
+    super.key,
+    required this.foodName,
+    required this.addedAt,
+  });
 
-  // Helper to format expiration (similar to IngredientDetailScreen)
-  String _formatExpirationDuration(DateTime? expirationDate) {
-    if (expirationDate == null) {
-      return 'N/A'; // Or 'Sin fecha'
-    }
-    final now = DateTime.now();
-    final difference = expirationDate.difference(now);
-    final days = difference.inDays;
+  static const String routePath = '/inventory/food/detail';
+  static const String routeName = 'foodDetail';
 
-    if (days < -1) {
-      return 'Vencido hace ${days.abs()} días';
-    } else if (days == -1) {
-      return 'Vencido ayer';
-    } else if (days == 0) {
-      final hours = difference.inHours;
-      if (hours <= 0) {
-        return 'Vencido hoy';
-      } else {
-        return 'Vence hoy';
-      }
-    } else if (days == 1) {
-      return 'Vence mañana';
-    } else {
-      return 'Vence en $days días';
+  @override
+  ConsumerState<FoodDetailScreen> createState() => _FoodDetailScreenState();
+}
+
+class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
+  FoodDetail? _foodDetail;
+  bool _isLoading = true;
+  bool _isMarkingConsumed = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFoodDetail();
+  }
+
+  Future<void> _loadFoodDetail() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final backendNotifier = ref.read(inventoryBackendProvider);
+      final response = await backendNotifier.getFoodDetail(
+        widget.foodName,
+        widget.addedAt,
+      );
+
+      setState(() {
+        _foodDetail = FoodDetail.fromJson(response);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
-  Color _getExpirationColor(ExpirationStatus status, BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    switch (status) {
-      case ExpirationStatus.expired:
-        return AppColors.error;
-      case ExpirationStatus.expiringSoon:
-        return isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
-      default:
-        // Use a less prominent color for fresh items
-        return isDark
-            ? AppColors.darkSecondaryText
-            : AppColors.lightSecondaryText;
+  Future<void> _markAsConsumed() async {
+    if (_foodDetail == null || _isMarkingConsumed) return;
+
+    // Show confirmation dialog
+    final shouldConsume = await _showConsumeConfirmationDialog();
+    if (!shouldConsume) return;
+
+    try {
+      setState(() {
+        _isMarkingConsumed = true;
+      });
+
+      final backendNotifier = ref.read(inventoryBackendProvider);
+      final response = await backendNotifier.markFoodAsConsumed(
+        widget.foodName,
+        widget.addedAt,
+      );
+
+      final tracking = ConsumptionTracking.fromJson(response);
+
+      // Show success feedback
+      _showConsumptionSuccess(tracking);
+    } catch (e) {
+      setState(() {
+        _isMarkingConsumed = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al marcar como consumido: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  // Helper to get expiration status and associated data for a specific batch
-  ({
-    String text,
-    Color color,
-    IconData icon,
-    bool isExpired,
-    bool isExpiringSoon,
-  })
-  _getExpirationInfo(DateTime? expirationDate, BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color errorColor = AppColors.error;
-    final Color warningColor =
-        isDark ? AppColors.warningTextDark : AppColors.warningTextLight;
-    final Color defaultColor =
-        Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey;
+  Future<bool> _showConsumeConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Marcar como consumido'),
+                content: Text(
+                  '¿Estás seguro que quieres marcar "${_foodDetail!.name}" como consumido?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Sí, consumido'),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
+  }
 
-    final String expirationText = _formatExpirationDuration(expirationDate);
+  void _showConsumptionSuccess(ConsumptionTracking tracking) {
+    setState(() {
+      _isMarkingConsumed = false;
+    });
 
-    final now = DateTime.now();
-    final today = DateUtils.dateOnly(now);
+    // Calculate environmental impact
+    final co2Saved =
+        tracking.environmentalImpact?['co2_saved']?.toDouble() ?? 1.2;
+    final waterSaved =
+        tracking.environmentalImpact?['water_saved']?.toInt() ?? 150;
 
-    if (expirationDate == null) {
-      return (
-        text: "Sin fecha",
-        color: defaultColor,
-        icon: Icons.help_outline,
-        isExpired: false,
-        isExpiringSoon: false,
-      );
-    }
-
-    final expiryDateOnly = DateUtils.dateOnly(expirationDate);
-    final differenceInDays = expiryDateOnly.difference(today).inDays;
-
-    if (differenceInDays < 0) {
-      return (
-        text: expirationText,
-        color: errorColor,
-        icon: Icons.error_outline,
-        isExpired: true,
-        isExpiringSoon: false,
-      );
-    } else if (differenceInDays <= 1) {
-      return (
-        text: expirationText,
-        color: warningColor,
-        icon: Icons.warning_amber_outlined,
-        isExpired: false,
-        isExpiringSoon: true,
-      );
-    } else {
-      return (
-        text: expirationText,
-        color: defaultColor,
-        icon: Icons.check_circle_outline,
-        isExpired: false,
-        isExpiringSoon: false,
-      );
-    }
+    // Navigate to success screen
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder:
+                (context) => FoodConsumedScreen(
+                  foodName: widget.foodName,
+                  foodImageUrl:
+                      _foodDetail?.imagePath ??
+                      'assets/icons/home/eco_coin.png',
+                  co2Saved: co2Saved,
+                  waterSaved: waterSaved,
+                ),
+          ),
+        )
+        .then((_) {
+          // Navigate back to inventory after success screen
+          Navigator.of(context).pop();
+        });
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Fetch the specific item using the itemId
-    final inventoryState = ref.watch(inventoryProvider);
-    final item = inventoryState.items.firstWhere(
-      (item) => item.id == itemId,
-      orElse: () => InventoryItem.empty(), // Return an empty item if not found
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_foodDetail?.displayName ?? widget.foodName),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadFoodDetail,
+          ),
+        ],
+      ),
+      body: _buildBody(),
+      floatingActionButton:
+          _foodDetail != null && !_foodDetail!.isExpired
+              ? FloatingActionButton.extended(
+                onPressed: _isMarkingConsumed ? null : _markAsConsumed,
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                icon:
+                    _isMarkingConsumed
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                        : const Icon(Icons.restaurant),
+                label: Text(
+                  _isMarkingConsumed ? 'Marcando...' : 'Consumido',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              )
+              : null,
     );
+  }
 
-    // Get all batches for this food item (by name)
-    final allBatchesForFood =
-        inventoryState.items
-            .where(
-              (batchItem) =>
-                  batchItem.name == item.name &&
-                  batchItem.category == item.category,
-            )
-            .toList();
-
-    // Sort batches by expiration date
-    allBatchesForFood.sort((a, b) {
-      if (a.expirationDate == null && b.expirationDate == null) return 0;
-      if (a.expirationDate == null) return 1;
-      if (b.expirationDate == null) return -1;
-      return a.expirationDate!.compareTo(b.expirationDate!);
-    });
-
-    final inventoryNotifier = ref.read(inventoryProvider.notifier);
-
-    if (item.id.isEmpty) {
-      // Handle case where item is not found
-      return const Scaffold(body: Center(child: Text('Plato no encontrado.')));
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Cargando detalles de la comida...'),
+          ],
+        ),
+      );
     }
 
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final bool isDark = theme.brightness == Brightness.dark;
-
-    // Define colors from spec (using AppColors where possible)
-    final Color screenBackgroundColor =
-        isDark ? AppColors.darkBackground : const Color(0xFFFAF9F6);
-    final Color mainTextColor =
-        isDark ? AppColors.darkMainText : const Color(0xFF3A3A3A);
-    final Color secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : const Color(0xFF70605A);
-    final Color primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    const Color categoryChipColor = Color(0xFFF4A261); // Orange-like
-    final Color categoryTextColor =
-        Colors.white; // Or dark gray like #3A3A3A? Using white for contrast.
-    final Color tipsBackgroundColor =
-        isDark ? AppColors.darkFormBackground : const Color(0xFFEDF2F4);
-    final Color nutritionChipBorderColor =
-        isDark ? AppColors.darkOutline : const Color(0xFFEDF2F4);
-    final Color nutritionChipBackgroundColor =
-        isDark ? AppColors.darkSurface : Colors.white;
-    final Color cardBackgroundColor =
-        isDark ? AppColors.darkSurface : Colors.white;
-
-    final expirationStatus = ExpirationStatusExtension.fromDate(
-      item.expirationDate,
-    );
-    final expirationColor = _getExpirationColor(expirationStatus, context);
-    final expirationText = _formatExpirationDuration(item.expirationDate);
-
-    // Get data from current selected item
-    final String description =
-        item.description ??
-        "Descripción detallada del plato preparado, incluyendo notas sobre su sabor o preparación.";
-    final int calories = item.calories ?? 250;
-    final int portions = item.quantity.toInt();
-    final List<String> mainIngredients =
-        item.mainIngredients ??
-        ['Ingrediente 1', 'Ingrediente 2', 'Ingrediente 3'];
-    final String tips =
-        item.tips ??
-        "Consejos sobre cómo conservar mejor el plato, si se puede recalentar, etc.";
-
-    // Determinar si el alimento ha vencido
-    final bool isExpired = expirationStatus == ExpirationStatus.expired;
-
-    return Scaffold(
-      backgroundColor: screenBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'Plato',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            color: mainTextColor,
-          ),
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              'Error al cargar los detalles',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadFoodDetail,
+              child: const Text('Reintentar'),
+            ),
+          ],
         ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: mainTextColor),
-          onPressed: () => context.pop(),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
+      );
+    }
+
+    if (_foodDetail == null) {
+      return const Center(
+        child: Text('No se encontraron detalles de la comida'),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderCard(),
+          const SizedBox(height: 16),
+          _buildNutritionalInfoCard(),
+          const SizedBox(height: 16),
+          _buildIngredientsCard(),
+          const SizedBox(height: 16),
+          if (_foodDetail!.nutritionalAnalysis != null)
+            _buildNutritionalAnalysisCard(),
+          const SizedBox(height: 16),
+          if (_foodDetail!.consumptionIdeas != null &&
+              _foodDetail!.consumptionIdeas!.isNotEmpty)
+            _buildConsumptionIdeasCard(),
+          const SizedBox(height: 16),
+          if (_foodDetail!.storageAdvice != null) _buildStorageAdviceCard(),
+          const SizedBox(height: 16),
+          _buildExpirationCard(),
+          const SizedBox(height: 16),
+          _buildMetadataCard(),
+        ],
       ),
-      floatingActionButton:
-          isExpired
-              ? null // No mostrar botón si está vencido
-              : FloatingActionButton.extended(
-                onPressed: () {
-                  // Calcular CO2 y agua ahorrada (valores ilustrativos)
-                  final double co2Saved = 2.3; // kg
-                  final int waterSaved = 500; // litros
-                  final int coinsEarned = 50; // monedas ganadas
+    );
+  }
 
-                  // Mostrar pantalla de felicitación
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) => FoodConsumedScreen(
-                            foodName: item.name,
-                            foodEmoji:
-                                item.image.isNotEmpty ? item.image : '🍲',
-                            co2Saved: co2Saved,
-                            waterSaved: waterSaved,
-                            coinsEarned: coinsEarned,
+  Widget _buildHeaderCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Imagen de la comida (puede ser null)
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[300],
+                  ),
+                  child:
+                      _foodDetail!.imagePath != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: _foodDetail!.imagePath!,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => const Icon(
+                                    Icons.broken_image,
+                                    size: 40,
+                                    color: Colors.grey,
+                                  ),
+                            ),
+                          )
+                          : const Icon(
+                            Icons.restaurant,
+                            size: 40,
+                            color: Colors.grey,
                           ),
-                    ),
-                  );
-
-                  // Eliminar el alimento del inventario
-                  inventoryNotifier.removeItemById(item.id);
-                },
-                icon: const Icon(Icons.check_circle_outline),
-                label: Text(
-                  'Consumido',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
-                backgroundColor: primaryColor,
-                foregroundColor: isDark ? Colors.black : Colors.white,
-              ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: CustomScrollView(
-        slivers: [
-          // --- Header ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 16.0,
-                horizontal: 20.0,
-              ),
-              child: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      item.image.isNotEmpty ? item.image : '🍲',
-                      style: const TextStyle(fontSize: 72),
-                    ),
-                    const SizedBox(height: 16.0),
-                    Text(
-                      item.name,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: textTheme.headlineMedium?.fontSize,
-                        fontWeight: FontWeight.bold,
-                        color: mainTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    if (item.foodCategory != null &&
-                        item.foodCategory!.isNotEmpty)
-                      Chip(
-                        label: Text(item.foodCategory!),
-                        backgroundColor: categoryChipColor,
-                        labelStyle: GoogleFonts.inter(
-                          color: categoryTextColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _foodDetail!.name,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 4.0,
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: const StadiumBorder(), // Pill shape
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _foodDetail!.category,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_foodDetail!.servingQuantity} ${_foodDetail!.servingQuantity == 1 ? 'porción' : 'porciones'}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Almacenamiento: ${_foodDetail!.storageType}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (_foodDetail!.description != null &&
+                _foodDetail!.description!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _foodDetail!.description!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ),
-
-          // --- Description ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 20.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Descripción",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: mainTextColor,
+            ],
+            if (_foodDetail!.tips != null && _foodDetail!.tips!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green[200]!),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: Colors.green[600],
+                      size: 20,
                     ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.description_outlined,
-                        size: 20,
-                        color: secondaryTextColor,
-                      ),
-                      const SizedBox(width: 12.0),
-                      Expanded(
-                        child: Text(
-                          description,
-                          style: GoogleFonts.inter(
-                            fontSize: textTheme.bodyMedium?.fontSize,
-                            color: secondaryTextColor,
-                            height: 1.4,
-                          ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _foodDetail!.tips!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.green[800],
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // --- Nutritional Data ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Datos",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: mainTextColor,
                     ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  Wrap(
-                    // Use Wrap for responsiveness
-                    spacing: 12.0, // Horizontal space
-                    runSpacing: 12.0, // Vertical space if wrapping
-                    alignment: WrapAlignment.spaceBetween, // Distribute space
-                    children: [
-                      if (calories > 0)
-                        NutritionInfoChip(
-                          icon: Icons.local_fire_department_outlined,
-                          label: '$calories kcal',
-                          backgroundColor: nutritionChipBackgroundColor,
-                          borderColor: nutritionChipBorderColor,
-                          textColor: secondaryTextColor,
-                        ),
-                      // Show portions from first lote only as reference
-                      if (portions > 0)
-                        NutritionInfoChip(
-                          icon: Icons.person_outline,
-                          label: '$portions porción${portions > 1 ? 'es' : ''}',
-                          backgroundColor: nutritionChipBackgroundColor,
-                          borderColor: nutritionChipBorderColor,
-                          textColor: secondaryTextColor,
-                        ),
-                      NutritionInfoChip(
-                        icon: item.storageType.icon,
-                        label: item.storageType.displayName,
-                        backgroundColor: nutritionChipBackgroundColor,
-                        borderColor: nutritionChipBorderColor,
-                        textColor: secondaryTextColor,
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 
-          // --- Lotes disponibles ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Lotes disponibles',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: mainTextColor,
-                        ),
-                      ),
-                      Text(
-                        '${allBatchesForFood.length} lote${allBatchesForFood.length > 1 ? 's' : ''}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ],
+  Widget _buildNutritionalInfoCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.local_fire_department, color: Colors.red[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Información Nutricional',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 16.0),
-                  // Lista de lotes
-                  ...allBatchesForFood.map((batch) {
-                    final batchExpirationInfo = _getExpirationInfo(
-                      batch.expirationDate,
-                      context,
-                    );
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      decoration: BoxDecoration(
-                        color: cardBackgroundColor,
-                        borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildNutritionalItem(
+                    'Calorías Totales',
+                    '${_foodDetail!.totalCalories}',
+                    'kcal',
+                    Colors.red[600]!,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildNutritionalItem(
+                    'Por Porción',
+                    '${_foodDetail!.caloriesPerServing.toInt()}',
+                    'kcal',
+                    Colors.orange[600]!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNutritionalItem(
+    String title,
+    String value,
+    String unit,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            unit,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientsCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.list_alt, color: Colors.purple[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Ingredientes Principales',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  _foodDetail!.mainIngredients
+                      .map(
+                        (ingredient) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
-                        ],
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16.0),
-                        onTap: () {
-                          // Destacar este lote en el inventario
-                          inventoryNotifier.setUserSelectedBatch(
-                            item.name,
-                            batch.id,
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              // Fila superior: Cantidad y botón de edición
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Cantidad:',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14,
-                                          color: secondaryTextColor,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6.0),
-                                      Text(
-                                        _formatQuantity(
-                                          batch.quantity,
-                                          batch.unitType,
-                                        ),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: mainTextColor,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4.0),
-                                      Text(
-                                        batch.unitType,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14,
-                                          color: secondaryTextColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.edit_outlined,
-                                      color: primaryColor,
-                                      size: 20,
-                                    ),
-                                    onPressed: () {
-                                      showQuantityEditDialog(
-                                        context,
-                                        batch,
-                                        ref,
-                                      );
-                                    },
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    splashRadius: 24,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12.0),
-
-                              // Fila inferior: Fecha de expiración y almacenamiento
-                              Row(
-                                children: [
-                                  // Expiration info
-                                  Icon(
-                                    batchExpirationInfo.icon,
-                                    color: batchExpirationInfo.color,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 8.0),
-                                  Text(
-                                    batchExpirationInfo.text,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: batchExpirationInfo.color,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const Spacer(),
-
-                                  // Storage type info with icon
-                                  Icon(
-                                    batch.storageType.icon,
-                                    color: secondaryTextColor,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 4.0),
-                                  Text(
-                                    batch.storageType.displayName,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 12.0),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.calendar_today_outlined,
-                                      color: secondaryTextColor,
-                                      size: 18,
-                                    ),
-                                    onPressed: () {
-                                      _selectDateAndUpdate(context, ref, batch);
-                                    },
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    splashRadius: 24,
-                                  ),
-                                ],
-                              ),
-                            ],
+                          decoration: BoxDecoration(
+                            color: Colors.purple[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.purple[200]!),
+                          ),
+                          child: Text(
+                            ingredient,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(
+                              color: Colors.purple[700],
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ],
+                      )
+                      .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNutritionalAnalysisCard() {
+    final analysis = _foodDetail!.nutritionalAnalysis!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.analytics, color: Colors.blue[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Análisis Nutricional',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (analysis.macronutrients != null) ...[
+              _buildAnalysisSection('Macronutrientes', Icons.pie_chart, [
+                if (analysis.macronutrients!.carbohydrates != null)
+                  'Carbohidratos: ${analysis.macronutrients!.carbohydrates!}',
+                if (analysis.macronutrients!.proteins != null)
+                  'Proteínas: ${analysis.macronutrients!.proteins!}',
+                if (analysis.macronutrients!.fats != null)
+                  'Grasas: ${analysis.macronutrients!.fats!}',
+              ]),
+            ],
+            if (analysis.vitaminsMinerals != null &&
+                analysis.vitaminsMinerals!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildAnalysisSection(
+                'Vitaminas y Minerales',
+                Icons.health_and_safety,
+                analysis.vitaminsMinerals!,
               ),
+            ],
+            if (analysis.healthBenefits != null &&
+                analysis.healthBenefits!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildAnalysisItem(
+                'Beneficios para la Salud',
+                analysis.healthBenefits!,
+                Icons.favorite,
+                Colors.red,
+              ),
+            ],
+            if (analysis.dietaryConsiderations != null &&
+                analysis.dietaryConsiderations!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildAnalysisItem(
+                'Consideraciones Dietéticas',
+                analysis.dietaryConsiderations!,
+                Icons.warning_amber,
+                Colors.orange,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnalysisSection(
+    String title,
+    IconData icon,
+    List<String> items,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.blue[600]),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(left: 28, bottom: 4),
+            child: Text(
+              '• $item',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
+        ),
+      ],
+    );
+  }
 
-          // --- Main Ingredients ---
-          if (mainIngredients.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0.0),
+  Widget _buildAnalysisItem(
+    String title,
+    String content,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(content, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConsumptionIdeasCard() {
+    final ideas = _foodDetail!.consumptionIdeas!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.restaurant_menu, color: Colors.green[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Ideas de Consumo',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...ideas.map(
+              (idea) => Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green[200]!),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Ingredientes principales",
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: mainTextColor,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            idea.title,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green[800],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green[200],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            idea.type,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(
+                              color: Colors.green[800],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12.0),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 8.0,
-                      ), // Indent bullets
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children:
-                            mainIngredients
-                                .map(
-                                  (ingredient) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 6.0),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          '• ',
-                                          style: GoogleFonts.inter(
-                                            color: secondaryTextColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            ingredient,
-                                            style: GoogleFonts.inter(
-                                              color: secondaryTextColor,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                    const SizedBox(height: 8),
+                    Text(
+                      idea.description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.green[700],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // --- Impacto Evitado ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Impacto ambiental",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: mainTextColor,
-                    ),
+  Widget _buildStorageAdviceCard() {
+    final advice = _foodDetail!.storageAdvice!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.kitchen, color: Colors.indigo[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Consejos de Almacenamiento',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 12.0),
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: tipsBackgroundColor,
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.eco_outlined,
-                              size: 20,
-                              color: Colors.green[600],
-                            ),
-                            const SizedBox(width: 12.0),
-                            Expanded(
-                              child: Text(
-                                "Al consumir este plato evitas:",
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16.0),
-                        // CO2 saved
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: cardBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.cloud_outlined,
-                                      size: 28,
-                                      color: Colors.blue[400],
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    Text(
-                                      "2.3 kg",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: mainTextColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      "de CO₂",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        color: secondaryTextColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12.0),
-                            // Water saved
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: cardBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: Colors.grey.withOpacity(0.2),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.water_drop_outlined,
-                                      size: 28,
-                                      color: Colors.blue[700],
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    Text(
-                                      "500 L",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: mainTextColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      "de agua",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        color: secondaryTextColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-
-          // --- Tips ---
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 140.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Consejos",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: mainTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: tipsBackgroundColor,
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.lightbulb_outline,
-                          size: 20,
-                          color: secondaryTextColor,
-                        ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: Text(
-                            tips,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: secondaryTextColor,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 16),
+            if (advice.optimalTemperature != null &&
+                advice.optimalTemperature!.isNotEmpty) ...[
+              _buildStorageAdviceItem(
+                'Temperatura Óptima',
+                advice.optimalTemperature!,
+                Icons.thermostat,
               ),
+            ],
+            if (advice.reheatingTips != null &&
+                advice.reheatingTips!.isNotEmpty) ...[
+              _buildStorageAdviceItem(
+                'Consejos de Recalentamiento',
+                advice.reheatingTips!,
+                Icons.microwave,
+              ),
+            ],
+            if (advice.shelfLifeExtension != null &&
+                advice.shelfLifeExtension!.isNotEmpty) ...[
+              _buildStorageAdviceItem(
+                'Extensión de Vida Útil',
+                advice.shelfLifeExtension!,
+                Icons.schedule,
+              ),
+            ],
+            if (advice.qualityIndicators != null &&
+                advice.qualityIndicators!.isNotEmpty) ...[
+              _buildStorageAdviceItem(
+                'Indicadores de Calidad',
+                advice.qualityIndicators!,
+                Icons.check_circle,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStorageAdviceItem(String title, String content, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Colors.indigo[600]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(content, style: Theme.of(context).textTheme.bodyMedium),
+              ],
             ),
           ),
         ],
@@ -835,37 +886,164 @@ class FoodDetailScreen extends ConsumerWidget {
     );
   }
 
-  // Helper to format quantity display
-  String _formatQuantity(double quantity, String unitType) {
-    if (unitType.toLowerCase() == 'unidades' ||
-        unitType.toLowerCase() == 'porciones') {
-      return quantity.toInt().toString(); // Show units as integer
-    } else {
-      // For kg, g, lt, ml, show one decimal place if not whole
-      if (quantity == quantity.truncate()) {
-        return quantity.toInt().toString(); // 5.0 becomes "5"
-      } else {
-        return quantity.toStringAsFixed(1); // 5.1 becomes "5.1"
-      }
-    }
+  Widget _buildExpirationCard() {
+    final isExpired = _foodDetail!.isExpired;
+    final isExpiringSoon = _foodDetail!.daysToExpire <= 1 && !isExpired;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isExpired ? Icons.warning : Icons.schedule,
+                  color:
+                      isExpired
+                          ? Colors.red[600]
+                          : isExpiringSoon
+                          ? Colors.orange[600]
+                          : Colors.green[600],
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Estado de Vencimiento',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color:
+                    isExpired
+                        ? Colors.red[50]
+                        : isExpiringSoon
+                        ? Colors.orange[50]
+                        : Colors.green[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      isExpired
+                          ? Colors.red[200]!
+                          : isExpiringSoon
+                          ? Colors.orange[200]!
+                          : Colors.green[200]!,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isExpired
+                        ? '⚠️ VENCIDO'
+                        : isExpiringSoon
+                        ? '⏰ Vence pronto'
+                        : '✅ En buen estado',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color:
+                          isExpired
+                              ? Colors.red[700]
+                              : isExpiringSoon
+                              ? Colors.orange[700]
+                              : Colors.green[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Fecha de vencimiento: ${_formatDate(_foodDetail!.expirationDate)}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isExpired
+                        ? 'Vencido hace ${(-_foodDetail!.daysToExpire).abs()} días'
+                        : 'Días restantes: ${_foodDetail!.daysToExpire}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color:
+                          isExpired
+                              ? Colors.red[600]
+                              : isExpiringSoon
+                              ? Colors.orange[600]
+                              : Colors.green[600],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Agregado: ${_formatDate(_foodDetail!.addedAt)}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  // Helper for updating expiration date
-  Future<void> _selectDateAndUpdate(
-    BuildContext context,
-    WidgetRef ref,
-    InventoryItem item,
-  ) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: item.expirationDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+  Widget _buildMetadataCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Información del Sistema',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'ID único: ${_foodDetail!.uniqueId}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+                fontFamily: 'monospace',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Datos enriquecidos con: ${_foodDetail!.enrichedWith.join(', ')}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Última actualización: ${_formatDate(_foodDetail!.fetchedAt.toIso8601String())}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
     );
-    if (picked != null && picked != item.expirationDate) {
-      ref
-          .read(inventoryProvider.notifier)
-          .updateExpirationDate(item.id, picked);
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (e) {
+      return dateString;
     }
   }
 }
@@ -893,16 +1071,15 @@ extension InventoryItemExtension on InventoryItem {
 }
 */
 
-// TODO: Need to add fields to InventoryItem model:
-// - String? description
-// - int? calories
-// - int? servingQuantity
-// - List<String>? mainIngredients
-// - String? foodCategory (e.g., 'Entrada', 'Postre')
+// ✅ COMPLETED: All required fields are already in InventoryItem model:
+// - String? description ✅
+// - int? calories ✅
+// - int? servingQuantity ✅
+// - List<String>? mainIngredients ✅
+// - String? foodCategory ✅
 
-// TODO: Create NutritionInfoChip widget
-// A simple stateless widget displaying an icon and text in a styled chip/card.
-// Example: lib/features/inventory/presentation/widgets/nutrition_info_chip.dart
+// ✅ COMPLETED: NutritionInfoChip widget created
+// Location: lib/features/inventory/presentation/widgets/nutrition_info_chip.dart
 /*
 class NutritionInfoChip extends StatelessWidget {
   final IconData icon;
@@ -948,4 +1125,5 @@ class NutritionInfoChip extends StatelessWidget {
   }
 }
 */
+
 

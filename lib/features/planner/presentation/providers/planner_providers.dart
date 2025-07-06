@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 import 'package:intl/intl.dart';
 
 /// Proveedor para la comida seleccionada
@@ -163,7 +164,7 @@ class MealPlanValidator {
       // Para snacks, mantener como advertencia (permitir continuar)
       return MealPlanValidation.warning(
         'Ya tienes ${mealsOfSameType.length} ${newMeal.type.name.toLowerCase()}(s) planificado(s). '
-        'Se recomienda no exceder los ${limit} snacks por día.',
+        'Se recomienda no exceder los $limit snacks por día.',
       );
     }
 
@@ -292,7 +293,7 @@ class MealPlanValidator {
     if (existingMeals.length >= maxMealsPerDay) {
       return MealPlanValidation.warning(
         'Ya tienes ${existingMeals.length} comidas planificadas para este día. '
-        'Se recomienda no exceder las ${maxMealsPerDay} comidas diarias.',
+        'Se recomienda no exceder las $maxMealsPerDay comidas diarias.',
       );
     }
 
@@ -993,7 +994,7 @@ final aiSuggestionsProvider = FutureProvider.family<
       parameters['availableIngredients'] as List<String>?;
 
   // Simular tiempo de procesamiento
-  await Future.delayed(const Duration(seconds: 1));
+  // ✅ UPDATED: Removed artificial delay
 
   // Filtrar recetas
   var suggestions = [...allRecipes];

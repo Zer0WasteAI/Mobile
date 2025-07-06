@@ -1,17 +1,22 @@
-import 'dart:convert';
+// ignore_for_file: unused_element
+
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
+import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/screens/add_scan_item_screen.dart'; // Import for ScanItemType
-import 'package:zer0_waste_ai/features/scan/presentation/screens/scan_results_screen.dart'; // Import for ScanResultsScreen
-// Potentially needed if you want to reuse the same logic/state for picking more
-// import 'package:zer0_waste_ai/features/scan/presentation/providers/add_scan_item_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/data/repositories/recognition_repository_impl.dart';
+import 'package:zer0_waste_ai/features/recognition/domain/repositories/recognition_repository.dart';
+import 'package:zer0_waste_ai/features/recognition/data/models/recognition_result_model.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_recognition_provider.dart';
+import 'package:zer0_waste_ai/features/recognition/presentation/providers/simplified_food_recognition_provider.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
+import 'package:zer0_waste_ai/core/presentation/widgets/awesome_loading_dialog.dart';
 
 // --- Design Constants ---
 const Color _screenBackgroundColor = Color(0xFFFAF9F6);
@@ -34,6 +39,11 @@ final _confirmImagesProvider = StateNotifierProvider.autoDispose
     .family<ImageListNotifier, List<File>, List<File>>((ref, initialImages) {
       return ImageListNotifier(initialImages);
     });
+
+// Provider for RecognitionRepository
+final _recognitionRepositoryProvider = Provider<RecognitionRepository>((ref) {
+  return RecognitionRepositoryImpl();
+});
 
 // Simple StateNotifier to manage the list of images for this screen
 class ImageListNotifier extends StateNotifier<List<File>> {
@@ -91,6 +101,205 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// ✨ NEW: Simplified analysis method using the correct provider based on originType
+  Future<void> _analyzeImagesSimplified() async {
+    final images = ref.read(_confirmImagesProvider(widget.initialImages));
+
+    if (images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay imágenes para analizar'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show awesome loading dialog ✨
+    bool dialogShown = false;
+    try {
+      showAIAnalysisDialog(
+        context,
+        itemType:
+            widget.originType == ScanItemType.food ? 'food' : 'ingredient',
+      );
+      dialogShown = true;
+    } catch (e) {
+      log('Error showing dialog: $e');
+    }
+
+    try {
+      log(
+        '🚀 Starting ${widget.originType.name} analysis with ${images.length} images',
+      );
+
+      List<Map<String, dynamic>> formattedResults = [];
+
+      if (widget.originType == ScanItemType.food) {
+        // Use food recognition provider
+        final foodNotifier = ref.read(
+          simplifiedFoodRecognitionProvider.notifier,
+        );
+        await foodNotifier.recognizeFoods(images);
+
+        // Get the results from food provider
+        final foodState = ref.read(simplifiedFoodRecognitionProvider);
+
+        if (foodState.error != null) {
+          throw Exception(foodState.error!);
+        }
+
+        if (foodState.result == null) {
+          throw Exception(
+            'No se recibieron resultados del reconocimiento de comidas',
+          );
+        }
+
+        // Convert food results to the format expected by ScanResultsScreen
+        formattedResults =
+            foodState.foods.map((food) {
+              return {
+                'name': food.name,
+                'image_path': food.imagePath ?? '',
+                'quantity': food.servingQuantity,
+                'expiration_date':
+                    food.expirationDate ??
+                    DateTime.now()
+                        .add(Duration(days: food.expirationTime))
+                        .toIso8601String(),
+                'confidence': food.confidence ?? 1.0,
+                'category': food.category,
+                'allergyAlert': food.allergyAlert,
+                'allergens': food.allergens,
+                'storage_type': food.storageType,
+                'tips': food.tips,
+                'type_unit': 'porciones',
+                'expiration_time': food.expirationTime,
+                'time_unit': food.timeUnit,
+                'added_at': food.addedAt,
+                'main_ingredients': food.mainIngredients,
+                'calories': food.calories,
+                'description': food.description,
+              };
+            }).toList();
+
+        log('✅ Food analysis completed! Found ${foodState.foods.length} foods');
+      } else {
+        // Use ingredient recognition provider
+        final ingredientNotifier = ref.read(
+          simplifiedRecognitionProvider.notifier,
+        );
+        await ingredientNotifier.recognizeIngredients(images);
+
+        // Get the results from ingredient provider
+        final ingredientState = ref.read(simplifiedRecognitionProvider);
+
+        if (ingredientState.error != null) {
+          throw Exception(ingredientState.error!);
+        }
+
+        if (ingredientState.result == null) {
+          throw Exception(
+            'No se recibieron resultados del reconocimiento de ingredientes',
+          );
+        }
+
+        if (ingredientState.result is IngredientRecognitionResultModel) {
+          final result =
+              ingredientState.result as IngredientRecognitionResultModel;
+
+          formattedResults =
+              result.ingredients.map((ingredient) {
+                return {
+                  'name': ingredient.name,
+                  'image_path': ingredient.imagePath ?? '',
+                  'quantity': ingredient.quantity,
+                  'expiration_date':
+                      ingredient.expirationDate ??
+                      DateTime.now()
+                          .add(Duration(days: ingredient.expirationTime))
+                          .toIso8601String(),
+                  'confidence': ingredient.confidence ?? 1.0,
+                  'category': 'ingredient',
+                  'allergyAlert': ingredient.allergyAlert,
+                  'allergens': ingredient.allergens,
+                  'storage_type': ingredient.storageType,
+                  'tips': ingredient.tips,
+                  'type_unit': ingredient.typeUnit,
+                  'expiration_time': ingredient.expirationTime,
+                  'time_unit': ingredient.timeUnit,
+                  'added_at': ingredient.addedAt,
+                };
+              }).toList();
+
+          // Log allergy alerts if any
+          if (result.hasAllergens && result.allergyAlerts.isNotEmpty) {
+            log('⚠️ ALLERGY ALERTS DETECTED:');
+            for (final alert in result.allergyAlerts) {
+              log('  - ${alert.item}: ${alert.message}');
+            }
+          }
+        }
+
+        log(
+          '✅ Ingredient analysis completed! Found ${formattedResults.length} ingredients',
+        );
+      }
+
+      // Close loading dialog
+      if (context.mounted && dialogShown && Navigator.of(context).canPop()) {
+        try {
+          Navigator.of(context).pop();
+          dialogShown = false;
+        } catch (e) {
+          log('Error closing dialog: $e');
+        }
+      }
+
+      if (formattedResults.isEmpty) {
+        throw Exception(
+          'No se encontraron ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'} en las imágenes',
+        );
+      }
+
+      // Navigate to results screen
+      if (context.mounted) {
+        context.go(
+          '/scan/results',
+          extra: {
+            'recognizedItemsJson': formattedResults,
+            'itemType': widget.originType,
+          },
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted && dialogShown && Navigator.of(context).canPop()) {
+        try {
+          Navigator.of(context).pop();
+          dialogShown = false;
+        } catch (e) {
+          log('Error closing dialog in catch: $e');
+        }
+      }
+
+      log('❌ Error in ${widget.originType.name} analysis: $e');
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al analizar ${widget.originType == ScanItemType.food ? 'comidas' : 'ingredientes'}: ${e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   // --- Image Picking Logic with Limit and Dialog ---
@@ -236,7 +445,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         });
       }
     } catch (e) {
-      print('Error picking from camera: $e');
+      log('Error picking from camera: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -299,7 +508,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
         }
       }
     } catch (e) {
-      print('Error picking from gallery: $e');
+      log('Error picking from gallery: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al seleccionar de galería: $e')),
@@ -336,23 +545,103 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     );
   }
 
-  // Placeholder function for analyzing images
-  void _analyzeImages(List<File> images) {
-    // TODO: Implement actual API call to Gemini
-    // 1. Get the Gemini service/repository via ref.read(geminiServiceProvider)
-    // 2. Call the analysis method: e.g., geminiService.analyzeFoodImages(images);
-    // 3. Handle loading state (show indicator)
-    // 4. Navigate to results screen on success or show error
-    print('Analizando ${images.length} imágenes...');
-    print(images.map((f) => f.path).toList());
-    // Example: Show a success message or navigate to results screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Enviando imágenes para análisis... (Simulado)'),
-      ),
+  // Real function for analyzing images using AI
+  Future<void> _analyzeImages(List<File> images) async {
+    if (images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay imágenes para analizar'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: LoadingWidgets.scanLoading,
+              ),
+            ),
+          ),
     );
-    // Potentially navigate after analysis:
-    // context.go('/scan/results', extra: analysisResult);
+
+    try {
+      log('Iniciando análisis de ${images.length} imágenes...');
+
+      // Get the API service
+      final apiService = ApiService.instance;
+
+      // For now, we'll use mock image paths since we need to upload images first
+      // In a real implementation, you'd upload images to Firebase Storage first
+      final List<String> imagePaths = images.map((file) => file.path).toList();
+
+      Map<String, dynamic> analysisResult;
+
+      // Choose the appropriate recognition endpoint based on scan type
+      if (widget.originType == ScanItemType.ingredient) {
+        analysisResult = await apiService.recognizeIngredients(imagePaths);
+      } else {
+        analysisResult = await apiService.recognizeFoods(imagePaths);
+      }
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      log('Análisis completado exitosamente');
+      log('Resultado: ${analysisResult.toString()}');
+
+      // Navigate to results screen with the analysis data
+      if (context.mounted) {
+        // Convert the analysis result to the format expected by ScanResultsScreen
+        final List<Map<String, dynamic>> recognizedItems = [];
+
+        // Parse the API response based on the expected format
+        if (analysisResult['recognized_items'] != null) {
+          final items = analysisResult['recognized_items'] as List;
+          for (final item in items) {
+            if (item is Map<String, dynamic>) {
+              recognizedItems.add(item);
+            }
+          }
+        }
+
+        // Navigate to results screen
+        context.go(
+          '/scan/results',
+          extra: {
+            'recognizedItemsJson': recognizedItems,
+            'itemType': widget.originType,
+          },
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      log('Error en análisis de imágenes: $e');
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al analizar imágenes: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -369,6 +658,51 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     // Check if limit is reached to disable add button
     final bool canAddMore = images.length < ScanConfirmScreen.maxImages;
+
+    // ✨ Listen for image generation completion notifications
+    if (widget.originType == ScanItemType.ingredient) {
+      // Listen for ingredient image updates
+      ref.listen(simplifiedRecognitionProvider, (previous, current) {
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('¡Imágenes de ingredientes listas!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    } else {
+      // Listen for food image updates
+      ref.listen(simplifiedFoodRecognitionProvider, (previous, current) {
+        if (previous?.imagesStatus == 'generating' &&
+            current.imagesStatus == 'ready' &&
+            context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('¡Imágenes de comidas listas!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -391,7 +725,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             if (context.canPop()) {
               context.pop();
             } else {
-              print(
+              log(
                 "Cannot pop from ScanConfirmScreen, navigating to fallback based on origin.",
               );
               // Use originType to determine the correct fallback route
@@ -545,58 +879,7 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0, top: 10.0),
                 child: ElevatedButton(
-                  onPressed:
-                      images.isEmpty
-                          ? null
-                          : () async {
-                            print(
-                              'Simulating analysis and navigating to results...',
-                            );
-
-                            // Determine which JSON file to load
-                            final String jsonPath =
-                                widget.originType == ScanItemType.ingredient
-                                    ? 'lib/core/constants/dummy_ingredients.json'
-                                    : 'lib/core/constants/dummy_food.json';
-
-                            List<Map<String, dynamic>> loadedJsonData = [];
-                            try {
-                              // Load and parse the JSON
-                              final jsonString = await rootBundle.loadString(
-                                jsonPath,
-                              );
-                              // Parse directly into the expected List<Map<String, dynamic>> format
-                              final Map<String, dynamic> decodedJson =
-                                  jsonDecode(jsonString);
-                              final List<dynamic> jsonItems =
-                                  decodedJson['items'] as List<dynamic>? ?? [];
-                              loadedJsonData =
-                                  jsonItems.cast<Map<String, dynamic>>();
-                            } catch (e) {
-                              print("Error loading dummy JSON: $e");
-                              // Handle error, maybe show a message or pass empty list
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error al cargar datos simulados: $e',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-
-                            // Navigate to ScanResultsScreen with loaded data
-                            // Ensure context is still valid after async operation
-                            if (!mounted) return;
-                            context.pushNamed(
-                              ScanResultsScreen.routeName,
-                              extra: {
-                                'recognizedItemsJson': loadedJsonData,
-                                'itemType': widget.originType,
-                              },
-                            );
-                          },
+                  onPressed: images.isEmpty ? null : _analyzeImagesSimplified,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,

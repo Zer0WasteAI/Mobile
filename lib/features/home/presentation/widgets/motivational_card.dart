@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
-import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/scan_options_modal.dart'; // Import Modal
 import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart'; // Import Provider
@@ -56,7 +55,7 @@ class MotivationalCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: cardBackgroundColor.withOpacity(0.3),
+            color: cardBackgroundColor.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

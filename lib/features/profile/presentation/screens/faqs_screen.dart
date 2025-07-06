@@ -186,7 +186,7 @@ class _FAQsScreenState extends ConsumerState<FAQsScreen> {
                 color: const Color(0xFFE0F2F1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF00BFA5).withOpacity(0.3),
+                  color: const Color(0xFF00BFA5).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -304,7 +304,7 @@ class _FAQsScreenState extends ConsumerState<FAQsScreen> {
             isExpanded
                 ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

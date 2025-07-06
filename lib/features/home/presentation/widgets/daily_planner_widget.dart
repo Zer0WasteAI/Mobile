@@ -5,13 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
+import 'package:zer0_waste_ai/features/planner/application/providers/meal_planning_providers.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 /// Widget que muestra la planificación de comidas para el día actual
 /// y proporciona un acceso rápido al planificador semanal completo
 class DailyPlannerWidget extends ConsumerStatefulWidget {
-  const DailyPlannerWidget({Key? key}) : super(key: key);
+  const DailyPlannerWidget({super.key});
 
   @override
   ConsumerState<DailyPlannerWidget> createState() => _DailyPlannerWidgetState();
@@ -19,6 +20,15 @@ class DailyPlannerWidget extends ConsumerStatefulWidget {
 
 class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cargar los datos de planificación al inicializar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(mealPlanningProvider.notifier).loadAllMealPlans();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,26 +46,20 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     // Obtener la fecha actual
     final today = DateTime.now();
     final dateKey = DateFormat('yyyy-MM-dd').format(today);
-    final dayName = DateFormat('EEEE', 'es_ES').format(today).capitalize();
 
-    // Obtener las comidas planificadas para hoy con manejo de nulo
-    final mealPlans = ref.watch(mealPlansProvider);
-    final todayMeals =
-        mealPlans != null ? (mealPlans[dateKey] ?? <MealPlan>[]) : <MealPlan>[];
+    // Obtener el estado de planificación de comidas
+    final mealPlanningState = ref.watch(mealPlanningProvider);
 
-    // Organizar las comidas por tipo
-    final mealsByType = <MealType, List<MealPlan>>{};
+    // Obtener las comidas planificadas para hoy desde el nuevo provider
+    final todayMealPlan = mealPlanningState.mealPlans[dateKey];
+    final todayMeals = todayMealPlan?.meals.allMeals ?? [];
+
+    // Organizar las comidas por tipo usando el nuevo modelo
+    final mealsByType = <String, List<Meal>>{};
     for (final meal in todayMeals) {
-      mealsByType[meal.type] = [...(mealsByType[meal.type] ?? []), meal];
+      final mealType = _getMealTypeFromMeal(meal);
+      mealsByType[mealType] = [...(mealsByType[mealType] ?? []), meal];
     }
-
-    // Ordenar los tipos de comida en orden: desayuno, almuerzo, cena, snacks
-    final orderedMealTypes = [
-      MealType.breakfast,
-      MealType.lunch,
-      MealType.dinner,
-      MealType.snack,
-    ];
 
     return Card(
       elevation: 2,
@@ -75,8 +79,8 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           InkWell(
             onTap: () {
               if (todayMeals.isEmpty) {
-                // Si no hay comidas, ir directamente al planificador
-                context.pushNamed('planner');
+                // Si no hay comidas, ir directamente al planificador de comidas
+                context.pushNamed('mealPlanning');
               } else {
                 // Si hay comidas, expandir/colapsar el widget
                 setState(() {
@@ -91,42 +95,23 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
               bottomRight: Radius.circular(12),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  // Indicador de día
+                  // Icono principal
                   Container(
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          today.day.toString(),
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
-                        ),
-                        Text(
-                          dayName.substring(0, 3),
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.restaurant_menu,
+                      color: primaryColor,
+                      size: 24,
                     ),
                   ),
-
                   const SizedBox(width: 12),
 
                   // Información principal
@@ -153,7 +138,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.1),
+                                  color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -179,6 +164,29 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        // Mostrar calorías totales si hay comidas
+                        if (todayMealPlan != null && todayMeals.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.local_fire_department,
+                                  size: 12,
+                                  color: AppColors.breakfastColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${todayMealPlan.meals.totalCalories} kcal',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: AppColors.breakfastColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -186,7 +194,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                   // Iconos de comidas o botón de acción
                   if (todayMeals.isEmpty)
                     ElevatedButton(
-                      onPressed: () => context.pushNamed('planner'),
+                      onPressed: () => context.pushNamed('mealPlanning'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
@@ -218,60 +226,97 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
             ),
           ),
 
-          // Contenido expandido - Solo visible cuando hay comidas y está expandido
-          if (todayMeals.isNotEmpty && _isExpanded)
+          // Contenido expandible - Solo se muestra si hay comidas y está expandido
+          if (_isExpanded && todayMeals.isNotEmpty)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Divider(height: 1),
-                  // Detalles de comidas por tipo (en orden específico)
-                  ...orderedMealTypes
-                      .where((type) => mealsByType.containsKey(type))
-                      .map(
-                        (type) => _buildMealTypeSection(
-                          context,
-                          type,
-                          mealsByType[type]!,
-                          isDark,
-                          textColor,
-                          secondaryTextColor,
-                        ),
-                      ),
-                  // Botón para ir al planificador
+
+                  // Lista de comidas por tipo
+                  ...mealsByType.entries.map(
+                    (entry) => _buildMealTypeSection(
+                      context,
+                      entry.key,
+                      entry.value,
+                      isDark,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                  ),
+
+                  // Botón para ir al planificador completo
                   Padding(
                     padding: const EdgeInsets.all(12),
-                    child: TextButton.icon(
-                      onPressed: () {
-                        // Navegar y preseleccionar la fecha actual
-                        ref.read(selectedDateProvider.notifier).state = today;
-                        context.pushNamed('planner');
-                      },
-                      icon: Icon(
-                        Icons.edit_calendar_outlined,
-                        size: 16,
-                        color: primaryColor,
-                      ),
-                      label: Text(
-                        'Editar plan en el planificador',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: primaryColor,
-                          fontWeight: FontWeight.w500,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              // Navegar y preseleccionar la fecha actual
+                              ref.read(selectedDateProvider.notifier).state =
+                                  today;
+                              context.pushNamed('planner');
+                            },
+                            icon: Icon(
+                              Icons.edit_calendar_outlined,
+                              size: 16,
+                              color: primaryColor,
+                            ),
+                            label: Text(
+                              'Editar en planificador semanal',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              backgroundColor: primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: primaryColor.withOpacity(0.1),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                        const SizedBox(width: 8),
+                        TextButton.icon(
+                          onPressed: () => context.pushNamed('mealPlanning'),
+                          icon: Icon(
+                            Icons.restaurant,
+                            size: 16,
+                            color: primaryColor,
+                          ),
+                          label: Text(
+                            'Planificar comidas',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: primaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            backgroundColor: primaryColor.withValues(
+                              alpha: 0.1,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -282,13 +327,29 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     );
   }
 
+  // Obtener el tipo de comida desde el objeto Meal
+  String _getMealTypeFromMeal(Meal meal) {
+    // Determinar el tipo basado en el título de la receta o algún campo
+    // Por ahora, usaremos una lógica simple basada en el título
+    final title = meal.recipeTitle.toLowerCase();
+    if (title.contains('desayuno') || title.contains('breakfast')) {
+      return 'Desayuno';
+    } else if (title.contains('almuerzo') || title.contains('lunch')) {
+      return 'Almuerzo';
+    } else if (title.contains('cena') || title.contains('dinner')) {
+      return 'Cena';
+    } else {
+      return 'Comida'; // Tipo genérico
+    }
+  }
+
   // Construir resumen de comidas como texto
-  String _buildMealSummary(Map<MealType, List<MealPlan>> mealsByType) {
+  String _buildMealSummary(Map<String, List<Meal>> mealsByType) {
     final parts = <String>[];
 
     mealsByType.forEach((type, meals) {
       parts.add(
-        '${meals.length} ${type.name.toLowerCase()}${meals.length > 1 ? 's' : ''}',
+        '${meals.length} ${type.toLowerCase()}${meals.length > 1 ? 's' : ''}',
       );
     });
 
@@ -298,7 +359,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   // Construir iconos de tipos de comida
   Widget _buildMealTypeIcons(
     BuildContext context,
-    Map<MealType, List<MealPlan>> mealsByType,
+    Map<String, List<Meal>> mealsByType,
   ) {
     final icons = <Widget>[];
 
@@ -306,13 +367,16 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     final displayTypes = mealsByType.keys.take(3).toList();
 
     for (final type in displayTypes) {
+      final color = _getMealTypeColor(type);
+      final icon = _getMealTypeIcon(type);
+
       icons.add(
         Padding(
           padding: const EdgeInsets.only(right: 4),
           child: CircleAvatar(
-            backgroundColor: type.color.withOpacity(0.2),
+            backgroundColor: color.withValues(alpha: 0.2),
             radius: 14,
-            child: Icon(type.icon, size: 14, color: type.color),
+            child: Icon(icon, size: 14, color: color),
           ),
         ),
       );
@@ -325,7 +389,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -345,18 +409,51 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     return Row(mainAxisSize: MainAxisSize.min, children: icons);
   }
 
+  // Obtener color para tipo de comida
+  Color _getMealTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'desayuno':
+        return AppColors.breakfastColor;
+      case 'almuerzo':
+        return AppColors.lunchColor;
+      case 'cena':
+        return AppColors.dinnerColor;
+      default:
+        return AppColors.genericMealColor;
+    }
+  }
+
+  // Obtener icono para tipo de comida
+  IconData _getMealTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'desayuno':
+        return Icons.breakfast_dining;
+      case 'almuerzo':
+        return Icons.lunch_dining;
+      case 'cena':
+        return Icons.dinner_dining;
+      default:
+        return Icons.restaurant;
+    }
+  }
+
   // Construir sección para un tipo de comida
   Widget _buildMealTypeSection(
     BuildContext context,
-    MealType type,
-    List<MealPlan> meals,
+    String type,
+    List<Meal> meals,
     bool isDark,
     Color textColor,
     Color secondaryTextColor,
   ) {
+    final color = _getMealTypeColor(type);
+    final icon = _getMealTypeIcon(type);
+
     return Container(
       color:
-          isDark ? Colors.grey.shade900.withOpacity(0.5) : Colors.grey.shade50,
+          isDark
+              ? Colors.grey.shade900.withValues(alpha: 0.5)
+              : Colors.grey.shade50,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,17 +462,17 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: type.color.withOpacity(0.2),
+                backgroundColor: color.withValues(alpha: 0.2),
                 radius: 12,
-                child: Icon(type.icon, size: 12, color: type.color),
+                child: Icon(icon, size: 12, color: color),
               ),
               const SizedBox(width: 8),
               Text(
-                type.name,
+                type,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: type.color,
+                  color: color,
                 ),
               ),
               if (meals.length > 1)
@@ -386,7 +483,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     vertical: 1,
                   ),
                   decoration: BoxDecoration(
-                    color: type.color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -394,7 +491,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: type.color,
+                      color: color,
                     ),
                   ),
                 ),
@@ -417,137 +514,150 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     );
   }
 
-  // Construir item de comida individual
+  // Construir item individual de comida
   Widget _buildMealItem(
     BuildContext context,
-    MealPlan meal,
+    Meal meal,
     bool isDark,
     Color textColor,
     Color secondaryTextColor,
   ) {
-    return InkWell(
-      onTap: () {
-        // Al tocar una comida, mostrar sus detalles en el planificador
-        ref.read(selectedMealProvider.notifier).state = meal;
-        context.pushNamed('planner');
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Imagen de la comida
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: AssetImage(meal.imageUrl),
-                  fit: BoxFit.cover,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          // Icono de la comida
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 12),
+            child: Icon(
+              Icons.restaurant,
+              size: 16,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(width: 12),
 
-            // Información de la comida
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    meal.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
+          // Información de la comida
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  meal.recipeTitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${meal.ingredients.length} ingredientes',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: secondaryTextColor,
-                    ),
-                  ),
-
-                  // Chips de ingredientes principales (máximo 3)
-                  if (meal.ingredients.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children:
-                            meal.ingredients
-                                .take(3)
-                                .map(
-                                  (ingredient) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          isDark
-                                              ? Colors.grey.shade800
-                                              : Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      ingredient,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 9,
-                                        color:
-                                            isDark
-                                                ? Colors.grey.shade300
-                                                : Colors.grey.shade700,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      '${meal.calories} kcal',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppColors.breakfastColor,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${meal.prepTime} min',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
 
-            // Recordatorio (si existe)
-            if (meal.reminders != null && meal.reminders!.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(left: 4),
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade100,
-                  shape: BoxShape.circle,
+          // Botón de acción
+          IconButton(
+            icon: Icon(Icons.more_vert, size: 16, color: Colors.grey.shade500),
+            onPressed: () {
+              // Mostrar opciones para la comida
+              _showMealOptions(context, meal);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Mostrar opciones para una comida específica
+  void _showMealOptions(BuildContext context, Meal meal) {
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.visibility),
+                  title: const Text('Ver detalles'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Navegar a detalles de la comida
+                  },
                 ),
-                child: Icon(
-                  Icons.notifications_active,
-                  size: 12,
-                  color: Colors.amber.shade800,
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('Editar'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.pushNamed('mealPlanning');
+                  },
                 ),
-              ),
-          ],
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    'Eliminar',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Eliminar comida
+                    _deleteMeal(meal);
+                  },
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  // Eliminar una comida
+  void _deleteMeal(Meal meal) {
+    // Aquí implementarías la lógica para eliminar la comida
+    // usando el provider correspondiente
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Comida "${meal.recipeTitle}" eliminada'),
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            // Lógica para deshacer
+          },
         ),
       ),
     );
   }
 }
 
-// Extensión para capitalizar fechas en español
+// Extensión para capitalizar strings
 extension StringExtension on String {
   String capitalize() {
-    if (isEmpty) return this;
-    return this[0].toUpperCase() + substring(1);
+    return isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
   }
 }

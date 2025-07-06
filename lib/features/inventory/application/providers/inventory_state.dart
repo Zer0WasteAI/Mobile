@@ -38,7 +38,7 @@ extension InventorySortCriteriaExtension on InventorySortCriteria {
 }
 
 @freezed
-class InventoryState with _$InventoryState {
+abstract class InventoryState with _$InventoryState {
   const factory InventoryState({
     @Default([]) List<InventoryItem> items,
     @Default('') String searchQuery,

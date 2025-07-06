@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 
@@ -63,21 +65,43 @@ class SplashController extends StateNotifier<SplashState> {
     state = state.copyWith(status: SplashStatus.loading);
 
     try {
-      // Simulate loading for 2-3 seconds
-      await Future.delayed(const Duration(seconds: 3));
+      // Simular carga reducida a 1.5 segundos para una experiencia más fluida
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-      // Check if onboarding has been seen
-      final onboardingSeen = ref.read(onboardingSeenProvider);
+      // Verificar si el onboarding ha sido visto
+      bool onboardingSeen = false;
+      try {
+        onboardingSeen = ref.read(onboardingSeenProvider);
+      } catch (e) {
+        // Si hay error al leer el onboarding, asumimos que no se ha visto
+        log('Error al leer estado de onboarding: $e');
+        onboardingSeen = false;
+      }
 
-      // Set state to completed with onboarding seen status
+      // Establecer estado como completado con estado de onboarding
       state = state.copyWith(
         status: SplashStatus.completed,
         onboardingSeen: onboardingSeen,
       );
+
+      // Failsafe: Si después de 5 segundos todavía estamos en splash, forzar el estado a completado
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted && (state.status != SplashStatus.completed)) {
+          state = state.copyWith(
+            status: SplashStatus.completed,
+            onboardingSeen: onboardingSeen,
+          );
+        }
+      });
     } catch (e) {
+      log('Error en splash controller: $e');
+      // Si hay un error, intentamos manejarlo y continuar con la navegación
       state = state.copyWith(
-        status: SplashStatus.error,
+        status:
+            SplashStatus
+                .completed, // Importante: usamos completed en lugar de error
         error: e.toString(),
+        // Asumimos que no ha visto el onboarding (por defecto)
       );
     }
   }

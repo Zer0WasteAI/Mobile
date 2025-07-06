@@ -60,4 +60,17 @@ class AppColors {
   static const darkError = Color(0xFFEF233C);
   static const darkBackground = Color(0xFF121212);
   static const darkSurface = Color(0xFF1E1E1E);
+
+  // --- Meal Type Colors ---
+  static const breakfastColor = Color(0xFFFF9800); // Orange
+  static const lunchColor = Color(0xFF4CAF50); // Green
+  static const dinnerColor = Color(0xFF9C27B0); // Purple
+  static const snackColor = Color(0xFF2196F3); // Blue
+  static const genericMealColor = Color(0xFF607D8B); // Blue Grey
+
+  // --- Quick Actions Colors ---
+  static const mealPlanningColor = Color(0xFF4CAF50); // Green
+  static const weeklyPlannerColor = lightPrimary; // Use primary color
+  static const smartRecipesColor = Color(0xFF9C27B0); // Purple
+  static const environmentalImpactColor = Color(0xFF009688); // Teal
 }

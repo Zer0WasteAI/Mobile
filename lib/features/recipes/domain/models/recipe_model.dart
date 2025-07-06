@@ -44,8 +44,9 @@ class Recipe {
         case 'Tiempo de preparación':
           final bool matchesTime = values.any((value) {
             if (value == 'short_time') return cookingTime < 15;
-            if (value == 'medium_time')
+            if (value == 'medium_time') {
               return cookingTime >= 15 && cookingTime <= 30;
+            }
             if (value == 'long_time') return cookingTime > 30;
             return false;
           });

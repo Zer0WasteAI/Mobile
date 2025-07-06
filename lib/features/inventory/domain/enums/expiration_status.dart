@@ -36,14 +36,19 @@ extension ExpirationStatusExtension on ExpirationStatus {
   }
 
   // Optional helper to determine status from a date
-  static ExpirationStatus fromDate(DateTime? date, {int daysThreshold = 5}) {
+  static ExpirationStatus fromDate(DateTime? date, {int daysThreshold = 3}) {
     if (date == null) return ExpirationStatus.normal;
     final now = DateTime.now();
-    final difference = date.difference(now);
 
-    if (difference < Duration.zero) return ExpirationStatus.expired;
-    if (difference <= Duration(days: daysThreshold))
+    // Use date-only comparison to be consistent with UI indicators
+    final today = DateUtils.dateOnly(now);
+    final expiryDate = DateUtils.dateOnly(date);
+    final differenceInDays = expiryDate.difference(today).inDays;
+
+    if (differenceInDays < 0) return ExpirationStatus.expired;
+    if (differenceInDays <= daysThreshold) {
       return ExpirationStatus.expiringSoon;
+    }
     return ExpirationStatus.normal;
   }
 }

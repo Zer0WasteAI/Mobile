@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Import the modular widgets
 import 'package:zer0_waste_ai/features/home/presentation/widgets/welcome_header.dart';
@@ -9,11 +10,15 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summa
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
+import 'package:zer0_waste_ai/features/home/presentation/widgets/quick_actions_widget.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 
 /// The HomeScreen widget is the main entry point of the app.
 /// It displays a welcome message, a motivational card, inventory summary,
 /// recipe suggestions, impact summary, and other personalized content.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   // Common spacing values
   static const double _horizontalPadding = 16.0;
   static const double _sectionSpacing = 16.0;
@@ -21,7 +26,63 @@ class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh user data when home screen is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshUserData();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh user data when returning to home screen
+    _refreshUserData();
+  }
+
+  Future<void> _refreshUserData() async {
+    try {
+      // Refresh user data from Firestore
+      await ref
+          .read(authControllerProvider.notifier)
+          .refreshUserFromFirestore();
+      log('🏠 Home: Datos de usuario refrescados automáticamente');
+      
+      // Refresh inventory data from backend
+      await _refreshInventoryData();
+    } catch (e) {
+      log('🏠 Home: Error al refrescar datos: $e');
+    }
+  }
+
+  Future<void> _refreshInventoryData() async {
+    try {
+      log('🏠 Home: Iniciando actualización de inventario...');
+      
+      // Force refresh inventory data from backend
+      // Use the real inventory provider if configured to use backend
+      if (USE_REAL_BACKEND) {
+        final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
+        
+        // Force a fresh load from backend (bypass cache)
+        await inventoryNotifier.loadInventoryFromBackend();
+        log('🏠 Home: Inventario forzado a actualizarse desde backend');
+      } else {
+        log('🏠 Home: Usando inventario local/mock - no requiere actualización');
+      }
+    } catch (e) {
+      log('🏠 Home: Error al actualizar inventario: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Get background color from theme
     final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
@@ -35,42 +96,63 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24), // Espacio superior
               // Welcome Header con padding horizontal
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: WelcomeHeader(),
               ),
 
               const SizedBox(height: 24), // Espacio después del header
               // Daily Planner Widget - Planificación de comidas del día (NUEVO)
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: DailyPlannerWidget(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Motivational Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: MotivationalCard(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Inventory Summary Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: InventorySummaryCard(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
+
+              // Quick Actions Widget - Acciones rápidas
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
+                child: QuickActionsWidget(),
+              ),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Recipe Suggestions
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: RecipeSuggestions(),
               ),
-              const SizedBox(height: _sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Impact Summary Card
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: HomeScreen._horizontalPadding,
+                ),
                 child: ImpactSummaryCard(),
               ),
               const SizedBox(height: 24), // Bottom spacing

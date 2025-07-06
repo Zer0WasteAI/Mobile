@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
-import 'package:zer0_waste_ai/features/impact/domain/models/impact_metrics.dart';
+import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact.dart';
 
 /// Widget para la pestaña "Progreso" del panel de impacto ambiental
 class ImpactProgressTab extends ConsumerWidget {
@@ -12,353 +12,247 @@ class ImpactProgressTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final metrics = ref.watch(impactMetricsProvider);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
-    final primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final activeFilter = ref.watch(impactHistoryFilterProvider);
+    final calculationsAsync = switch (activeFilter) {
+      ImpactHistoryFilter.all => ref.watch(allImpactCalculationsProvider),
+      ImpactHistoryFilter.cooked => ref.watch(
+        impactCalculationsByStatusProvider(true),
+      ),
+      ImpactHistoryFilter.notCooked => ref.watch(
+        impactCalculationsByStatusProvider(false),
+      ),
+    };
 
-    // Ordenar logros por fecha, más recientes primero
-    final achievements = List<UserAchievement>.from(metrics.achievements)
-      ..sort((a, b) => b.achievedAt.compareTo(a.achievedAt));
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Sección de comparativas
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Tu impacto equivale a:',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Comparativas visuales
-          _buildComparisonCard(
-            context: context,
-            title: 'Viajes en coche',
-            value: '${(metrics.co2AvoidedKg * 6).toStringAsFixed(0)} km',
-            description: 'Emisiones de CO₂ evitadas',
-            icon: Icons.directions_car,
-            color: Colors.blue,
-          ),
-          _buildComparisonCard(
-            context: context,
-            title: 'Duchas completas',
-            value: '${(metrics.waterSavedLiters / 50).toStringAsFixed(0)}',
-            description: 'Agua ahorrada',
-            icon: Icons.shower,
-            color: Colors.lightBlue,
-          ),
-          _buildComparisonCard(
-            context: context,
-            title: 'Comidas completas',
-            value: '${(metrics.foodSavedKg * 2).toStringAsFixed(0)}',
-            description: 'Alimentos salvados',
-            icon: Icons.restaurant,
-            color: Colors.green,
-          ),
-
-          const SizedBox(height: 24),
-
-          // Progreso mensual
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Progreso mensual',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _buildProgressBar(
-                  context: context,
-                  label: 'Alimentos salvados',
-                  currentValue: metrics.foodSavedKg,
-                  targetValue: 20.0,
-                  color: Colors.green,
+    return calculationsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
+      data: (calculations) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Historial de Impacto',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
-                const SizedBox(height: 16),
-                _buildProgressBar(
-                  context: context,
-                  label: 'CO₂ evitado',
-                  currentValue: metrics.co2AvoidedKg,
-                  targetValue: 30.0,
-                  color: Colors.blue,
-                ),
-                const SizedBox(height: 16),
-                _buildProgressBar(
-                  context: context,
-                  label: 'Agua ahorrada',
-                  currentValue: metrics.waterSavedLiters / 1000,
-                  targetValue: 2.0,
-                  suffix: ' m³',
-                  color: Colors.lightBlue,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          // Logros recientes
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Logros alcanzados',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Lista de logros
-          if (achievements.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Todavía no has alcanzado ningún logro. ¡Sigue usando la app!',
+              const SizedBox(height: 8),
+              Text(
+                'Revisa y filtra tus cálculos y acciones pasadas',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: secondaryTextColor,
-                  fontStyle: FontStyle.italic,
+                  color: textColor.withValues(alpha: 0.7),
                 ),
               ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: achievements.length,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemBuilder: (context, index) {
-                final achievement = achievements[index];
-                return _buildAchievementItem(
-                  context: context,
-                  achievement: achievement,
-                  primaryColor: primaryColor,
-                  textColor: textColor,
-                  secondaryTextColor: secondaryTextColor,
-                );
-              },
-            ),
+              const SizedBox(height: 24),
+              _buildFilterButtons(context, ref),
+              const SizedBox(height: 24),
+              _buildCalculationsList(calculations.calculations, context, ref),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-          const SizedBox(height: 20),
+  Widget _buildFilterButtons(BuildContext context, WidgetRef ref) {
+    final activeFilter = ref.watch(impactHistoryFilterProvider);
+
+    return Center(
+      child: ToggleButtons(
+        isSelected: [
+          activeFilter == ImpactHistoryFilter.all,
+          activeFilter == ImpactHistoryFilter.cooked,
+          activeFilter == ImpactHistoryFilter.notCooked,
+        ],
+        onPressed: (index) {
+          ref.read(impactHistoryFilterProvider.notifier).state =
+              ImpactHistoryFilter.values[index];
+        },
+        borderRadius: BorderRadius.circular(8),
+        selectedColor: Colors.white,
+        fillColor: AppColors.lightPrimary,
+        children: const [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('Todos'),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('Cocinados'),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('No Cocinados'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildComparisonCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required String description,
-    required IconData icon,
-    required Color color,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
+  Widget _buildCalculationsList(
+    List<EnvironmentalImpact> calculations,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    if (calculations.isEmpty) {
+      return const Center(child: Text('Aún no has realizado ningún cálculo.'));
+    }
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: color.withOpacity(0.3), width: 1),
-        ),
-        color: cardColor,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: textColor.withOpacity(0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                value,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: calculations.length,
+      itemBuilder: (context, index) {
+        final item = calculations[index];
+        return _buildCalculationCard(item, context, ref);
+      },
     );
   }
 
-  Widget _buildProgressBar({
-    required BuildContext context,
-    required String label,
-    required double currentValue,
-    required double targetValue,
-    String suffix = '',
-    required Color color,
-  }) {
-    final percent = (currentValue / targetValue).clamp(0.0, 1.0);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
+  Widget _buildCalculationCard(
+    EnvironmentalImpact item,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode ? AppColors.darkSurface : Colors.white;
+    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+    final titleColor = isDarkMode ? Colors.white : AppColors.lightPrimary;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: cardColor,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              label,
+              item.recipeTitle,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: titleColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Calculado el: ${DateFormat.yMMMd().add_jm().format(item.savedAt ?? DateTime.now())}',
               style: GoogleFonts.inter(fontSize: 12, color: textColor),
             ),
-            Text(
-              '${currentValue.toStringAsFixed(1)}$suffix / ${targetValue.toStringAsFixed(1)}$suffix',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: textColor.withOpacity(0.7),
-              ),
+            const Divider(height: 24),
+            _buildImpactRow(
+              Icons.cloud_off,
+              '${item.carbonFootprint.toStringAsFixed(2)} ${item.unitCarbon}',
+              'CO2 Evitado',
+              context,
+            ),
+            const SizedBox(height: 8),
+            _buildImpactRow(
+              Icons.water_drop,
+              '${item.waterFootprint.toStringAsFixed(2)} ${item.unitWater}',
+              'Agua Ahorrada',
+              context,
+            ),
+            const SizedBox(height: 8),
+            _buildImpactRow(
+              Icons.flash_on,
+              '${item.energyFootprint.toStringAsFixed(2)} ${item.unitEnergy}',
+              'Energía Ahorrada',
+              context,
+            ),
+            const SizedBox(height: 8),
+            _buildImpactRow(
+              Icons.monetization_on,
+              '${item.economicCost.toStringAsFixed(2)} ${item.unitCost}',
+              'Coste Económico',
+              context,
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child:
+                  item.isCooked
+                      ? const Chip(
+                        label: Text('Cocinada'),
+                        backgroundColor: Colors.green,
+                        labelStyle: TextStyle(color: Colors.white),
+                      )
+                      : ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            final service = ref.read(
+                              impactCalculationServiceProvider,
+                            );
+                            await service.updateStatus(item.recipeUid, true);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('¡Receta marcada como cocinada!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+
+                            // Refresh providers
+                            ref.invalidate(allImpactCalculationsProvider);
+                            ref.invalidate(impactSummaryProvider);
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: ${e.toString()}'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.lightPrimary,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Marcar como Cocinada'),
+                      ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        LinearPercentIndicator(
-          lineHeight: 10.0,
-          percent: percent,
-          backgroundColor: color.withOpacity(0.2),
-          progressColor: color,
-          barRadius: const Radius.circular(5),
-          animation: true,
-          animationDuration: 1000,
-          padding: EdgeInsets.zero,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAchievementItem({
-    required BuildContext context,
-    required UserAchievement achievement,
-    required Color primaryColor,
-    required Color textColor,
-    required Color secondaryTextColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.emoji_events_outlined,
-              color: primaryColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement.title,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                Text(
-                  achievement.description,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: secondaryTextColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            _getTimeAgo(achievement.achievedAt),
-            style: GoogleFonts.inter(fontSize: 12, color: secondaryTextColor),
-          ),
-        ],
       ),
     );
   }
 
-  String _getTimeAgo(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  Widget _buildImpactRow(
+    IconData icon,
+    String value,
+    String label,
+    BuildContext context,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final iconColor =
+        isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final textColor = isDarkMode ? Colors.white70 : Colors.black54;
 
-    if (difference.inDays > 30) {
-      return 'hace ${(difference.inDays / 30).floor()} meses';
-    } else if (difference.inDays > 0) {
-      return 'hace ${difference.inDays} días';
-    } else if (difference.inHours > 0) {
-      return 'hace ${difference.inHours} horas';
-    } else {
-      return 'hace poco';
-    }
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 20),
+        const SizedBox(width: 12),
+        Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
   }
 }

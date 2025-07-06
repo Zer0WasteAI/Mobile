@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zer0_waste_ai/core/navigation/navigation_extension.dart';
 
 /// Botón de atrás seguro que verifica si se puede hacer pop antes de intentarlo
 class SafeBackButton extends StatelessWidget {
@@ -7,7 +6,7 @@ class SafeBackButton extends StatelessWidget {
   final Color? iconColor;
 
   /// Constructor
-  const SafeBackButton({Key? key, this.iconColor}) : super(key: key);
+  const SafeBackButton({super.key, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +30,7 @@ class SafeTextButton extends StatelessWidget {
   final TextStyle? style;
 
   /// Constructor
-  const SafeTextButton({Key? key, required this.text, this.style})
-    : super(key: key);
+  const SafeTextButton({super.key, required this.text, this.style});
 
   @override
   Widget build(BuildContext context) {

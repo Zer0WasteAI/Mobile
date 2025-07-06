@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/core/presentation/widgets/app_dialog.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
 
 /// Shows a reusable dialog for adding a custom text item (like allergy or diet).

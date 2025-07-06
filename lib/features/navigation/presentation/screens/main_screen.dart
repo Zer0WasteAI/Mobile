@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/core/widgets/error_handler.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:zer0_waste_ai/features/navigation/presentation/widgets/app_bottom_app_bar.dart';
 import 'package:zer0_waste_ai/features/scan/presentation/widgets/scan_options_modal.dart';
@@ -85,8 +86,31 @@ class MainScreen extends ConsumerWidget {
       // Keep Stack in body for ModalBarrier and positioned ScanOptionsModal
       body: Stack(
         children: [
-          // Main screen content
-          child,
+          // Main screen content with AnimatedSwitcher for smooth transitions
+          // Wrapped with AuthErrorHandler
+          AuthErrorHandler(
+            child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.03, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            child: child,
+            ),
+          ),
 
           // Dimming barrier for scan modal
           if (isScanOpen)
