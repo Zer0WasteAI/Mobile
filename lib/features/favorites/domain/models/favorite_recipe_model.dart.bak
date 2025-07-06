@@ -1,0 +1,40 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'favorite_recipe_model.freezed.dart';
+part 'favorite_recipe_model.g.dart';
+
+@freezed
+class FavoriteRecipe with _$FavoriteRecipe {
+  const factory FavoriteRecipe({
+    required String id,
+    required String userId,
+    required String title,
+    required String description,
+    required List<FavoriteIngredient> ingredients,
+    required List<String> instructions,
+    required int prepTime,
+    required int cookTime,
+    required int servings,
+    required String difficulty,
+    String? imagePath,
+    @Default('') String category,
+    @Default([]) List<String> tags,
+    required DateTime createdAt,
+    DateTime? updatedAt,
+  }) = _FavoriteRecipe;
+
+  factory FavoriteRecipe.fromJson(Map<String, dynamic> json) =>
+      _$FavoriteRecipeFromJson(json);
+}
+
+@freezed
+class FavoriteIngredient with _$FavoriteIngredient {
+  const factory FavoriteIngredient({
+    required String name,
+    required double quantity,
+    required String unit,
+  }) = _FavoriteIngredient;
+
+  factory FavoriteIngredient.fromJson(Map<String, dynamic> json) =>
+      _$FavoriteIngredientFromJson(json);
+}

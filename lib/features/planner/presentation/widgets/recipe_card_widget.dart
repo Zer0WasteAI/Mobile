@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/recipe_generation_providers.dart';
+import '../../../favorites/presentation/providers/favorite_recipe_providers.dart';
+import '../screens/recipe_detail_screen.dart';
 
-class RecipeCardWidget extends StatelessWidget {
+class RecipeCardWidget extends ConsumerWidget {
   final GeneratedRecipe recipe;
   final VoidCallback onAddToPlan;
   final VoidCallback? onStartCooking;
@@ -33,35 +36,39 @@ class RecipeCardWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildImageSection(colorScheme),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(textTheme, colorScheme),
-                const SizedBox(height: 8),
-                _buildDescription(textTheme, colorScheme),
-                const SizedBox(height: 12),
-                _buildMetrics(textTheme, colorScheme),
-                const SizedBox(height: 12),
-                _buildIngredients(textTheme, colorScheme),
-                const SizedBox(height: 16),
-                _buildActionButton(context, colorScheme),
-              ],
+      child: InkWell(
+        onTap: () => _showRecipeDetail(context, ref),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildImageSection(colorScheme),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(textTheme, colorScheme, ref),
+                  const SizedBox(height: 8),
+                  _buildDescription(textTheme, colorScheme),
+                  const SizedBox(height: 12),
+                  _buildMetrics(textTheme, colorScheme),
+                  const SizedBox(height: 12),
+                  _buildIngredients(textTheme, colorScheme),
+                  const SizedBox(height: 16),
+                  _buildActionButton(context, colorScheme),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -155,7 +162,10 @@ class RecipeCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(TextTheme textTheme, ColorScheme colorScheme) {
+  Widget _buildHeader(TextTheme textTheme, ColorScheme colorScheme, WidgetRef ref) {
+    final recipeId = '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
+    final favoriteAction = ref.watch(favoriteActionProvider.notifier);
     return Row(
       children: [
         Expanded(
@@ -164,22 +174,67 @@ class RecipeCardWidget extends StatelessWidget {
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        if (onSaveRecipe != null)
-          GestureDetector(
-            onTap: onSaveRecipe,
+        isFavoriteAsync.when(
+          data: (isFavorite) => InkWell(
+            onTap: () async {
+              await favoriteAction.toggleFavorite(
+                recipeId,
+                recipe.title,
+                recipe.description,
+                recipe.ingredients.map((ing) => ing.name).toList(),
+                recipe.instructions,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty,
+                imagePath: recipe.imagePath,
+                mealType: _detectMealType(recipe.title),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
             child: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
+                color: isFavorite 
+                    ? colorScheme.primary.withValues(alpha: 0.2)
+                    : colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                Icons.bookmark_border,
-                color: colorScheme.primary,
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : colorScheme.primary,
                 size: 20,
               ),
             ),
           ),
+          loading: () => Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+          error: (_, _) => Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.favorite_border,
+              color: colorScheme.primary,
+              size: 20,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -306,75 +361,6 @@ class RecipeCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          /*Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Navigate to cooking mode
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RecipeCookingMode(
-                      recipe: _convertGeneratedRecipeToStepsFormat(recipe),
-                      onExit: () {
-                        Navigator.pop(context);
-                      },
-                      onComplete: () {
-                        // Show completion message with rating option
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('¡Felicidades! Has completado: ${_cleanRecipeTitle(recipe.title)}'),
-                            backgroundColor: Colors.green,
-                            duration: const Duration(seconds: 4),
-                            action: SnackBarAction(
-                              label: 'Calificar',
-                              textColor: Colors.white,
-                              onPressed: () {
-                                // Show rating dialog for generated recipe
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => RecipeRatingDialog(
-                                    recipeName: _cleanRecipeTitle(recipe.title),
-                                    onSubmit: (rating, comment) {
-                                      // Here you could save the rating for generated recipes
-                                      // For now, just show a confirmation
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('¡Gracias por calificar "${_cleanRecipeTitle(recipe.title)}" con $rating estrellas!'),
-                                          backgroundColor: Colors.amber.shade700,
-                                          duration: const Duration(seconds: 2),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                        
-                        // Call the provided callback if any
-                        onStartCooking?.call();
-                        
-                        // Return to previous screen
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Cocinar'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.secondary,
-                foregroundColor: colorScheme.onSecondary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        */
         ],
       );
     } else {
@@ -401,5 +387,45 @@ class RecipeCardWidget extends StatelessWidget {
   // Función para limpiar nombres de recetas removiendo sufijos como (1), (2), etc.
   String _cleanRecipeTitle(String title) {
     return title.replaceAll(RegExp(r'\s*\(\d+\)$'), '').trim();
+  }
+
+  String _detectMealType(String title) {
+    final lowerTitle = title.toLowerCase();
+    if (lowerTitle.contains('desayuno') || 
+        lowerTitle.contains('breakfast') ||
+        lowerTitle.contains('avena') ||
+        lowerTitle.contains('tostada') ||
+        lowerTitle.contains('cereal') ||
+        lowerTitle.contains('huevo') ||
+        lowerTitle.contains('pancake')) {
+      return 'Desayuno';
+    } else if (lowerTitle.contains('almuerzo') || 
+               lowerTitle.contains('lunch') ||
+               lowerTitle.contains('sopa') ||
+               lowerTitle.contains('ensalada')) {
+      return 'Almuerzo';
+    } else if (lowerTitle.contains('cena') || 
+               lowerTitle.contains('dinner') ||
+               lowerTitle.contains('pasta') ||
+               lowerTitle.contains('pollo') ||
+               lowerTitle.contains('pescado') ||
+               lowerTitle.contains('carne')) {
+      return 'Cena';
+    } else {
+      return 'Comida'; // Tipo genérico
+    }
+  }
+
+  void _showRecipeDetail(BuildContext context, WidgetRef ref) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecipeDetailScreen(
+          recipe: recipe,
+          onAddToPlan: onAddToPlan,
+          mealType: _detectMealType(recipe.title),
+        ),
+      ),
+    );
   }
 }

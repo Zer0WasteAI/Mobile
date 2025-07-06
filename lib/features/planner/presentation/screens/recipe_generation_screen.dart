@@ -380,7 +380,6 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
             recipe: recipe,
             onAddToPlan: () => _addRecipeToPlan(recipe),
             onStartCooking: () => _onCookingComplete(recipe),
-            onSaveRecipe: () => _saveRecipe(recipe),
           ),
         );
       },
@@ -514,35 +513,6 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
   
-  Future<void> _saveRecipe(GeneratedRecipe recipe) async {
-    try {
-      final success = await ref.read(recipeGenerationProvider.notifier).saveGeneratedRecipe(recipe);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success 
-                ? '¡${_cleanRecipeTitle(recipe.title)} guardada en tus favoritos!'
-                : 'Error al guardar la receta'
-            ),
-            backgroundColor: success ? Colors.green : Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al guardar: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
 
   // Función para limpiar nombres de recetas removiendo sufijos como (1), (2), etc.
   String _cleanRecipeTitle(String title) {
