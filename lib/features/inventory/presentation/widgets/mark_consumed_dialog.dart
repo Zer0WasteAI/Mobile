@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
+import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/consumption_tracking.dart';
 
 /// Dialog for marking ingredients as consumed with consumption details
 class MarkConsumedDialog extends ConsumerStatefulWidget {
@@ -321,7 +323,7 @@ class _MarkConsumedDialogState extends ConsumerState<MarkConsumedDialog> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _markAsConsumed,
+                      onPressed: _isSubmitting ? null : _handleSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
@@ -361,7 +363,7 @@ class _MarkConsumedDialogState extends ConsumerState<MarkConsumedDialog> {
     );
   }
 
-  Future<void> _markAsConsumed() async {
+  Future<void> _handleSubmit() async {
     if (_consumedQuantity <= 0 || _consumedQuantity > _maxQuantity) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -379,20 +381,29 @@ class _MarkConsumedDialogState extends ConsumerState<MarkConsumedDialog> {
     });
 
     try {
-      await ref
-          .read(inventoryRealProvider.notifier)
-          .markIngredientAsConsumed(
-            widget.item.id,
-            consumedQuantity: _consumedQuantity,
-            consumptionReason:
-                _reasonController.text.trim().isEmpty
-                    ? null
-                    : _reasonController.text.trim(),
-            recipeUsed:
-                _recipeController.text.trim().isEmpty
-                    ? null
-                    : _recipeController.text.trim(),
-          );
+      // Marcar como consumido y obtener la respuesta
+      final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
+      final response = await inventoryNotifier.markIngredientAsConsumed(
+        widget.item.id,
+        consumedQuantity: _consumedQuantity,
+        consumptionReason:
+            _reasonController.text.trim().isEmpty
+                ? null
+                : _reasonController.text.trim(),
+        recipeUsed:
+            _recipeController.text.trim().isEmpty
+                ? null
+                : _recipeController.text.trim(),
+      );
+
+      // Actualizar métricas de impacto ambiental
+      // ignore: unnecessary_type_check, unnecessary_null_comparison
+      if (response != null && response is Map<String, dynamic>) {
+        final tracking = ConsumptionTracking.fromJson(response);
+        ref
+            .read(impactMetricsProvider.notifier)
+            .updateFromConsumption(tracking);
+      }
 
       // 🔄 SYNC: Update UI provider with the new data from real provider
       final realItems = ref.read(inventoryRealProvider).items;
@@ -414,20 +425,16 @@ class _MarkConsumedDialogState extends ConsumerState<MarkConsumedDialog> {
         );
       }
     } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al marcar como consumido: ${e.toString()}'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
       }
     }
   }

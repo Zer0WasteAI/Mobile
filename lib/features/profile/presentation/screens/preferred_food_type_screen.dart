@@ -9,6 +9,7 @@ import 'package:zer0_waste_ai/features/profile/application/providers/food_types_
 import 'package:zer0_waste_ai/features/profile/application/providers/selected_food_types_provider.dart';
 import 'package:zer0_waste_ai/features/profile/presentation/screens/special_diet_selector_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/profile/application/providers/user_profile_provider.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/loading_snackbar.dart';
 
 // --- Screen Widget ---
@@ -42,24 +43,31 @@ class _PreferredFoodTypeScreenState
   }
 
   Future<void> _initializeFoodTypes() async {
-    if (_isInitialized) return;
+    // When coming from profile, always reinitialize to load current values
+    if (_isInitialized && !widget.fromProfile) return;
 
     final foodTypesAsyncValue = ref.read(foodTypesProvider);
-    final user = ref.read(authControllerProvider).value;
+    final user = ref.read(authStateProvider).value;
+
+    log('🔧 _initializeFoodTypes - fromProfile: ${widget.fromProfile}');
 
     // Wait for food types to load if they haven't yet
     if (foodTypesAsyncValue is AsyncLoading) {
-      // ✅ UPDATED: Removed artificial delay
+      log('⏳ Food types still loading, waiting...');
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     // Get the list of all available food types
     final availableFoodTypes = ref.read(foodTypesProvider).value ?? [];
+    log(
+      '📋 Available food types: ${availableFoodTypes.map((f) => f.name).toList()}',
+    );
 
     // Get user's selected food types from profile
     final userFoodTypes = user?.prefs.preferredFoodTypes ?? [];
     final userFoodTypeItems = user?.prefs.preferredFoodTypeItems;
 
-    log('Initializing food types selector with:');
+    log('🔧 Initializing food types selector with:');
     log('- Legacy food type names: $userFoodTypes');
     log('- Food type items: $userFoodTypeItems');
 
@@ -69,6 +77,18 @@ class _PreferredFoodTypeScreenState
     if (userFoodTypeItems != null && userFoodTypeItems.isNotEmpty) {
       foodTypeNamesToInitialize =
           userFoodTypeItems.map((item) => item['name'] as String).toList();
+      log('✅ Using complex food type items');
+    } else {
+      log('✅ Using legacy food types');
+    }
+
+    // Reset state AFTER we have the data, especially when coming from profile
+    if (widget.fromProfile) {
+      final notifier = ref.read(
+        selectedFoodTypesProviderWithPersistence.notifier,
+      );
+      notifier.reset();
+      log('🔄 Reset food types state for profile editing');
     }
 
     // Initialize the selectedFoodTypesProviderWithPersistence with user's saved preferences
@@ -78,21 +98,35 @@ class _PreferredFoodTypeScreenState
       );
 
       for (final foodTypeName in foodTypeNamesToInitialize) {
+        log('🔍 Looking for food type: "$foodTypeName"');
+        bool found = false;
         for (final availableFoodType in availableFoodTypes) {
-          if (availableFoodType.name.toLowerCase() ==
-              foodTypeName.toLowerCase()) {
+          if (availableFoodType.name.toLowerCase().trim() ==
+              foodTypeName.toLowerCase().trim()) {
             notifier.toggleFoodType(availableFoodType);
-            log('Added food type to selection: ${availableFoodType.name}');
+            log('✅ Added food type to selection: ${availableFoodType.name}');
+            found = true;
             break;
           }
         }
+        if (!found) {
+          log('❌ Food type not found: "$foodTypeName"');
+        }
       }
+    } else {
+      log(
+        '⚠️ No food types to initialize or available food types list is empty',
+      );
+      log('   - foodTypeNamesToInitialize: $foodTypeNamesToInitialize');
+      log('   - availableFoodTypes count: ${availableFoodTypes.length}');
     }
 
     setState(() {
       _isInitialized = true;
       _isLoading = false;
     });
+
+    log('✅ Food types initialization completed');
   }
 
   @override
@@ -117,6 +151,17 @@ class _PreferredFoodTypeScreenState
 
     return Scaffold(
       backgroundColor: backgroundColor,
+      appBar:
+          widget.fromProfile
+              ? AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(Icons.close, color: colorScheme.onSurface),
+                  onPressed: () => context.go('/profile'),
+                ),
+              )
+              : null,
       body: SafeArea(
         child:
             _isLoading
@@ -204,100 +249,254 @@ class _PreferredFoodTypeScreenState
                         ),
                       ),
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed:
-                              allFoodTypesAsyncValue.hasValue
-                                  ? () async {
-                                    try {
-                                      // Mostrar indicador de carga
-                                      if (context.mounted) {
-                                        showLoadingSnackBar(
-                                          context,
-                                          message:
-                                              'Guardando tipos de comida...',
-                                        );
-                                      }
+                      // Bottom Buttons
+                      if (widget.fromProfile) ...[
+                        // Show Save and Cancel buttons when editing from profile
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  // Cancel - reset state and go back
+                                  notifier.reset();
+                                  context.go('/profile');
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: colorScheme.onSurface,
+                                  side: BorderSide(color: colorScheme.outline),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancelar',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 2,
+                              child: ElevatedButton(
+                                onPressed:
+                                    allFoodTypesAsyncValue.hasValue
+                                        ? () async {
+                                          try {
+                                            // Mostrar indicador de carga
+                                            if (context.mounted) {
+                                              showLoadingSnackBar(
+                                                context,
+                                                message:
+                                                    'Guardando tipos de comida...',
+                                              );
+                                            }
 
-                                      // Save selected food types to Firestore - even if empty list
-                                      final foodTypeNames =
-                                          selectedTypes
-                                              .map((foodType) => foodType.name)
-                                              .toList();
+                                            // Save selected food types to Firestore
+                                            final foodTypeNames =
+                                                selectedTypes
+                                                    .map(
+                                                      (foodType) =>
+                                                          foodType.name,
+                                                    )
+                                                    .toList();
 
-                                      log(
-                                        "Guardando tipos de comida en Firestore: $foodTypeNames",
-                                      );
+                                            log(
+                                              "Guardando tipos de comida en Firestore: $foodTypeNames",
+                                            );
 
-                                      await authRepository
-                                          .saveUserPreferredFoodTypes(
-                                            foodTypeNames, // Could be empty list
+                                            await authRepository
+                                                .saveUserPreferredFoodTypes(
+                                                  foodTypeNames,
+                                                );
+
+                                            // Refrescar datos de usuario y estado de autenticación
+                                            await ref
+                                                .read(
+                                                  authControllerProvider
+                                                      .notifier,
+                                                )
+                                                .refreshUserFromFirestore();
+
+                                            // Force refresh del perfil para asegurar actualización
+                                            await ref
+                                                .read(
+                                                  userProfileProvider.notifier,
+                                                )
+                                                .refresh();
+
+                                            // Reset state to avoid keeping selections
+                                            notifier.reset();
+
+                                            // Show success message
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: const Text(
+                                                    'Tipos de comida actualizados',
+                                                  ),
+                                                  backgroundColor:
+                                                      colorScheme.primary,
+                                                  duration: const Duration(
+                                                    seconds: 2,
+                                                  ),
+                                                ),
+                                              );
+                                              // Go back to profile
+                                              context.go('/profile');
+                                            }
+                                          } catch (e) {
+                                            log(
+                                              "Error guardando tipos de comida: $e",
+                                            );
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: const Text(
+                                                    'Error: No se pudieron guardar los tipos de comida',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                        : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      allFoodTypesAsyncValue.hasValue
+                                          ? primaryColor
+                                          : Colors.grey,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  foregroundColor: colorScheme.onPrimary,
+                                ),
+                                child: Text(
+                                  'Guardar',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else
+                        // Show single Continue button for onboarding
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                allFoodTypesAsyncValue.hasValue
+                                    ? () async {
+                                      try {
+                                        // Mostrar indicador de carga
+                                        if (context.mounted) {
+                                          showLoadingSnackBar(
+                                            context,
+                                            message:
+                                                'Guardando tipos de comida...',
                                           );
+                                        }
 
-                                      // NO marcar como completado aquí - solo en la pantalla final
-                                      // await authRepository.markInitialPreferencesCompleted();
+                                        // Save selected food types to Firestore - even if empty list
+                                        final foodTypeNames =
+                                            selectedTypes
+                                                .map(
+                                                  (foodType) => foodType.name,
+                                                )
+                                                .toList();
 
-                                      // Refrescar datos de usuario
-                                      await ref
-                                          .read(authControllerProvider.notifier)
-                                          .refreshUserFromFirestore();
+                                        log(
+                                          "Guardando tipos de comida en Firestore: $foodTypeNames",
+                                        );
 
-                                      // Reset state to avoid keeping selections
-                                      notifier.reset();
+                                        await authRepository
+                                            .saveUserPreferredFoodTypes(
+                                              foodTypeNames, // Could be empty list
+                                            );
 
-                                      // Navigate based on context
-                                      if (context.mounted) {
-                                        if (widget.fromProfile) {
-                                          // From profile - go back to profile
-                                          context.pop();
-                                        } else {
-                                          // From onboarding - continue to next step
+                                        // Refrescar datos de usuario y estado de autenticación
+                                        await ref
+                                            .read(
+                                              authControllerProvider.notifier,
+                                            )
+                                            .refreshUserFromFirestore();
+
+                                        // Force refresh del perfil para asegurar actualización
+                                        await ref
+                                            .read(userProfileProvider.notifier)
+                                            .refresh();
+
+                                        // Reset state to avoid keeping selections
+                                        notifier.reset();
+
+                                        // Continue to next step in onboarding
+                                        if (context.mounted) {
                                           context.go(
                                             SpecialDietSelectorScreen.routePath,
                                           );
                                         }
-                                      }
-                                    } catch (e) {
-                                      log(
-                                        "Error guardando tipos de comida: $e",
-                                      );
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).hideCurrentSnackBar();
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Error: No se pudieron guardar los tipos de comida: $e',
-                                            ),
-                                            backgroundColor: Colors.red,
-                                          ),
+                                      } catch (e) {
+                                        log(
+                                          "Error guardando tipos de comida: $e",
                                         );
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).hideCurrentSnackBar();
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Error: No se pudieron guardar los tipos de comida: $e',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
                                       }
                                     }
-                                  }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                allFoodTypesAsyncValue.hasValue
-                                    ? primaryColor
-                                    : Colors.grey,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                                    : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  allFoodTypesAsyncValue.hasValue
+                                      ? primaryColor
+                                      : Colors.grey,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              foregroundColor: colorScheme.onPrimary,
+                              textStyle: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            foregroundColor: colorScheme.onPrimary,
-                            textStyle: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            child: const Text('Continuar'),
                           ),
-                          child: const Text('Continuar'),
                         ),
-                      ),
                     ],
                   ),
                 ),

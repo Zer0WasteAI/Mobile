@@ -44,31 +44,35 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _searchController.addListener(() {
-      // Sync search query to both providers
-      ref
-          .read(inventoryProvider.notifier)
-          .setSearchQuery(_searchController.text);
-      ref
-          .read(inventoryRealProvider.notifier)
-          .setSearchQuery(_searchController.text);
-    });
-
-    // Initialize TabController
-    final initialFilterStatus =
-        ref.read(inventoryRealProvider).expirationStatusFilter;
-    final initialTabIndex = ExpirationStatus.values.indexOf(
-      initialFilterStatus,
-    );
+    
+    // Initialize TabController with default values
     _tabController = TabController(
       length: ExpirationStatus.values.length,
       vsync: this,
-      initialIndex:
-          initialTabIndex >= 0 ? initialTabIndex : 0, // Handle potential issues
+      initialIndex: 0,
     );
 
-    // 🚀 OPTIMIZED: Smart inventory loading with cache
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Initialize after first build
+    Future(() async {
+      // Set up search listener
+      _searchController.addListener(() {
+        ref
+            .read(inventoryProvider.notifier)
+            .setSearchQuery(_searchController.text);
+        ref
+            .read(inventoryRealProvider.notifier)
+            .setSearchQuery(_searchController.text);
+      });
+
+      // Update tab controller with actual filter status
+      final initialFilterStatus =
+          ref.read(inventoryRealProvider).expirationStatusFilter;
+      final initialTabIndex = ExpirationStatus.values.indexOf(
+        initialFilterStatus,
+      );
+      _tabController.index = initialTabIndex >= 0 ? initialTabIndex : 0;
+
+      // 🚀 OPTIMIZED: Smart inventory loading with cache
       await _loadInventorySmartly();
 
       // Verificar si hay elementos destacados al iniciar la pantalla

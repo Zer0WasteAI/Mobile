@@ -75,7 +75,7 @@ final recipeSuggestionsProvider = FutureProvider<List<Recipe>>((ref) async {
       }
       // Map the dynamic list to a list of Recipe objects
       return recipes.map((recipeData) {
-        final recipe = recipeData as Map<String, dynamic>;
+        final recipe = recipeData;
         return Recipe(
           id: recipe['uid'] ?? '',
           title: recipe['title'] ?? 'Receta sin título',

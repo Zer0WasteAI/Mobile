@@ -9,7 +9,5 @@ export 'faqs_screen.dart';
 export 'privacy_policy_screen.dart';
 export 'terms_and_conditions_screen.dart';
 export 'language_screen.dart';
-export 'units_screen.dart';
 export 'about_app_screen.dart';
 export 'support_screen.dart';
- 

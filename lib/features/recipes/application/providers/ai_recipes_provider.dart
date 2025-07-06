@@ -13,6 +13,8 @@ class AIRecipeState {
   final Map<String, dynamic>? personalizationInfo;
   final String? totalRecipes;
   final String? inventoryUsage;
+  final DateTime? lastGenerated;
+  final String? generationType; // 'inventory', 'custom', 'planner'
 
   const AIRecipeState({
     this.isGenerating = false,
@@ -22,6 +24,8 @@ class AIRecipeState {
     this.personalizationInfo,
     this.totalRecipes,
     this.inventoryUsage,
+    this.lastGenerated,
+    this.generationType,
   });
 
   AIRecipeState copyWith({
@@ -32,16 +36,45 @@ class AIRecipeState {
     Map<String, dynamic>? personalizationInfo,
     String? totalRecipes,
     String? inventoryUsage,
+    DateTime? lastGenerated,
+    String? generationType,
   }) {
     return AIRecipeState(
       isGenerating: isGenerating ?? this.isGenerating,
       recipes: recipes ?? this.recipes,
-      error: error ?? this.error,
+      error: error,
       hasGenerated: hasGenerated ?? this.hasGenerated,
       personalizationInfo: personalizationInfo ?? this.personalizationInfo,
       totalRecipes: totalRecipes ?? this.totalRecipes,
       inventoryUsage: inventoryUsage ?? this.inventoryUsage,
+      lastGenerated: lastGenerated ?? this.lastGenerated,
+      generationType: generationType ?? this.generationType,
     );
+  }
+  
+  // Cache intelligence methods
+  bool get areRecipesFresh {
+    if (lastGenerated == null) return false;
+    return DateTime.now().difference(lastGenerated!).inHours < 1;
+  }
+  
+  bool get hasRecentRecipes {
+    return recipes.isNotEmpty && areRecipesFresh;
+  }
+  
+  String get cacheStatusMessage {
+    if (!hasRecentRecipes) return '';
+    
+    switch (generationType) {
+      case 'inventory':
+        return 'Recetas guardadas del inventario';
+      case 'custom':
+        return 'Recetas personalizadas guardadas';
+      case 'planner':
+        return 'Recetas del planificador guardadas';
+      default:
+        return 'Recetas recientes guardadas';
+    }
   }
 }
 
@@ -53,7 +86,13 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
 
   /// Generate recipes from current inventory using real AI backend
   /// 🚀 OPTIMIZED: Anti-spam protection + retry with exponential backoff
-  Future<void> generateRecipesFromInventory() async {
+  Future<void> generateRecipesFromInventory({bool forceRegenerate = false}) async {
+    // ✅ CACHE: Check if we have fresh inventory recipes
+    if (!forceRegenerate && state.hasRecentRecipes && state.generationType == 'inventory') {
+      log('📦 Using cached inventory recipes, skipping API call');
+      return;
+    }
+    
     // ✅ ANTI-SPAM: Prevent multiple concurrent calls
     if (state.isGenerating) {
       log(
@@ -88,6 +127,9 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
           inventoryUsage:
               (response['inventory_utilization']?['utilization_percentage'])
                   ?.toString(),
+          // Cache info
+          lastGenerated: DateTime.now(),
+          generationType: 'inventory',
         );
 
         log('✅ AI Recipe generation successful on attempt $attempt');
@@ -121,7 +163,14 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     List<String>? preferences,
     List<String>? recipeCategories,
     int numRecipes = 2,
+    bool forceRegenerate = false,
   }) async {
+    // ✅ CACHE: Check if we have fresh custom recipes (basic check)
+    if (!forceRegenerate && state.hasRecentRecipes && state.generationType == 'custom') {
+      log('🎨 Using cached custom recipes, skipping API call');
+      return;
+    }
+    
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
@@ -146,6 +195,9 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         totalRecipes: response['total_recipes']?.toString(),
         inventoryUsage:
             '100%', // Custom recipes use 100% of specified ingredients
+        // Cache info
+        lastGenerated: DateTime.now(),
+        generationType: 'custom',
       );
     } catch (e) {
       state = state.copyWith(

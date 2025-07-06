@@ -37,7 +37,7 @@ abstract class InventoryItem with _$InventoryItem {
     image: '',
     quantity: 0.0,
     unitType: 'unidades',
-    storageType: StorageType.dry,
+    storageType: StorageType.ambient,
     category: ItemCategory.food,
     addedDate: DateTime.now(),
     expirationDate: null,

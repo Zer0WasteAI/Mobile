@@ -5,6 +5,7 @@ import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact
 import 'package:zer0_waste_ai/features/impact/domain/models/environmental_summary.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/impact_metrics.dart';
 import 'package:zer0_waste_ai/features/impact/domain/repositories/impact_repository.dart';
+import 'package:zer0_waste_ai/features/inventory/domain/models/consumption_tracking.dart';
 
 enum ImpactHistoryFilter { all, cooked, notCooked }
 
@@ -21,6 +22,24 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
       foodSavedKg: 12.5,
       co2AvoidedKg: 20.3,
       waterSavedLiters: 1250.0,
+      lastUpdated: DateTime.now(),
+    );
+  }
+
+  /// Actualiza las métricas basado en el consumo de ingredientes
+  void updateFromConsumption(ConsumptionTracking tracking) {
+    if (tracking.environmentalImpact == null) return;
+
+    final co2Saved =
+        tracking.environmentalImpact!['co2_saved']?.toDouble() ?? 0.0;
+    final waterSaved =
+        tracking.environmentalImpact!['water_saved']?.toDouble() ?? 0.0;
+    final foodSaved = tracking.consumedPortions ?? 0.0;
+
+    state = state.copyWith(
+      foodSavedKg: state.foodSavedKg + foodSaved,
+      co2AvoidedKg: state.co2AvoidedKg + co2Saved,
+      waterSavedLiters: state.waterSavedLiters + waterSaved,
       lastUpdated: DateTime.now(),
     );
   }
@@ -92,6 +111,15 @@ final impactEquivalenceProvider = Provider<Map<String, String>>((ref) {
 
 /// Proveedor para el índice de la pestaña activa en el panel de impacto
 final impactTabIndexProvider = StateProvider<int>((ref) => 0);
+
+/// Provider for calculating meal impact
+final mealImpactProvider = FutureProvider.family<EnvironmentalImpact, String>((
+  ref,
+  recipeId,
+) {
+  final repository = ref.watch(impactRepositoryProvider);
+  return repository.calculateImpactFromUid(recipeId);
+});
 
 // --- API Based Providers ---
 

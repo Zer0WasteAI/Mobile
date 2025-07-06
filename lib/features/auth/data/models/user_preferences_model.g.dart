@@ -10,7 +10,6 @@ _UserPreferencesModel _$UserPreferencesModelFromJson(
   Map<String, dynamic> json,
 ) => _UserPreferencesModel(
   language: json['language'] as String? ?? 'es',
-  measurementUnit: json['measurementUnit'] as String? ?? 'metric',
   cookingLevel: json['cookingLevel'] as String?,
   allergies:
       (json['allergies'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -46,7 +45,6 @@ Map<String, dynamic> _$UserPreferencesModelToJson(
   _UserPreferencesModel instance,
 ) => <String, dynamic>{
   'language': instance.language,
-  'measurementUnit': instance.measurementUnit,
   'cookingLevel': instance.cookingLevel,
   'allergies': instance.allergies,
   'allergyItems': instance.allergyItems,
