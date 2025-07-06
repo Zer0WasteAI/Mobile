@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/core/utils/debug_helpers.dart';
 
 /// Estado de las preferencias del usuario
 class UserPreferencesState {
@@ -36,23 +37,33 @@ final userPreferencesProvider = StateNotifierProvider<
 >((ref) {
   final notifier = UserPreferencesNotifier(ref);
 
-  // SOLUCIÓN: NO usar listener automático que sobrescribe el estado en memoria
-  // El listener automático causa race conditions cuando marcamos preferencias en memoria
-  // ref.listen(authStateProvider, (previous, next) {
-  //   if (next.hasValue) {
-  //     // Si hay un nuevo usuario o cambio en la autenticación, recargar preferencias
-  //     notifier.loadUserPreferences();
-  //   } else if (next.isLoading) {
-  //     // Si la autenticación está cargando, marcar como cargando
-  //     notifier.setLoading();
-  //   } else if (previous != null && previous.hasValue && !next.hasValue) {
-  //     // Si se cerró sesión, resetear estado
-  //     notifier.reset();
-  //   }
-  // });
+  // Listen to auth state changes and reload preferences when auth completes
+  ref.listen(authStateProvider, (previous, next) {
+    log('🔄 UserPreferencesService: Auth state changed - previous: ${previous?.hasValue}, next: ${next.hasValue}');
+    
+    // Reload preferences whenever we have a user (auth completion or refresh)
+    if (next.hasValue) {
+      log('🔄 Auth state has user - reloading user preferences');
+      notifier.loadUserPreferences();
+    } else if (next.isLoading) {
+      // If auth is loading, mark preferences as loading
+      log('🔄 Auth loading - setting preferences loading');
+      notifier.setLoading();
+    } else if (previous != null && previous.hasValue && !next.hasValue) {
+      // If logged out, reset state
+      log('🔄 Auth logged out - resetting preferences');
+      notifier.reset();
+    }
+  });
 
-  // Inicializar preferencias inmediatamente solo una vez
-  notifier.loadUserPreferences();
+  // Check initial auth state and load preferences if user exists
+  final initialAuth = ref.read(authStateProvider);
+  if (initialAuth.hasValue) {
+    log('🔄 UserPreferencesService: Initial auth has user - loading preferences immediately');
+    notifier.loadUserPreferences();
+  } else {
+    log('🔄 UserPreferencesService: No initial user - will wait for auth');
+  }
 
   return notifier;
 });
@@ -69,15 +80,20 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
   /// Verifica y carga las preferencias del usuario actual
   Future<void> loadUserPreferences() async {
     try {
+      log('UserPreferencesService: Starting loadUserPreferences...');
+      
+      // Set loading state first to prevent router redirects
+      state = state.copyWith(isLoading: true);
+      
       // SI YA ESTÁN MARCADAS COMO COMPLETADAS EN MEMORIA, NO SOBRESCRIBIR
       if (state.hasCompletedPreferences) {
         log(
           '⚡ Preferencias ya marcadas como completadas en memoria - NO sobrescribir',
         );
+        state = state.copyWith(isLoading: false);
         return;
       }
 
-      final authController = _ref.read(authControllerProvider.notifier);
       final user = _ref.read(authControllerProvider).value;
 
       // Si no hay usuario, no es necesario cargar preferencias
@@ -89,15 +105,19 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
         return;
       }
 
-      // Refrescar datos del usuario desde Firestore
-      await authController.refreshUserFromFirestore();
+      // Get current user without refreshing first (to avoid hanging)
+      final currentUser = _ref.read(authControllerProvider).value;
+      
+      log('UserPreferencesService: Checking user state...');
+      if (currentUser != null) {
+        log('UserPreferencesService: User found with ID: ${currentUser.id}');
+        log('UserPreferencesService: User initialPreferencesCompleted: ${currentUser.initialPreferencesCompleted}');
+      } else {
+        log('UserPreferencesService: No user found in auth state!');
+      }
 
-      // Obtener el usuario actualizado después de refrescar
-      final refreshedUser = _ref.read(authControllerProvider).value;
-
-      // Usar el valor de Firestore directamente (más confiable)
-      final firestorePreferencesStatus =
-          refreshedUser?.initialPreferencesCompleted ?? false;
+      // Use the current user's initialPreferencesCompleted directly
+      final firestorePreferencesStatus = currentUser?.initialPreferencesCompleted ?? false;
 
       log(
         'UserPreferencesService: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
@@ -108,25 +128,43 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
         isLoading: false,
         hasCompletedPreferences: firestorePreferencesStatus,
       );
-    } catch (e) {
-      log('Error al cargar preferencias del usuario: $e');
+      
+      log('UserPreferencesService: Final state - hasCompletedPreferences: ${state.hasCompletedPreferences}, isLoading: ${state.isLoading}');
+    } catch (e, stackTrace) {
+      log('❌ Error al cargar preferencias del usuario: $e');
+      log('❌ Stack trace: $stackTrace');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   /// Marcar las preferencias como completadas
   Future<void> markPreferencesAsCompleted() async {
-    // Marcar inmediatamente en memoria para evitar redirecciones
-    state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
-    log(
-      "UserPreferencesService: Preferencias marcadas como completadas en memoria",
-    );
+    try {
+      // Marcar inmediatamente en memoria para evitar redirecciones
+      state = state.copyWith(hasCompletedPreferences: true, isLoading: false);
+      log(
+        "UserPreferencesService: Preferencias marcadas como completadas en memoria",
+      );
 
-    // No intentar guardar en Firestore aquí para evitar duplicados
-    // El guardado en Firestore debe hacerse desde el screen que maneja la lógica de negocio
-    log(
-      "UserPreferencesService: No guardando en Firestore para evitar race conditions",
-    );
+      // Verificar que la actualización fue exitosa al leer el estado del auth controller
+      final authController = _ref.read(authControllerProvider.notifier);
+      await authController.refreshUserFromFirestore();
+      
+      final refreshedUser = _ref.read(authControllerProvider).value;
+      if (refreshedUser?.initialPreferencesCompleted == true) {
+        log(
+          "✅ UserPreferencesService: Confirmado que preferencias están marcadas en Firestore",
+        );
+      } else {
+        log(
+          "⚠️ UserPreferencesService: Preferencias no confirmadas en Firestore, manteniendo estado en memoria",
+        );
+      }
+    } catch (e) {
+      log("❌ UserPreferencesService: Error al confirmar preferencias: $e");
+      // Keep the in-memory state as completed even if verification fails
+      // to prevent navigation loops
+    }
   }
 
   /// Resetear el estado cuando el usuario cierra sesión
@@ -225,9 +263,17 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
       // Obtener el usuario actualizado después de refrescar
       final refreshedUser = _ref.read(authControllerProvider).value;
 
+      if (refreshedUser != null) {
+        // AUTO-FIX: Check if preferences are actually complete but flag is false
+        await _autoFixPreferencesCompletionIfNeeded(refreshedUser);
+      }
+
+      // Obtener el usuario nuevamente después del posible auto-fix
+      final finalUser = _ref.read(authControllerProvider).value;
+
       // Usar el valor de Firestore directamente
       final firestorePreferencesStatus =
-          refreshedUser?.initialPreferencesCompleted ?? false;
+          finalUser?.initialPreferencesCompleted ?? false;
 
       log(
         '✅ INICIO SESIÓN: Firestore initialPreferencesCompleted = $firestorePreferencesStatus',
@@ -241,6 +287,42 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferencesState> {
     } catch (e) {
       log('❌ Error al cargar preferencias desde Firestore: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Auto-fix preferences completion flag if needed
+  Future<void> _autoFixPreferencesCompletionIfNeeded(dynamic user) async {
+    try {
+      final currentFlag = user.initialPreferencesCompleted as bool? ?? false;
+      
+      // Skip if already marked as complete
+      if (currentFlag) {
+        return;
+      }
+
+      log('🔍 AUTO-FIX: Checking if preferences completion needs fixing for user ${user.id}');
+
+      // Check if preferences are actually complete
+      final isActuallyComplete = DebugHelpers.arePreferencesComplete(
+        cookingLevel: user.prefs?.cookingLevel,
+        allergies: user.prefs?.allergies,
+        specialDiets: user.prefs?.specialDiets,
+        preferredFoodTypes: user.prefs?.preferredFoodTypes,
+      );
+
+      if (isActuallyComplete) {
+        log('🔧 AUTO-FIX: Preferences are complete but flag is false - fixing automatically');
+        await DebugHelpers.forceCompleteUserPreferences(user.id);
+        
+        // Refresh user data after fix
+        final authController = _ref.read(authControllerProvider.notifier);
+        await authController.refreshUserFromFirestore();
+        
+        log('✅ AUTO-FIX: Preferences completion flag fixed automatically');
+      }
+    } catch (e) {
+      log('❌ AUTO-FIX: Error during auto-fix: $e');
+      // Don't throw - this is just a helpful auto-fix
     }
   }
 }

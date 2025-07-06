@@ -195,11 +195,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       // Make API call
       final response = await _apiService.uploadReferenceImage(formData);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return ReferenceImage.fromJson(response.data);
-      }
-
-      throw Exception('Failed to upload reference image');
+      // API service returns Map<String, dynamic> directly
+      return ReferenceImage.fromJson(response);
     } catch (e) {
       throw Exception(
         'Error uploading reference image: ${_apiService.getErrorMessage(e)}',
@@ -216,18 +213,15 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   }) async {
     try {
       final response = await _apiService.getReferenceImages(
-        category,
-        label,
-        page,
-        perPage,
+        page: page,
+        limit: perPage,
+        category: category,
+        imageType: label,
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> items = response.data['items'];
-        return items.map((item) => ReferenceImage.fromJson(item)).toList();
-      }
-
-      throw Exception('Failed to get reference images');
+      // API service returns Map<String, dynamic> directly
+      final List<dynamic> items = response['items'] ?? [];
+      return items.map((item) => ReferenceImage.fromJson(item)).toList();
     } catch (e) {
       throw Exception(
         'Error getting reference images: ${_apiService.getErrorMessage(e)}',
@@ -240,11 +234,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     try {
       final response = await _apiService.getReferenceImage(imageId);
 
-      if (response.statusCode == 200) {
-        return ReferenceImage.fromJson(response.data);
-      }
-
-      throw Exception('Failed to get reference image');
+      // API service returns Map<String, dynamic> directly
+      return ReferenceImage.fromJson(response);
     } catch (e) {
       throw Exception(
         'Error getting reference image: ${_apiService.getErrorMessage(e)}',
@@ -255,11 +246,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   @override
   Future<void> deleteReferenceImage(String imageId) async {
     try {
-      final response = await _apiService.deleteReferenceImage(imageId);
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Failed to delete reference image');
-      }
+      await _apiService.deleteReferenceImage(imageId);
+      // API service handles success/failure internally
     } catch (e) {
       throw Exception(
         'Error deleting reference image: ${_apiService.getErrorMessage(e)}',
@@ -274,17 +262,17 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     String? category,
   }) async {
     try {
+      final updateData = <String, dynamic>{};
+      if (label != null) updateData['label'] = label;
+      if (category != null) updateData['category'] = category;
+
       final response = await _apiService.updateReferenceImage(
         imageId,
-        label,
-        category,
+        updateData,
       );
 
-      if (response.statusCode == 200) {
-        return ReferenceImage.fromJson(response.data);
-      }
-
-      throw Exception('Failed to update reference image');
+      // API service returns Map<String, dynamic> directly
+      return ReferenceImage.fromJson(response);
     } catch (e) {
       throw Exception(
         'Error updating reference image: ${_apiService.getErrorMessage(e)}',

@@ -8,6 +8,7 @@ import 'package:zer0_waste_ai/features/inventory/application/providers/inventory
 import 'package:zer0_waste_ai/injection_container.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:zer0_waste_ai/core/utils/session_expiry_helper.dart';
 import 'dart:developer';
 
 void main() async {
@@ -22,17 +23,8 @@ void main() async {
   // Initialize dependencies
   final container = await DependencyInjection.init();
 
-  // Configurar callback global para invalidar providers después de actualizaciones de Firestore
-  // AuthRepositoryImpl.setProviderRefreshCallback(() {
-  //   print(
-  //     '🔄 Callback global activado - refrescando preferencias desde Firestore para LOGIN',
-  //   );
-
-  //   // Para LOGIN: usar el método específico que SIEMPRE lee desde Firestore
-  //   container
-  //       .read(userPreferencesProvider.notifier)
-  //       .loadUserPreferencesFromFirestore();
-  // });
+  // Configurar manejo de sesiones expiradas en todos los servicios
+  SessionExpiryHelper.setupSessionExpiryHandling(container);
 
   // Run app with ProviderScope
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
@@ -68,8 +60,16 @@ class _MyAppState extends ConsumerState<MyApp> {
       } else {
         // Si no hay usuario o se cerró sesión, resetear el estado
         ref.read(userPreferencesProvider.notifier).reset();
+        
+        // Log when user becomes unauthenticated for debugging
+        if (previous?.value != null && next.value == null) {
+          log('🔄 User became unauthenticated - auth state changed to null');
+        }
       }
     });
+
+    // Initialize authentication error handling
+    _initializeAuthErrorHandling();
 
     // Verificar estado actual de autenticación para inicialización inicial
     final authState = ref.read(authStateProvider);
@@ -79,6 +79,23 @@ class _MyAppState extends ConsumerState<MyApp> {
       // 🚀 PROACTIVE: Load inventory immediately at app start
       _loadInventoryProactively();
     }
+  }
+
+  /// Initialize global authentication error handling
+  void _initializeAuthErrorHandling() {
+    // Listen for auth errors that might occur during API calls
+    ref.listenManual(authStateProvider, (previous, next) {
+      // If user was authenticated and becomes null unexpectedly, it might be due to auth error
+      if (previous?.value != null && 
+          next.value == null && 
+          next.hasError == false) {
+        log('⚠️ User authentication state changed unexpectedly - this might indicate a token issue');
+        
+        // The router will automatically redirect to login due to auth state change
+        // No additional action needed here as the auth interceptor and error handler
+        // will manage the authentication flow
+      }
+    });
   }
 
   /// 🚀 Load inventory proactively in background for better UX

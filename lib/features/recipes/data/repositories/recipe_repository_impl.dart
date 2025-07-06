@@ -35,8 +35,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
       return await _apiService.generateCustomRecipes(
         ingredients: ingredients,
         preferences: preferences,
-        recipeCategories: recipeCategories,
-        numRecipes: numRecipes,
       );
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
@@ -91,7 +89,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   Future<Map<String, dynamic>> getDefaultRecipes({String? category}) async {
     try {
       // INFO: Retrieve curated default recipes with optional category filter
-      return await _apiService.getDefaultRecipes(category: category);
+      return await _apiService.getDefaultRecipes();
     } catch (e) {
       // INFO: Convert API errors to domain-friendly error messages
       throw Exception(

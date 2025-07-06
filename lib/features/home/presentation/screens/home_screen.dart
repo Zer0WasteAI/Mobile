@@ -12,6 +12,8 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_
 import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/quick_actions_widget.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider_config.dart';
+import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 
 /// The HomeScreen widget is the main entry point of the app.
 /// It displays a welcome message, a motivational card, inventory summary,
@@ -46,12 +48,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _refreshUserData() async {
     try {
+      // Refresh user data from Firestore
       await ref
           .read(authControllerProvider.notifier)
           .refreshUserFromFirestore();
       log('🏠 Home: Datos de usuario refrescados automáticamente');
+      
+      // Refresh inventory data from backend
+      await _refreshInventoryData();
     } catch (e) {
       log('🏠 Home: Error al refrescar datos: $e');
+    }
+  }
+
+  Future<void> _refreshInventoryData() async {
+    try {
+      log('🏠 Home: Iniciando actualización de inventario...');
+      
+      // Force refresh inventory data from backend
+      // Use the real inventory provider if configured to use backend
+      if (USE_REAL_BACKEND) {
+        final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
+        
+        // Force a fresh load from backend (bypass cache)
+        await inventoryNotifier.loadInventoryFromBackend();
+        log('🏠 Home: Inventario forzado a actualizarse desde backend');
+      } else {
+        log('🏠 Home: Usando inventario local/mock - no requiere actualización');
+      }
+    } catch (e) {
+      log('🏠 Home: Error al actualizar inventario: $e');
     }
   }
 
