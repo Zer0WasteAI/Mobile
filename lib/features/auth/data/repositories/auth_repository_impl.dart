@@ -578,7 +578,6 @@ class AuthRepositoryImpl implements AuthRepository {
         // Build UserPreferencesModel from Firestore data
         final prefs = UserPreferencesModel(
           language: userData['language'] as String? ?? 'es',
-          measurementUnit: userData['measurementUnit'] as String? ?? 'metric',
           cookingLevel: userData['cookingLevel'] as String?,
           allergies:
               (userData['allergies'] as List<dynamic>?)
@@ -732,21 +731,6 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } catch (e) {
       throw Exception('Failed to save special diet items: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> saveUserMeasurementUnit(String measurementUnit) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'measurementUnit': measurementUnit,
-          'lastUpdatedAt': FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (e) {
-      throw Exception('Failed to save measurement unit: ${e.toString()}');
     }
   }
 

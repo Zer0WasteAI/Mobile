@@ -64,13 +64,10 @@ abstract class AuthRepository {
   /// Save user special diet items (simple list)
   Future<void> saveUserSpecialDietItems(List<String> specialDietItems);
 
-  /// Save user measurement unit
-  Future<void> saveUserMeasurementUnit(String measurementUnit);
-
   /// Mark initial preferences completed
   Future<void> markInitialPreferencesCompleted();
 
-  /// Refresh user from Firestore
+  /// Refresh user data from Firestore
   Future<void> refreshUserFromFirestore();
 
   /// Refresh application tokens

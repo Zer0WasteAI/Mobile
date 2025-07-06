@@ -624,18 +624,25 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
 
     try {
       // Separate ingredients from foods
-      final ingredients = items.where((item) => item.category == ItemCategory.ingredient).toList();
-      final foods = items.where((item) => item.category == ItemCategory.food).toList();
-      
-      log('🍃 Adding ${ingredients.length} ingredients and ${foods.length} foods to backend');
-      
+      final ingredients =
+          items
+              .where((item) => item.category == ItemCategory.ingredient)
+              .toList();
+      final foods =
+          items.where((item) => item.category == ItemCategory.food).toList();
+
+      log(
+        '🍃 Adding ${ingredients.length} ingredients and ${foods.length} foods to backend',
+      );
+
       // Add ingredients if any
       if (ingredients.isNotEmpty) {
-        final ingredientsData = ingredients.map((item) => _convertItemToAPI(item)).toList();
+        final ingredientsData =
+            ingredients.map((item) => _convertItemToAPI(item)).toList();
         await _backendNotifier.addIngredients(ingredientsData);
         log('✅ Ingredients added successfully');
       }
-      
+
       // Add foods if any
       if (foods.isNotEmpty) {
         final foodsData = foods.map((item) => _convertItemToAPI(item)).toList();
@@ -1009,7 +1016,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   }
 
   /// Mark ingredient as consumed with consumption details
-  Future<void> markIngredientAsConsumed(
+  Future<Map<String, dynamic>> markIngredientAsConsumed(
     String itemId, {
     required double consumedQuantity,
     String? consumptionReason,
@@ -1044,11 +1051,14 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         final remainingQuantity = consumptionData['remaining_quantity'] ?? 0;
         log('📈 Remaining quantity: $remainingQuantity');
       }
+
+      return result;
     } catch (e) {
       log('❌ Failed to mark ingredient as consumed: $e');
       state = state.copyWith(
         errorMessage: 'Failed to mark as consumed: ${e.toString()}',
       );
+      rethrow;
     }
   }
 
@@ -1076,15 +1086,11 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
   }
 
   /// Add foods from recognition results
-  Future<void> addFoodsFromRecognition(
-    List<Map<String, dynamic>> foods,
-  ) async {
+  Future<void> addFoodsFromRecognition(List<Map<String, dynamic>> foods) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final result = await _backendNotifier.addFoodsFromRecognition(
-        foods,
-      );
+      final result = await _backendNotifier.addFoodsFromRecognition(foods);
       log('✅ Foods added from recognition: $result');
 
       // Reload inventory to show new items
@@ -1399,10 +1405,26 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       case 'despensa':
       case 'pantry':
         return StorageType.pantry;
-      case 'dry':
-        return StorageType.dry;
+      case 'bodega':
+      case 'cellar':
+        return StorageType.cellar;
+      case 'ambiente':
+      case 'ambient':
+        return StorageType.ambient;
+      case 'exterior':
+      case 'sunlight':
+        return StorageType.sunlight;
+      case 'cava':
+      case 'wine_cellar':
+        return StorageType.wineCellar;
+      case 'granel':
+      case 'bulk':
+        return StorageType.bulk;
+      case 'fermentacion':
+      case 'fermentation':
+        return StorageType.fermentation;
       default:
-        return StorageType.refrigerated; // Default to refrigerated for safety
+        return StorageType.ambient; // Default to ambient for safety
     }
   }
 
@@ -1413,22 +1435,20 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
         return 'refrigerated';
       case StorageType.frozen:
         return 'frozen';
-      case StorageType.dry:
-        return 'dry';
       case StorageType.pantry:
-        return 'dry'; // Map pantry to dry for API compatibility
+        return 'pantry';
       case StorageType.cellar:
-        return 'dry'; // Map cellar to dry for API compatibility
+        return 'cellar';
       case StorageType.ambient:
-        return 'dry'; // Map ambient to dry for API compatibility
+        return 'ambient';
       case StorageType.sunlight:
-        return 'dry'; // Map sunlight to dry for API compatibility
+        return 'sunlight';
       case StorageType.wineCellar:
-        return 'dry'; // Map wine cellar to dry for API compatibility
+        return 'wine_cellar';
       case StorageType.bulk:
-        return 'dry'; // Map bulk to dry for API compatibility
+        return 'bulk';
       case StorageType.fermentation:
-        return 'dry'; // Map fermentation to dry for API compatibility
+        return 'fermentation';
     }
   }
 

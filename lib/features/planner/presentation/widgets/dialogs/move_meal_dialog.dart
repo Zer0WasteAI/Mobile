@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 class MoveMealDialog extends StatefulWidget {
-  final MealPlan meal;
+  final SimpleRecipe meal;
   final String currentDateKey;
   final DateTime currentDate;
-  final Function(String fromDate, String toDate, MealPlan meal) onMoveMeal;
+  final Function(String fromDate, String toDate, SimpleRecipe meal) onMoveMeal;
 
   const MoveMealDialog({
     super.key,
@@ -145,10 +145,10 @@ class _MoveMealDialogState extends State<MoveMealDialog> {
   // ignore: unused_element
   static void show(
     BuildContext context, {
-    required MealPlan meal,
+    required SimpleRecipe meal,
     required String currentDateKey,
     required DateTime currentDate,
-    required Function(String fromDate, String toDate, MealPlan meal) onMoveMeal,
+    required Function(String fromDate, String toDate, SimpleRecipe meal) onMoveMeal,
   }) {
     showDialog(
       context: context,

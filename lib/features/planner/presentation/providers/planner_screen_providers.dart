@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 // Proveedor para la semana actual
 final currentWeekProvider = StateProvider<DateTime>((ref) {
@@ -16,16 +16,16 @@ final hasShownIconGuideProvider = StateProvider<bool>((ref) => false);
 
 // Proveedor para almacenar los planes de comida
 final mealPlansProvider =
-    StateNotifierProvider<MealPlanNotifier, Map<String, List<MealPlan>>>((ref) {
+    StateNotifierProvider<MealPlanNotifier, Map<String, List<SimpleRecipe>>>((ref) {
       return MealPlanNotifier();
     });
 
 // Notifier para los planes de comida
-class MealPlanNotifier extends StateNotifier<Map<String, List<MealPlan>>> {
+class MealPlanNotifier extends StateNotifier<Map<String, List<SimpleRecipe>>> {
   MealPlanNotifier() : super({});
 
   // Agregar una comida al plan
-  void addMeal(String date, MealPlan meal) {
+  void addMeal(String date, SimpleRecipe meal) {
     final currentPlans = state[date] ?? [];
 
     state = {
@@ -35,7 +35,7 @@ class MealPlanNotifier extends StateNotifier<Map<String, List<MealPlan>>> {
   }
 
   // Eliminar una comida del plan
-  void removeMeal(String date, MealPlan meal) {
+  void removeMeal(String date, SimpleRecipe meal) {
     final currentPlans = state[date] ?? [];
 
     state = {
@@ -45,7 +45,7 @@ class MealPlanNotifier extends StateNotifier<Map<String, List<MealPlan>>> {
   }
 
   // Editar una comida del plan
-  void editMeal(String date, MealPlan oldMeal, MealPlan newMeal) {
+  void editMeal(String date, SimpleRecipe oldMeal, SimpleRecipe newMeal) {
     final currentPlans = state[date] ?? [];
     final updatedPlans =
         currentPlans.map((meal) {
@@ -59,7 +59,7 @@ class MealPlanNotifier extends StateNotifier<Map<String, List<MealPlan>>> {
   }
 
   // Mover una comida de un día a otro
-  void moveMeal(String fromDate, String toDate, MealPlan meal) {
+  void moveMeal(String fromDate, String toDate, SimpleRecipe meal) {
     // Primero eliminamos la comida del día original
     removeMeal(fromDate, meal);
 

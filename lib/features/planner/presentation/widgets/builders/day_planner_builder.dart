@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_screen_providers.dart';
 
@@ -15,10 +15,10 @@ class DayPlannerBuilder {
     Color primaryColor,
     Function(BuildContext, WidgetRef, DateTime, {MealType? initialType})
     onAddMeal,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowMealDetails,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowReminderDialog,
-    Function(BuildContext, WidgetRef, MealPlan, String) onMoveMeal,
-    Function(WidgetRef, String, MealPlan) onDeleteMeal,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowMealDetails,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowReminderDialog,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onMoveMeal,
+    Function(WidgetRef, String, SimpleRecipe) onDeleteMeal,
   ) {
     // Formatear fecha como clave para el mapa de planes de comida
     final dateKey = DateFormat('yyyy-MM-dd').format(day);
@@ -271,17 +271,17 @@ class DayPlannerBuilder {
   static Widget _buildMealsList(
     BuildContext context,
     WidgetRef ref,
-    List<MealPlan> mealsForDay,
+    List<SimpleRecipe> mealsForDay,
     List<MealType> orderedMealTypes,
     String dateKey,
     Color textColor,
     Color primaryColor,
     Function(BuildContext, WidgetRef, DateTime, {MealType? initialType})
     onAddMeal,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowMealDetails,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowReminderDialog,
-    Function(BuildContext, WidgetRef, MealPlan, String) onMoveMeal,
-    Function(WidgetRef, String, MealPlan) onDeleteMeal,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowMealDetails,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowReminderDialog,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onMoveMeal,
+    Function(WidgetRef, String, SimpleRecipe) onDeleteMeal,
   ) {
     final day = DateFormat('yyyy-MM-dd').parse(dateKey);
 
@@ -442,12 +442,12 @@ class DayPlannerBuilder {
   static Widget _buildMealItem(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowMealDetails,
-    Function(BuildContext, WidgetRef, MealPlan, String) onShowReminderDialog,
-    Function(BuildContext, WidgetRef, MealPlan, String) onMoveMeal,
-    Function(WidgetRef, String, MealPlan) onDeleteMeal,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowMealDetails,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onShowReminderDialog,
+    Function(BuildContext, WidgetRef, SimpleRecipe, String) onMoveMeal,
+    Function(WidgetRef, String, SimpleRecipe) onDeleteMeal,
   ) {
     final isToday = dateKey == DateFormat('yyyy-MM-dd').format(DateTime.now());
 
@@ -555,26 +555,7 @@ class DayPlannerBuilder {
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          if (meal.reminders != null &&
-                              meal.reminders!.isNotEmpty)
-                            Row(
-                              children: [
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.notifications_active,
-                                  size: 12,
-                                  color: Colors.amber.shade700,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Recordatorio',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: Colors.amber.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          // SimpleRecipe doesn't have reminders, so we'll comment this out
                         ],
                       ),
                     ],

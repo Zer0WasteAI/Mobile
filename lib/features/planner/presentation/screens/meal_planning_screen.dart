@@ -24,8 +24,8 @@ class _MealPlanningScreenState extends ConsumerState<MealPlanningScreen> {
     super.initState();
     _pageController = PageController();
 
-    // Load initial data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Load initial data after first build
+    Future(() {
       ref.read(mealPlanningProvider.notifier).loadAllMealPlans();
       ref.read(mealPlanningProvider.notifier).loadAvailableDates();
     });

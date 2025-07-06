@@ -7,7 +7,6 @@ part 'user_preferences_model.g.dart';
 abstract class UserPreferencesModel with _$UserPreferencesModel {
   const factory UserPreferencesModel({
     @Default('es') String language,
-    @Default('metric') String measurementUnit,
     String? cookingLevel,
     @Default([]) List<String> allergies,
     @Default([])

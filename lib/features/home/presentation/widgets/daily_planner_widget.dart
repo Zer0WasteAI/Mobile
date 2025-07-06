@@ -24,8 +24,8 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
   @override
   void initState() {
     super.initState();
-    // Cargar los datos de planificación al inicializar
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Cargar los datos de planificación después del primer build
+    Future(() {
       ref.read(mealPlanningProvider.notifier).loadAllMealPlans();
     });
   }
@@ -193,18 +193,52 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
 
                   // Iconos de comidas o botón de acción
                   if (todayMeals.isEmpty)
-                    ElevatedButton(
-                      onPressed: () => context.pushNamed('mealPlanning'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(36, 36),
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ref.read(selectedDateProvider.notifier).state = today;
+                          context.pushNamed('unifiedPlanning');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(100, 40),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.auto_awesome, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Planificar',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Icon(Icons.add, size: 18),
                     )
                   else
                     Row(
@@ -253,66 +287,36 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextButton.icon(
+                          child: ElevatedButton.icon(
                             onPressed: () {
                               // Navegar y preseleccionar la fecha actual
                               ref.read(selectedDateProvider.notifier).state =
                                   today;
-                              context.pushNamed('planner');
+                              context.pushNamed('unifiedPlanning');
                             },
                             icon: Icon(
-                              Icons.edit_calendar_outlined,
-                              size: 16,
-                              color: primaryColor,
+                              Icons.auto_awesome,
+                              size: 18,
+                              color: Colors.white,
                             ),
                             label: Text(
-                              'Editar en planificador semanal',
+                              'Abrir Mi Planificador',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: primaryColor,
-                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            style: TextButton.styleFrom(
-                              backgroundColor: primaryColor.withValues(
-                                alpha: 0.1,
-                              ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              elevation: 2,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 8,
+                                vertical: 12,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton.icon(
-                          onPressed: () => context.pushNamed('mealPlanning'),
-                          icon: Icon(
-                            Icons.restaurant,
-                            size: 16,
-                            color: primaryColor,
-                          ),
-                          label: Text(
-                            'Planificar comidas',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: primaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            backgroundColor: primaryColor.withValues(
-                              alpha: 0.1,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),

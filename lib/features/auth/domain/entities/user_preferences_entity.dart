@@ -5,7 +5,6 @@ class UserPreferencesEntity {
   /// Constructor
   const UserPreferencesEntity({
     this.language = 'es',
-    this.measurementUnit = 'metric',
     this.cookingLevel,
     this.allergies = const [],
     this.allergyItems = const [],
@@ -17,9 +16,6 @@ class UserPreferencesEntity {
 
   /// User preferred language
   final String language;
-
-  /// User preferred measurement unit
-  final String measurementUnit;
 
   /// User's cooking level
   final String? cookingLevel;
@@ -48,7 +44,6 @@ class UserPreferencesEntity {
     if (identical(this, other)) return true;
     return other is UserPreferencesEntity &&
         other.language == language &&
-        other.measurementUnit == measurementUnit &&
         other.cookingLevel == cookingLevel &&
         listEquals(other.allergies, allergies) &&
         listEquals(other.allergyItems, allergyItems) &&
@@ -62,7 +57,6 @@ class UserPreferencesEntity {
   int get hashCode {
     return Object.hash(
       language,
-      measurementUnit,
       cookingLevel,
       Object.hashAll(allergies),
       Object.hashAll(allergyItems),

@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserPreferencesModel {
 
- String get language; String get measurementUnit; String? get cookingLevel; List<String> get allergies; List<Map<String, dynamic>> get allergyItems;// For more structured allergy data
+ String get language; String? get cookingLevel; List<String> get allergies; List<Map<String, dynamic>> get allergyItems;// For more structured allergy data
  List<String> get specialDiets; List<Map<String, dynamic>> get specialDietItems;// For more structured diet data
  List<String> get preferredFoodTypes; List<Map<String, dynamic>> get preferredFoodTypeItems;
 /// Create a copy of UserPreferencesModel
@@ -31,16 +31,16 @@ $UserPreferencesModelCopyWith<UserPreferencesModel> get copyWith => _$UserPrefer
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPreferencesModel&&(identical(other.language, language) || other.language == language)&&(identical(other.measurementUnit, measurementUnit) || other.measurementUnit == measurementUnit)&&(identical(other.cookingLevel, cookingLevel) || other.cookingLevel == cookingLevel)&&const DeepCollectionEquality().equals(other.allergies, allergies)&&const DeepCollectionEquality().equals(other.allergyItems, allergyItems)&&const DeepCollectionEquality().equals(other.specialDiets, specialDiets)&&const DeepCollectionEquality().equals(other.specialDietItems, specialDietItems)&&const DeepCollectionEquality().equals(other.preferredFoodTypes, preferredFoodTypes)&&const DeepCollectionEquality().equals(other.preferredFoodTypeItems, preferredFoodTypeItems));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPreferencesModel&&(identical(other.language, language) || other.language == language)&&(identical(other.cookingLevel, cookingLevel) || other.cookingLevel == cookingLevel)&&const DeepCollectionEquality().equals(other.allergies, allergies)&&const DeepCollectionEquality().equals(other.allergyItems, allergyItems)&&const DeepCollectionEquality().equals(other.specialDiets, specialDiets)&&const DeepCollectionEquality().equals(other.specialDietItems, specialDietItems)&&const DeepCollectionEquality().equals(other.preferredFoodTypes, preferredFoodTypes)&&const DeepCollectionEquality().equals(other.preferredFoodTypeItems, preferredFoodTypeItems));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,language,measurementUnit,cookingLevel,const DeepCollectionEquality().hash(allergies),const DeepCollectionEquality().hash(allergyItems),const DeepCollectionEquality().hash(specialDiets),const DeepCollectionEquality().hash(specialDietItems),const DeepCollectionEquality().hash(preferredFoodTypes),const DeepCollectionEquality().hash(preferredFoodTypeItems));
+int get hashCode => Object.hash(runtimeType,language,cookingLevel,const DeepCollectionEquality().hash(allergies),const DeepCollectionEquality().hash(allergyItems),const DeepCollectionEquality().hash(specialDiets),const DeepCollectionEquality().hash(specialDietItems),const DeepCollectionEquality().hash(preferredFoodTypes),const DeepCollectionEquality().hash(preferredFoodTypeItems));
 
 @override
 String toString() {
-  return 'UserPreferencesModel(language: $language, measurementUnit: $measurementUnit, cookingLevel: $cookingLevel, allergies: $allergies, allergyItems: $allergyItems, specialDiets: $specialDiets, specialDietItems: $specialDietItems, preferredFoodTypes: $preferredFoodTypes, preferredFoodTypeItems: $preferredFoodTypeItems)';
+  return 'UserPreferencesModel(language: $language, cookingLevel: $cookingLevel, allergies: $allergies, allergyItems: $allergyItems, specialDiets: $specialDiets, specialDietItems: $specialDietItems, preferredFoodTypes: $preferredFoodTypes, preferredFoodTypeItems: $preferredFoodTypeItems)';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $UserPreferencesModelCopyWith<$Res>  {
   factory $UserPreferencesModelCopyWith(UserPreferencesModel value, $Res Function(UserPreferencesModel) _then) = _$UserPreferencesModelCopyWithImpl;
 @useResult
 $Res call({
- String language, String measurementUnit, String? cookingLevel, List<String> allergies, List<Map<String, dynamic>> allergyItems, List<String> specialDiets, List<Map<String, dynamic>> specialDietItems, List<String> preferredFoodTypes, List<Map<String, dynamic>> preferredFoodTypeItems
+ String language, String? cookingLevel, List<String> allergies, List<Map<String, dynamic>> allergyItems, List<String> specialDiets, List<Map<String, dynamic>> specialDietItems, List<String> preferredFoodTypes, List<Map<String, dynamic>> preferredFoodTypeItems
 });
 
 
@@ -68,10 +68,9 @@ class _$UserPreferencesModelCopyWithImpl<$Res>
 
 /// Create a copy of UserPreferencesModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? language = null,Object? measurementUnit = null,Object? cookingLevel = freezed,Object? allergies = null,Object? allergyItems = null,Object? specialDiets = null,Object? specialDietItems = null,Object? preferredFoodTypes = null,Object? preferredFoodTypeItems = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? language = null,Object? cookingLevel = freezed,Object? allergies = null,Object? allergyItems = null,Object? specialDiets = null,Object? specialDietItems = null,Object? preferredFoodTypes = null,Object? preferredFoodTypeItems = null,}) {
   return _then(_self.copyWith(
 language: null == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
-as String,measurementUnit: null == measurementUnit ? _self.measurementUnit : measurementUnit // ignore: cast_nullable_to_non_nullable
 as String,cookingLevel: freezed == cookingLevel ? _self.cookingLevel : cookingLevel // ignore: cast_nullable_to_non_nullable
 as String?,allergies: null == allergies ? _self.allergies : allergies // ignore: cast_nullable_to_non_nullable
 as List<String>,allergyItems: null == allergyItems ? _self.allergyItems : allergyItems // ignore: cast_nullable_to_non_nullable
@@ -90,11 +89,10 @@ as List<Map<String, dynamic>>,
 @JsonSerializable()
 
 class _UserPreferencesModel implements UserPreferencesModel {
-  const _UserPreferencesModel({this.language = 'es', this.measurementUnit = 'metric', this.cookingLevel, final  List<String> allergies = const [], final  List<Map<String, dynamic>> allergyItems = const [], final  List<String> specialDiets = const [], final  List<Map<String, dynamic>> specialDietItems = const [], final  List<String> preferredFoodTypes = const [], final  List<Map<String, dynamic>> preferredFoodTypeItems = const []}): _allergies = allergies,_allergyItems = allergyItems,_specialDiets = specialDiets,_specialDietItems = specialDietItems,_preferredFoodTypes = preferredFoodTypes,_preferredFoodTypeItems = preferredFoodTypeItems;
+  const _UserPreferencesModel({this.language = 'es', this.cookingLevel, final  List<String> allergies = const [], final  List<Map<String, dynamic>> allergyItems = const [], final  List<String> specialDiets = const [], final  List<Map<String, dynamic>> specialDietItems = const [], final  List<String> preferredFoodTypes = const [], final  List<Map<String, dynamic>> preferredFoodTypeItems = const []}): _allergies = allergies,_allergyItems = allergyItems,_specialDiets = specialDiets,_specialDietItems = specialDietItems,_preferredFoodTypes = preferredFoodTypes,_preferredFoodTypeItems = preferredFoodTypeItems;
   factory _UserPreferencesModel.fromJson(Map<String, dynamic> json) => _$UserPreferencesModelFromJson(json);
 
 @override@JsonKey() final  String language;
-@override@JsonKey() final  String measurementUnit;
 @override final  String? cookingLevel;
  final  List<String> _allergies;
 @override@JsonKey() List<String> get allergies {
@@ -156,16 +154,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPreferencesModel&&(identical(other.language, language) || other.language == language)&&(identical(other.measurementUnit, measurementUnit) || other.measurementUnit == measurementUnit)&&(identical(other.cookingLevel, cookingLevel) || other.cookingLevel == cookingLevel)&&const DeepCollectionEquality().equals(other._allergies, _allergies)&&const DeepCollectionEquality().equals(other._allergyItems, _allergyItems)&&const DeepCollectionEquality().equals(other._specialDiets, _specialDiets)&&const DeepCollectionEquality().equals(other._specialDietItems, _specialDietItems)&&const DeepCollectionEquality().equals(other._preferredFoodTypes, _preferredFoodTypes)&&const DeepCollectionEquality().equals(other._preferredFoodTypeItems, _preferredFoodTypeItems));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPreferencesModel&&(identical(other.language, language) || other.language == language)&&(identical(other.cookingLevel, cookingLevel) || other.cookingLevel == cookingLevel)&&const DeepCollectionEquality().equals(other._allergies, _allergies)&&const DeepCollectionEquality().equals(other._allergyItems, _allergyItems)&&const DeepCollectionEquality().equals(other._specialDiets, _specialDiets)&&const DeepCollectionEquality().equals(other._specialDietItems, _specialDietItems)&&const DeepCollectionEquality().equals(other._preferredFoodTypes, _preferredFoodTypes)&&const DeepCollectionEquality().equals(other._preferredFoodTypeItems, _preferredFoodTypeItems));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,language,measurementUnit,cookingLevel,const DeepCollectionEquality().hash(_allergies),const DeepCollectionEquality().hash(_allergyItems),const DeepCollectionEquality().hash(_specialDiets),const DeepCollectionEquality().hash(_specialDietItems),const DeepCollectionEquality().hash(_preferredFoodTypes),const DeepCollectionEquality().hash(_preferredFoodTypeItems));
+int get hashCode => Object.hash(runtimeType,language,cookingLevel,const DeepCollectionEquality().hash(_allergies),const DeepCollectionEquality().hash(_allergyItems),const DeepCollectionEquality().hash(_specialDiets),const DeepCollectionEquality().hash(_specialDietItems),const DeepCollectionEquality().hash(_preferredFoodTypes),const DeepCollectionEquality().hash(_preferredFoodTypeItems));
 
 @override
 String toString() {
-  return 'UserPreferencesModel(language: $language, measurementUnit: $measurementUnit, cookingLevel: $cookingLevel, allergies: $allergies, allergyItems: $allergyItems, specialDiets: $specialDiets, specialDietItems: $specialDietItems, preferredFoodTypes: $preferredFoodTypes, preferredFoodTypeItems: $preferredFoodTypeItems)';
+  return 'UserPreferencesModel(language: $language, cookingLevel: $cookingLevel, allergies: $allergies, allergyItems: $allergyItems, specialDiets: $specialDiets, specialDietItems: $specialDietItems, preferredFoodTypes: $preferredFoodTypes, preferredFoodTypeItems: $preferredFoodTypeItems)';
 }
 
 
@@ -176,7 +174,7 @@ abstract mixin class _$UserPreferencesModelCopyWith<$Res> implements $UserPrefer
   factory _$UserPreferencesModelCopyWith(_UserPreferencesModel value, $Res Function(_UserPreferencesModel) _then) = __$UserPreferencesModelCopyWithImpl;
 @override @useResult
 $Res call({
- String language, String measurementUnit, String? cookingLevel, List<String> allergies, List<Map<String, dynamic>> allergyItems, List<String> specialDiets, List<Map<String, dynamic>> specialDietItems, List<String> preferredFoodTypes, List<Map<String, dynamic>> preferredFoodTypeItems
+ String language, String? cookingLevel, List<String> allergies, List<Map<String, dynamic>> allergyItems, List<String> specialDiets, List<Map<String, dynamic>> specialDietItems, List<String> preferredFoodTypes, List<Map<String, dynamic>> preferredFoodTypeItems
 });
 
 
@@ -193,10 +191,9 @@ class __$UserPreferencesModelCopyWithImpl<$Res>
 
 /// Create a copy of UserPreferencesModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? language = null,Object? measurementUnit = null,Object? cookingLevel = freezed,Object? allergies = null,Object? allergyItems = null,Object? specialDiets = null,Object? specialDietItems = null,Object? preferredFoodTypes = null,Object? preferredFoodTypeItems = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? language = null,Object? cookingLevel = freezed,Object? allergies = null,Object? allergyItems = null,Object? specialDiets = null,Object? specialDietItems = null,Object? preferredFoodTypes = null,Object? preferredFoodTypeItems = null,}) {
   return _then(_UserPreferencesModel(
 language: null == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
-as String,measurementUnit: null == measurementUnit ? _self.measurementUnit : measurementUnit // ignore: cast_nullable_to_non_nullable
 as String,cookingLevel: freezed == cookingLevel ? _self.cookingLevel : cookingLevel // ignore: cast_nullable_to_non_nullable
 as String?,allergies: null == allergies ? _self._allergies : allergies // ignore: cast_nullable_to_non_nullable
 as List<String>,allergyItems: null == allergyItems ? _self._allergyItems : allergyItems // ignore: cast_nullable_to_non_nullable

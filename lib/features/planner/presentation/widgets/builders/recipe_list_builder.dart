@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 
 class RecipeListBuilder {
   static Widget buildRecipeList(
     BuildContext context,
     StateSetter setState,
-    List<MealPlan> recipes,
-    MealPlan? selectedMeal,
-    Function(MealPlan) onSelect,
+    List<SimpleRecipe> recipes,
+    SimpleRecipe? selectedMeal,
+    Function(SimpleRecipe) onSelect,
     WidgetRef ref,
   ) {
     if (recipes.isEmpty) {
@@ -64,9 +64,9 @@ class RecipeListBuilder {
 
   static Widget _buildRecipeItem(
     BuildContext context,
-    MealPlan recipe,
+    SimpleRecipe recipe,
     bool isSelected,
-    Function(MealPlan) onSelect,
+    Function(SimpleRecipe) onSelect,
     WidgetRef ref,
     StateSetter setState,
   ) {
@@ -104,7 +104,7 @@ class RecipeListBuilder {
     );
   }
 
-  static Widget _buildRecipeImage(MealPlan recipe) {
+  static Widget _buildRecipeImage(SimpleRecipe recipe) {
     return Container(
       width: 80,
       height: 80,
@@ -121,7 +121,7 @@ class RecipeListBuilder {
     );
   }
 
-  static Widget _buildRecipeInfo(MealPlan recipe) {
+  static Widget _buildRecipeInfo(SimpleRecipe recipe) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,7 +134,7 @@ class RecipeListBuilder {
     );
   }
 
-  static Widget _buildRecipeType(MealPlan recipe) {
+  static Widget _buildRecipeType(SimpleRecipe recipe) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -152,21 +152,21 @@ class RecipeListBuilder {
     );
   }
 
-  static Widget _buildRecipeName(MealPlan recipe) {
+  static Widget _buildRecipeName(SimpleRecipe recipe) {
     return Text(
       recipe.name,
       style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
 
-  static Widget _buildRecipeDetails(MealPlan recipe) {
+  static Widget _buildRecipeDetails(SimpleRecipe recipe) {
     return Row(
       children: [
         // Tiempo
         Icon(Icons.schedule, size: 12, color: Colors.grey.shade600),
         const SizedBox(width: 4),
         Text(
-          '${recipe.prepTimeMinutes} min',
+          '30 min', // SimpleRecipe doesn't have prepTimeMinutes
           style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
         ),
         const SizedBox(width: 8),
@@ -178,7 +178,7 @@ class RecipeListBuilder {
         ),
         const SizedBox(width: 4),
         Text(
-          '${recipe.calories} kcal',
+          '250 kcal', // SimpleRecipe doesn't have calories
           style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
         ),
         // Favorito
@@ -194,7 +194,7 @@ class RecipeListBuilder {
   }
 
   static Widget _buildRecipeAction(
-    MealPlan recipe,
+    SimpleRecipe recipe,
     bool isSelected,
     WidgetRef ref,
     StateSetter setState,

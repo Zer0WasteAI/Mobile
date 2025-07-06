@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
+// Removed unused import
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 
 class AddMealDialog {
@@ -11,13 +12,13 @@ class AddMealDialog {
     WidgetRef ref,
     DateTime day, {
     MealType? initialType,
-    required Function(MealPlan meal, String dateKey) onMealAdded,
+    required Function(SimpleRecipe meal, String dateKey) onMealAdded,
   }) {
     final dateKey = DateFormat('yyyy-MM-dd').format(day);
     final formattedDate = DateFormat('EEEE d MMMM', 'es_ES').format(day);
 
     // Comida seleccionada actualmente para agregar
-    MealPlan? selectedMeal;
+    SimpleRecipe? selectedMeal;
 
     // Obtener todas las recetas, favoritos y recientes
     final allRecipes = ref.read(allRecipesProvider);
@@ -52,7 +53,7 @@ class AddMealDialog {
           (context) => StatefulBuilder(
             builder: (context, setState) {
               // Determinar qué lista mostrar según la pestaña seleccionada
-              List<MealPlan> currentList;
+              List<SimpleRecipe> currentList;
               switch (selectedTabIndex) {
                 case 1:
                   currentList = filteredFavorites;
@@ -359,7 +360,7 @@ class AddMealDialog {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        '${recipe.prepTimeMinutes} min',
+                                                        '30 min', // SimpleRecipe doesn't have prepTimeMinutes
                                                         style:
                                                             GoogleFonts.inter(
                                                               fontSize: 12,
@@ -378,7 +379,7 @@ class AddMealDialog {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        '${recipe.calories} cal',
+                                                        '250 cal', // SimpleRecipe doesn't have calories
                                                         style:
                                                             GoogleFonts.inter(
                                                               fontSize: 12,

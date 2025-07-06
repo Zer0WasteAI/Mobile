@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
 class MealDetailsDialog {
   static void show(
     BuildContext context,
     WidgetRef ref,
-    MealPlan meal,
+    SimpleRecipe meal,
     String dateKey, {
-    required Function(MealPlan meal, String dateKey) onEditMeal,
-    required Function(MealPlan meal, String dateKey) onConfigureReminders,
+    required Function(SimpleRecipe meal, String dateKey) onEditMeal,
+    required Function(SimpleRecipe meal, String dateKey) onConfigureReminders,
   }) {
     final formattedDate =
         DateFormat('EEEE d MMMM', 'es_ES')

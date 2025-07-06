@@ -1,457 +1,678 @@
-# ZeroWasteAI Backend API - Complete Documentation
+# ZeroWasteAI REST API Documentation
 
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Getting Started](#getting-started)
-4. [Authentication System](#authentication-system)
-5. [API Endpoints](#api-endpoints)
-6. [Data Models](#data-models)
-7. [Database Schema](#database-schema)
-8. [Security Features](#security-features)
-9. [Flutter Integration Guide](#flutter-integration-guide)
-10. [Error Handling](#error-handling)
-11. [Examples](#examples)
+## Overview
 
-## Project Overview
+**ZeroWasteAI** is a sophisticated food waste reduction platform that uses AI for food recognition and intelligent inventory management. The API follows Clean Architecture principles with Firebase Authentication + JWT security.
 
-**ZeroWasteAI** is a comprehensive REST API designed to reduce food waste through AI-powered food recognition, intelligent inventory management, and personalized recipe generation. The system leverages modern technologies to provide a complete food management solution.
+### Base Information
+- **Base URL**: `http://localhost:3000`
+- **Architecture**: Clean Architecture with Firebase Authentication + JWT
+- **Version**: 1.0.0
+- **Content-Type**: `application/json`
+- **Authentication**: Firebase ID Token + JWT Bearer Token
 
 ### Key Features
-- 🔥 **Firebase Authentication + JWT Security**
-- 🤖 **AI Food & Ingredient Recognition**
-- 📦 **Smart Inventory Management**
-- 🍳 **AI Recipe Generation**
-- 📱 **Meal Planning System**
-- 🌱 **Environmental Impact Tracking**
-- 📸 **Image Management & Generation**
-- 🛡️ **Enterprise Security Features**
+🔥 **Firebase Authentication + JWT Security**  
+👤 **User Profile Management**  
+🤖 **AI Food Recognition with Image Generation**  
+📦 **Smart Inventory Management**  
+🍳 **AI Recipe Generation**  
+📅 **Meal Planning System**  
+📸 **Image Management & Upload**  
+🛡️ **Enterprise Security Headers**  
 
-### Technology Stack
-- **Framework**: Flask 3.1.0 with Clean Architecture
-- **Database**: MySQL with SQLAlchemy ORM
-- **Authentication**: Firebase Admin + JWT Extended
-- **AI Services**: Google Gemini AI
-- **Storage**: Firebase Storage
-- **Security**: Rate limiting, token blacklisting, security headers
-- **Documentation**: Swagger/OpenAPI
+---
 
-### Base URL
-- **Development**: `http://localhost:3000`
-- **Production**: `https://your-domain.com`
+## Authentication Endpoints
 
-## Architecture
+### 1. Firebase Sign-In
+**Authenticates with Firebase and creates app-specific JWT tokens**
 
-The project follows **Clean Architecture** principles with the following layers:
-
-```
-src/
-├── domain/                 # Business logic and entities
-│   ├── models/            # Domain models
-│   ├── repositories/      # Repository interfaces
-│   └── services/          # Domain services
-├── application/           # Use cases and application logic
-│   ├── use_cases/        # Business use cases
-│   ├── services/         # Application services
-│   └── factories/        # Dependency injection
-├── infrastructure/       # External services and data access
-│   ├── db/               # Database implementation
-│   ├── auth/             # Authentication services
-│   ├── firebase/         # Firebase integration
-│   ├── ai/               # AI services
-│   └── security/         # Security implementations
-├── interface/            # Controllers and serializers
-│   ├── controllers/      # API controllers
-│   ├── serializers/      # Request/response serializers
-│   └── middlewares/      # Middleware functions
-└── shared/               # Shared utilities
-    ├── dtos/             # Data transfer objects
-    ├── exceptions/       # Custom exceptions
-    └── decorators/       # Utility decorators
+```http
+POST /api/auth/firebase-signin
 ```
 
-## Getting Started
-
-### Prerequisites
-- Python 3.8+
-- MySQL 8.0+
-- Firebase Project with Authentication and Storage
-- Google AI API Key (Gemini)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd Backend-Rest-API
-```
-
-2. **Create virtual environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Environment Configuration**
-Create `.env` file:
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=zerowaste_db
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-
-# JWT Configuration
-JWT_SECRET_KEY=your-super-secret-jwt-key
-
-# Firebase Configuration
-FIREBASE_CREDENTIALS_PATH=src/config/firebase_credentials.json
-
-# Google AI Configuration
-GOOGLE_API_KEY=your-gemini-api-key
-
-# Security Configuration
-FLASK_ENV=development
-SECRET_KEY=your-flask-secret-key
-```
-
-5. **Database Setup**
-```bash
-# The application will automatically create tables on startup
-python src/main.py
-```
-
-6. **Access Documentation**
-- API Documentation: `http://localhost:3000/apidocs`
-- Health Check: `http://localhost:3000/status`
-
-## Authentication System
-
-### Overview
-The system uses a dual-token approach combining Firebase Authentication for user verification with JWT tokens for API access.
-
-### Authentication Flow
-
-1. **Firebase Authentication**: Client authenticates with Firebase
-2. **Token Exchange**: Firebase ID token exchanged for JWT tokens
-3. **API Access**: JWT tokens used for all API calls
-4. **Token Refresh**: Secure token rotation with reuse detection
-
-### Security Features
-
-- **Token Blacklisting**: Revoked tokens are tracked
-- **Token Rotation**: Refresh tokens implement secure rotation
-- **Reuse Detection**: Automatic session invalidation on token reuse
-- **Rate Limiting**: Configurable limits per endpoint
-- **Security Logging**: Comprehensive audit trails
-- **IP Tracking**: Monitor for suspicious activity
-
-### Firebase Setup Required
-
-1. Create Firebase project
-2. Enable Authentication (Google, Facebook, Email, etc.)
-3. Enable Firestore Database
-4. Enable Firebase Storage
-5. Download service account credentials
-6. Place credentials in `src/config/firebase_credentials.json`
-
-## API Endpoints
-
-### Authentication Endpoints (`/api/auth`)
-
-#### POST `/api/auth/firebase-signin`
-**Description**: Main authentication endpoint - exchange Firebase ID token for JWT tokens
-
-**Headers**:
+**Headers:**
 ```
 Authorization: Bearer <firebase_id_token>
 Content-Type: application/json
 ```
 
-**Response**:
+**Response:**
 ```json
 {
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "expires_in": 1800,
   "user": {
-    "uid": "firebase_user_uid",
+    "uid": "firebase_user_id",
     "email": "user@example.com",
-    "name": "User Name"
-  }
+    "name": "User Name",
+    "picture": "https://...",
+    "email_verified": true,
+    "auth_provider": "password"
+  },
+  "expires_in": 3600
 }
 ```
 
-#### POST `/api/auth/refresh`
-**Description**: Refresh access token using refresh token
+**Flow:**
+1. Client sends Firebase ID token in Authorization header
+2. Server validates token with Firebase
+3. Server creates/updates user in local database
+4. Server generates app-specific JWT tokens
+5. Returns access + refresh tokens for subsequent requests
 
-**Headers**:
+### 2. Refresh Token
+**Rotates JWT tokens securely**
+
+```http
+POST /api/auth/refresh
+```
+
+**Headers:**
 ```
 Authorization: Bearer <refresh_token>
 Content-Type: application/json
 ```
 
-**Response**:
+**Response:**
 ```json
 {
-  "access_token": "new_access_token",
-  "expires_in": 1800
+  "access_token": "new_jwt_token",
+  "refresh_token": "new_refresh_token",
+  "expires_in": 3600
 }
 ```
 
-#### POST `/api/auth/logout`
-**Description**: Secure logout - invalidates all user tokens
+**Flow:**
+1. Client sends refresh token
+2. Server validates and rotates tokens
+3. Old tokens are blacklisted
+4. New tokens returned
 
-**Headers**:
+### 3. Logout
+**Securely invalidates all user tokens**
+
+```http
+POST /api/auth/logout
+```
+
+**Headers:**
 ```
 Authorization: Bearer <access_token>
 ```
 
-**Response**:
+**Response:**
 ```json
 {
-  "message": "Successfully logged out"
+  "message": "Logout successful",
+  "tokens_invalidated": true
 }
 ```
 
-### User Management (`/api/user`)
+---
 
-#### GET `/api/user/profile`
-**Description**: Get user profile from Firestore
+## User Profile Endpoints
 
-**Headers**:
+### 1. Get User Profile
+**Retrieves user profile from Firestore**
+
+```http
+GET /api/user/profile
+```
+
+**Headers:**
 ```
 Authorization: Bearer <access_token>
 ```
 
-**Response**:
+**Response:**
 ```json
 {
-  "uid": "firebase_user_uid",
-  "displayName": "User Name",
-  "email": "user@example.com",
-  "photoURL": "https://profile-image-url",
+  "uid": "00HkiYIBxoVGnIZQQ76S7dbM52E3",
+  "displayName": "Carlos Primo",
+  "email": "carlos@gm.co",
+  "photoURL": null,
+  "emailVerified": true,
+  "authProvider": "password",
   "language": "es",
-  "cookingLevel": "beginner",
+  "cookingLevel": "intermediate",
   "measurementUnit": "metric",
-  "allergies": ["lactose", "gluten"],
-  "preferredFoodTypes": ["vegetarian"],
+  "allergies": ["nuts", "dairy"],
+  "allergyItems": ["almonds", "milk"],
+  "preferredFoodTypes": ["vegetarian", "mediterranean"],
+  "specialDietItems": [],
   "favoriteRecipes": [],
-  "initialPreferencesCompleted": true
+  "initialPreferencesCompleted": true,
+  "createdAt": "2025-05-23T08:16:24Z",
+  "lastLoginAt": "2025-05-23T08:16:25Z"
 }
 ```
 
-#### PUT `/api/user/profile`
-**Description**: Update user profile
+### 2. Update User Profile
+**Updates user profile in Firestore**
 
-**Headers**:
+```http
+PUT /api/user/profile
+```
+
+**Headers:**
 ```
 Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 
-**Request Body**:
+**Request Body:**
 ```json
 {
   "displayName": "Updated Name",
   "language": "en",
-  "cookingLevel": "intermediate",
+  "cookingLevel": "advanced",
+  "measurementUnit": "imperial",
   "allergies": ["nuts"],
-  "preferredFoodTypes": ["vegetarian", "mediterranean"]
+  "allergyItems": ["peanuts"],
+  "preferredFoodTypes": ["vegan"],
+  "specialDietItems": ["gluten-free"],
+  "initialPreferencesCompleted": true
 }
 ```
 
-### Food Recognition (`/api/recognition`)
-
-#### POST `/api/recognition/ingredients`
-**Description**: AI recognition of ingredients from images
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-**Request Body**:
+**Response:**
 ```json
 {
-  "images_paths": [
-    "uploads/user_uid/ingredients/image1.jpg",
-    "uploads/user_uid/ingredients/image2.jpg"
-  ]
-}
-```
-
-**Response**:
-```json
-{
-  "recognition_id": "recognition_uuid",
-  "ingredients": [
-    {
-      "name": "tomate",
-      "confidence": 0.95,
-      "quantity": 3,
-      "unit": "unidades",
-      "storage_type": "refrigerador",
-      "expiration_days": 7,
-      "has_allergen_risk": false,
-      "image_path": "generated/ingredients/tomate.jpg"
-    }
-  ],
-  "total_recognized": 2,
-  "processing_time": 1.5
-}
-```
-
-#### POST `/api/recognition/foods`
-**Description**: AI recognition of prepared foods
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-**Request Body**:
-```json
-{
-  "images_paths": ["uploads/user_uid/foods/dish.jpg"]
-}
-```
-
-**Response**:
-```json
-{
-  "recognition_id": "recognition_uuid",
-  "foods": [
-    {
-      "name": "arroz_chaufa",
-      "confidence": 0.88,
-      "category": "almuerzo",
-      "main_ingredients": ["arroz", "pollo", "huevo"],
-      "estimated_calories": 450,
-      "serving_quantity": 1,
-      "storage_type": "refrigerador",
-      "expiration_time": 3,
-      "time_unit": "Días"
-    }
-  ]
-}
-```
-
-### Inventory Management (`/api/inventory`)
-
-#### GET `/api/inventory`
-**Description**: Get complete user inventory
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response**:
-```json
-{
-  "ingredients": [
-    {
-      "name": "tomate",
-      "stacks": [
-        {
-          "quantity": 5.0,
-          "unit": "unidades",
-          "added_at": "2024-01-15T10:30:00Z",
-          "expiration_date": "2024-01-22T10:30:00Z",
-          "days_until_expiration": 7,
-          "status": "fresh"
-        }
-      ],
-      "total_quantity": 5.0,
-      "storage_type": "refrigerador",
-      "image_path": "ingredients/tomate.jpg"
-    }
-  ],
-  "foods": [
-    {
-      "name": "arroz_chaufa",
-      "quantity": 2,
-      "added_at": "2024-01-15T12:00:00Z",
-      "expiration_date": "2024-01-18T12:00:00Z",
-      "category": "almuerzo",
-      "calories": 450,
-      "serving_quantity": 1
-    }
-  ],
-  "summary": {
-    "total_ingredients": 15,
-    "total_foods": 3,
-    "expiring_soon": 2
+  "message": "Perfil actualizado exitosamente",
+  "profile": {
+    // Updated profile object
   }
 }
 ```
 
-#### POST `/api/inventory/ingredients`
-**Description**: Add ingredients to inventory
+---
 
-**Headers**:
+## Food Recognition Endpoints
+
+### 1. Hybrid Ingredient Recognition
+**AI-powered ingredient recognition with async image generation**
+
+```http
+POST /api/recognition/ingredients
+```
+
+**Headers:**
 ```
 Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 
-**Request Body**:
+**Request Body:**
+```json
+{
+  "images_paths": [
+    "uploads/user_images/image1.jpg",
+    "uploads/user_images/image2.jpg"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "recognition_id": "uuid-123",
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "quantity": 3,
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "expiration_time": 5,
+      "time_unit": "days",
+      "tips": "Conservar en lugar fresco y seco",
+      "image_path": null,
+      "image_status": "generating",
+      "added_at": "2025-01-20T10:00:00Z",
+      "expiration_date": "2025-01-25T10:00:00Z"
+    }
+  ],
+  "images": {
+    "status": "generating",
+    "task_id": "task-uuid-456",
+    "check_images_url": "/api/recognition/images/status/task-uuid-456",
+    "estimated_time": "20-40 segundos"
+  },
+  "allergy_alerts": [
+    {
+      "ingredient": "Tomate",
+      "allergen": "nightshades",
+      "severity": "warning",
+      "message": "Este ingrediente puede contener alérgenos"
+    }
+  ],
+  "message": "✅ Ingredientes reconocidos. Las imágenes se están generando en segundo plano."
+}
+```
+
+**Flow:**
+1. **Synchronous Phase**: AI analyzes images and returns ingredient data immediately
+2. **Asynchronous Phase**: Image generation starts in background
+3. **Response**: Immediate data + task ID for tracking image generation
+4. **Image Completion**: Use status endpoint to check when images are ready
+
+### 2. Complete Ingredient Recognition
+**Full recognition with environmental impact and utilization ideas**
+
+```http
+POST /api/recognition/ingredients/complete
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "images_paths": [
+    "uploads/user_images/vegetables.jpg"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "recognition_id": "uuid-789",
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "quantity": 3,
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "expiration_time": 5,
+      "time_unit": "days",
+      "tips": "Conservar en lugar fresco y seco",
+      "image_path": "generated/tomato_reference.jpg",
+      "environmental_impact": {
+        "carbon_footprint": {
+          "value": 1.2,
+          "unit": "kg",
+          "description": "CO2 equivalente"
+        },
+        "water_footprint": {
+          "value": 15,
+          "unit": "litros",
+          "description": "agua necesaria"
+        },
+        "sustainability_message": "Los tomates locales reducen tu huella de carbono"
+      },
+      "utilization_ideas": [
+        {
+          "title": "Salsa de tomate casera",
+          "description": "Aprovecha tomates maduros para hacer salsa",
+          "type": "receta"
+        },
+        {
+          "title": "Conservación en aceite",
+          "description": "Preserva tomates en aceite de oliva",
+          "type": "conservación"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 3. Food Recognition
+**Recognizes prepared dishes and meals**
+
+```http
+POST /api/recognition/foods
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "images_paths": [
+    "uploads/user_images/dish.jpg"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "recognition_id": "uuid-food-123",
+  "foods": [
+    {
+      "name": "Pasta con Salsa de Tomate",
+      "quantity": 1,
+      "type_unit": "porción",
+      "estimated_calories": 450,
+      "main_ingredients": ["pasta", "tomate", "aceite_oliva"],
+      "expiration_time": 3,
+      "time_unit": "days",
+      "storage_recommendations": "Refrigerar después de enfriar",
+      "image_path": null,
+      "image_status": "generating"
+    }
+  ],
+  "images": {
+    "status": "generating",
+    "task_id": "food-task-456",
+    "check_images_url": "/api/recognition/images/status/food-task-456",
+    "estimated_time": "20-40 segundos"
+  }
+}
+```
+
+### 4. Check Image Generation Status
+**Monitor async image generation progress**
+
+```http
+GET /api/recognition/images/status/{task_id}
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "task_id": "task-uuid-456",
+  "status": "completed", // "pending", "processing", "completed", "failed"
+  "progress_percentage": 100,
+  "current_step": "Generación completada",
+  "created_at": "2025-01-20T10:00:00Z",
+  "completed_at": "2025-01-20T10:00:35Z",
+  "images_data": [
+    {
+      "ingredient_name": "Tomate",
+      "image_path": "generated/references/tomate_ref_uuid.jpg",
+      "generation_status": "ready"
+    }
+  ],
+  "message": "🎉 Imágenes generadas exitosamente"
+}
+```
+
+### 5. Get Recognition Images
+**Retrieve recognition with updated image paths**
+
+```http
+GET /api/recognition/recognition/{recognition_id}/images
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "recognition_id": "uuid-123",
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "image_path": "generated/references/tomate_ref_final.jpg",
+      "image_status": "ready",
+      // ... other ingredient data
+    }
+  ],
+  "images_ready": true,
+  "total_ingredients": 1,
+  "images_generated": 1
+}
+``` 
+
+---
+
+## Inventory Management Endpoints
+
+### 1. Add Ingredients to Inventory
+**Batch add ingredients to user's inventory**
+
+```http
+POST /api/inventory/ingredients
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
 ```json
 {
   "ingredients": [
     {
-      "name": "tomate",
-      "quantity": 5,
-      "unit": "unidades",
+      "name": "Tomate",
+      "quantity": 3,
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "expiration_date": "2025-01-25T10:00:00Z",
+      "tips": "Conservar en lugar fresco y seco"
+    },
+    {
+      "name": "Leche",
+      "quantity": 1,
+      "type_unit": "litros",
       "storage_type": "refrigerador",
-      "expiration_date": "2024-01-22T10:30:00Z"
+      "expiration_date": "2025-01-30T23:59:59Z",
+      "tips": "Mantener refrigerado"
     }
   ]
 }
 ```
 
-#### POST `/api/inventory/ingredients/from-recognition`
-**Description**: Add ingredients from AI recognition results
-
-**Request Body**:
+**Response:**
 ```json
 {
-  "recognition_id": "recognition_uuid",
-  "selected_ingredients": [
+  "message": "Ingredientes agregados exitosamente"
+}
+```
+
+### 2. Get Basic Inventory
+**Retrieve user's inventory with basic information**
+
+```http
+GET /api/inventory
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "ingredients": [
     {
-      "name": "tomate",
-      "quantity": 3,
-      "unit": "unidades"
+      "name": "Tomate",
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "tips": "Conservar en lugar fresco y seco",
+      "image_path": "generated/tomato_ref.jpg",
+      "stacks": [
+        {
+          "quantity": 3,
+          "type_unit": "unidades",
+          "expiration_date": "2025-01-25T10:00:00Z",
+          "added_at": "2025-01-20T10:00:00Z"
+        }
+      ]
+    }
+  ],
+  "food_items": []
+}
+```
+
+### 3. Get Complete Inventory
+**Retrieve enriched inventory with environmental impact and utilization ideas**
+
+```http
+GET /api/inventory/complete
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "tips": "Conservar en lugar fresco y seco",
+      "image_path": "generated/tomato_ref.jpg",
+      "stacks": [
+        {
+          "quantity": 3,
+          "type_unit": "unidades",
+          "expiration_date": "2025-01-25T10:00:00Z",
+          "added_at": "2025-01-20T10:00:00Z"
+        }
+      ],
+      "environmental_impact": {
+        "carbon_footprint": {
+          "value": 1.2,
+          "unit": "kg",
+          "description": "CO2"
+        },
+        "water_footprint": {
+          "value": 15,
+          "unit": "l",
+          "description": "agua"
+        },
+        "sustainability_message": "Consume de manera responsable y evita el desperdicio."
+      },
+      "utilization_ideas": [
+        {
+          "title": "Salsa de tomate casera",
+          "description": "Aprovecha tomates maduros para hacer salsa",
+          "type": "receta"
+        }
+      ]
+    }
+  ],
+  "food_items": [],
+  "total_ingredients": 1,
+  "enriched_with": ["environmental_impact", "utilization_ideas"]
+}
+```
+
+### 4. Get Simple Inventory
+**Lightweight inventory for quick access**
+
+```http
+GET /api/inventory/simple
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "total_quantity": 3,
+      "type_unit": "unidades",
+      "earliest_expiration": "2025-01-25T10:00:00Z",
+      "storage_type": "ambiente"
     }
   ]
 }
 ```
 
-#### GET `/api/inventory/expiring`
-**Description**: Get items expiring soon
+### 5. Add Ingredients from Recognition
+**Add ingredients directly from AI recognition results**
 
-**Query Parameters**:
-- `days` (optional): Days threshold (default: 3)
+```http
+POST /api/inventory/ingredients/from-recognition
+```
 
-**Response**:
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "quantity": 3,
+      "type_unit": "unidades",
+      "storage_type": "ambiente",
+      "expiration_time": 5,
+      "time_unit": "days",
+      "tips": "Conservar en lugar fresco y seco",
+      "image_path": "generated/tomato_ref.jpg",
+      "environmental_impact": {
+        "carbon_footprint": {"value": 1.2, "unit": "kg", "description": "CO2"},
+        "water_footprint": {"value": 15, "unit": "l", "description": "agua"}
+      },
+      "utilization_ideas": []
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Ingredientes agregados al inventario exitosamente",
+  "processed_count": 1
+}
+```
+
+### 6. Get Expiring Items
+**Retrieve items close to expiration**
+
+```http
+GET /api/inventory/expiring?days=3
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `days` (optional): Number of days ahead to check (default: 7)
+
+**Response:**
 ```json
 {
   "expiring_ingredients": [
     {
-      "name": "leche",
-      "quantity": 1,
-      "unit": "litros",
-      "expiration_date": "2024-01-17T10:00:00Z",
-      "days_until_expiration": 2
+      "name": "Tomate",
+      "quantity": 3,
+      "type_unit": "unidades",
+      "expiration_date": "2025-01-23T10:00:00Z",
+      "days_until_expiration": 2,
+      "storage_type": "ambiente"
     }
   ],
   "expiring_foods": [],
@@ -459,1278 +680,1173 @@ Content-Type: application/json
 }
 ```
 
-### Recipe Management (`/api/recipes`)
+### 7. Update Ingredient Stack
+**Update specific ingredient stack details**
 
-#### POST `/api/recipes/generate-from-inventory`
-**Description**: Generate recipes using available inventory
+```http
+PUT /api/inventory/ingredients/{ingredient_name}/{added_at}
+```
 
-**Headers**:
+**Headers:**
 ```
 Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 
-**Request Body**:
+**Path Parameters:**
+- `ingredient_name`: Name of ingredient (e.g., "Tomate")
+- `added_at`: ISO timestamp when stack was added
+
+**Request Body:**
 ```json
 {
-  "preferences": {
-    "meal_type": "almuerzo",
-    "difficulty": "Fácil",
-    "max_cooking_time": 30,
-    "dietary_restrictions": ["vegetarian"]
-  },
-  "exclude_ingredients": ["cebolla"]
+  "quantity": 5,
+  "expiration_date": "2025-01-28T10:00:00Z"
 }
 ```
 
-**Response**:
+**Response:**
 ```json
 {
-  "generation_id": "generation_uuid",
-  "recipes": [
+  "message": "Ingrediente actualizado exitosamente"
+}
+```
+
+### 8. Update Ingredient Quantity
+**Update only the quantity of an ingredient stack**
+
+```http
+PATCH /api/inventory/ingredients/{ingredient_name}/{added_at}/quantity
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "new_quantity": 5
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Cantidad actualizada exitosamente",
+  "ingredient_name": "Tomate",
+  "old_quantity": 3,
+  "new_quantity": 5
+}
+```
+
+### 9. Delete Ingredient Stack
+**Delete a specific ingredient stack**
+
+```http
+DELETE /api/inventory/ingredients/{ingredient_name}/{added_at}
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Stack de ingrediente eliminado exitosamente",
+  "ingredient_deleted": false,
+  "remaining_stacks": 2
+}
+```
+
+### 10. Delete Complete Ingredient
+**Delete all stacks of an ingredient**
+
+```http
+DELETE /api/inventory/ingredients/{ingredient_name}
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Ingrediente eliminado completamente del inventario",
+  "ingredient_name": "Tomate",
+  "stacks_deleted": 3
+}
+```
+
+### 11. Mark Ingredient Consumed
+**Mark ingredient stack as consumed with consumption details**
+
+```http
+POST /api/inventory/ingredients/{ingredient_name}/{added_at}/consume
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "consumed_quantity": 2,
+  "consumption_reason": "Preparé salsa de tomate",
+  "recipe_used": "Salsa de tomate casera"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Ingrediente marcado como consumido exitosamente",
+  "consumption_data": {
+    "ingredient_name": "Tomate",
+    "consumed_quantity": 2,
+    "remaining_quantity": 1,
+    "consumption_reason": "Preparé salsa de tomate",
+    "recipe_used": "Salsa de tomate casera",
+    "consumed_at": "2025-01-20T15:30:00Z"
+  }
+}
+```
+
+### 12. Get Ingredient Detail
+**Get detailed information about a specific ingredient**
+
+```http
+GET /api/inventory/ingredients/{ingredient_name}/detail
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "name": "Tomate",
+  "type_unit": "unidades",
+  "storage_type": "ambiente",
+  "tips": "Conservar en lugar fresco y seco",
+  "image_path": "generated/tomato_ref.jpg",
+  "total_quantity": 5,
+  "total_stacks": 2,
+  "stacks": [
     {
-      "uid": "recipe_uuid",
-      "title": "Ensalada de Tomate y Albahaca",
-      "description": "Ensalada fresca y saludable",
-      "duration": "15 minutos",
-      "difficulty": "Fácil",
-      "category": "ensalada",
-      "servings": 2,
+      "quantity": 3,
+      "expiration_date": "2025-01-25T10:00:00Z",
+      "added_at": "2025-01-20T10:00:00Z",
+      "days_until_expiration": 5
+    }
+  ]
+}
+```
+
+### 13. Get Ingredients List
+**Get simplified list of all ingredient names**
+
+```http
+GET /api/inventory/ingredients/list
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "ingredients": ["Tomate", "Leche", "Pan", "Huevos"],
+  "count": 4
+}
+```
+
+### 14. Upload Inventory Image
+**Upload reference image for inventory items**
+
+```http
+POST /api/inventory/upload_image
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `image`: Image file (JPG, PNG, GIF, WEBP, max 10MB)
+- `item_name`: Name of the item
+- `image_type`: Type of image (food/ingredient/default)
+
+**Response:**
+```json
+{
+  "message": "Imagen subida exitosamente",
+  "image_data": {
+    "item_name": "Tomate",
+    "image_path": "uploads/inventory/tomate_user_ref.jpg",
+    "storage_path": "inventory_images/uuid.jpg"
+  }
+}
+```
+
+### 15. Add Single Item to Inventory
+**Add individual item with advanced options**
+
+```http
+POST /api/inventory/add_item
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "item_type": "ingredient",
+  "item_data": {
+    "name": "Aguacate",
+    "quantity": 2,
+    "type_unit": "unidades",
+    "storage_type": "ambiente",
+    "expiration_date": "2025-01-22T23:59:59Z",
+    "tips": "Presionar suavemente para verificar madurez"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Item agregado al inventario exitosamente",
+  "item": {
+    "name": "Aguacate",
+    "quantity": 2,
+    "type_unit": "unidades",
+    "added_at": "2025-01-20T10:00:00Z"
+  }
+}
+``` 
+
+---
+
+## Recipe Management Endpoints
+
+### 1. Generate Recipes from Inventory
+**AI-generated recipes based on user's inventory**
+
+```http
+POST /api/recipes/generate-from-inventory
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Response:**
+```json
+{
+  "generated_recipes": [
+    {
+      "title": "Pasta con Tomate y Albahaca",
+      "description": "Una deliciosa pasta italiana con tomates frescos",
       "ingredients": [
         {
-          "name": "tomate",
-          "quantity": 3,
-          "unit": "unidades"
+          "name": "Tomate",
+          "quantity": 2,
+          "unit": "unidades",
+          "from_inventory": true
         },
         {
-          "name": "albahaca",
-          "quantity": 10,
-          "unit": "hojas"
+          "name": "Pasta",
+          "quantity": 200,
+          "unit": "gramos",
+          "from_inventory": false
         }
       ],
-      "steps": [
-        {
-          "order": 1,
-          "description": "Lavar y cortar los tomates en rodajas"
-        },
-        {
-          "order": 2,
-          "description": "Agregar hojas de albahaca fresca"
-        }
+      "instructions": [
+        "Hervir agua con sal para la pasta",
+        "Cortar los tomates en cubos pequeños",
+        "Sofreír tomates con aceite de oliva",
+        "Cocinar pasta al dente",
+        "Mezclar pasta con salsa de tomate"
       ],
+      "prep_time": 15,
+      "cook_time": 20,
+      "servings": 2,
+      "difficulty": "fácil",
+      "category": "pasta",
       "nutritional_info": {
-        "calories": 85,
-        "protein": 2.1,
-        "carbs": 8.7,
-        "fat": 0.5
+        "calories": 450,
+        "protein": 12,
+        "carbs": 65,
+        "fat": 8
       },
+      "image_path": null,
+      "image_status": "generating",
+      "generated_at": "2025-01-20T10:00:00Z"
+    }
+  ],
+  "total_recipes": 1,
+  "inventory_utilization": {
+    "ingredients_used": 1,
+    "total_inventory_items": 5,
+    "utilization_percentage": 20
+  },
+  "images": {
+    "status": "generating",
+    "task_id": "recipe-task-789",
+    "check_images_url": "/api/generation/images/status/recipe-task-789",
+    "estimated_time": "15-30 segundos"
+  }
+}
+```
+
+### 2. Generate Custom Recipes
+**Generate recipes with specific ingredients and preferences**
+
+```http
+POST /api/recipes/generate-custom
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "ingredients": [
+    "Pollo",
+    "Arroz",
+    "Pimiento"
+  ],
+  "preferences": [
+    "bajo en sodio",
+    "sin gluten"
+  ],
+  "num_recipes": 2,
+  "recipe_categories": [
+    "principal",
+    "saludable"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "generated_recipes": [
+    {
+      "title": "Arroz con Pollo al Pimiento",
+      "description": "Plato saludable y libre de gluten",
+      "ingredients": [
+        {
+          "name": "Pollo",
+          "quantity": 300,
+          "unit": "gramos"
+        },
+        {
+          "name": "Arroz",
+          "quantity": 1,
+          "unit": "taza"
+        }
+      ],
+      "instructions": [
+        "Cortar el pollo en trozos medianos",
+        "Sofreír pollo hasta dorar",
+        "Agregar arroz y caldo",
+        "Cocinar a fuego lento 18 minutos"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "servings": 2,
+      "difficulty": "intermedio",
+      "dietary_info": ["sin gluten", "bajo en sodio"],
+      "image_path": null,
       "image_status": "generating"
     }
   ],
-  "using_ingredients": ["tomate", "albahaca"],
-  "total_recipes": 3
+  "images": {
+    "status": "generating",
+    "task_id": "custom-recipe-456",
+    "estimated_time": "15-30 segundos"
+  }
 }
 ```
 
-#### POST `/api/recipes/save`
-**Description**: Save a recipe to user favorites
+### 3. Save Recipe
+**Save a generated or custom recipe to user's collection**
 
-**Request Body**:
+```http
+POST /api/recipes/save
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
 ```json
 {
-  "recipe_uid": "recipe_uuid"
+  "title": "Pasta con Tomate y Albahaca",
+  "description": "Una deliciosa pasta italiana con tomates frescos",
+  "ingredients": [
+    {
+      "name": "Tomate",
+      "quantity": 2,
+      "unit": "unidades"
+    }
+  ],
+  "instructions": [
+    "Hervir agua con sal para la pasta",
+    "Cortar los tomates en cubos pequeños"
+  ],
+  "prep_time": 15,
+  "cook_time": 20,
+  "servings": 2,
+  "difficulty": "fácil",
+  "category": "pasta",
+  "image_path": "generated/pasta_tomato.jpg"
 }
 ```
 
-#### GET `/api/recipes/saved`
-**Description**: Get user's saved recipes
+**Response:**
+```json
+{
+  "message": "Receta guardada exitosamente",
+  "recipe": {
+    "uid": "recipe-uuid-123",
+    "title": "Pasta con Tomate y Albahaca",
+    "saved_at": "2025-01-20T10:00:00Z",
+    // ... other recipe data
+  }
+}
+```
 
-**Response**:
+### 4. Get Saved Recipes
+**Retrieve user's saved recipes**
+
+```http
+GET /api/recipes/saved
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
 ```json
 {
   "recipes": [
     {
-      "uid": "recipe_uuid",
-      "title": "Recipe Title",
-      "category": "almuerzo",
-      "saved_at": "2024-01-15T10:30:00Z",
-      "image_path": "recipes/recipe_uuid.jpg"
+      "uid": "recipe-uuid-123",
+      "title": "Pasta con Tomate y Albahaca",
+      "description": "Una deliciosa pasta italiana",
+      "prep_time": 15,
+      "cook_time": 20,
+      "servings": 2,
+      "difficulty": "fácil",
+      "category": "pasta",
+      "image_path": "generated/pasta_tomato.jpg",
+      "saved_at": "2025-01-20T10:00:00Z"
     }
   ],
-  "total": 5
+  "count": 1
 }
 ```
 
-### Meal Planning (`/api/planning`)
+### 5. Get All Recipes
+**Retrieve all available recipes (public + user's)**
 
-#### POST `/api/planning/save`
-**Description**: Save meal plan for specific date
+```http
+GET /api/recipes/all
+```
 
-**Request Body**:
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
 ```json
 {
-  "date": "2024-01-20",
+  "recipes": [
+    // Array of all recipes
+  ],
+  "count": 50
+}
+```
+
+### 6. Delete Recipe
+**Delete a user's saved recipe**
+
+```http
+DELETE /api/recipes/delete
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "title": "Pasta con Tomate y Albahaca"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Receta 'Pasta con Tomate y Albahaca' eliminada exitosamente"
+}
+```
+
+---
+
+## Meal Planning Endpoints
+
+### 1. Save Meal Plan
+**Save meal plan for a specific date**
+
+```http
+POST /api/planning/save
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "date": "2025-01-25",
   "meals": {
-    "breakfast": [
-      {
-        "recipe_uid": "recipe_uuid_1",
-        "servings": 2
-      }
-    ],
-    "lunch": [
-      {
-        "recipe_uid": "recipe_uuid_2",
-        "servings": 4
-      }
-    ],
-    "dinner": [],
-    "snacks": []
+    "breakfast": {
+      "recipe_title": "Tostadas con Aguacate",
+      "ingredients_needed": [
+        {
+          "name": "Pan",
+          "quantity": 2,
+          "unit": "rebanadas"
+        },
+        {
+          "name": "Aguacate",
+          "quantity": 1,
+          "unit": "unidad"
+        }
+      ],
+      "prep_time": 10,
+      "calories": 350
+    },
+    "lunch": {
+      "recipe_title": "Pasta con Tomate y Albahaca",
+      "ingredients_needed": [
+        {
+          "name": "Tomate",
+          "quantity": 2,
+          "unit": "unidades"
+        }
+      ],
+      "prep_time": 20,
+      "calories": 450
+    },
+    "dinner": {
+      "recipe_title": "Ensalada Verde",
+      "ingredients_needed": [
+        {
+          "name": "Lechuga",
+          "quantity": 1,
+          "unit": "cabeza"
+        }
+      ],
+      "prep_time": 5,
+      "calories": 120
+    }
   }
 }
 ```
 
-#### GET `/api/planning/get`
-**Description**: Get meal plan for specific date
-
-**Query Parameters**:
-- `date` (required): Date in YYYY-MM-DD format
-
-**Response**:
+**Response:**
 ```json
 {
-  "date": "2024-01-20",
-  "meals": {
-    "breakfast": [
-      {
-        "recipe": {
-          "uid": "recipe_uuid",
-          "title": "Pancakes",
-          "image_path": "recipes/pancakes.jpg"
-        },
-        "servings": 2
-      }
-    ],
-    "lunch": [],
-    "dinner": [],
-    "snacks": []
-  },
-  "total_planned_meals": 1
+  "message": "Plan de comidas guardado exitosamente",
+  "meal_plan": {
+    "uid": "plan-uuid-456",
+    "date": "2025-01-25",
+    "total_calories": 920,
+    "meals": {
+      // ... meal details
+    },
+    "created_at": "2025-01-20T10:00:00Z"
+  }
 }
 ```
 
-#### GET `/api/planning/dates`
-**Description**: Get all dates with meal plans
+### 2. Update Meal Plan
+**Update existing meal plan**
 
-**Response**:
+```http
+PUT /api/planning/update
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "date": "2025-01-25",
+  "meals": {
+    // Updated meal structure
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Plan de comidas actualizado exitosamente",
+  "meal_plan": {
+    // Updated meal plan data
+  }
+}
+```
+
+### 3. Get Meal Plan by Date
+**Retrieve meal plan for specific date**
+
+```http
+GET /api/planning/get?date=2025-01-25
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `date`: Date in YYYY-MM-DD format
+
+**Response:**
+```json
+{
+  "meal_plan": {
+    "uid": "plan-uuid-456",
+    "date": "2025-01-25",
+    "meals": {
+      "breakfast": {
+        "recipe_title": "Tostadas con Aguacate",
+        "ingredients_needed": [],
+        "prep_time": 10,
+        "calories": 350
+      },
+      "lunch": {},
+      "dinner": {}
+    },
+    "total_calories": 920,
+    "created_at": "2025-01-20T10:00:00Z"
+  }
+}
+```
+
+### 4. Get All Meal Plans
+**Retrieve all user's meal plans**
+
+```http
+GET /api/planning/all
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "meal_plans": [
+    {
+      "uid": "plan-uuid-456",
+      "date": "2025-01-25",
+      "total_calories": 920,
+      // ... plan details
+    }
+  ]
+}
+```
+
+### 5. Get Meal Plan Dates
+**Get list of dates with existing meal plans**
+
+```http
+GET /api/planning/dates
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
 ```json
 {
   "dates": [
-    "2024-01-15",
-    "2024-01-16",
-    "2024-01-20"
+    "2025-01-25",
+    "2025-01-26",
+    "2025-01-27"
+  ]
+}
+```
+
+### 6. Delete Meal Plan
+**Delete meal plan for specific date**
+
+```http
+DELETE /api/planning/delete?date=2025-01-25
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `date`: Date in YYYY-MM-DD format
+
+**Response:**
+```json
+{
+  "message": "Plan de comidas del 2025-01-25 eliminado exitosamente."
+}
+``` 
+
+---
+
+## Image Management Endpoints
+
+### 1. Upload Image
+**Upload image files to Firebase Storage**
+
+```http
+POST /api/image_management/upload_image
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `image`: Image file (JPG, PNG, GIF, WEBP, max 10MB)
+- `item_name`: Name/description of the item in the image
+- `image_type`: Type of image (food/ingredient/default)
+
+**Response:**
+```json
+{
+  "message": "Image uploaded successfully",
+  "image": {
+    "uid": "img-uuid-123",
+    "name": "banana",
+    "image_path": "https://storage.googleapis.com/bucket/uploads/food/abc123.jpg",
+    "image_type": "food",
+    "storage_path": "uploads/food/abc123.jpg"
+  }
+}
+```
+
+### 2. Assign Image Reference
+**Assign reference image to an item**
+
+```http
+POST /api/image_management/assign_image
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "item_name": "Tomate"
+}
+```
+
+**Response:**
+```json
+{
+  "uid": "ref-uuid-456",
+  "name": "Tomate",
+  "image_path": "references/tomate_ref.jpg",
+  "image_type": "ingredient"
+}
+```
+
+### 3. Search Similar Images
+**Find similar reference images for an item**
+
+```http
+POST /api/image_management/search_similar_images
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "item_name": "Tomate"
+}
+```
+
+**Response:**
+```json
+[
+  {
+    "uid": "ref-1",
+    "name": "Tomate Cherry",
+    "image_path": "references/cherry_tomato.jpg",
+    "similarity_score": 0.95
+  },
+  {
+    "uid": "ref-2",
+    "name": "Tomate Roma",
+    "image_path": "references/roma_tomato.jpg",
+    "similarity_score": 0.89
+  }
+]
+```
+
+---
+
+## Generation Status Endpoints
+
+### 1. Check Recipe Image Generation Status
+**Monitor recipe image generation progress**
+
+```http
+GET /api/generation/images/status/{task_id}
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "task_id": "recipe-task-789",
+  "status": "completed",
+  "progress_percentage": 100,
+  "current_step": "Generación completada",
+  "created_at": "2025-01-20T10:00:00Z",
+  "completed_at": "2025-01-20T10:00:25Z",
+  "images_data": [
+    {
+      "recipe_title": "Pasta con Tomate y Albahaca",
+      "image_path": "generated/recipes/pasta_tomato_final.jpg",
+      "generation_status": "ready"
+    }
   ],
-  "total_dates": 3
+  "message": "🎉 Imágenes generadas exitosamente"
 }
 ```
 
-### Environmental Impact (`/api/environmental-savings`)
+### 2. Get Generation Images
+**Retrieve generated images for a specific generation**
 
-#### POST `/api/environmental-savings/calculate/from-title`
-**Description**: Calculate environmental impact by recipe title
+```http
+GET /api/generation/{generation_id}/images
+```
 
-**Request Body**:
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
 ```json
 {
-  "recipe_title": "Ensalada de Tomate",
-  "servings": 2
+  "generation_id": "gen-uuid-456",
+  "recipes": [
+    {
+      "title": "Pasta con Tomate y Albahaca",
+      "image_path": "generated/recipes/pasta_final.jpg",
+      "image_status": "ready"
+    }
+  ],
+  "images_ready": true,
+  "total_recipes": 1,
+  "images_generated": 1,
+  "last_updated": "2025-01-20T10:00:00Z",
+  "message": "✅ Todas las imágenes están listas"
 }
 ```
 
-**Response**:
+---
+
+## Admin Endpoints
+
+### 1. Cleanup Expired Tokens
+**Internal endpoint to clean expired security tokens**
+
+```http
+POST /api/admin/cleanup-tokens
+```
+
+**Headers:**
+```
+X-Internal-Secret: <internal_secret>
+```
+
+**Response:**
 ```json
 {
-  "calculation_id": "calculation_uuid",
-  "recipe_title": "Ensalada de Tomate",
-  "environmental_impact": {
-    "carbon_footprint": 0.5,
-    "water_footprint": 15.2,
-    "energy_footprint": 2.1,
-    "economic_cost": 3.50,
-    "sustainability_score": 8.5
-  },
-  "units": {
-    "carbon": "kg CO2e",
-    "water": "litros",
-    "energy": "MJ",
-    "cost": "USD"
-  },
-  "is_cooked": false
+  "message": "Token cleanup completed successfully",
+  "cleaned": {
+    "blacklist_cleaned": 15,
+    "tracking_cleaned": 8
+  }
 }
 ```
 
-#### GET `/api/environmental-savings/summary`
-**Description**: Get consolidated environmental summary
+### 2. Get Security Stats
+**Internal endpoint for security statistics**
 
-**Response**:
+```http
+GET /api/admin/security-stats
+```
+
+**Headers:**
+```
+X-Internal-Secret: <internal_secret>
+```
+
+**Response:**
 ```json
 {
-  "total_calculations": 15,
-  "total_impact": {
-    "carbon_saved": 12.5,
-    "water_saved": 150.0,
-    "energy_saved": 45.2,
-    "money_saved": 75.00
-  },
-  "average_sustainability_score": 7.8,
-  "recipes_cooked": 8,
-  "recipes_planned": 7
-}
-```
-
-## Data Models
-
-### Core Entities
-
-#### User Model
-```python
-class User:
-    uid: str                    # Primary key (Firebase UID)
-    email: Optional[str]        # Email (nullable for anonymous)
-    created_at: datetime
-    updated_at: datetime
-```
-
-#### Inventory System
-```python
-class Inventory:
-    user_uid: str              # One-to-one with User
-    
-class Ingredient:
-    name: str                  # Ingredient name
-    inventory_user_uid: str    # Foreign key
-    type_unit: str            # Unit of measurement
-    storage_type: str         # Storage requirements
-    tips: Optional[str]       # Usage tips
-    image_path: str
-
-class IngredientStack:
-    ingredient_name: str       # Composite primary key
-    inventory_user_uid: str    # Composite primary key  
-    added_at: datetime         # Composite primary key
-    quantity: float
-    expiration_date: datetime
-
-class FoodItem:
-    id: int                   # Auto-increment primary key
-    inventory_user_uid: str   # Foreign key
-    name: str
-    main_ingredients: List[str]  # JSON array
-    category: str
-    calories: Optional[float]
-    description: str
-    storage_type: str
-    expiration_time: int
-    time_unit: str
-    serving_quantity: int
-    image_path: str
-    added_at: datetime
-    expiration_date: datetime
-```
-
-#### Recipe System
-```python
-class Recipe:
-    uid: str                  # Primary key
-    user_uid: str            # Foreign key to User
-    title: str
-    duration: str
-    difficulty: str          # "Fácil", "Intermedio", "Difícil"
-    category: str            # "desayuno", "almuerzo", "cena", etc.
-    description: str
-    footer: Optional[str]
-    generated_by_ai: bool
-    saved_at: datetime
-    image_path: Optional[str]
-    image_status: str        # "generating", "completed", "failed"
-
-class RecipeIngredient:
-    id: int                  # Auto-increment
-    recipe_uid: str         # Foreign key
-    name: str
-    quantity: int
-    type_unit: str
-
-class RecipeStep:
-    id: int                 # Auto-increment  
-    recipe_uid: str        # Foreign key
-    step_order: int
-    description: str
-```
-
-### Validation Rules
-
-#### Ingredient Units
-Valid units: `["gramos", "kg", "litros", "ml", "unidades", "cucharadas", "tazas", "hojas", "dientes", "pizca"]`
-
-#### Storage Types  
-Valid types: `["refrigerador", "congelador", "despensa", "temperatura_ambiente"]`
-
-#### Recipe Categories
-Valid categories: `["desayuno", "almuerzo", "cena", "postre", "ensalada", "sopa", "bebida"]`
-
-#### Recipe Difficulties
-Valid difficulties: `["Fácil", "Intermedio", "Difícil"]`
-
-## Database Schema
-
-### Relationships Overview
-
-```mermaid
-erDiagram
-    User ||--|| AuthUser : has
-    User ||--|| ProfileUser : has
-    User ||--|| Inventory : owns
-    User ||--o{ Recipe : creates
-    User ||--o{ DailyMealPlan : plans
-    User ||--o{ Recognition : performs
-    User ||--o{ Generation : requests
-    User ||--o{ EnvironmentalSavings : tracks
-    
-    Inventory ||--o{ Ingredient : contains
-    Ingredient ||--o{ IngredientStack : has
-    Inventory ||--o{ FoodItem : stores
-    
-    Recipe ||--o{ RecipeIngredient : includes
-    Recipe ||--o{ RecipeStep : has
-    
-    Generation ||--o{ RecipeGenerated : produces
-    
-    DailyMealPlan }o--|| Recipe : references
-```
-
-### Key Tables
-
-#### Security Tables
-- `token_blacklist`: Revoked token tracking
-- `refresh_token_tracking`: Refresh token security with reuse detection
-
-#### Cascade Relationships
-- User deletion cascades to all related data
-- Inventory deletion cascades to ingredients and food items
-- Recipe deletion cascades to ingredients and steps
-
-## Security Features
-
-### Authentication Security
-- **Firebase + JWT Dual Layer**: Firebase for user verification, JWT for API access
-- **Token Rotation**: Refresh tokens implement secure rotation
-- **Reuse Detection**: Automatic session invalidation on token reuse
-- **Token Blacklisting**: Comprehensive revoked token tracking
-
-### API Security
-- **Rate Limiting**: Configurable limits per endpoint type
-- **Security Headers**: CSRF, XSS, clickjacking protection
-- **HTTPS Enforcement**: Strict Transport Security headers
-- **IP Tracking**: Monitor suspicious activity patterns
-
-### Data Security
-- **Input Validation**: Comprehensive validation on all inputs
-- **SQL Injection Protection**: Parameterized queries via SQLAlchemy
-- **File Upload Security**: Type validation and size limits
-- **Content Security Policy**: Prevents XSS attacks
-
-## Flutter Integration Guide
-
-### 1. Setup Dependencies
-
-Add to `pubspec.yaml`:
-```yaml
-dependencies:
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  google_sign_in: ^6.1.5
-  http: ^1.1.0
-  shared_preferences: ^2.2.2
-  dio: ^5.3.2  # Alternative HTTP client with interceptors
-```
-
-### 2. Firebase Configuration
-
-Initialize Firebase in `main.dart`:
-```dart
-import 'package:firebase_core/firebase_core.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
-}
-```
-
-### 3. Authentication Service
-
-Create `auth_service.dart`:
-```dart
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class AuthService {
-  static const String baseUrl = 'http://your-api-url.com';
-  
-  // Firebase Authentication
-  static Future<UserCredential?> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth = 
-          await googleUser.authentication;
-      
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      
-      return await FirebaseAuth.instance.signInWithCredential(credential);
-    } catch (e) {
-      print('Google Sign In Error: $e');
-      return null;
-    }
-  }
-
-  // Exchange Firebase token for JWT
-  static Future<Map<String, dynamic>?> exchangeFirebaseToken() async {
-    try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
-
-      final String? idToken = await user.getIdToken();
-      if (idToken == null) return null;
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/firebase-signin'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      }
-      return null;
-    } catch (e) {
-      print('Token exchange error: $e');
-      return null;
-    }
-  }
-
-  // Refresh JWT token
-  static Future<String?> refreshToken(String refreshToken) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/refresh'),
-        headers: {
-          'Authorization': 'Bearer $refreshToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['access_token'];
-      }
-      return null;
-    } catch (e) {
-      print('Token refresh error: $e');
-      return null;
-    }
-  }
-
-  // Logout
-  static Future<void> logout() async {
-    try {
-      final accessToken = await TokenManager.getAccessToken();
-      if (accessToken != null) {
-        await http.post(
-          Uri.parse('$baseUrl/api/auth/logout'),
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-            'Content-Type': 'application/json',
-          },
-        );
-      }
-      
-      await GoogleSignIn().signOut();
-      await FirebaseAuth.instance.signOut();
-      await TokenManager.clearTokens();
-    } catch (e) {
-      print('Logout error: $e');
-    }
+  "security_stats": {
+    "blacklisted_tokens": 25,
+    "active_refresh_tokens": 12,
+    "used_refresh_tokens": 45,
+    "total_refresh_tokens": 57
   }
 }
 ```
 
-### 4. Token Management
-
-Create `token_manager.dart`:
-```dart
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-
-class TokenManager {
-  static const String _accessTokenKey = 'access_token';
-  static const String _refreshTokenKey = 'refresh_token';
-  static const String _tokenExpiryKey = 'token_expiry';
-
-  static Future<void> saveTokens(String accessToken, String refreshToken, int expiresIn) async {
-    final prefs = await SharedPreferences.getInstance();
-    final expiryTime = DateTime.now().add(Duration(seconds: expiresIn));
-    
-    await prefs.setString(_accessTokenKey, accessToken);
-    await prefs.setString(_refreshTokenKey, refreshToken);
-    await prefs.setString(_tokenExpiryKey, expiryTime.toIso8601String());
-  }
-
-  static Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
-  }
-
-  static Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_refreshTokenKey);
-  }
-
-  static Future<bool> isTokenExpired() async {
-    final prefs = await SharedPreferences.getInstance();
-    final expiryString = prefs.getString(_tokenExpiryKey);
-    
-    if (expiryString == null) return true;
-    
-    final expiryTime = DateTime.parse(expiryString);
-    return DateTime.now().isAfter(expiryTime.subtract(Duration(minutes: 5))); // 5 min buffer
-  }
-
-  static Future<String?> getValidAccessToken() async {
-    if (await isTokenExpired()) {
-      final refreshToken = await getRefreshToken();
-      if (refreshToken != null) {
-        final newAccessToken = await AuthService.refreshToken(refreshToken);
-        if (newAccessToken != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_accessTokenKey, newAccessToken);
-          final newExpiry = DateTime.now().add(Duration(minutes: 30));
-          await prefs.setString(_tokenExpiryKey, newExpiry.toIso8601String());
-          return newAccessToken;
-        }
-      }
-      return null; // Need to re-authenticate
-    }
-    return await getAccessToken();
-  }
-
-  static Future<void> clearTokens() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_accessTokenKey);
-    await prefs.remove(_refreshTokenKey);
-    await prefs.remove(_tokenExpiryKey);
-  }
-}
-```
-
-### 5. API Service with Automatic Token Management
-
-Create `api_service.dart`:
-```dart
-import 'package:dio/dio.dart';
-import 'token_manager.dart';
-import 'auth_service.dart';
-
-class ApiService {
-  static const String baseUrl = 'http://your-api-url.com';
-  late Dio _dio;
-
-  ApiService() {
-    _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: Duration(seconds: 5),
-      receiveTimeout: Duration(seconds: 3),
-    ));
-
-    // Add interceptor for automatic token handling
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await TokenManager.getValidAccessToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          handler.next(options);
-        },
-        onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            // Token expired or invalid - try to refresh
-            final refreshToken = await TokenManager.getRefreshToken();
-            if (refreshToken != null) {
-              final newToken = await AuthService.refreshToken(refreshToken);
-              if (newToken != null) {
-                // Retry the original request with new token
-                error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-                final cloneReq = await _dio.request(
-                  error.requestOptions.path,
-                  options: Options(
-                    method: error.requestOptions.method,
-                    headers: error.requestOptions.headers,
-                  ),
-                  data: error.requestOptions.data,
-                  queryParameters: error.requestOptions.queryParameters,
-                );
-                return handler.resolve(cloneReq);
-              }
-            }
-            // Refresh failed - redirect to login
-            await AuthService.logout();
-            // Navigate to login screen
-          }
-          handler.next(error);
-        },
-      ),
-    );
-  }
-
-  // User Profile
-  Future<Map<String, dynamic>?> getUserProfile() async {
-    try {
-      final response = await _dio.get('/api/user/profile');
-      return response.data;
-    } catch (e) {
-      print('Get profile error: $e');
-      return null;
-    }
-  }
-
-  Future<bool> updateUserProfile(Map<String, dynamic> profileData) async {
-    try {
-      await _dio.put('/api/user/profile', data: profileData);
-      return true;
-    } catch (e) {
-      print('Update profile error: $e');
-      return false;
-    }
-  }
-
-  // Inventory
-  Future<Map<String, dynamic>?> getInventory() async {
-    try {
-      final response = await _dio.get('/api/inventory');
-      return response.data;
-    } catch (e) {
-      print('Get inventory error: $e');
-      return null;
-    }
-  }
-
-  Future<bool> addIngredientsToInventory(List<Map<String, dynamic>> ingredients) async {
-    try {
-      await _dio.post('/api/inventory/ingredients', data: {'ingredients': ingredients});
-      return true;
-    } catch (e) {
-      print('Add ingredients error: $e');
-      return false;
-    }
-  }
-
-  // Food Recognition
-  Future<Map<String, dynamic>?> recognizeIngredients(List<String> imagePaths) async {
-    try {
-      final response = await _dio.post(
-        '/api/recognition/ingredients',
-        data: {'images_paths': imagePaths},
-      );
-      return response.data;
-    } catch (e) {
-      print('Recognition error: $e');
-      return null;
-    }
-  }
-
-  // Recipe Generation
-  Future<Map<String, dynamic>?> generateRecipesFromInventory({
-    Map<String, dynamic>? preferences,
-    List<String>? excludeIngredients,
-  }) async {
-    try {
-      final response = await _dio.post(
-        '/api/recipes/generate-from-inventory',
-        data: {
-          if (preferences != null) 'preferences': preferences,
-          if (excludeIngredients != null) 'exclude_ingredients': excludeIngredients,
-        },
-      );
-      return response.data;
-    } catch (e) {
-      print('Recipe generation error: $e');
-      return null;
-    }
-  }
-
-  // Meal Planning
-  Future<bool> saveMealPlan(String date, Map<String, List<Map<String, dynamic>>> meals) async {
-    try {
-      await _dio.post('/api/planning/save', data: {
-        'date': date,
-        'meals': meals,
-      });
-      return true;
-    } catch (e) {
-      print('Save meal plan error: $e');
-      return false;
-    }
-  }
-
-  Future<Map<String, dynamic>?> getMealPlan(String date) async {
-    try {
-      final response = await _dio.get('/api/planning/get', queryParameters: {'date': date});
-      return response.data;
-    } catch (e) {
-      print('Get meal plan error: $e');
-      return null;
-    }
-  }
-}
-```
-
-### 6. Models
-
-Create data models for type safety:
-
-```dart
-// models/user_profile.dart
-class UserProfile {
-  final String uid;
-  final String displayName;
-  final String email;
-  final String? photoURL;
-  final String language;
-  final String cookingLevel;
-  final String measurementUnit;
-  final List<String> allergies;
-  final List<String> preferredFoodTypes;
-
-  UserProfile({
-    required this.uid,
-    required this.displayName,
-    required this.email,
-    this.photoURL,
-    required this.language,
-    required this.cookingLevel,
-    required this.measurementUnit,
-    required this.allergies,
-    required this.preferredFoodTypes,
-  });
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      uid: json['uid'],
-      displayName: json['displayName'] ?? '',
-      email: json['email'] ?? '',
-      photoURL: json['photoURL'],
-      language: json['language'] ?? 'es',
-      cookingLevel: json['cookingLevel'] ?? 'beginner',
-      measurementUnit: json['measurementUnit'] ?? 'metric',
-      allergies: List<String>.from(json['allergies'] ?? []),
-      preferredFoodTypes: List<String>.from(json['preferredFoodTypes'] ?? []),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'uid': uid,
-      'displayName': displayName,
-      'email': email,
-      'photoURL': photoURL,
-      'language': language,
-      'cookingLevel': cookingLevel,
-      'measurementUnit': measurementUnit,
-      'allergies': allergies,
-      'preferredFoodTypes': preferredFoodTypes,
-    };
-  }
-}
-
-// models/ingredient.dart
-class Ingredient {
-  final String name;
-  final List<IngredientStack> stacks;
-  final double totalQuantity;
-  final String storageType;
-  final String imagePath;
-
-  Ingredient({
-    required this.name,
-    required this.stacks,
-    required this.totalQuantity,
-    required this.storageType,
-    required this.imagePath,
-  });
-
-  factory Ingredient.fromJson(Map<String, dynamic> json) {
-    return Ingredient(
-      name: json['name'],
-      stacks: (json['stacks'] as List)
-          .map((stack) => IngredientStack.fromJson(stack))
-          .toList(),
-      totalQuantity: json['total_quantity'].toDouble(),
-      storageType: json['storage_type'],
-      imagePath: json['image_path'],
-    );
-  }
-}
-
-class IngredientStack {
-  final double quantity;
-  final String unit;
-  final DateTime addedAt;
-  final DateTime expirationDate;
-  final int daysUntilExpiration;
-  final String status;
-
-  IngredientStack({
-    required this.quantity,
-    required this.unit,
-    required this.addedAt,
-    required this.expirationDate,
-    required this.daysUntilExpiration,
-    required this.status,
-  });
-
-  factory IngredientStack.fromJson(Map<String, dynamic> json) {
-    return IngredientStack(
-      quantity: json['quantity'].toDouble(),
-      unit: json['unit'],
-      addedAt: DateTime.parse(json['added_at']),
-      expirationDate: DateTime.parse(json['expiration_date']),
-      daysUntilExpiration: json['days_until_expiration'],
-      status: json['status'],
-    );
-  }
-}
-
-// models/recipe.dart
-class Recipe {
-  final String uid;
-  final String title;
-  final String description;
-  final String duration;
-  final String difficulty;
-  final String category;
-  final int servings;
-  final List<RecipeIngredient> ingredients;
-  final List<RecipeStep> steps;
-  final String? imagePath;
-  final String imageStatus;
-
-  Recipe({
-    required this.uid,
-    required this.title,
-    required this.description,
-    required this.duration,
-    required this.difficulty,
-    required this.category,
-    required this.servings,
-    required this.ingredients,
-    required this.steps,
-    this.imagePath,
-    required this.imageStatus,
-  });
-
-  factory Recipe.fromJson(Map<String, dynamic> json) {
-    return Recipe(
-      uid: json['uid'],
-      title: json['title'],
-      description: json['description'],
-      duration: json['duration'],
-      difficulty: json['difficulty'],
-      category: json['category'],
-      servings: json['servings'] ?? 1,
-      ingredients: (json['ingredients'] as List)
-          .map((ing) => RecipeIngredient.fromJson(ing))
-          .toList(),
-      steps: (json['steps'] as List)
-          .map((step) => RecipeStep.fromJson(step))
-          .toList(),
-      imagePath: json['image_path'],
-      imageStatus: json['image_status'] ?? 'generating',
-    );
-  }
-}
-
-class RecipeIngredient {
-  final String name;
-  final int quantity;
-  final String unit;
-
-  RecipeIngredient({
-    required this.name,
-    required this.quantity,
-    required this.unit,
-  });
-
-  factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
-    return RecipeIngredient(
-      name: json['name'],
-      quantity: json['quantity'],
-      unit: json['unit'],
-    );
-  }
-}
-
-class RecipeStep {
-  final int order;
-  final String description;
-
-  RecipeStep({
-    required this.order,
-    required this.description,
-  });
-
-  factory RecipeStep.fromJson(Map<String, dynamic> json) {
-    return RecipeStep(
-      order: json['order'],
-      description: json['description'],
-    );
-  }
-}
-```
-
-### 7. Complete Authentication Flow Example
-
-```dart
-// screens/login_screen.dart
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
-
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-
-    try {
-      // Step 1: Firebase Authentication
-      final userCredential = await AuthService.signInWithGoogle();
-      if (userCredential == null) {
-        _showError('Failed to sign in with Google');
-        return;
-      }
-
-      // Step 2: Exchange Firebase token for JWT
-      final tokenData = await AuthService.exchangeFirebaseToken();
-      if (tokenData == null) {
-        _showError('Failed to authenticate with server');
-        return;
-      }
-
-      // Step 3: Save tokens
-      await TokenManager.saveTokens(
-        tokenData['access_token'],
-        tokenData['refresh_token'],
-        tokenData['expires_in'],
-      );
-
-      // Step 4: Navigate to main app
-      Navigator.pushReplacementNamed(context, '/home');
-
-    } catch (e) {
-      _showError('Authentication failed: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _isLoading
-            ? CircularProgressIndicator()
-            : ElevatedButton.icon(
-                onPressed: _signInWithGoogle,
-                icon: Icon(Icons.login),
-                label: Text('Sign in with Google'),
-              ),
-      ),
-    );
-  }
-}
-```
-
-### 8. Using the API Service
-
-```dart
-// Example usage in a widget
-class InventoryScreen extends StatefulWidget {
-  @override
-  _InventoryScreenState createState() => _InventoryScreenState();
-}
-
-class _InventoryScreenState extends State<InventoryScreen> {
-  final ApiService _apiService = ApiService();
-  List<Ingredient> _ingredients = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInventory();
-  }
-
-  Future<void> _loadInventory() async {
-    try {
-      final inventoryData = await _apiService.getInventory();
-      if (inventoryData != null) {
-        setState(() {
-          _ingredients = (inventoryData['ingredients'] as List)
-              .map((ing) => Ingredient.fromJson(ing))
-              .toList();
-        });
-      }
-    } catch (e) {
-      print('Error loading inventory: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('My Inventory')),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _ingredients.length,
-              itemBuilder: (context, index) {
-                final ingredient = _ingredients[index];
-                return ListTile(
-                  leading: Image.network(
-                    '${ApiService.baseUrl}/${ingredient.imagePath}',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                  title: Text(ingredient.name),
-                  subtitle: Text('${ingredient.totalQuantity} ${ingredient.stacks.first.unit}'),
-                  trailing: Text('${ingredient.stacks.first.daysUntilExpiration} days'),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to add ingredient screen
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-```
+---
 
 ## Error Handling
 
-### HTTP Status Codes
-
-| Code | Description | Action Required |
-|------|-------------|-----------------|
-| 200 | Success | Continue normally |
-| 400 | Bad Request | Check request data |
-| 401 | Unauthorized | Refresh token or re-authenticate |
-| 403 | Forbidden | User lacks permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 429 | Rate Limited | Wait and retry |
-| 500 | Server Error | Retry later or report issue |
-
-### Common Error Responses
+### Standard Error Response Format
+All endpoints return consistent error responses:
 
 ```json
 {
-  "error": "Error description",
-  "details": "Detailed error information",
-  "code": "ERROR_CODE"
+  "error": "Error message description",
+  "error_type": "InvalidRequestDataException",
+  "details": {
+    "field_name": ["Validation error message"]
+  },
+  "status_code": 400
 }
 ```
 
-### Error Handling in Flutter
+### Common HTTP Status Codes
 
-```dart
-class ApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  final String? errorCode;
+| Code | Description | When |
+|------|-------------|------|
+| `200` | Success | Successful GET, PUT, PATCH |
+| `201` | Created | Successful POST |
+| `400` | Bad Request | Invalid request data, validation errors |
+| `401` | Unauthorized | Missing or invalid authentication token |
+| `403` | Forbidden | Valid token but insufficient permissions |
+| `404` | Not Found | Resource doesn't exist |
+| `409` | Conflict | Resource already exists |
+| `422` | Unprocessable Entity | Valid JSON but business logic error |
+| `429` | Too Many Requests | Rate limit exceeded |
+| `500` | Internal Server Error | Unexpected server error |
 
-  ApiException(this.message, {this.statusCode, this.errorCode});
+### Error Examples
 
-  @override
-  String toString() => 'ApiException: $message';
-}
-
-// In your API service:
-Future<Map<String, dynamic>?> makeRequest(String endpoint) async {
-  try {
-    final response = await _dio.get(endpoint);
-    return response.data;
-  } on DioException catch (e) {
-    if (e.response != null) {
-      final errorData = e.response!.data;
-      throw ApiException(
-        errorData['error'] ?? 'Unknown error',
-        statusCode: e.response!.statusCode,
-        errorCode: errorData['code'],
-      );
-    } else {
-      throw ApiException('Network error: ${e.message}');
-    }
+**Validation Error (400):**
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "ingredients": ["This field is required"],
+    "quantity": ["Must be a positive number"]
   }
 }
 ```
 
-## Examples
-
-### Complete Recipe Generation Flow
-
-```dart
-class RecipeGenerationExample {
-  final ApiService _apiService = ApiService();
-
-  Future<void> generateRecipesExample() async {
-    try {
-      // 1. Get user inventory
-      final inventory = await _apiService.getInventory();
-      print('Available ingredients: ${inventory?['ingredients']?.length}');
-
-      // 2. Set preferences
-      final preferences = {
-        'meal_type': 'almuerzo',
-        'difficulty': 'Fácil',
-        'max_cooking_time': 30,
-        'dietary_restrictions': ['vegetarian'],
-      };
-
-      // 3. Generate recipes
-      final recipeData = await _apiService.generateRecipesFromInventory(
-        preferences: preferences,
-        excludeIngredients: ['cebolla'],
-      );
-
-      if (recipeData != null) {
-        final recipes = (recipeData['recipes'] as List)
-            .map((r) => Recipe.fromJson(r))
-            .toList();
-
-        print('Generated ${recipes.length} recipes');
-        
-        // 4. Save favorite recipe
-        if (recipes.isNotEmpty) {
-          final success = await _apiService.saveRecipe(recipes.first.uid);
-          if (success) {
-            print('Recipe saved to favorites');
-          }
-        }
-
-        // 5. Add to meal plan
-        final today = DateTime.now().toIso8601String().substring(0, 10);
-        final mealPlan = {
-          'lunch': [
-            {
-              'recipe_uid': recipes.first.uid,
-              'servings': 2,
-            }
-          ],
-          'breakfast': <Map<String, dynamic>>[],
-          'dinner': <Map<String, dynamic>>[],
-          'snacks': <Map<String, dynamic>>[],
-        };
-
-        await _apiService.saveMealPlan(today, mealPlan);
-        print('Added to meal plan');
-      }
-    } catch (e) {
-      print('Recipe generation failed: $e');
-    }
-  }
+**Authentication Error (401):**
+```json
+{
+  "error": "Invalid or expired token"
 }
 ```
 
-### Image Recognition and Inventory Management
-
-```dart
-class ImageRecognitionExample {
-  final ApiService _apiService = ApiService();
-
-  Future<void> recognizeAndAddToInventory() async {
-    try {
-      // 1. Upload images (implement file upload separately)
-      final imagePaths = [
-        'uploads/user_uid/ingredients/photo1.jpg',
-        'uploads/user_uid/ingredients/photo2.jpg',
-      ];
-
-      // 2. Recognize ingredients
-      final recognitionResult = await _apiService.recognizeIngredients(imagePaths);
-      
-      if (recognitionResult != null) {
-        print('Recognition ID: ${recognitionResult['recognition_id']}');
-        
-        final recognizedIngredients = recognitionResult['ingredients'] as List;
-        print('Recognized ${recognizedIngredients.length} ingredients');
-
-        // 3. Review and select ingredients to add
-        final selectedIngredients = recognizedIngredients
-            .where((ing) => ing['confidence'] > 0.8) // Only high confidence
-            .map((ing) => {
-                  'name': ing['name'],
-                  'quantity': ing['quantity'],
-                  'unit': ing['unit'],
-                  'storage_type': ing['storage_type'],
-                  'expiration_date': DateTime.now()
-                      .add(Duration(days: ing['expiration_days']))
-                      .toIso8601String(),
-                })
-            .toList();
-
-        // 4. Add to inventory
-        if (selectedIngredients.isNotEmpty) {
-          final success = await _apiService.addIngredientsToInventory(selectedIngredients);
-          if (success) {
-            print('Added ${selectedIngredients.length} ingredients to inventory');
-          }
-        }
-
-        // 5. Check for allergens (if any were detected)
-        final allergenItems = recognizedIngredients
-            .where((ing) => ing['has_allergen_risk'] == true)
-            .toList();
-        
-        if (allergenItems.isNotEmpty) {
-          print('Warning: Allergen risk detected in ${allergenItems.length} items');
-        }
-      }
-    } catch (e) {
-      print('Recognition failed: $e');
-    }
-  }
+**Rate Limit Error (429):**
+```json
+{
+  "error": "Rate limit exceeded",
+  "retry_after": 60
 }
 ```
 
-This comprehensive documentation provides everything needed to understand and integrate with the ZeroWasteAI Backend API from a Flutter frontend perspective. The API offers robust features for food management, AI recognition, recipe generation, and meal planning, all secured with enterprise-level authentication and security features.
+---
+
+## Security Features
+
+### Authentication Flow
+1. **Firebase Authentication**: Users authenticate with Firebase (Google, email/password, etc.)
+2. **Token Exchange**: Firebase ID token exchanged for app-specific JWT tokens
+3. **Token Rotation**: Refresh tokens automatically rotate for security
+4. **Token Blacklisting**: Used tokens are blacklisted to prevent reuse
+
+### Security Headers
+All responses include security headers:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Strict-Transport-Security: max-age=31536000`
+
+### Rate Limiting
+- **Authentication endpoints**: 5 requests per minute
+- **General API endpoints**: 100 requests per minute
+- **Refresh token**: 10 requests per minute
+
+---
+
+## Common Workflows
+
+### 1. Complete Food Recognition & Inventory Flow
+```
+1. POST /api/image_management/upload_image (upload food images)
+2. POST /api/recognition/ingredients (recognize ingredients)
+3. GET /api/recognition/images/status/{task_id} (check image generation)
+4. POST /api/inventory/ingredients/from-recognition (add to inventory)
+5. GET /api/inventory/complete (view enriched inventory)
+```
+
+### 2. Recipe Generation & Planning Flow
+```
+1. GET /api/inventory/simple (check available ingredients)
+2. POST /api/recipes/generate-from-inventory (generate recipes)
+3. GET /api/generation/images/status/{task_id} (check recipe images)
+4. POST /api/recipes/save (save favorite recipe)
+5. POST /api/planning/save (create meal plan)
+```
+
+### 3. Inventory Management Flow
+```
+1. GET /api/inventory (view current inventory)
+2. GET /api/inventory/expiring?days=3 (check expiring items)
+3. POST /api/inventory/ingredients/{name}/{date}/consume (mark consumed)
+4. PATCH /api/inventory/ingredients/{name}/{date}/quantity (update quantities)
+5. DELETE /api/inventory/ingredients/{name} (remove expired items)
+```
+
+---
+
+## API Architecture
+
+### Clean Architecture Layers
+1. **Interface Layer**: Controllers and serializers (`src/interface/`)
+2. **Application Layer**: Use cases and services (`src/application/`)
+3. **Domain Layer**: Business entities and rules (`src/domain/`)
+4. **Infrastructure Layer**: External services and data (`src/infrastructure/`)
+
+### Key Technologies
+- **Framework**: Flask with Blueprint organization
+- **Authentication**: Firebase Authentication + JWT
+- **Database**: MySQL with SQLAlchemy ORM
+- **Storage**: Firebase Cloud Storage
+- **AI Services**: Google Gemini API
+- **Background Tasks**: Custom async task system
+- **Documentation**: Swagger/OpenAPI
+
+### Data Models
+- **Users**: Firebase UID-based with MySQL sync
+- **Inventory**: Stack-based ingredient management
+- **Recipes**: AI-generated with nutritional info
+- **Recognition**: AI analysis with image generation
+- **Planning**: Date-based meal organization
+
+---
+
+## Development Information
+
+### Base URLs
+- **Development**: `http://localhost:3000`
+- **Production**: `https://your-domain.com`
+
+### Database Status
+Check API health and database connection:
+```http
+GET /status
+```
+
+### API Documentation
+Interactive Swagger documentation available at:
+```
+GET /apidocs
+```
+
+### Welcome Endpoint
+API information and feature overview:
+```http
+GET /
+```
+
+---
+
+## Support & Contact
+
+**Team**: ZeroWasteAI Development Team  
+**Mission**: Reducir el desperdicio alimentario a través de tecnología IA  
+**Contact**: Desarrollado con ❤️ para un futuro más sustentable 🌍
+
+For technical support or questions about this API, please refer to the development team. 

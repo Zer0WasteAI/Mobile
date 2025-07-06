@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -119,7 +121,7 @@ class AboutAppScreen extends ConsumerWidget {
             ),
 
             // Redes sociales
-            Container(
+            /*Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -196,7 +198,7 @@ class AboutAppScreen extends ConsumerWidget {
                 ],
               ),
             ),
-
+*/
             // Información legal
             Container(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),

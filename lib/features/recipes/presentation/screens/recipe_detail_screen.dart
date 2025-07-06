@@ -1,53 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
-import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart'
-    as impact;
-import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooking_mode.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
-import 'package:zer0_waste_ai/features/inventory/domain/models/inventory_item.dart';
-import 'dart:developer';
-import 'package:zer0_waste_ai/core/error/error_handler.dart';
-
-import 'package:zer0_waste_ai/core/presentation/widgets/dialog_helper.dart';
-
-import '../../../home/application/providers/home_providers.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_history_provider.dart';
+import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooking_mode.dart';
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_rating_dialog.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
-  final Map<String, dynamic> recipe;
+  final Recipe recipe;
 
-  const RecipeDetailScreen({required this.recipe, super.key});
+  const RecipeDetailScreen({super.key, required this.recipe});
 
   @override
   ConsumerState<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
 }
 
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
-  bool _isCookingMode = false;
-  bool _isFavorite = false;
-  bool _showAllSteps = false;
-  bool _showIngredientCheck = false;
+  
+  /// Convert Recipe to format expected by RecipeCookingMode
+  Map<String, dynamic> _convertRecipeToStepsFormat(Recipe recipe) {
+    // Generate cooking steps based on ingredients and recipe type
+    List<String> steps = _generateCookingSteps(recipe);
+    
+    return {
+      'title': recipe.name,
+      'description': recipe.description,
+      'emoji': recipe.emoji,
+      'cookingTime': recipe.cookingTime,
+      'difficulty': recipe.difficulty,
+      'ingredients': recipe.ingredients,
+      'steps': steps,
+    };
+  }
+  
+  /// Generate cooking steps from recipe data
+  List<String> _generateCookingSteps(Recipe recipe) {
+    List<String> steps = [];
+    
+    // Step 1: Preparation
+    steps.add('Preparar todos los ingredientes: ${recipe.ingredients.take(3).join(', ')}${recipe.ingredients.length > 3 ? ' y más.' : '.'}');
+    
+    // Step 2: Initial cooking based on recipe type
+    if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('pasta'))) {
+      steps.add('Hervir agua con sal en una olla grande.');
+      steps.add('Agregar la pasta al agua hirviendo y cocinar según las instrucciones del paquete.');
+    } else if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('arroz'))) {
+      steps.add('Enjuagar el arroz hasta que el agua salga clara.');
+      steps.add('Cocinar el arroz con agua en proporción 2:1 durante 18-20 minutos.');
+    } else if (recipe.ingredients.any((ing) => ing.toLowerCase().contains('huevo'))) {
+      steps.add('Batir los huevos en un bowl con sal y pimienta.');
+      steps.add('Calentar la sartén a fuego medio con un poco de aceite.');
+    } else {
+      steps.add('Calentar una sartén o olla a fuego medio.');
+      steps.add('Agregar aceite y calentar por 1-2 minutos.');
+    }
+    
+    // Step 3: Main cooking process
+    if (recipe.ingredients.any((ing) => ['cebolla', 'ajo'].any((base) => ing.toLowerCase().contains(base)))) {
+      steps.add('Sofreír cebolla y ajo hasta que estén dorados y fragantes (3-4 minutos).');
+    }
+    
+    // Step 4: Add main ingredients
+    steps.add('Agregar los ingredientes principales y cocinar según la receta.');
+    
+    // Step 5: Seasoning and final cooking
+    steps.add('Sazonar con sal, pimienta y especias al gusto.');
+    
+    // Step 6: Final cooking time based on difficulty
+    if (recipe.difficulty.toLowerCase() == 'fácil') {
+      steps.add('Cocinar por ${(recipe.cookingTime * 0.7).round()} minutos más, revolviendo ocasionalmente.');
+    } else if (recipe.difficulty.toLowerCase() == 'medio') {
+      steps.add('Cocinar a fuego medio por ${(recipe.cookingTime * 0.8).round()} minutos, ajustando la temperatura según sea necesario.');
+    } else {
+      steps.add('Cocinar con cuidado por ${recipe.cookingTime} minutos, siguiendo técnicas específicas.');
+    }
+    
+    // Step 7: Final touches
+    steps.add('Verificar la cocción y ajustar sazón si es necesario.');
+    steps.add('Servir caliente y disfrutar tu deliciosa ${recipe.name}.');
+    
+    return steps;
+  }
   Map<String, bool> _ingredientAvailability = {};
 
   @override
   void initState() {
     super.initState();
-    // No llamar a ref.watch aquí
+    // Track recipe view
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipeHistoryProvider.notifier).trackRecipeView(widget.recipe);
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Inicializar la disponibilidad de ingredientes aquí
     _checkIngredientAvailability();
   }
 
   // Verifica qué ingredientes están disponibles en el inventario
   void _checkIngredientAvailability() {
     final inventoryState = ref.read(inventoryRealProvider);
-    final List<dynamic> recipeIngredients = widget.recipe['ingredients'] ?? [];
+    final List<String> recipeIngredients = widget.recipe.ingredients;
 
     final availableIngredients = <String>{};
 
@@ -77,1071 +137,439 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Colors
-    final backgroundColor =
-        isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFAF9F6);
-    final textColor = isDark ? Colors.white : const Color(0xFF3A3A3A);
+    // Theme colors
     final primaryColor =
         isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final secondaryColor = isDark ? Colors.teal.shade300 : Colors.teal.shade600;
-    final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+    final backgroundColor =
+        isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
+    final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
+    final secondaryTextColor =
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+
+    // Recipe history state
+    final recipeHistory = ref
+        .read(recipeHistoryProvider.notifier)
+        .getRecipeHistory(widget.recipe);
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body:
-          _isCookingMode
-              ? RecipeCookingMode(
-                recipe: widget.recipe,
-                onExit: () => setState(() => _isCookingMode = false),
-                onComplete: _completeRecipe,
-              )
-              : _buildRecipeDetails(
-                context,
-                isDark,
-                textColor,
-                primaryColor,
-                secondaryColor,
-                cardColor,
-              ),
-      bottomNavigationBar:
-          _isCookingMode
-              ? null
-              : _buildBottomButtons(context, isDark, primaryColor),
-    );
-  }
-
-  Widget _buildRecipeDetails(
-    BuildContext context,
-    bool isDark,
-    Color textColor,
-    Color primaryColor,
-    Color secondaryColor,
-    Color cardColor,
-  ) {
-    return CustomScrollView(
-      slivers: [
-        // Header image with back button and favorite
-        _buildHeaderImage(isDark, textColor),
-
-        // Recipe content
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title and info chips
-                _buildTitleSection(textColor, primaryColor, secondaryColor),
-
-                const SizedBox(height: 16),
-
-                // Description
-                _buildDescriptionSection(textColor),
-
-                const SizedBox(height: 24),
-
-                // Ingredients section
-                _buildIngredientsSection(textColor, primaryColor, cardColor),
-
-                const SizedBox(height: 32),
-
-                // Preparation steps
-                _buildPreparationSection(
-                  textColor,
-                  primaryColor,
-                  secondaryColor,
-                ),
-
-                const SizedBox(height: 32),
-
-                // Suggestion
-                _buildSuggestionSection(textColor, secondaryColor, cardColor),
-
-                const SizedBox(height: 24),
-
-                // Environmental impact
-                _buildEnvironmentalImpactSection(
-                  textColor,
-                  primaryColor,
-                  cardColor,
-                ),
-
-                // Extra padding at bottom
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeaderImage(bool isDark, Color textColor) {
-    final String imageUrl =
-        widget.recipe['imageUrl'] ??
-        'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=896&q=80';
-    final String emoji = widget.recipe['emoji'] ?? '🍛';
-
-    return SliverAppBar(
-      expandedHeight: 240.0,
-      pinned: true,
-      backgroundColor: isDark ? Colors.black : Colors.white,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.4),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        onPressed: () => context.pop(),
-      ),
-      actions: [
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.4),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: _isFavorite ? Colors.redAccent : Colors.white,
-            ),
-          ),
-          onPressed: () {
-            setState(() {
-              _isFavorite = !_isFavorite;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  _isFavorite
-                      ? 'Añadido a favoritos'
-                      : 'Eliminado de favoritos',
-                ),
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          },
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background:
-            _hasValidImageUrl(imageUrl)
-                ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Center(
-                        child: Text(
-                          emoji,
-                          style: const TextStyle(fontSize: 100),
-                        ),
-                      ),
-                )
-                : Center(
-                  child: Text(emoji, style: const TextStyle(fontSize: 100)),
-                ),
-      ),
-    );
-  }
-
-  bool _hasValidImageUrl(String url) {
-    return url.startsWith('http') &&
-        (url.contains('.jpg') ||
-            url.contains('.png') ||
-            url.contains('.jpeg') ||
-            url.contains('.webp'));
-  }
-
-  Widget _buildTitleSection(
-    Color textColor,
-    Color primaryColor,
-    Color secondaryColor,
-  ) {
-    final String name = widget.recipe['name'] ?? 'Curry de garbanzos';
-    final String difficulty = widget.recipe['difficulty'] ?? 'Fácil';
-    final String type = _getRecipeTypeLabel(widget.recipe['type'] ?? 'fondo');
-    final String time = widget.recipe['time'] ?? '30 min';
-    final List<dynamic> tags = widget.recipe['tags'] ?? ['vegana'];
-
-    // Determine colors based on difficulty
-    final Map<String, Color> difficultyColors = {
-      'Fácil': Colors.green,
-      'Medio': Colors.orange,
-      'Difícil': Colors.red,
-    };
-
-    final Color difficultyColor = difficultyColors[difficulty] ?? Colors.green;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        Text(
-          name,
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        title: Text(
+          widget.recipe.name,
           style: GoogleFonts.inter(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
             color: textColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 16),
-        // Info chips
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            _buildInfoChip(
-              label: difficulty,
-              color: difficultyColor,
-              icon: Icons.signal_cellular_alt,
-            ),
-            _buildInfoChip(
-              label: type,
-              color: secondaryColor,
-              icon: Icons.restaurant_menu,
-            ),
-            _buildInfoChip(label: time, color: primaryColor, icon: Icons.timer),
-            if (tags.isNotEmpty)
-              ...tags.map(
-                (tag) => _buildInfoChip(
-                  label: _getTagLabel(tag),
-                  color: Colors.purpleAccent,
-                  icon: Icons.eco,
-                ),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoChip({
-    required String label,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Chip(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-      backgroundColor: color.withValues(alpha: 0.1),
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
-          ),
-        ],
+        actions: [FavoriteButton(recipe: widget.recipe)],
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-    );
-  }
-
-  Widget _buildDescriptionSection(Color textColor) {
-    final String description =
-        widget.recipe['description'] ??
-        'Un curry de garbanzos vegano, lleno de sabor y perfecto para una comida rápida y sostenible.';
-
-    return Text(
-      description,
-      style: GoogleFonts.inter(
-        fontSize: 16,
-        color: textColor.withValues(alpha: 0.8),
-        height: 1.5,
-      ),
-    );
-  }
-
-  Widget _buildIngredientsSection(
-    Color textColor,
-    Color primaryColor,
-    Color cardColor,
-  ) {
-    final List<dynamic> ingredients = widget.recipe['ingredients'] ?? [];
-    final bool usesExpiringItems = widget.recipe['usesExpiringItems'] ?? false;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Ingredientes',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            // Botón para verificar disponibilidad de ingredientes
-            TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  _showIngredientCheck = !_showIngredientCheck;
-                  if (_showIngredientCheck) {
-                    _checkIngredientAvailability();
-                  }
-                });
-              },
-              icon: Icon(
-                _showIngredientCheck ? Icons.visibility_off : Icons.visibility,
-                size: 18,
-              ),
-              label: Text(
-                _showIngredientCheck
-                    ? 'Ocultar disponibilidad'
-                    : 'Verificar disponibilidad',
-                style: GoogleFonts.inter(fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // Lista de ingredientes
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (usesExpiringItems)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
+            // Recipe header
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: cardColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Emoji and basic info
+                  Row(
                     children: [
-                      const Icon(Icons.eco, color: Colors.green, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Esta receta ayuda a aprovechar ingredientes que están por vencer',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ...ingredients.map((ingredient) {
-                final ingredientInfo = _parseIngredientSimple(ingredient);
-                final ingredientKey = ingredientInfo['name'] ?? '';
-
-                bool isAvailable =
-                    _showIngredientCheck
-                        ? (_ingredientAvailability[ingredientKey] ?? false)
-                        : true;
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color:
-                          isAvailable && _showIngredientCheck
-                              ? Colors.green.withValues(alpha: 0.3)
-                              : Colors.grey.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Availability indicator
-                      if (_showIngredientCheck)
-                        Container(
-                          width: 24,
-                          height: 24,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            color:
-                                isAvailable
-                                    ? Colors.green.withValues(alpha: 0.15)
-                                    : Colors.red.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isAvailable ? Icons.check_circle : Icons.cancel,
-                            color: isAvailable ? Colors.green : Colors.red,
-                            size: 16,
-                          ),
-                        ),
-
-                      // Ingredient icon
                       Container(
-                        width: 32,
-                        height: 32,
-                        margin: const EdgeInsets.only(right: 12),
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Icon(
-                          Icons.restaurant,
-                          color: primaryColor,
-                          size: 16,
+                        child: Center(
+                          child: Text(
+                            widget.recipe.emoji,
+                            style: const TextStyle(fontSize: 40),
+                          ),
                         ),
                       ),
-
-                      // Ingredient details
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              ingredientInfo['name'] ?? 'Ingrediente',
+                              widget.recipe.name,
                               style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    _showIngredientCheck && !isAvailable
-                                        ? Colors.grey
-                                        : textColor,
-                                decoration:
-                                    _showIngredientCheck && !isAvailable
-                                        ? TextDecoration.lineThrough
-                                        : null,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
                               ),
                             ),
-                            if ((ingredientInfo['quantity'] ?? '').isNotEmpty)
-                              const SizedBox(height: 2),
-                            if ((ingredientInfo['quantity'] ?? '').isNotEmpty)
-                              Text(
-                                '${ingredientInfo['quantity']} ${ingredientInfo['unit']}',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color:
-                                      _showIngredientCheck && !isAvailable
-                                          ? Colors.grey.withValues(alpha: 0.7)
-                                          : textColor.withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w500,
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _buildInfoChip(
+                                  Icons.timer,
+                                  '${widget.recipe.cookingTime} min',
+                                  primaryColor,
+                                  isDark,
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                _buildInfoChip(
+                                  Icons.restaurant,
+                                  widget.recipe.difficulty,
+                                  primaryColor,
+                                  isDark,
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                );
-              }),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPreparationSection(
-    Color textColor,
-    Color primaryColor,
-    Color secondaryColor,
-  ) {
-    final List<dynamic> steps = widget.recipe['steps'] ?? [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Pasos de preparación',
-          style: GoogleFonts.inter(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.play_circle_outline),
-          label: const Text('Iniciar preparación'),
-          onPressed: () {
-            setState(() {
-              _isCookingMode = true;
-            });
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        if (_showAllSteps)
-          ...steps.asMap().entries.map(
-            (entry) => _buildStepPreview(
-              entry.key,
-              entry.value,
-              textColor,
-              secondaryColor,
-            ),
-          )
-        else ...[
-          for (int i = 0; i < steps.length && i < 2; i++)
-            _buildStepPreview(i, steps[i], textColor, secondaryColor),
-        ],
-
-        if (steps.length > 2)
-          Center(
-            child: TextButton.icon(
-              icon: Icon(
-                _showAllSteps
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
+                  const SizedBox(height: 16),
+                  // Description
+                  Text(
+                    widget.recipe.description,
+                    style: GoogleFonts.inter(fontSize: 16, color: textColor),
+                  ),
+                ],
               ),
-              label: Text(
-                _showAllSteps
-                    ? 'Mostrar menos'
-                    : 'Ver ${steps.length - 2} pasos más',
-              ),
-              onPressed: () {
-                setState(() {
-                  _showAllSteps = !_showAllSteps;
-                });
-              },
-              style: TextButton.styleFrom(foregroundColor: secondaryColor),
             ),
-          ),
-      ],
-    );
-  }
+            const SizedBox(height: 16),
 
-  Widget _buildStepPreview(
-    int index,
-    String step,
-    Color textColor,
-    Color secondaryColor,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: secondaryColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: secondaryColor,
+            // Recipe history stats
+            if (recipeHistory != null && recipeHistory.timesCooked > 0)
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: cardColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Historial',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildStatChip(
+                          Icons.restaurant,
+                          'Cocinada ${recipeHistory.timesCooked} veces',
+                          primaryColor,
+                          isDark,
+                        ),
+                        if (recipeHistory.averageRating != null) ...[
+                          const SizedBox(width: 8),
+                          _buildStatChip(
+                            Icons.star,
+                            '${recipeHistory.averageRating!.toStringAsFixed(1)} ★',
+                            primaryColor,
+                            isDark,
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (recipeHistory.lastCooked != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Última vez: ${_formatDate(recipeHistory.lastCooked!)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              step,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: textColor.withValues(alpha: 0.8),
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildSuggestionSection(
-    Color textColor,
-    Color secondaryColor,
-    Color cardColor,
-  ) {
-    final String note =
-        widget.recipe['notes'] ??
-        'Si te falta espinaca, puedes usar kale como alternativa.';
+            const SizedBox(height: 16),
 
-    return Card(
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: secondaryColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.lightbulb_outline, color: secondaryColor, size: 24),
-            const SizedBox(width: 16),
-            Expanded(
+            // Ingredients
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: cardColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sugerencia',
+                    'Ingredientes',
                     style: GoogleFonts.inter(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: secondaryColor,
+                      color: textColor,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    note,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: textColor.withValues(alpha: 0.8),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnvironmentalImpactSection(
-    Color textColor,
-    Color primaryColor,
-    Color cardColor,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Impacto Ambiental',
-          style: GoogleFonts.lato(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.eco, color: primaryColor, size: 40),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Text(
-                      'Calcula cómo esta receta ayuda al planeta reduciendo tu huella de carbono y ahorrando recursos.',
-                      style: TextStyle(height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.calculate_outlined),
-                  label: const Text('Calcular y Guardar Impacto'),
-                  onPressed: _completeRecipe,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomButtons(
-    BuildContext context,
-    bool isDark,
-    Color primaryColor,
-  ) {
-    // ignore: unused_local_variable
-    final bool usesExpiringItems = widget.recipe['usesExpiringItems'] ?? false;
-
-    // Contar ingredientes disponibles
-    int availableCount = 0;
-    int totalIngredients = (widget.recipe['ingredients'] as List?)?.length ?? 0;
-
-    if (_showIngredientCheck && totalIngredients > 0) {
-      availableCount = _ingredientAvailability.values.where((v) => v).length;
-    }
-
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              offset: const Offset(0, -4),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: ElevatedButton.icon(
-          icon: Icon(
-            _showIngredientCheck ? Icons.restaurant : Icons.play_arrow,
-          ),
-          label: Text(
-            _showIngredientCheck
-                ? 'Cocinar ($availableCount/$totalIngredients)'
-                : 'Iniciar cocina',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: () {
-            if (_showIngredientCheck && availableCount < totalIngredients) {
-              _showMissingIngredientsDialog(context);
-            } else {
-              setState(() {
-                _isCookingMode = true;
-              });
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  // Muestra un diálogo con los ingredientes que faltan
-  void _showMissingIngredientsDialog(BuildContext context) {
-    final List<dynamic> ingredients = widget.recipe['ingredients'] ?? [];
-    final missingIngredients =
-        ingredients.where((ingredient) {
-          String ingredientName = ingredient.toString();
-          return !(_ingredientAvailability[ingredientName] ?? false);
-        }).toList();
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'Ingredientes faltantes',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-            ),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Parece que te faltan algunos ingredientes:',
-                    style: GoogleFonts.inter(),
                   ),
                   const SizedBox(height: 16),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: missingIngredients.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Colors.orange,
-                                size: 18,
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: widget.recipe.ingredients.length,
+                    itemBuilder: (context, index) {
+                      final ingredient = widget.recipe.ingredients[index];
+                      final isAvailable =
+                          _ingredientAvailability[ingredient] ?? false;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isAvailable
+                                  ? Icons.check_circle
+                                  : Icons.check_circle_outline,
+                              size: 20,
+                              color: isAvailable ? primaryColor : Colors.grey,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              ingredient,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                color: textColor,
                               ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  missingIngredients[index].toString(),
-                                  style: GoogleFonts.inter(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    _isCookingMode = true;
-                  });
-                },
-                child: const Text('Cocinar de todos modos'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showContinueWithoutImpactDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Receta Personalizada'),
-            content: const Text(
-              'Esta receta no está disponible para el cálculo de impacto ambiental. Es posible que sea una receta personalizada que no está en nuestra base de datos.\n\n¿Te gustaría continuar y marcar la receta como completada sin calcular el impacto ambiental?',
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(13),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              // Add to plan button
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    return ElevatedButton(
+                      onPressed: () async {
+                        // Get the date and meal type from route parameters
+                        final params =
+                            GoRouter.of(context)
+                                .routeInformationProvider
+                                .value
+                                .uri
+                                .queryParameters;
+                        final dateStr = params['date'];
+                        final mealType = params['mealType'];
+
+                        if (dateStr != null && mealType != null) {
+                          // Convert recipe ingredients to MealIngredient format
+                          final mealIngredients =
+                              widget.recipe.ingredients
+                                  .map(
+                                    (ingredient) => MealIngredient(
+                                      name: ingredient,
+                                      quantity:
+                                          1, // Default quantity, should be adjusted based on servings
+                                      unit:
+                                          'unidad', // Default unit, should be adjusted based on recipe
+                                    ),
+                                  )
+                                  .toList();
+
+                          final meal = Meal(
+                            recipeTitle: widget.recipe.name,
+                            ingredientsNeeded: mealIngredients,
+                            prepTime: widget.recipe.cookingTime,
+                            calories:
+                                0, // This should come from the recipe model
+                          );
+
+                          final dailyMeals = DailyMeals(
+                            breakfast: mealType == 'breakfast' ? meal : null,
+                            lunch: mealType == 'lunch' ? meal : null,
+                            dinner: mealType == 'dinner' ? meal : null,
+                          );
+
+                          final notifier = ref.read(
+                            mealPlanningProvider.notifier,
+                          );
+                          final existingPlan = await ref.read(
+                            mealPlanByDateProvider(dateStr).future,
+                          );
+
+                          if (existingPlan != null) {
+                            // Update existing plan
+                            await notifier.updateMealPlan(dateStr, dailyMeals);
+                          } else {
+                            // Create new plan
+                            await notifier.saveMealPlan(dateStr, dailyMeals);
+                          }
+
+                          if (context.mounted) {
+                            context.pop();
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      child: const Text('Agregar al Plan'),
+                    );
+                  },
+                ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _completeRecipeWithoutImpact();
-                },
-                child: const Text('Continuar'),
+              const SizedBox(width: 16),
+              // Start cooking button
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    // Record recipe as started cooking in history
+                    await ref.read(recipeHistoryProvider.notifier).startCooking(widget.recipe);
+                    
+                    // Navigate to cooking mode with converted recipe
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecipeCookingMode(
+                          recipe: _convertRecipeToStepsFormat(widget.recipe),
+                          onExit: () {
+                            Navigator.pop(context);
+                          },
+                          onComplete: () {
+                            // Record recipe as completed in history
+                            ref.read(recipeHistoryProvider.notifier).completeCooking(widget.recipe);
+                            
+                            // Show completion message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('¡Felicidades! Has completado la receta: ${widget.recipe.name}'),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 3),
+                                action: SnackBarAction(
+                                  label: 'Calificar',
+                                  onPressed: () {
+                                    // Show rating dialog
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => RecipeRatingDialog(
+                                        recipeName: widget.recipe.name,
+                                        onSubmit: (rating, comment) {
+                                          // Save rating and comment to recipe history
+                                          ref.read(recipeHistoryProvider.notifier).completeCooking(
+                                            widget.recipe,
+                                            rating: rating.toDouble(),
+                                            notes: comment.isNotEmpty ? comment : null,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                            
+                            // Return to recipe detail
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                  child: const Text('Empezar a Cocinar'),
+                ),
               ),
             ],
           ),
+        ),
+      ),
     );
   }
 
-  void _completeRecipeWithoutImpact() async {
-    try {
-      // Only consume ingredients from inventory, skip impact calculation
-      _consumeIngredientsFromInventory(ref);
-
-      // Invalidate inventory provider to refresh UI
-      ref.invalidate(inventoryRealProvider);
-
-      // Show success feedback and pop
-      if (mounted) {
-        await DialogHelper.showAlert(
-          context: context,
-          title: '¡Receta Completada!',
-          message:
-              'Hemos actualizado tu inventario. El impacto ambiental no se pudo calcular para esta receta.',
-          imageUrl: 'assets/icons/home/image_motivational.png',
-        );
-        context.pop(true); // Pop screen and signal success
-      }
-    } catch (e) {
-      log('Failed to complete recipe without impact: $e');
-      if (mounted) {
-        String userFriendlyMessage = ErrorHandler.getDisplayMessage(e);
-        DialogHelper.showAlert(
-          context: context,
-          title: 'Error',
-          message: userFriendlyMessage,
-          icon: Icons.error,
-          iconColor: Colors.red,
-        );
-      }
-    }
+  Widget _buildInfoChip(
+    IconData icon,
+    String label,
+    Color primaryColor,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: primaryColor.withAlpha(25),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: primaryColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: primaryColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _completeRecipe() async {
-    final recipeName = widget.recipe['name'] ?? 'una receta';
-    final recipeUid = widget.recipe['uid'];
-
-    try {
-      final impactService = ref.read(impact.impactCalculationServiceProvider);
-
-      // 1. Create the impact calculation record
-      // Try with UID first (more reliable), fallback to title if no UID
-      if (recipeUid != null && recipeUid.toString().trim().isNotEmpty) {
-        await impactService.calculateFromUid(recipeUid.toString());
-      } else {
-        await impactService.calculateFromTitle(recipeName);
-      }
-
-      // 2. Consume ingredients from inventory
-      _consumeIngredientsFromInventory(ref);
-
-      // 3. Invalidate providers to refresh UI
-      ref.invalidate(impact.allImpactCalculationsProvider);
-      ref.invalidate(impact.impactSummaryProvider);
-      ref.invalidate(recipeSuggestionsProvider);
-      ref.invalidate(inventoryRealProvider); // Ensure inventory UI updates
-
-      // 4. Show success feedback and pop
-      if (mounted) {
-        await DialogHelper.showAlert(
-          context: context,
-          title: '¡Receta Completada!',
-          message:
-              'Hemos registrado el impacto ambiental y actualizado tu inventario.',
-          imageUrl: 'assets/icons/home/image_motivational.png',
-        );
-        context.pop(true); // Pop screen and signal success
-      }
-    } catch (e) {
-      log('Failed to complete recipe flow: $e');
-      if (mounted) {
-        // Check for specific impact calculation error first
-        String errorString = e.toString();
-        if (errorString.contains(
-          'no está disponible para el cálculo de impacto ambiental',
-        )) {
-          // Show dialog with option to continue without impact calculation
-          _showContinueWithoutImpactDialog();
-          return;
-        }
-
-        // Use ErrorHandler for all other errors
-        String userFriendlyMessage = ErrorHandler.getDisplayMessage(e);
-
-        DialogHelper.showAlert(
-          context: context,
-          title: 'Error',
-          message: userFriendlyMessage,
-          icon: Icons.error,
-          iconColor: Colors.red,
-        );
-      }
-    }
+  Widget _buildStatChip(
+    IconData icon,
+    String label,
+    Color primaryColor,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: primaryColor.withAlpha(25),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: primaryColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: primaryColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _consumeIngredientsFromInventory(WidgetRef ref) {
-    final List<String> recipeIngredients =
-        (widget.recipe['ingredients'] as List<dynamic>).cast<String>();
-    final List<InventoryItem> currentInventory =
-        ref.read(inventoryRealProvider).items;
-
-    if (currentInventory.isEmpty) {
-      log('Inventory is empty, nothing to consume.');
-      return;
-    }
-
-    final inventoryNotifier = ref.read(inventoryRealProvider.notifier);
-    final Set<String> consumedItemIds = {};
-
-    for (var ingredientName in recipeIngredients) {
-      final normalizedIngredientName = ingredientName.toLowerCase().trim();
-
-      // Find all matching items in inventory, sorted by expiration date (soonest first)
-      final matchingItems =
-          currentInventory
-              .where(
-                (item) =>
-                    item.name.toLowerCase().trim() ==
-                        normalizedIngredientName &&
-                    !consumedItemIds.contains(item.id),
-              )
-              .toList();
-
-      if (matchingItems.isNotEmpty) {
-        // Sort by expiration date, nulls last
-        matchingItems.sort((a, b) {
-          if (a.expirationDate == null) return 1;
-          if (b.expirationDate == null) return -1;
-          return a.expirationDate!.compareTo(b.expirationDate!);
-        });
-
-        // Get the item that will expire soonest
-        final itemToConsume = matchingItems.first;
-
-        log('Consuming item: ${itemToConsume.name} (ID: ${itemToConsume.id})');
-
-        // Call the notifier to remove the item
-        inventoryNotifier.removeItem(itemToConsume.id);
-        consumedItemIds.add(itemToConsume.id);
-      } else {
-        log('Ingredient "$normalizedIngredientName" not found in inventory.');
-      }
-    }
-
-    // Invalidate inventory provider to ensure UI reflects the removal
-    ref.invalidate(inventoryRealProvider);
-  }
-
-  String _getRecipeTypeLabel(String type) {
-    final Map<String, String> typeLabels = {
-      'entrada': 'Entrada',
-      'fondo': 'Plato principal',
-      'postre': 'Postre',
-      'bebida': 'Bebida',
-      'snack': 'Snack',
-    };
-    return typeLabels[type] ?? 'Plato principal';
-  }
-
-  String _getTagLabel(String tag) {
-    final Map<String, String> tagLabels = {
-      'vegetariana': 'Vegetariana',
-      'vegana': 'Vegana',
-      'sin_gluten': 'Sin Gluten',
-      'sin_lactosa': 'Sin Lactosa',
-      'italiana': 'Italiana',
-      'cremosa': 'Cremosa',
-      'mexicana': 'Mexicana',
-      'española': 'Española',
-      'asiática': 'Asiática',
-      'sobrantes': 'Aprovecha sobrantes',
-      'estacion': 'De temporada',
-      'bajo_impacto': 'Bajo impacto',
-    };
-
-    return tagLabels[tag] ?? tag;
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   // Función simple para parsear ingredientes

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/planner_providers.dart';
 
 class AiSuggestionDialog extends ConsumerStatefulWidget {
   final MealType? initialType;
-  final Function(MealPlan) onSelect;
+  final Function(SimpleRecipe) onSelect;
 
   const AiSuggestionDialog({
     super.key,
@@ -236,7 +236,7 @@ class _AiSuggestionDialogState extends ConsumerState<AiSuggestionDialog> {
     );
   }
 
-  Widget _buildSuggestionResult(List<MealPlan> suggestions) {
+  Widget _buildSuggestionResult(List<SimpleRecipe> suggestions) {
     if (suggestions.isEmpty) {
       return Text(
         'No se encontraron sugerencias con esos criterios',
@@ -380,7 +380,7 @@ class _AiSuggestionDialogState extends ConsumerState<AiSuggestionDialog> {
   static void show(
     BuildContext context, {
     MealType? initialType,
-    required Function(MealPlan) onSelect,
+    required Function(SimpleRecipe) onSelect,
   }) {
     showModalBottomSheet(
       context: context,

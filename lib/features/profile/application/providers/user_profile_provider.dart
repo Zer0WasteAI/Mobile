@@ -82,7 +82,6 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
         await _authRepository.saveUserCookingLevel(newPrefs.cookingLevel!);
       }
       await _authRepository.saveUserLanguage(newPrefs.language);
-      await _authRepository.saveUserMeasurementUnit(newPrefs.measurementUnit);
       await _authRepository.saveUserAllergyItems(newPrefs.allergies);
       await _authRepository.saveUserSpecialDietItems(newPrefs.specialDiets);
       await _authRepository.saveUserPreferredFoodTypes(
@@ -150,13 +149,6 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
     if (state.user == null) return;
 
     final newPrefs = state.user!.prefs.copyWith(language: language);
-    await updatePreferences(newPrefs);
-  }
-
-  Future<void> updateMeasurementUnit(String unit) async {
-    if (state.user == null) return;
-
-    final newPrefs = state.user!.prefs.copyWith(measurementUnit: unit);
     await updatePreferences(newPrefs);
   }
 
@@ -241,7 +233,14 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
   /// INFO: Force refresh from backend
   /// USAGE: Call to ensure data is up-to-date
   Future<void> refresh() async {
-    await refreshProfile();
+    state = state.copyWith(isLoading: true);
+    try {
+      // Force refresh from Firestore
+      await _authRepository.refreshUserFromFirestore();
+      await refreshProfile();
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   void setUser(UserModel user) {
@@ -266,7 +265,7 @@ final userProfileProvider = StateNotifierProvider<
   UserProfileNotifier,
   UserProfileState
 >((ref) {
-      final authRepository = ref.watch(authRepositoryProvider);
+  final authRepository = ref.watch(authRepositoryProvider);
   final notifier = UserProfileNotifier(authRepository);
 
   // Initialize with current auth state immediately
@@ -295,7 +294,7 @@ final userProfileProvider = StateNotifierProvider<
   });
 
   return notifier;
-    });
+});
 
 /// INFO: Convenient providers for specific profile data
 /// ADVICE: Use these for easier access to specific profile information

@@ -1,7 +1,8 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact.dart';
@@ -25,72 +26,102 @@ class ImpactProgressTab extends ConsumerWidget {
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final backgroundColor = isDarkMode ? AppColors.darkSurface : Colors.white;
 
-    return calculationsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err')),
-      data: (calculations) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Historial de Impacto',
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+    return Column(
+      children: [
+        _buildFilterButtons(context, ref),
+        const SizedBox(height: 24),
+        Expanded(
+          child: calculationsAsync.when(
+            data:
+                (calculations) =>
+                    calculations.calculations.isEmpty
+                        ? _buildEmptyState(context)
+                        : _buildCalculationsList(
+                          calculations.calculations,
+                          context,
+                          ref,
+                        ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (error, stack) => Center(
+                  child: Text(
+                    'Error al cargar los cálculos: $error',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Revisa y filtra tus cálculos y acciones pasadas',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: textColor.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildFilterButtons(context, ref),
-              const SizedBox(height: 24),
-              _buildCalculationsList(calculations.calculations, context, ref),
-            ],
           ),
-        );
-      },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.eco_outlined,
+            size: 64,
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Aún no has realizado ningún cálculo',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Comienza cocinando recetas para ver su impacto ambiental',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildFilterButtons(BuildContext context, WidgetRef ref) {
     final activeFilter = ref.watch(impactHistoryFilterProvider);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor =
+        isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
 
     return Center(
-      child: ToggleButtons(
-        isSelected: [
-          activeFilter == ImpactHistoryFilter.all,
-          activeFilter == ImpactHistoryFilter.cooked,
-          activeFilter == ImpactHistoryFilter.notCooked,
-        ],
-        onPressed: (index) {
+      child: SegmentedButton<ImpactHistoryFilter>(
+        selected: {activeFilter},
+        onSelectionChanged: (Set<ImpactHistoryFilter> newSelection) {
           ref.read(impactHistoryFilterProvider.notifier).state =
-              ImpactHistoryFilter.values[index];
+              newSelection.first;
         },
-        borderRadius: BorderRadius.circular(8),
-        selectedColor: Colors.white,
-        fillColor: AppColors.lightPrimary,
-        children: const [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Todos'),
+        segments: [
+          ButtonSegment<ImpactHistoryFilter>(
+            value: ImpactHistoryFilter.all,
+            label: Text('Todos', style: GoogleFonts.inter()),
+            icon: const Icon(Icons.all_inclusive),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Cocinados'),
+          ButtonSegment<ImpactHistoryFilter>(
+            value: ImpactHistoryFilter.cooked,
+            label: Text('Cocinados', style: GoogleFonts.inter()),
+            icon: const Icon(Icons.restaurant),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No Cocinados'),
+          ButtonSegment<ImpactHistoryFilter>(
+            value: ImpactHistoryFilter.notCooked,
+            label: Text('Pendientes', style: GoogleFonts.inter()),
+            icon: const Icon(Icons.pending),
           ),
         ],
       ),
@@ -102,13 +133,8 @@ class ImpactProgressTab extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) {
-    if (calculations.isEmpty) {
-      return const Center(child: Text('Aún no has realizado ningún cálculo.'));
-    }
-
     return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: calculations.length,
       itemBuilder: (context, index) {
         final item = calculations[index];
@@ -128,131 +154,170 @@ class ImpactProgressTab extends ConsumerWidget {
     final titleColor = isDarkMode ? Colors.white : AppColors.lightPrimary;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: cardColor,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item.recipeTitle,
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: titleColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Calculado el: ${DateFormat.yMMMd().add_jm().format(item.savedAt ?? DateTime.now())}',
-              style: GoogleFonts.inter(fontSize: 12, color: textColor),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.recipeTitle,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: titleColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.formattedDate,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: textColor.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildStatusChip(item.isCooked, context),
+              ],
             ),
             const Divider(height: 24),
-            _buildImpactRow(
-              Icons.cloud_off,
-              '${item.carbonFootprint.toStringAsFixed(2)} ${item.unitCarbon}',
-              'CO2 Evitado',
-              context,
-            ),
-            const SizedBox(height: 8),
-            _buildImpactRow(
-              Icons.water_drop,
-              '${item.waterFootprint.toStringAsFixed(2)} ${item.unitWater}',
-              'Agua Ahorrada',
-              context,
-            ),
-            const SizedBox(height: 8),
-            _buildImpactRow(
-              Icons.flash_on,
-              '${item.energyFootprint.toStringAsFixed(2)} ${item.unitEnergy}',
-              'Energía Ahorrada',
-              context,
-            ),
-            const SizedBox(height: 8),
-            _buildImpactRow(
-              Icons.monetization_on,
-              '${item.economicCost.toStringAsFixed(2)} ${item.unitCost}',
-              'Coste Económico',
-              context,
-            ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child:
-                  item.isCooked
-                      ? const Chip(
-                        label: Text('Cocinada'),
-                        backgroundColor: Colors.green,
-                        labelStyle: TextStyle(color: Colors.white),
-                      )
-                      : ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            final service = ref.read(
-                              impactCalculationServiceProvider,
-                            );
-                            await service.updateStatus(item.recipeUid, true);
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('¡Receta marcada como cocinada!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-
-                            // Refresh providers
-                            ref.invalidate(allImpactCalculationsProvider);
-                            ref.invalidate(impactSummaryProvider);
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: ${e.toString()}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.lightPrimary,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Marcar como Cocinada'),
-                      ),
-            ),
+            _buildImpactGrid(item, context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImpactRow(
-    IconData icon,
-    String value,
-    String label,
-    BuildContext context,
-  ) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final iconColor =
-        isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final textColor = isDarkMode ? Colors.white70 : Colors.black54;
+  Widget _buildStatusChip(bool isCooked, BuildContext context) {
+    return Chip(
+      label: Text(
+        isCooked ? 'Cocinado' : 'Pendiente',
+        style: GoogleFonts.inter(
+          fontSize: 12,
+          color: isCooked ? Colors.green : Colors.orange,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      backgroundColor: (isCooked ? Colors.green : Colors.orange).withValues(
+        alpha: 0.1,
+      ),
+      side: BorderSide(
+        color: (isCooked ? Colors.green : Colors.orange).withValues(alpha: 0.3),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+    );
+  }
 
-    return Row(
+  Widget _buildImpactGrid(EnvironmentalImpact item, BuildContext context) {
+    return Column(
       children: [
-        Icon(icon, color: iconColor, size: 20),
-        const SizedBox(width: 12),
-        Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-        const Spacer(),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Ahorro',
+                value: item.formattedCost,
+                icon: Icons.monetization_on,
+                color: Colors.green,
+                context: context,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildImpactItem(
+                title: 'CO₂ Evitado',
+                value: item.formattedCarbonFootprint,
+                icon: Icons.cloud_off,
+                color: Colors.blue,
+                context: context,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Agua',
+                value: item.formattedWaterFootprint,
+                icon: Icons.water_drop,
+                color: Colors.cyan,
+                context: context,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Energía',
+                value: item.formattedEnergyFootprint,
+                icon: Icons.flash_on,
+                color: Colors.orange,
+                context: context,
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildImpactItem({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required BuildContext context,
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: textColor.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

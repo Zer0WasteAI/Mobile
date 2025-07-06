@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/favorite_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
-import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart';
 import 'package:zer0_waste_ai/core/presentation/widgets/lottie_loading_widget.dart';
 
 class MyRecipesScreen extends ConsumerStatefulWidget {
@@ -507,35 +506,7 @@ class _MyRecipesScreenState extends ConsumerState<MyRecipesScreen>
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Convert Recipe object to Map format expected by RecipeDetailScreen
-            final recipeMap = {
-              'id': recipe.id,
-              'name': recipe.name,
-              'description': recipe.description,
-              'emoji': recipe.emoji,
-              'ingredients': recipe.ingredients,
-              'requiredIngredientsCount': recipe.requiredIngredientsCount,
-              'availableIngredientsCount': recipe.availableIngredientsCount,
-              'usesExpiringItems': recipe.usesExpiringItems,
-              'cookingTime': recipe.cookingTime,
-              'difficulty': recipe.difficulty,
-              'dietType': recipe.dietType,
-              'categories': recipe.categories,
-              'time': '${recipe.cookingTime} min',
-              'type': 'principal',
-              'tags': recipe.categories,
-              'steps': [
-                'Prepara todos los ingredientes antes de comenzar',
-                'Sigue las instrucciones de la receta paso a paso',
-                'Disfruta de tu comida recién preparada',
-              ],
-            };
-
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => RecipeDetailScreen(recipe: recipeMap),
-              ),
-            );
+            _navigateToRecipeDetail(recipe);
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -779,5 +750,9 @@ class _MyRecipesScreenState extends ConsumerState<MyRecipesScreen>
             ],
           ),
     );
+  }
+
+  void _navigateToRecipeDetail(Recipe recipe) {
+    context.pushNamed('recipeDetail', extra: recipe);
   }
 }

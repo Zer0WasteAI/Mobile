@@ -34,11 +34,12 @@ import 'package:zer0_waste_ai/features/recipes/presentation/screens/all_recipes_
 import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart'; // Import ImpactScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/planner_screen.dart'; // Import PlannerScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_planning_screen.dart'; // Import MealPlanningScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/unified_meal_planning_screen.dart'; // Import UnifiedMealPlanningScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/recipe_detail_screen.dart'; // Import RecipeDetailScreen
+import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart'; // Import Recipe model
 // Profile-specific selector screens removed - now using unified screens with context parameter
 import 'package:zer0_waste_ai/features/profile/presentation/screens/notifications_screen.dart'; // Import notifications screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/language_screen.dart'; // Import language screen
-import 'package:zer0_waste_ai/features/profile/presentation/screens/units_screen.dart'; // Import units screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/faqs_screen.dart'; // Import FAQs screen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/privacy_policy_screen.dart'; // Import PrivacyPolicyScreen
 import 'package:zer0_waste_ai/features/profile/presentation/screens/terms_and_conditions_screen.dart'; // Import TermsAndConditionsScreen
@@ -46,8 +47,9 @@ import 'package:zer0_waste_ai/features/profile/presentation/screens/about_app_sc
 import 'package:zer0_waste_ai/features/profile/presentation/screens/support_screen.dart'; // Import SupportScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/my_recipes_screen.dart'; // Import MyRecipesScreen
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recipe_generation_screen.dart'; // Import CustomRecipeGenerationScreen
-import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
+import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_generation_screen.dart'; // Import RecipeGenerationScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/manual_plan_creation_screen.dart'; // Import ManualPlanCreationScreen
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart'; // Import MealType
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -85,7 +87,6 @@ const String allRecipesRouteName = AllRecipesScreen.routeName;
 // Profile-specific selector route names removed - now using unified screens
 const String notificationsRouteName = NotificationsScreen.routeName;
 const String languageRouteName = LanguageScreen.routeName;
-const String unitsRouteName = UnitsScreen.routeName;
 const String faqsRouteName = FAQsScreen.routeName;
 const String privacyPolicyRouteName = PrivacyPolicyScreen.routeName;
 const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
@@ -99,103 +100,21 @@ class AppRouter {
     // Create the HeroController
     final heroController = HeroController();
 
-    // Watch auth state for redirect logic
-    final authState = ref.watch(authStateProvider);
-
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: '/splash',
+      initialLocation: '/home', // Go directly to home instead of splash
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
       redirect: (context, state) {
-        // Handle loading state
-        if (authState.isLoading) {
-          log('🔄 Router: Auth state loading - staying on current location');
-          return null;
+        // Simplified redirect logic - just redirect root to home
+        if (state.matchedLocation == '/') {
+          return '/home';
         }
-
-        final isLoggedIn = authState.value != null;
-        final user = authState.value;
-
-        // Check preferences completion directly from user data and UserPreferencesService
-        final userPreferencesState = ref.watch(userPreferencesProvider);
-        
-        // First try to get the value directly from user data (most reliable)
-        final userHasCompletedPreferences = user?.initialPreferencesCompleted ?? false;
-        
-        // Use UserPreferencesService as fallback
-        final serviceHasCompletedPreferences = userPreferencesState.hasCompletedPreferences;
-        final isPreferencesLoading = userPreferencesState.isLoading;
-        
-        // Use user data if available, otherwise fall back to service
-        final hasCompletedPreferences = userHasCompletedPreferences || serviceHasCompletedPreferences;
-        
-        log('🔍 Router: userHasCompleted=$userHasCompletedPreferences, serviceHasCompleted=$serviceHasCompletedPreferences, final=$hasCompletedPreferences');
-
-        final isGoingToLogin = state.matchedLocation == '/login';
-        final isGoingToRegister = state.matchedLocation == '/register';
-        final isGoingToForgotPassword =
-            state.matchedLocation == '/forgot-password';
-        final isGoingToOnboarding = state.matchedLocation == '/onboarding';
-        final isGoingToSplash = state.matchedLocation == '/splash';
-        final isGoingToAuthFlow =
-            state.matchedLocation.startsWith('/allergy-selector') ||
-            state.matchedLocation.startsWith('/cooking-level-selector') ||
-            state.matchedLocation.startsWith('/preferred-food-type') ||
-            state.matchedLocation.startsWith('/special-diet-selector');
-
-        log(
-          '🔄 Router redirect - isLoggedIn: $isLoggedIn, hasCompletedPreferences: $hasCompletedPreferences, isPreferencesLoading: $isPreferencesLoading, location: ${state.matchedLocation}',
-        );
-
-        // If preferences are still loading and user is logged in, wait
-        if (isLoggedIn && isPreferencesLoading && !isGoingToSplash) {
-          log('🔄 Router: Preferences loading - staying on current location');
-          return null;
-        }
-
-        // If not logged in and not going to auth/onboarding screens, redirect to login
-        if (!isLoggedIn &&
-            !isGoingToLogin &&
-            !isGoingToRegister &&
-            !isGoingToForgotPassword &&
-            !isGoingToOnboarding &&
-            !isGoingToSplash &&
-            !isGoingToAuthFlow) {
-          log('🔄 Redirecting to login - user not authenticated');
-          return '/login';
-        }
-
-        // If logged in, check preferences completion
-        if (isLoggedIn && user != null && !isPreferencesLoading) {
-          // If user has completed preferences but trying to go to auth/onboarding screens, redirect to home
-          if (hasCompletedPreferences &&
-              (isGoingToLogin ||
-                  isGoingToRegister ||
-                  isGoingToForgotPassword ||
-                  isGoingToOnboarding ||
-                  isGoingToSplash ||
-                  isGoingToAuthFlow)) {
-            log('🔄 Redirecting to home - user has completed preferences');
-            return '/home';
-          }
-
-          // If user has NOT completed preferences and trying to go to protected screens, redirect to onboarding
-          if (!hasCompletedPreferences &&
-              !isGoingToAuthFlow &&
-              !isGoingToSplash &&
-              state.matchedLocation != '/allergy-selector') {
-            log(
-              '🔄 Redirecting to onboarding - user needs to complete preferences',
-            );
-            return '/allergy-selector';
-          }
-        }
-
-        return null; // No redirect needed
+        return null; // No other redirects
       },
       routes: [
+        GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
         GoRoute(
           path: '/splash',
           name: splashRouteName,
@@ -410,13 +329,97 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const AllRecipesScreen(),
         ),
+        // Route for Recipe Library (for meal planning)
+        GoRoute(
+          path: '/recipe-library',
+          name: 'recipeLibrary',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            // For now, just show the recipes screen. Later can be enhanced with meal planning context
+            return const AllRecipesScreen();
+          },
+        ),
+        // Route for Recipe Generation (for meal planning)
+        GoRoute(
+          path: '/recipe-generation',
+          name: 'recipeGeneration',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final dateStr = state.uri.queryParameters['date'];
+            final mealTypeStr = state.uri.queryParameters['mealType'];
+            
+            if (dateStr == null || mealTypeStr == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            try {
+              final selectedDate = DateTime.parse(dateStr);
+              final mealType = MealType.values.firstWhere(
+                (type) => type.toString().split('.').last == mealTypeStr,
+                orElse: () => MealType.lunch,
+              );
+              final isManualPlan = state.uri.queryParameters['isManualPlan'] == 'true';
+              
+              return RecipeGenerationScreen(
+                selectedDate: selectedDate,
+                mealType: mealType,
+                isManualPlan: isManualPlan,
+              );
+            } catch (e) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+          },
+        ),
+        // Route for Manual Plan Creation
+        GoRoute(
+          path: '/manual-plan-creation',
+          name: 'manualPlanCreation',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final dateStr = state.uri.queryParameters['date'];
+            
+            if (dateStr == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            try {
+              final selectedDate = DateTime.parse(dateStr);
+              
+              return ManualPlanCreationScreen(
+                selectedDate: selectedDate,
+              );
+            } catch (e) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).go('/unified-planning');
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+          },
+        ),
         // Route for Recipe Detail Screen
         GoRoute(
           path: '/recipes/detail',
           name: 'recipeDetail',
           builder: (context, state) {
-            // Esperar los datos de la receta como parameter extra
-            final recipe = state.extra as Map<String, dynamic>?;
+            // Get the recipe from the extra parameter
+            final recipe = state.extra as Recipe?;
             if (recipe == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/home');
@@ -462,6 +465,24 @@ class AppRouter {
           name: 'mealPlanning',
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) => const MealPlanningScreen(),
+        ),
+        // Route for Unified Planning (New Awesome Interface)
+        GoRoute(
+          path: '/unified-planning',
+          name: 'unifiedPlanning',
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final initialDateStr = state.uri.queryParameters['date'];
+            DateTime? initialDate;
+            if (initialDateStr != null) {
+              try {
+                initialDate = DateTime.parse(initialDateStr);
+              } catch (e) {
+                initialDate = null;
+              }
+            }
+            return UnifiedMealPlanningScreen(initialDate: initialDate);
+          },
         ),
         // --- Route for Smart Recipe Generation (No Bottom Bar) ---
         GoRoute(
@@ -581,12 +602,6 @@ class AppRouter {
           path: LanguageScreen.routePath,
           name: languageRouteName,
           builder: (context, state) => const LanguageScreen(),
-        ),
-        // Add the units screen route
-        GoRoute(
-          path: UnitsScreen.routePath,
-          name: unitsRouteName,
-          builder: (context, state) => const UnitsScreen(),
         ),
         // Add the FAQs screen route
         GoRoute(

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 
 class EnvironmentalImpact extends Equatable {
   final String recipeUid;
@@ -47,6 +48,34 @@ class EnvironmentalImpact extends Equatable {
     );
   }
 
+  // Formatted getters for better display
+  String get formattedCost {
+    final currencyFormat = NumberFormat.currency(
+      locale: 'es_PE',
+      symbol: 'S/',
+      decimalDigits: 2,
+    );
+    return currencyFormat.format(economicCost);
+  }
+
+  String get formattedCarbonFootprint {
+    return '${carbonFootprint.toStringAsFixed(1)} $unitCarbon';
+  }
+
+  String get formattedWaterFootprint {
+    return '${waterFootprint.toStringAsFixed(0)} $unitWater';
+  }
+
+  String get formattedEnergyFootprint {
+    return '${energyFootprint.toStringAsFixed(1)} $unitEnergy';
+  }
+
+  String get formattedDate {
+    return savedAt != null
+        ? DateFormat('dd MMM yyyy, HH:mm', 'es_PE').format(savedAt!)
+        : 'Fecha no disponible';
+  }
+
   @override
   List<Object?> get props => [
     recipeUid,
@@ -83,6 +112,19 @@ class EnvironmentalCalculations extends Equatable {
               .toList(),
       count: json['count'],
     );
+  }
+
+  double get totalEconomicCost {
+    return calculations.fold(0.0, (sum, calc) => sum + calc.economicCost);
+  }
+
+  String get formattedTotalCost {
+    final currencyFormat = NumberFormat.currency(
+      locale: 'es_PE',
+      symbol: 'S/',
+      decimalDigits: 2,
+    );
+    return currencyFormat.format(totalEconomicCost);
   }
 
   @override
