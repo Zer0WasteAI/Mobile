@@ -83,30 +83,21 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
     final isToday = _isSameDay(date, DateTime.now());
     final isPast = date.isBefore(DateTime.now()) && !isToday;
     
-    return GestureDetector(
-      onTap: () => widget.onDateSelected(date),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => widget.onDateSelected(date),
+        borderRadius: BorderRadius.circular(16),
+        splashColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        highlightColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+        child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
         decoration: BoxDecoration(
           color: _getDayBackgroundColor(isSelected, isToday, isPast),
           borderRadius: BorderRadius.circular(16),
-          border: isSelected ? Border.all(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ) : null,
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ] : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: _getDayBorder(isSelected, isToday),
+          boxShadow: _getDayBoxShadow(isSelected, isToday),
         ),
         child: Column(
           children: [
@@ -116,6 +107,7 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
             ),
             _buildDayFooter(date),
           ],
+        ),
         ),
       ),
     );
@@ -127,31 +119,51 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
     
     return Container(
       padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: _getHeaderBackgroundColor(isSelected, isToday),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: Column(
         children: [
           Text(
             dayName,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: _getDayTextColor(isSelected, isToday, isPast),
-              fontWeight: FontWeight.w500,
+              fontWeight: isSelected || isToday ? FontWeight.w700 : FontWeight.w500,
               fontSize: 10,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            '${date.day}',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: _getDayTextColor(isSelected, isToday, isPast),
-              fontWeight: FontWeight.bold,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: _getDateNumberBackground(isSelected, isToday),
+              shape: BoxShape.circle,
+              border: isToday && !isSelected ? Border.all(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ) : null,
+            ),
+            child: Center(
+              child: Text(
+                '${date.day}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: _getDateNumberTextColor(isSelected, isToday, isPast),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           if (isToday) ...[
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Container(
-              width: 6,
-              height: 6,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary,
+                color: isSelected 
+                    ? Colors.white 
+                    : Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
               ),
             ),
@@ -211,48 +223,55 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
 
   Widget _buildEmptyMealsState(DateTime date) {
     final isPast = date.isBefore(DateTime.now()) && !_isSameDay(date, DateTime.now());
+    final isToday = _isSameDay(date, DateTime.now());
+    final isSelected = _isSameDay(date, widget.selectedDate);
     
     return InkWell(
       onTap: isPast ? null : () => widget.onViewDay(date),
       borderRadius: BorderRadius.circular(8),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isPast 
-              ? Colors.grey.withValues(alpha: 0.1)
-              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          color: _getEmptyStateColor(isPast, isToday, isSelected),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isPast 
-                ? Colors.grey.withValues(alpha: 0.3)
-                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-            style: BorderStyle.solid,
-            width: 1,
+            color: _getEmptyStateBorderColor(isPast, isToday, isSelected),
+            style: isPast ? BorderStyle.solid : BorderStyle.solid,
+            width: isPast ? 1 : 1.5,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isPast ? Icons.remove_circle_outline : Icons.add_circle_outline,
-              color: isPast 
-                  ? Colors.grey.withValues(alpha: 0.5)
-                  : Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              isPast ? 'Sin plan' : 'Planificar',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: isPast 
-                    ? Colors.grey.withValues(alpha: 0.6)
-                    : Theme.of(context).colorScheme.primary,
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: _getEmptyStateIconBackgroundColor(isPast, isToday, isSelected),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isPast ? Icons.event_busy : Icons.add_circle,
+                  color: _getEmptyStateIconColor(isPast, isToday, isSelected),
+                  size: 18,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                isPast ? 'Sin plan' : 'Agregar',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: _getEmptyStateTextColor(isPast, isToday, isSelected),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -293,20 +312,28 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
   }
 
   Widget _buildRealMealIcon(MealType mealType) {
-    return Container(
-      width: 24,
-      height: 24,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
-        color: mealType.color.withValues(alpha: 0.15),
+        color: mealType.color.withValues(alpha: 0.2),
         shape: BoxShape.circle,
         border: Border.all(
-          color: mealType.color.withValues(alpha: 0.4),
-          width: 1,
+          color: mealType.color.withValues(alpha: 0.6),
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: mealType.color.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Icon(
         mealType.icon,
-        size: 12,
+        size: 14,
         color: mealType.color,
       ),
     );
@@ -314,11 +341,13 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
 
   Widget _buildDayFooter(DateTime date) {
     final mealCount = _getRealMealCount(date);
+    final isSelected = _isSameDay(date, widget.selectedDate);
+    final isToday = _isSameDay(date, DateTime.now());
     
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: _getFooterBackgroundColor(isSelected, isToday, mealCount > 0),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(14),
           bottomRight: Radius.circular(14),
@@ -327,40 +356,41 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
       child: Column(
         children: [
           if (mealCount > 0) ...[
-            Column(
-              children: [
-                Text(
-                  '$mealCount comida${mealCount > 1 ? 's' : ''}',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontSize: 8,
-                  ),
-                ),
-              ],
+            Text(
+              '$mealCount comida${mealCount > 1 ? 's' : ''}',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: _getFooterTextColor(isSelected, isToday),
+                fontSize: 8,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
           ],
           SizedBox(
             width: double.infinity,
-            height: 24,
-            child: ElevatedButton(
-              onPressed: () => widget.onViewDay(date),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mealCount > 0 
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+            height: 28,
+            child: AnimatedScale(
+              scale: 1.0,
+              duration: const Duration(milliseconds: 100),
+              child: ElevatedButton(
+                onPressed: () => widget.onViewDay(date),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _getButtonBackgroundColor(isSelected, isToday, mealCount > 0),
+                  foregroundColor: _getButtonTextColor(isSelected, isToday, mealCount > 0),
+                  elevation: isSelected ? 3 : (isToday ? 2 : 1),
+                  shadowColor: _getButtonBackgroundColor(isSelected, isToday, mealCount > 0).withValues(alpha: 0.4),
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-              ),
-              child: Text(
-                mealCount > 0 ? 'Ver detalle' : 'Agregar',
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  mealCount > 0 ? 'Ver detalle' : 'Agregar',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: isSelected || isToday ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),
@@ -379,10 +409,10 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
 
   Color _getDayBackgroundColor(bool isSelected, bool isToday, bool isPast) {
     if (isSelected) {
-      return Theme.of(context).colorScheme.primaryContainer;
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.1);
     }
     if (isToday) {
-      return Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3);
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08);
     }
     if (isPast) {
       return Theme.of(context).colorScheme.surface.withValues(alpha: 0.5);
@@ -392,12 +422,209 @@ class _UnifiedPlanningWidgetState extends ConsumerState<UnifiedPlanningWidget> {
 
   Color _getDayTextColor(bool isSelected, bool isToday, bool isPast) {
     if (isSelected) {
-      return Theme.of(context).colorScheme.onPrimaryContainer;
+      return Theme.of(context).colorScheme.primary;
     }
     if (isPast) {
       return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
     }
     return Theme.of(context).colorScheme.onSurface;
+  }
+
+  // Nuevas funciones para mejor styling
+  Border? _getDayBorder(bool isSelected, bool isToday) {
+    if (isSelected) {
+      return Border.all(
+        color: Theme.of(context).colorScheme.primary,
+        width: 2,
+      );
+    }
+    if (isToday) {
+      return Border.all(
+        color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
+        width: 1,
+      );
+    }
+    return null;
+  }
+
+  List<BoxShadow> _getDayBoxShadow(bool isSelected, bool isToday) {
+    if (isSelected) {
+      return [
+        BoxShadow(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+          spreadRadius: 0,
+        ),
+        BoxShadow(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          blurRadius: 24,
+          offset: const Offset(0, 12),
+          spreadRadius: 2,
+        ),
+      ];
+    }
+    if (isToday) {
+      return [
+        BoxShadow(
+          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.25),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+        BoxShadow(
+          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+    }
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.08),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ];
+  }
+
+  Color? _getHeaderBackgroundColor(bool isSelected, bool isToday) {
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.15);
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1);
+    }
+    return null;
+  }
+
+  Color? _getDateNumberBackground(bool isSelected, bool isToday) {
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2);
+    }
+    return null;
+  }
+
+  Color _getDateNumberTextColor(bool isSelected, bool isToday, bool isPast) {
+    if (isSelected) {
+      return Colors.white;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isPast) {
+      return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
+    }
+    return Theme.of(context).colorScheme.onSurface;
+  }
+
+  // Footer styling functions
+  Color? _getFooterBackgroundColor(bool isSelected, bool isToday, bool hasMeals) {
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.2);
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15);
+    }
+    return Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3);
+  }
+
+  Color _getFooterTextColor(bool isSelected, bool isToday) {
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary;
+    }
+    return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7);
+  }
+
+  Color _getButtonBackgroundColor(bool isSelected, bool isToday, bool hasMeals) {
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary;
+    }
+    if (hasMeals) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.6);
+  }
+
+  Color _getButtonTextColor(bool isSelected, bool isToday, bool hasMeals) {
+    if (isSelected || isToday || hasMeals) {
+      return Colors.white;
+    }
+    return Colors.white.withValues(alpha: 0.9);
+  }
+
+  // Empty state styling functions
+  Color _getEmptyStateColor(bool isPast, bool isToday, bool isSelected) {
+    if (isPast) {
+      return Colors.grey.withValues(alpha: 0.08);
+    }
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.15);
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12);
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+  }
+
+  Color _getEmptyStateBorderColor(bool isPast, bool isToday, bool isSelected) {
+    if (isPast) {
+      return Colors.grey.withValues(alpha: 0.2);
+    }
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.4);
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.4);
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.3);
+  }
+
+  Color _getEmptyStateIconBackgroundColor(bool isPast, bool isToday, bool isSelected) {
+    if (isPast) {
+      return Colors.grey.withValues(alpha: 0.1);
+    }
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.2);
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2);
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.15);
+  }
+
+  Color _getEmptyStateIconColor(bool isPast, bool isToday, bool isSelected) {
+    if (isPast) {
+      return Colors.grey.withValues(alpha: 0.6);
+    }
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary;
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
+  }
+
+  Color _getEmptyStateTextColor(bool isPast, bool isToday, bool isSelected) {
+    if (isPast) {
+      return Colors.grey.withValues(alpha: 0.6);
+    }
+    if (isSelected) {
+      return Theme.of(context).colorScheme.primary;
+    }
+    if (isToday) {
+      return Theme.of(context).colorScheme.secondary;
+    }
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
   }
 
   // Real data methods - Connected with actual meal planning providers

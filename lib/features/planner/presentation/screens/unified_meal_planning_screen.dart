@@ -372,13 +372,19 @@ class _UnifiedMealPlanningScreenState
     final now = DateTime.now();
     final weekStart = _getWeekStart(now);
 
-    if (_focusedWeekStart.isAtSameMomentAs(weekStart)) {
+    // Comparar las fechas normalizando solo año, mes y día
+    final focusedNormalized = DateTime(_focusedWeekStart.year, _focusedWeekStart.month, _focusedWeekStart.day);
+    final currentNormalized = DateTime(weekStart.year, weekStart.month, weekStart.day);
+    
+    if (focusedNormalized.isAtSameMomentAs(currentNormalized)) {
       return 'Esta semana';
     } else if (_focusedWeekStart.isAfter(weekStart)) {
       final diff = _focusedWeekStart.difference(weekStart).inDays ~/ 7;
+      if (diff == 0) return 'Esta semana';
       return diff == 1 ? 'Próxima semana' : 'En $diff semanas';
     } else {
       final diff = weekStart.difference(_focusedWeekStart).inDays ~/ 7;
+      if (diff == 0) return 'Esta semana';
       return diff == 1 ? 'Semana pasada' : 'Hace $diff semanas';
     }
   }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../providers/recipe_generation_providers.dart';
-import '../../../recipes/presentation/widgets/recipe_cooking_mode.dart';
-import '../../../recipes/presentation/widgets/recipe_rating_dialog.dart';
 
 class RecipeCardWidget extends StatelessWidget {
   final GeneratedRecipe recipe;
@@ -16,16 +14,21 @@ class RecipeCardWidget extends StatelessWidget {
     this.onStartCooking,
     this.onSaveRecipe,
   });
-  
+
   /// Convert GeneratedRecipe to format expected by RecipeCookingMode
-  Map<String, dynamic> _convertGeneratedRecipeToStepsFormat(GeneratedRecipe recipe) {
+  // ignore: unused_element
+  Map<String, dynamic> _convertGeneratedRecipeToStepsFormat(
+    GeneratedRecipe recipe,
+  ) {
     return {
       'title': _cleanRecipeTitle(recipe.title),
       'description': recipe.description,
       'cookingTime': recipe.prepTime + recipe.cookTime,
       'difficulty': recipe.difficulty,
       'ingredients': recipe.ingredients.map((ing) => ing.name).toList(),
-      'steps': recipe.instructions, // GeneratedRecipe already has instructions as List<String>
+      'steps':
+          recipe
+              .instructions, // GeneratedRecipe already has instructions as List<String>
     };
   }
 
@@ -36,9 +39,7 @@ class RecipeCardWidget extends StatelessWidget {
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -73,18 +74,21 @@ class RecipeCardWidget extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         color: colorScheme.primaryContainer.withValues(alpha: 0.3),
       ),
-      child: recipe.imagePath != null && recipe.imageStatus == 'ready'
-          ? ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: Image.network(
-                recipe.imagePath!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildPlaceholderImage(colorScheme);
-                },
-              ),
-            )
-          : _buildPlaceholderImage(colorScheme),
+      child:
+          recipe.imagePath != null && recipe.imageStatus == 'ready'
+              ? ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: Image.network(
+                  recipe.imagePath!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildPlaceholderImage(colorScheme);
+                  },
+                ),
+              )
+              : _buildPlaceholderImage(colorScheme),
     );
   }
 
@@ -157,9 +161,7 @@ class RecipeCardWidget extends StatelessWidget {
         Expanded(
           child: Text(
             _cleanRecipeTitle(recipe.title),
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
         if (onSaveRecipe != null)
@@ -210,12 +212,7 @@ class RecipeCardWidget extends StatelessWidget {
           colorScheme,
         ),
         const SizedBox(width: 16),
-        _buildMetric(
-          Icons.star,
-          recipe.difficulty,
-          textTheme,
-          colorScheme,
-        ),
+        _buildMetric(Icons.star, recipe.difficulty, textTheme, colorScheme),
       ],
     );
   }
@@ -229,11 +226,7 @@ class RecipeCardWidget extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: colorScheme.primary,
-        ),
+        Icon(icon, size: 16, color: colorScheme.primary),
         const SizedBox(width: 4),
         Text(
           text,
@@ -251,29 +244,31 @@ class RecipeCardWidget extends StatelessWidget {
       children: [
         Text(
           'Ingredientes principales:',
-          style: textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 4),
         Wrap(
           spacing: 8,
           runSpacing: 4,
-          children: recipe.ingredients.take(4).map((ingredient) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                ingredient.name,
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.8),
-                ),
-              ),
-            );
-          }).toList(),
+          children:
+              recipe.ingredients.take(4).map((ingredient) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    ingredient.name,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                );
+              }).toList(),
         ),
         if (recipe.ingredients.length > 4)
           Padding(
@@ -311,7 +306,7 @@ class RecipeCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(
+          /*Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
                 // Navigate to cooking mode
@@ -379,6 +374,7 @@ class RecipeCardWidget extends StatelessWidget {
               ),
             ),
           ),
+        */
         ],
       );
     } else {
