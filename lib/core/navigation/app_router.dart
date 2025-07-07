@@ -50,6 +50,7 @@ import 'package:zer0_waste_ai/features/recipes/presentation/screens/custom_recip
 import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_generation_screen.dart'; // Import RecipeGenerationScreen
 import 'package:zer0_waste_ai/features/planner/presentation/screens/manual_plan_creation_screen.dart'; // Import ManualPlanCreationScreen
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart'; // Import MealType
+import 'package:zer0_waste_ai/features/recipes/presentation/screens/favorite_recipes_screen.dart'; // Import FavoriteRecipesScreen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -558,6 +559,13 @@ class AppRouter {
                   (context, state) => RecipeScreen(
                     mode: RecipeMode.explore,
                   ), // Use correct screen and mode
+            ),
+            // Add favorite recipes route
+            GoRoute(
+              path: FavoriteRecipesScreen.routePath,
+              name: FavoriteRecipesScreen.routeName,
+              parentNavigatorKey: _shellNavigatorKey,
+              builder: (context, state) => const FavoriteRecipesScreen(),
             ),
             GoRoute(
               path: '/profile',

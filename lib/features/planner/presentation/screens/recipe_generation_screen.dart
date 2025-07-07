@@ -6,6 +6,8 @@ import '../../domain/models/meal_plan_models.dart';
 import '../providers/recipe_generation_providers.dart';
 import '../providers/meal_planning_providers.dart';
 import '../widgets/recipe_card_widget.dart';
+import '../../../favorites/presentation/providers/favorite_recipe_providers.dart';
+import '../../../favorites/domain/models/favorite_recipe_model.dart';
 
 class RecipeGenerationScreen extends ConsumerStatefulWidget {
   final DateTime selectedDate;
@@ -20,11 +22,14 @@ class RecipeGenerationScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<RecipeGenerationScreen> createState() => _RecipeGenerationScreenState();
+  ConsumerState<RecipeGenerationScreen> createState() =>
+      _RecipeGenerationScreenState();
 }
 
-class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen> {
+class _RecipeGenerationScreenState
+    extends ConsumerState<RecipeGenerationScreen> {
   bool _isGenerating = false;
+  bool _showFavorites = false; // Toggle between generated recipes and favorites
 
   @override
   void initState() {
@@ -39,17 +44,21 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     });
 
     try {
-      await ref.read(recipeGenerationProvider.notifier).generateCustomRecipes(
-        mealType: widget.mealType,
-        numRecipes: 5,
-        forceRegenerate: forceRegenerate,
-      );
-      
+      await ref
+          .read(recipeGenerationProvider.notifier)
+          .generateCustomRecipes(
+            mealType: widget.mealType,
+            numRecipes: 5,
+            forceRegenerate: forceRegenerate,
+          );
+
       // Show success message only when force regenerating
       if (mounted && forceRegenerate) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('¡Nuevas recetas generadas para ${widget.mealType.name.toLowerCase()}!'),
+            content: Text(
+              '¡Nuevas recetas generadas para ${widget.mealType.name.toLowerCase()}!',
+            ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
             action: SnackBarAction(
@@ -100,31 +109,52 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         foregroundColor: colorScheme.onPrimary,
         elevation: 0,
         actions: [
+          // Toggle between favorites and generated recipes
           IconButton(
-            onPressed: _isGenerating ? null : () => _generateRecipes(forceRegenerate: true),
-            icon: _isGenerating 
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Icon(Icons.refresh),
-            tooltip: 'Generar nuevas recetas',
+            onPressed: () {
+              setState(() {
+                _showFavorites = !_showFavorites;
+              });
+            },
+            icon: Icon(_showFavorites ? Icons.auto_awesome : Icons.favorite),
+            tooltip:
+                _showFavorites ? 'Ver recetas generadas' : 'Ver mis favoritos',
           ),
+          if (!_showFavorites)
+            IconButton(
+              onPressed:
+                  _isGenerating
+                      ? null
+                      : () => _generateRecipes(forceRegenerate: true),
+              icon:
+                  _isGenerating
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Icon(Icons.refresh),
+              tooltip: 'Generar nuevas recetas',
+            ),
         ],
       ),
       body: Column(
         children: [
           _buildHeader(colorScheme, textTheme, recipeState),
-          Expanded(
-            child: _buildContent(colorScheme, textTheme, recipeState),
-          ),
+          Expanded(child: _buildContent(colorScheme, textTheme, recipeState)),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(ColorScheme colorScheme, TextTheme textTheme, RecipeGenerationState recipeState) {
+  Widget _buildHeader(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    RecipeGenerationState recipeState,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -165,7 +195,10 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
                       ),
                     ),
                     Text(
-                      DateFormat('EEEE, d MMMM', 'es_ES').format(widget.selectedDate),
+                      DateFormat(
+                        'EEEE, d MMMM',
+                        'es_ES',
+                      ).format(widget.selectedDate),
                       style: textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onPrimary.withValues(alpha: 0.8),
                       ),
@@ -185,31 +218,44 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
             child: Row(
               children: [
                 Icon(
-                  recipeState.areRecipesFresh ? Icons.storage : Icons.auto_awesome,
+                  _showFavorites
+                      ? Icons.favorite
+                      : (recipeState.areRecipesFresh
+                          ? Icons.storage
+                          : Icons.auto_awesome),
                   color: colorScheme.onPrimary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    recipeState.areRecipesFresh 
-                      ? 'Recetas guardadas para tu ${widget.mealType.name.toLowerCase()}'
-                      : 'Recetas generadas especialmente para tu ${widget.mealType.name.toLowerCase()}',
+                    _showFavorites
+                        ? 'Tus recetas favoritas de ${widget.mealType.name.toLowerCase()}'
+                        : (recipeState.areRecipesFresh
+                            ? 'Recetas guardadas para tu ${widget.mealType.name.toLowerCase()}'
+                            : 'Recetas generadas especialmente para tu ${widget.mealType.name.toLowerCase()}'),
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onPrimary.withValues(alpha: 0.9),
                     ),
                   ),
                 ),
-                if (recipeState.areRecipesFresh)
+                if (recipeState.areRecipesFresh && !_showFavorites)
                   GestureDetector(
-                    onTap: _isGenerating ? null : () => _generateRecipes(forceRegenerate: true),
+                    onTap:
+                        _isGenerating
+                            ? null
+                            : () => _generateRecipes(forceRegenerate: true),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: _isGenerating 
-                          ? colorScheme.onPrimary.withValues(alpha: 0.1)
-                          : colorScheme.onPrimary.withValues(alpha: 0.2),
+                        color:
+                            _isGenerating
+                                ? colorScheme.onPrimary.withValues(alpha: 0.1)
+                                : colorScheme.onPrimary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: colorScheme.onPrimary.withValues(alpha: 0.3),
@@ -225,7 +271,9 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
                               height: 12,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  colorScheme.onPrimary,
+                                ),
                               ),
                             )
                           else
@@ -254,7 +302,15 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
 
-  Widget _buildContent(ColorScheme colorScheme, TextTheme textTheme, RecipeGenerationState state) {
+  Widget _buildContent(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    RecipeGenerationState state,
+  ) {
+    if (_showFavorites) {
+      return _buildFavoritesContent(colorScheme, textTheme);
+    }
+
     if (_isGenerating || state.isLoading) {
       return _buildLoadingState();
     }
@@ -288,18 +344,18 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
 
-  Widget _buildErrorState(String error, ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildErrorState(
+    String error,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text(
               'Error al generar recetas',
@@ -338,16 +394,9 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 64,
-              color: colorScheme.outline,
-            ),
+            Icon(Icons.restaurant_menu, size: 64, color: colorScheme.outline),
             const SizedBox(height: 16),
-            Text(
-              'No se encontraron recetas',
-              style: textTheme.headlineSmall,
-            ),
+            Text('No se encontraron recetas', style: textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               'Intenta generar nuevas recetas o verifica tu conexión',
@@ -368,7 +417,10 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
 
-  Widget _buildRecipesList(List<GeneratedRecipe> recipes, ColorScheme colorScheme) {
+  Widget _buildRecipesList(
+    List<GeneratedRecipe> recipes,
+    ColorScheme colorScheme,
+  ) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: recipes.length,
@@ -386,22 +438,254 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
     );
   }
 
+  Widget _buildFavoritesContent(ColorScheme colorScheme, TextTheme textTheme) {
+    final favoritesAsync = ref.watch(userFavoritesProvider);
+
+    return favoritesAsync.when(
+      data: (favorites) {
+        // Filter favorites by current meal type
+        final filteredFavorites = _filterFavoritesByMealType(favorites);
+
+        if (filteredFavorites.isEmpty) {
+          return _buildEmptyFavoritesState(colorScheme, textTheme);
+        }
+
+        return _buildFavoritesList(filteredFavorites, colorScheme, textTheme);
+      },
+      loading: () => _buildLoadingState(),
+      error:
+          (error, _) =>
+              _buildErrorState(error.toString(), colorScheme, textTheme),
+    );
+  }
+
+  List<FavoriteRecipe> _filterFavoritesByMealType(
+    List<FavoriteRecipe> favorites,
+  ) {
+    final mealTypeString = _getMealTypeString(widget.mealType);
+    return favorites
+        .where(
+          (favorite) =>
+              favorite.mealType?.toLowerCase() == mealTypeString.toLowerCase(),
+        )
+        .toList();
+  }
+
+  String _getMealTypeString(MealType mealType) {
+    switch (mealType) {
+      case MealType.breakfast:
+        return 'Desayuno';
+      case MealType.lunch:
+        return 'Almuerzo';
+      case MealType.dinner:
+        return 'Cena';
+      case MealType.snack:
+        return 'Snack';
+    }
+  }
+
+  Widget _buildEmptyFavoritesState(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.favorite_border,
+                size: 50,
+                color: colorScheme.primary.withValues(alpha: 0.6),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Sin favoritos de ${widget.mealType.name.toLowerCase()}',
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Agrega recetas de ${widget.mealType.name.toLowerCase()} a tus favoritos para verlas aquí',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showFavorites = false;
+                });
+              },
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('Ver recetas generadas'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoritesList(
+    List<FavoriteRecipe> favorites,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Column(
+      children: [
+        // Header with count
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(Icons.favorite, color: Colors.red, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '${favorites.length} ${favorites.length == 1 ? 'favorito' : 'favoritos'} de ${widget.mealType.name.toLowerCase()}',
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Favorites list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: favorites.length,
+            itemBuilder: (context, index) {
+              final favorite = favorites[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _buildFavoriteCard(favorite, colorScheme, textTheme),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFavoriteCard(
+    FavoriteRecipe favorite,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: () => _addFavoriteRecipeToPlan(favorite),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      favorite.title,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.favorite, color: Colors.red, size: 20),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                favorite.description,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.schedule, size: 16, color: colorScheme.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${favorite.prepTime + favorite.cookTime} min',
+                    style: textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(Icons.people, size: 16, color: colorScheme.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${favorite.servings} porciones',
+                    style: textTheme.bodySmall,
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      favorite.difficulty,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _addRecipeToPlan(GeneratedRecipe recipe) async {
     try {
       // Convert GeneratedRecipe to Meal
       final meal = Meal(
         recipeTitle: _cleanRecipeTitle(recipe.title),
-        ingredientsNeeded: recipe.ingredients.map((ingredient) => 
-          MealIngredient(
-            name: ingredient.name,
-            quantity: ingredient.quantity.toInt(),
-            unit: ingredient.unit,
-          )
-        ).toList(),
+        ingredientsNeeded:
+            recipe.ingredients
+                .map(
+                  (ingredient) => MealIngredient(
+                    name: ingredient.name,
+                    quantity: ingredient.quantity.toInt(),
+                    unit: ingredient.unit,
+                  ),
+                )
+                .toList(),
         prepTime: recipe.prepTime + recipe.cookTime,
         calories: 0, // Sin calorías
       );
-      
+
       // If this is from manual plan creation, just return the meal
       if (widget.isManualPlan) {
         if (mounted) {
@@ -410,29 +694,39 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
         }
         return;
       }
-      
+
       // Otherwise, proceed with normal plan saving
       final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
-      
+
       // Get current meal plan for the date
-      final existingPlan = await ref.read(mealPlanByDateProvider(dateString).future);
-      
+      final existingPlan = await ref.read(
+        mealPlanByDateProvider(dateString).future,
+      );
+
       // Create updated daily meals
       DailyMeals updatedMeals;
       if (existingPlan != null) {
         // Update existing plan
         updatedMeals = DailyMeals(
-          breakfast: widget.mealType == MealType.breakfast ? meal : existingPlan.meals.breakfast,
-          lunch: widget.mealType == MealType.lunch ? meal : existingPlan.meals.lunch,
-          dinner: widget.mealType == MealType.dinner ? meal : existingPlan.meals.dinner,
+          breakfast:
+              widget.mealType == MealType.breakfast
+                  ? meal
+                  : existingPlan.meals.breakfast,
+          lunch:
+              widget.mealType == MealType.lunch
+                  ? meal
+                  : existingPlan.meals.lunch,
+          dinner:
+              widget.mealType == MealType.dinner
+                  ? meal
+                  : existingPlan.meals.dinner,
         );
-        
+
         // Update the existing plan
-        await ref.read(mealPlanningProvider.notifier).updateMealPlan(
-          dateString,
-          updatedMeals,
-        );
-        
+        await ref
+            .read(mealPlanningProvider.notifier)
+            .updateMealPlan(dateString, updatedMeals);
+
         // Invalidate the meal plan by date provider to refresh UI
         ref.invalidate(mealPlanByDateProvider(dateString));
       } else {
@@ -442,38 +736,38 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
           lunch: widget.mealType == MealType.lunch ? meal : null,
           dinner: widget.mealType == MealType.dinner ? meal : null,
         );
-        
+
         // Save new plan with fallback to update if already exists
         try {
-          await ref.read(mealPlanningProvider.notifier).saveMealPlan(
-            dateString,
-            updatedMeals,
-          );
+          await ref
+              .read(mealPlanningProvider.notifier)
+              .saveMealPlan(dateString, updatedMeals);
         } catch (saveError) {
           // Check if the error is about existing plan
           final errorMessage = saveError.toString().toLowerCase();
-          if (errorMessage.contains('ya existe') || 
+          if (errorMessage.contains('ya existe') ||
               errorMessage.contains('already exists')) {
             // Plan already exists, try to update instead
-            await ref.read(mealPlanningProvider.notifier).updateMealPlan(
-              dateString,
-              updatedMeals,
-            );
+            await ref
+                .read(mealPlanningProvider.notifier)
+                .updateMealPlan(dateString, updatedMeals);
           } else {
             // If it's not about existing plan, rethrow the error
             rethrow;
           }
         }
-        
+
         // Invalidate the meal plan by date provider to refresh UI
         ref.invalidate(mealPlanByDateProvider(dateString));
       }
-      
+
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${recipe.title} agregado al plan del ${widget.mealType.name.toLowerCase()}'),
+            content: Text(
+              '${recipe.title} agregado al plan del ${widget.mealType.name.toLowerCase()}',
+            ),
             backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'Ver Plan',
@@ -496,12 +790,14 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
       }
     }
   }
-  
+
   void _onCookingComplete(GeneratedRecipe recipe) {
     // Show additional success message for completed cooking
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('¡Excelente! Has cocinado ${_cleanRecipeTitle(recipe.title)} con éxito'),
+        content: Text(
+          '¡Excelente! Has cocinado ${_cleanRecipeTitle(recipe.title)} con éxito',
+        ),
         backgroundColor: Colors.green.shade700,
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
@@ -512,7 +808,130 @@ class _RecipeGenerationScreenState extends ConsumerState<RecipeGenerationScreen>
       ),
     );
   }
-  
+
+  Future<void> _addFavoriteRecipeToPlan(FavoriteRecipe favorite) async {
+    try {
+      // Convert FavoriteRecipe to Meal
+      final meal = Meal(
+        recipeTitle: _cleanRecipeTitle(favorite.title),
+        ingredientsNeeded:
+            favorite.ingredients
+                .map(
+                  (ingredient) => MealIngredient(
+                    name: ingredient.name,
+                    quantity: ingredient.quantity.toInt(),
+                    unit: ingredient.unit,
+                  ),
+                )
+                .toList(),
+        prepTime: favorite.prepTime + favorite.cookTime,
+        calories: 0, // Sin calorías
+      );
+
+      // If this is from manual plan creation, just return the meal
+      if (widget.isManualPlan) {
+        if (mounted) {
+          // Return the meal to the manual plan creation screen
+          context.pop(meal);
+        }
+        return;
+      }
+
+      // Otherwise, proceed with normal plan saving
+      final dateString = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+
+      // Get current meal plan for the date
+      final existingPlan = await ref.read(
+        mealPlanByDateProvider(dateString).future,
+      );
+
+      // Create updated daily meals
+      DailyMeals updatedMeals;
+      if (existingPlan != null) {
+        // Update existing plan
+        updatedMeals = DailyMeals(
+          breakfast:
+              widget.mealType == MealType.breakfast
+                  ? meal
+                  : existingPlan.meals.breakfast,
+          lunch:
+              widget.mealType == MealType.lunch
+                  ? meal
+                  : existingPlan.meals.lunch,
+          dinner:
+              widget.mealType == MealType.dinner
+                  ? meal
+                  : existingPlan.meals.dinner,
+        );
+
+        // Update the existing plan
+        await ref
+            .read(mealPlanningProvider.notifier)
+            .updateMealPlan(dateString, updatedMeals);
+
+        // Invalidate the meal plan by date provider to refresh UI
+        ref.invalidate(mealPlanByDateProvider(dateString));
+      } else {
+        // Create new plan
+        updatedMeals = DailyMeals(
+          breakfast: widget.mealType == MealType.breakfast ? meal : null,
+          lunch: widget.mealType == MealType.lunch ? meal : null,
+          dinner: widget.mealType == MealType.dinner ? meal : null,
+        );
+
+        // Save new plan with fallback to update if already exists
+        try {
+          await ref
+              .read(mealPlanningProvider.notifier)
+              .saveMealPlan(dateString, updatedMeals);
+        } catch (saveError) {
+          // Check if the error is about existing plan
+          final errorMessage = saveError.toString().toLowerCase();
+          if (errorMessage.contains('ya existe') ||
+              errorMessage.contains('already exists')) {
+            // Plan already exists, try to update instead
+            await ref
+                .read(mealPlanningProvider.notifier)
+                .updateMealPlan(dateString, updatedMeals);
+          } else {
+            // If it's not about existing plan, rethrow the error
+            rethrow;
+          }
+        }
+
+        // Invalidate the meal plan by date provider to refresh UI
+        ref.invalidate(mealPlanByDateProvider(dateString));
+      }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${favorite.title} agregado al plan del ${widget.mealType.name.toLowerCase()}',
+            ),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'Ver Plan',
+              onPressed: () {
+                context.pop(); // Return to planning screen
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al agregar receta al plan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   // Función para limpiar nombres de recetas removiendo sufijos como (1), (2), etc.
   String _cleanRecipeTitle(String title) {
