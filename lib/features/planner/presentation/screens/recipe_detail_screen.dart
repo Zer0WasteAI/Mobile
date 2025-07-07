@@ -361,12 +361,13 @@ class RecipeDetailScreen extends ConsumerWidget {
     );
   }
 
+
   Widget _buildInstructions(TextTheme textTheme, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Instrucciones',
+          'Preparación',
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,

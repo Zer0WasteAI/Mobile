@@ -380,11 +380,32 @@ class _DailyMealPlannerWidgetState
         ),
         const SizedBox(height: 8),
         if (meal != null)
-          MealCardWidget(
-            meal: meal,
-            mealType: mealType,
-            onEdit: () => _editMeal(mealType, meal),
-            onDelete: () => _deleteMeal(mealType),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MealCardWidget(
+                meal: meal,
+                mealType: mealType,
+                onEdit: () => _editMeal(mealType, meal),
+                onDelete: () => _deleteMeal(mealType),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.touch_app, size: 14, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Toca para ver detalles',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           )
         else
           _buildEmptyMealSlot(mealType, onAdd),

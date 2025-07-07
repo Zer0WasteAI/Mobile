@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../domain/models/meal_plan_models.dart';
 
 class MealCardWidget extends StatelessWidget {
@@ -17,31 +18,42 @@ class MealCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+    return InkWell(
+      onTap: () => _navigateToDetail(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+          border: Border.all(
+            color: mealType.color.withValues(alpha: 0.2),
+            width: 1,
           ),
-        ],
-        border: Border.all(
-          color: mealType.color.withValues(alpha: 0.2),
-          width: 1,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            _buildContent(context),
+            _buildFooter(context),
+          ],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context),
-          _buildContent(context),
-          _buildFooter(context),
-        ],
-      ),
+    );
+  }
+
+  void _navigateToDetail(BuildContext context) {
+    context.pushNamed(
+      'mealDetail',
+      extra: {'meal': meal, 'mealType': mealType},
     );
   }
 

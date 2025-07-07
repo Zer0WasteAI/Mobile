@@ -51,6 +51,7 @@ import 'package:zer0_waste_ai/features/planner/presentation/screens/recipe_gener
 import 'package:zer0_waste_ai/features/planner/presentation/screens/manual_plan_creation_screen.dart'; // Import ManualPlanCreationScreen
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart'; // Import MealType
 import 'package:zer0_waste_ai/features/recipes/presentation/screens/favorite_recipes_screen.dart'; // Import FavoriteRecipesScreen
+import 'package:zer0_waste_ai/features/planner/presentation/screens/meal_detail_screen.dart'; // Import MealDetailScreen
 
 // Global key for the ShellRoute navigator
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -84,6 +85,7 @@ const String preferredFoodTypeRouteName = PreferredFoodTypeScreen.routeName;
 const String specialDietSelectorRouteName = SpecialDietSelectorScreen.routeName;
 const String aiRecipeGenerationRouteName = 'AIRecipeGenerationScreen';
 const String allRecipesRouteName = AllRecipesScreen.routeName;
+const String mealDetailRouteName = MealDetailScreen.routeName;
 
 // Profile-specific selector route names removed - now using unified screens
 const String notificationsRouteName = NotificationsScreen.routeName;
@@ -348,7 +350,7 @@ class AppRouter {
           builder: (context, state) {
             final dateStr = state.uri.queryParameters['date'];
             final mealTypeStr = state.uri.queryParameters['mealType'];
-            
+
             if (dateStr == null || mealTypeStr == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/unified-planning');
@@ -357,15 +359,16 @@ class AppRouter {
                 body: Center(child: CircularProgressIndicator()),
               );
             }
-            
+
             try {
               final selectedDate = DateTime.parse(dateStr);
               final mealType = MealType.values.firstWhere(
                 (type) => type.toString().split('.').last == mealTypeStr,
                 orElse: () => MealType.lunch,
               );
-              final isManualPlan = state.uri.queryParameters['isManualPlan'] == 'true';
-              
+              final isManualPlan =
+                  state.uri.queryParameters['isManualPlan'] == 'true';
+
               return RecipeGenerationScreen(
                 selectedDate: selectedDate,
                 mealType: mealType,
@@ -388,7 +391,7 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey, // Use root navigator
           builder: (context, state) {
             final dateStr = state.uri.queryParameters['date'];
-            
+
             if (dateStr == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/unified-planning');
@@ -397,13 +400,11 @@ class AppRouter {
                 body: Center(child: CircularProgressIndicator()),
               );
             }
-            
+
             try {
               final selectedDate = DateTime.parse(dateStr);
-              
-              return ManualPlanCreationScreen(
-                selectedDate: selectedDate,
-              );
+
+              return ManualPlanCreationScreen(selectedDate: selectedDate);
             } catch (e) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 GoRouter.of(context).go('/unified-planning');
@@ -640,6 +641,30 @@ class AppRouter {
           path: SupportScreen.routePath,
           name: supportRouteName,
           builder: (context, state) => const SupportScreen(),
+        ),
+        // Add the MealDetailScreen route
+        GoRoute(
+          path: MealDetailScreen.routePath,
+          name: mealDetailRouteName,
+          parentNavigatorKey: _rootNavigatorKey, // Use root navigator
+          builder: (context, state) {
+            final Map<String, dynamic>? extraData =
+                state.extra as Map<String, dynamic>?;
+
+            if (extraData == null ||
+                extraData['meal'] == null ||
+                extraData['mealType'] == null) {
+              // Handle error case - return to previous screen
+              return const Scaffold(
+                body: Center(child: Text('Error: Meal data not provided')),
+              );
+            }
+
+            return MealDetailScreen(
+              meal: extraData['meal'] as Meal,
+              mealType: extraData['mealType'] as MealType,
+            );
+          },
         ),
       ],
       errorBuilder:

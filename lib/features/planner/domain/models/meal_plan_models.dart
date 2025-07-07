@@ -62,6 +62,10 @@ class MealIngredient {
   });
 
   factory MealIngredient.fromJson(Map<String, dynamic> json) {
+    // Debug: Print ingredient JSON
+    print('--- MealIngredient.fromJson ---');
+    print('Ingredient JSON: $json');
+    
     // Parse quantity properly - can be integer, double, string, or null
     int quantity = 1;
     
@@ -75,11 +79,16 @@ class MealIngredient {
       }
     }
     
-    return MealIngredient(
+    final ingredient = MealIngredient(
       name: (json['name'] ?? '') as String,
       quantity: quantity,
       unit: (json['type_unit'] ?? json['unit'] ?? '') as String, // Support both formats
     );
+    
+    print('Parsed ingredient: ${ingredient.toString()}');
+    print('--- End MealIngredient.fromJson ---');
+    
+    return ingredient;
   }
 
   Map<String, dynamic> toJson() {
@@ -96,15 +105,22 @@ class Meal {
   final List<MealIngredient> ingredientsNeeded;
   final int prepTime;
   final int calories;
+  final List<String> instructions;
 
   const Meal({
     required this.recipeTitle,
     required this.ingredientsNeeded,
     required this.prepTime,
     required this.calories,
+    this.instructions = const [],
   });
 
   factory Meal.fromJson(Map<String, dynamic> json) {
+    // Debug: Print raw JSON to see backend response
+    print('=== MEAL.fromJson DEBUG ===');
+    print('Raw JSON: $json');
+    print('Available keys: ${json.keys.toList()}');
+    
     List<dynamic> ingredients = [];
     
     if (json['ingredients_needed'] != null) {
@@ -145,7 +161,30 @@ class Meal {
       }
     }
     
-    return Meal(
+    // Parse instructions/steps from backend
+    List<String> instructions = [];
+    print('Looking for instructions/steps...');
+    if (json['steps'] != null) {
+      print('Found steps: ${json['steps']}');
+      final steps = json['steps'] as List<dynamic>;
+      instructions = steps.map((step) {
+        if (step is Map<String, dynamic>) {
+          return step['description']?.toString() ?? '';
+        }
+        return step.toString();
+      }).where((instruction) => instruction.isNotEmpty).toList();
+    } else if (json['instructions'] != null) {
+      print('Found instructions: ${json['instructions']}');
+      instructions = (json['instructions'] as List<dynamic>)
+          .map((instruction) => instruction.toString())
+          .where((instruction) => instruction.isNotEmpty)
+          .toList();
+    } else {
+      print('No instructions or steps found in JSON');
+    }
+    print('Parsed instructions: $instructions');
+    
+    final meal = Meal(
       recipeTitle: (json['recipe_title'] ?? json['title'] ?? '') as String,
       ingredientsNeeded: ingredients
           .map<MealIngredient>((ingredient) {
@@ -156,7 +195,11 @@ class Meal {
           .toList(),
       prepTime: prepTime,
       calories: calories,
+      instructions: instructions,
     );
+    print('=== END MEAL.fromJson DEBUG ===');
+    
+    return meal;
   }
 
   Map<String, dynamic> toJson([String? mealType]) {
@@ -184,7 +227,12 @@ class Meal {
         'quantity': ingredient.quantity,
         'type_unit': ingredient.unit, // Backend expects type_unit not unit
       }).toList(),
-      'steps': [{'step_order': 1, 'description': 'Preparar según receta'}], // Proper step format
+      'steps': instructions.isNotEmpty 
+          ? instructions.asMap().entries.map((entry) => {
+              'step_order': entry.key + 1,
+              'description': entry.value,
+            }).toList()
+          : [{'step_order': 1, 'description': 'Preparar según receta'}], // Proper step format
       'generated_by_ai': true,
       'category': getCategory(mealType), // Dynamic category based on meal type
       'description': 'Receta generada por IA',
@@ -195,6 +243,7 @@ class Meal {
           ingredientsNeeded.map((ingredient) => ingredient.toJson()).toList(),
       'prep_time': prepTime,
       'calories': calories,
+      'instructions': instructions,
     };
   }
 }
