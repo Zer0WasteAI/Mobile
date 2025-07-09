@@ -48,20 +48,10 @@ class QuickActionsWidget extends ConsumerWidget {
                 Expanded(
                   child: _buildActionButton(
                     context,
-                    icon: Icons.restaurant_menu,
-                    label: 'Planificar\nComidas',
+                    icon: Icons.calendar_today,
+                    label: 'Planificador',
                     color: AppColors.mealPlanningColor,
-                    onTap: () => context.pushNamed('mealPlanning'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    context,
-                    icon: Icons.calendar_view_week,
-                    label: 'Planificador\nSemanal',
-                    color: AppColors.weeklyPlannerColor,
-                    onTap: () => context.pushNamed('planner'),
+                    onTap: () => context.pushNamed('unifiedPlanning'),
                   ),
                 ),
                 const SizedBox(width: 12),
