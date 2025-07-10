@@ -318,22 +318,31 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
+        backgroundColor: primaryColor,
+        elevation: 2,
+        iconTheme: IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           widget.recipe.name,
           style: GoogleFonts.inter(
-            color: textColor,
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(
+              Icons.delete_outline,
+              color: Colors.white,
+              size: 26,
+            ),
             onPressed: () => _confirmDeleteRecipe(context),
             tooltip: 'Eliminar receta',
           ),
-          FavoriteButton(recipe: widget.recipe),
+          FavoriteButton(recipe: widget.recipe, size: 26),
         ],
       ),
       body: SingleChildScrollView(
@@ -678,55 +687,152 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               onExit: () {
                                 Navigator.pop(context);
                               },
-                              onComplete: () {
+                              onComplete: () async {
                                 // Record recipe as completed in history
-                                ref
+                                await ref
                                     .read(recipeHistoryProvider.notifier)
                                     .completeCooking(widget.recipe);
 
-                                // Show completion message
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '¡Felicidades! Has completado la receta: ${widget.recipe.name}',
-                                    ),
-                                    backgroundColor: Colors.green,
-                                    duration: const Duration(seconds: 3),
-                                    action: SnackBarAction(
-                                      label: 'Calificar',
-                                      onPressed: () {
-                                        // Show rating dialog
-                                        showDialog(
-                                          context: context,
-                                          builder:
-                                              (context) => RecipeRatingDialog(
-                                                recipeName: widget.recipe.name,
-                                                onSubmit: (rating, comment) {
-                                                  // Save rating and comment to recipe history
-                                                  ref
-                                                      .read(
-                                                        recipeHistoryProvider
-                                                            .notifier,
-                                                      )
-                                                      .completeCooking(
-                                                        widget.recipe,
-                                                        rating:
-                                                            rating.toDouble(),
-                                                        notes:
-                                                            comment.isNotEmpty
-                                                                ? comment
-                                                                : null,
-                                                      );
-                                                },
-                                              ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                );
-
-                                // Return to recipe detail
+                                // Primero cerrar la pantalla de cocina
                                 Navigator.pop(context);
+
+                                // Mostrar diálogo de calificación automáticamente
+                                if (context.mounted) {
+                                  await showDialog(
+                                    context: context,
+                                    barrierDismissible:
+                                        false, // El usuario debe interactuar con el diálogo
+                                    builder:
+                                        (dialogContext) => RecipeRatingDialog(
+                                          recipeName: widget.recipe.name,
+                                          onSubmit: (rating, comment) {
+                                            // Save rating and comment to recipe history
+                                            ref
+                                                .read(
+                                                  recipeHistoryProvider
+                                                      .notifier,
+                                                )
+                                                .completeCooking(
+                                                  widget.recipe,
+                                                  rating: rating.toDouble(),
+                                                  notes:
+                                                      comment.isNotEmpty
+                                                          ? comment
+                                                          : null,
+                                                );
+                                          },
+                                        ),
+                                  );
+
+                                  // Mostrar mensaje de impacto ambiental después de calificar
+                                  if (context.mounted) {
+                                    final sustainabilityScore =
+                                        _environmentalImpact['sustainabilityScore']
+                                            ?.toDouble() ??
+                                        0.0;
+                                    final message = _getSustainabilityMessage(
+                                      sustainabilityScore,
+                                    );
+
+                                    // Mostrar diálogo de impacto ambiental en lugar de un simple snackbar
+                                    await showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder:
+                                          (dialogContext) => AlertDialog(
+                                            title: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.eco,
+                                                  color:
+                                                      _getSustainabilityColor(
+                                                        sustainabilityScore,
+                                                      ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Impacto Ambiental',
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '¡Felicidades! Has completado la receta y $message',
+                                                  style: GoogleFonts.inter(),
+                                                ),
+                                                const SizedBox(height: 16),
+                                                // Mostrar estadísticas básicas de impacto
+                                                _buildImpactStatRow(
+                                                  'CO₂ evitado:',
+                                                  '${(_environmentalImpact['co2Emissions'] ?? 0.0).toStringAsFixed(1)} kg',
+                                                  Icons.cloud_outlined,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                _buildImpactStatRow(
+                                                  'Agua ahorrada:',
+                                                  '${(_environmentalImpact['waterUsage'] ?? 0.0).toStringAsFixed(0)} L',
+                                                  Icons.water_drop_outlined,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                _buildImpactStatRow(
+                                                  'Desperdicio evitado:',
+                                                  '${(_environmentalImpact['wastePreventionScore'] ?? 0.0).toStringAsFixed(0)} pts',
+                                                  Icons.recycling,
+                                                ),
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  '💡 Tip: ${_getSustainabilityTip(sustainabilityScore)}',
+                                                  style: GoogleFonts.inter(
+                                                    fontStyle: FontStyle.italic,
+                                                    fontSize: 13,
+                                                    color: Colors.grey.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(dialogContext);
+                                                  // Navegar a la pantalla de recetas
+                                                  if (context.mounted) {
+                                                    context.go('/recipes');
+                                                  }
+                                                },
+                                                child: const Text('Cerrar'),
+                                              ),
+                                              ElevatedButton.icon(
+                                                onPressed: () {
+                                                  Navigator.pop(dialogContext);
+                                                  // Mostrar panel de impacto completo
+                                                  _showFullImpactPanel(context);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      _getSustainabilityColor(
+                                                        sustainabilityScore,
+                                                      ),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.analytics,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  'Ver Panel de Impacto',
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                  }
+                                }
                               },
                             ),
                       ),
@@ -1211,10 +1317,36 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ],
           ),
 
-          if (_missingIngredients.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _buildEnvironmentalTip(),
-          ],
+          const SizedBox(height: 16),
+          _buildEnvironmentalTip(),
+
+          // Añadir feedback sobre sostenibilidad
+          const SizedBox(height: 12),
+          _buildSustainabilityFeedback(),
+
+          // Botón para ver panel de impacto completo
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showFullImpactPanel(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50).withAlpha(40),
+                foregroundColor: const Color(0xFF2E7D32),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: Color(0xFF4CAF50), width: 1),
+                ),
+              ),
+              icon: const Icon(Icons.analytics, size: 18),
+              label: Text(
+                'Ver Panel de Impacto Completo',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1308,6 +1440,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   Widget _buildEnvironmentalTip() {
+    if (_missingIngredients.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1332,6 +1468,76 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSustainabilityFeedback() {
+    final sustainabilityScore =
+        _environmentalImpact['sustainabilityScore']?.toDouble() ?? 0.0;
+    final message = _getSustainabilityMessage(sustainabilityScore);
+    final color = _getSustainabilityColor(sustainabilityScore);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.eco, color: color, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Impacto de sostenibilidad',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Al cocinar esta receta ${message.toLowerCase()}',
+            style: GoogleFonts.inter(fontSize: 12, color: color),
+          ),
+          const SizedBox(height: 6),
+          _buildSustainabilityTips(sustainabilityScore),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSustainabilityTips(double score) {
+    String tip;
+
+    if (score < 60) {
+      if (_missingIngredients.isNotEmpty) {
+        tip =
+            '💡 Intenta usar más ingredientes de tu inventario para reducir el impacto ambiental.';
+      } else {
+        tip =
+            '💡 Considera recetas con ingredientes de menor huella de carbono como vegetales locales.';
+      }
+    } else {
+      tip =
+          '💡 ¡Sigue así! Estás contribuyendo positivamente al medio ambiente con tus elecciones.';
+    }
+
+    return Text(
+      tip,
+      style: GoogleFonts.inter(
+        fontSize: 12,
+        fontStyle: FontStyle.italic,
+        color: Colors.grey.shade700,
       ),
     );
   }
@@ -1707,6 +1913,354 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               ),
             ],
           ),
+    );
+  }
+
+  /// Obtiene un mensaje de sostenibilidad basado en la puntuación
+  String _getSustainabilityMessage(double score) {
+    if (score >= 80) {
+      return 'has contribuido significativamente al medio ambiente. ¡Excelente elección!';
+    } else if (score >= 60) {
+      return 'has hecho una buena elección para el planeta';
+    } else if (score >= 40) {
+      return 'tu impacto ambiental ha sido moderado';
+    } else {
+      return 'puedes mejorar tu impacto ambiental en futuras recetas';
+    }
+  }
+
+  /// Obtiene un color basado en la puntuación de sostenibilidad
+  Color _getSustainabilityColor(double score) {
+    if (score >= 80) {
+      return const Color(0xFF4CAF50); // Verde
+    } else if (score >= 60) {
+      return const Color(0xFF8BC34A); // Verde claro
+    } else if (score >= 40) {
+      return const Color(0xFFFF9800); // Naranja
+    } else {
+      return const Color(0xFFE53935); // Rojo
+    }
+  }
+
+  /// Construye una fila de estadística de impacto para el diálogo de impacto ambiental
+  Widget _buildImpactStatRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey.shade700),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF4CAF50),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Obtiene un tip de sostenibilidad basado en la puntuación
+  String _getSustainabilityTip(double score) {
+    if (score < 40) {
+      return 'Intenta usar más ingredientes locales y de temporada para reducir tu huella de carbono.';
+    } else if (score < 60) {
+      return 'Considera reducir el consumo de ingredientes de origen animal para mejorar tu impacto ambiental.';
+    } else if (score < 80) {
+      return 'Estás en buen camino. Sigue aprovechando los ingredientes de tu inventario para evitar desperdicios.';
+    } else {
+      return '¡Excelente elección! Esta receta es muy sostenible y ayuda a cuidar el planeta.';
+    }
+  }
+
+  /// Muestra un panel completo con información detallada sobre el impacto ambiental
+  void _showFullImpactPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.85,
+            maxChildSize: 0.95,
+            minChildSize: 0.5,
+            builder:
+                (context, scrollController) => Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.analytics,
+                              color: Color(0xFF4CAF50),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Panel de Impacto Ambiental',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(color: Colors.grey.shade300),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(16),
+                          children: [
+                            // Sección 1: Resumen de impacto
+                            _buildImpactSection('Resumen de Impacto', [
+                              _buildImpactDetail(
+                                'Puntuación de sostenibilidad',
+                                '${(_environmentalImpact['sustainabilityScore'] ?? 0.0).toStringAsFixed(0)}/100',
+                                Icons.eco,
+                                const Color(0xFF4CAF50),
+                              ),
+                              _buildImpactDetail(
+                                'Emisiones de CO₂',
+                                '${(_environmentalImpact['co2Emissions'] ?? 0.0).toStringAsFixed(1)} kg',
+                                Icons.cloud_outlined,
+                                const Color(0xFF2196F3),
+                              ),
+                              _buildImpactDetail(
+                                'Uso de agua',
+                                '${(_environmentalImpact['waterUsage'] ?? 0.0).toStringAsFixed(0)} L',
+                                Icons.water_drop_outlined,
+                                const Color(0xFF2196F3),
+                              ),
+                            ]),
+
+                            // Sección 2: Uso de inventario
+                            _buildImpactSection('Uso de Inventario', [
+                              _buildImpactDetail(
+                                'Ingredientes disponibles',
+                                '${_availableIngredients.length}/${widget.recipe.ingredients.length}',
+                                Icons.inventory_2,
+                                const Color(0xFF9C27B0),
+                              ),
+                              _buildImpactDetail(
+                                'Ingredientes a comprar',
+                                '${_missingIngredients.length}',
+                                Icons.shopping_cart,
+                                const Color(0xFFFF9800),
+                              ),
+                              _buildImpactDetail(
+                                'Uso de inventario',
+                                '${(_environmentalImpact['inventoryUsage'] ?? 0.0).toStringAsFixed(0)}%',
+                                Icons.percent,
+                                const Color(0xFF4CAF50),
+                              ),
+                            ]),
+
+                            // Sección 3: Prevención de desperdicios
+                            _buildImpactSection('Prevención de Desperdicios', [
+                              _buildImpactDetail(
+                                'Puntos de prevención',
+                                '${(_environmentalImpact['wastePreventionScore'] ?? 0.0).toStringAsFixed(0)}',
+                                Icons.recycling,
+                                const Color(0xFF4CAF50),
+                              ),
+                              _buildImpactDetail(
+                                'Impacto de transporte',
+                                '+${(_environmentalImpact['transportationImpact'] ?? 0.0).toStringAsFixed(1)} kg CO₂',
+                                Icons.local_shipping,
+                                const Color(0xFFFF5722),
+                              ),
+                            ]),
+
+                            // Sección 4: Consejos de sostenibilidad
+                            Container(
+                              margin: const EdgeInsets.only(
+                                top: 24,
+                                bottom: 16,
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8BC34A).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF8BC34A,
+                                  ).withOpacity(0.3),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.lightbulb,
+                                        color: Color(0xFF8BC34A),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Consejos para mejorar',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF8BC34A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildTipItem(
+                                    '1. Usa ingredientes locales y de temporada para reducir la huella de carbono.',
+                                  ),
+                                  _buildTipItem(
+                                    '2. Aprovecha al máximo los ingredientes de tu inventario para evitar desperdicios.',
+                                  ),
+                                  _buildTipItem(
+                                    '3. Reduce el consumo de carne, especialmente de res, que tiene mayor impacto ambiental.',
+                                  ),
+                                  _buildTipItem(
+                                    '4. Planifica tus comidas para comprar solo lo necesario.',
+                                  ),
+                                  _buildTipItem(
+                                    '5. Conserva adecuadamente los alimentos para prolongar su vida útil.',
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Botón de compartir impacto
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        '¡Impacto ambiental compartido!',
+                                      ),
+                                      backgroundColor: Color(0xFF4CAF50),
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4CAF50),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.share),
+                                label: const Text('Compartir mi Impacto'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          ),
+    );
+  }
+
+  /// Construye una sección de impacto para el panel completo
+  Widget _buildImpactSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            title,
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...children,
+        const SizedBox(height: 8),
+        Divider(color: Colors.grey.shade200, thickness: 1),
+      ],
+    );
+  }
+
+  /// Construye un detalle de impacto para el panel completo
+  Widget _buildImpactDetail(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label, style: GoogleFonts.inter(fontSize: 14))),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Construye un ítem de consejo para el panel de impacto
+  Widget _buildTipItem(String tip) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              tip,
+              style: GoogleFonts.inter(fontSize: 14, height: 1.4),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

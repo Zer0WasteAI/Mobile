@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/firestore_recipes_provider.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart';
 
@@ -34,9 +35,19 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   void initState() {
     super.initState();
     // Load recipes from Firestore on initial load
-    Future.microtask(
-      () => ref.read(firestoreRecipesProvider.notifier).loadRecipes(),
-    );
+    Future.microtask(() async {
+      // Forzar recarga de recetas desde Firestore
+      await ref.read(firestoreRecipesProvider.notifier).loadRecipes();
+
+      // Verificar si se cargaron recetas
+      if (mounted) {
+        final recipes = ref.read(firestoreRecipesListProvider);
+        if (recipes.isEmpty) {
+          // Si no hay recetas en Firestore, intentar cargar desde el proveedor de AI
+          await ref.read(aiRecipeProvider.notifier).loadRecipesFromFirestore();
+        }
+      }
+    });
   }
 
   @override
@@ -65,7 +76,15 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           // Refresh recipes from Firestore
-          ref.read(firestoreRecipesProvider.notifier).loadRecipes();
+          await ref.read(firestoreRecipesProvider.notifier).loadRecipes();
+
+          // Si no hay recetas en Firestore, intentar cargar desde el proveedor de AI
+          final recipes = ref.read(firestoreRecipesListProvider);
+          if (recipes.isEmpty) {
+            await ref
+                .read(aiRecipeProvider.notifier)
+                .loadRecipesFromFirestore();
+          }
         },
         child: Column(
           children: [
@@ -238,6 +257,72 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                       icon: const Icon(Icons.auto_awesome, size: 20),
                       label: Text(
                         'Generar con IA',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        // Mostrar indicador de carga
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Cargando recetas guardadas...'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+
+                        // Intentar cargar recetas desde Firestore
+                        await ref
+                            .read(firestoreRecipesProvider.notifier)
+                            .loadRecipes();
+
+                        // Si no hay recetas en Firestore, intentar cargar desde el proveedor de AI
+                        final recipes = ref.read(firestoreRecipesListProvider);
+                        if (recipes.isEmpty) {
+                          await ref
+                              .read(aiRecipeProvider.notifier)
+                              .loadRecipesFromFirestore();
+                        }
+
+                        if (mounted) {
+                          final updatedRecipes = ref.read(
+                            firestoreRecipesListProvider,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                updatedRecipes.isNotEmpty
+                                    ? 'Se cargaron ${updatedRecipes.length} recetas'
+                                    : 'No se encontraron recetas guardadas',
+                              ),
+                              backgroundColor:
+                                  updatedRecipes.isNotEmpty
+                                      ? Colors.green
+                                      : Colors.orange,
+                            ),
+                          );
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF00BFA5),
+                        side: const BorderSide(color: Color(0xFF00BFA5)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.refresh, size: 20),
+                      label: Text(
+                        'Cargar Recetas Guardadas',
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,

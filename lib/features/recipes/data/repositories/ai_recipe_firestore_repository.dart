@@ -55,20 +55,58 @@ class AIRecipeFirestoreRepository {
         return []; // Return empty list for non-authenticated users
       }
 
+      // Imprimir información de depuración
+      print('🔍 Buscando recetas para usuario: ${currentUser.uid}');
+      print('🔍 Colección: $_collectionPath');
+
+      // Consulta temporal sin ordenamiento mientras se crea el índice
       final snapshot =
           await _firestore
               .collection(_collectionPath)
               .where('userId', isEqualTo: currentUser.uid)
-              .orderBy('createdAt', descending: true)
               .get();
 
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        // Make sure the ID from the document is used
-        data['id'] = doc.id;
-        return Recipe.fromJson(data);
-      }).toList();
+      // Nota: Normalmente usaríamos .orderBy('createdAt', descending: true)
+      // pero eso requiere un índice compuesto que puede estar en proceso de creación
+
+      print('📊 Encontradas ${snapshot.docs.length} recetas en Firestore');
+
+      final recipes =
+          snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                // Make sure the ID from the document is used
+                data['id'] = doc.id;
+
+                try {
+                  return Recipe.fromJson(data);
+                } catch (e) {
+                  print('❌ Error al convertir documento a Recipe: $e');
+                  print('📄 Datos del documento: $data');
+                  return null;
+                }
+              })
+              .where((recipe) => recipe != null)
+              .cast<Recipe>()
+              .toList();
+
+      // Ordenar los resultados en el cliente (temporalmente mientras se crea el índice)
+      recipes.sort((a, b) {
+        // Intentar extraer las fechas de creación si están disponibles
+        final aTimestamp = a.toJson()['createdAt'];
+        final bTimestamp = b.toJson()['createdAt'];
+        
+        if (aTimestamp != null && bTimestamp != null) {
+          // Ordenar de más reciente a más antiguo
+          return bTimestamp.compareTo(aTimestamp);
+        }
+        return 0; // Sin cambios si no hay timestamps
+      });
+      
+      print('✅ Convertidas y ordenadas ${recipes.length} recetas correctamente');
+      return recipes;
     } catch (e) {
+      print('❌ Error al obtener recetas del usuario: $e');
       throw Exception('Failed to get user recipes: $e');
     }
   }

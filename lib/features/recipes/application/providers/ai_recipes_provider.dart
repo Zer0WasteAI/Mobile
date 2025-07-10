@@ -239,6 +239,25 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
           generationType: 'firestore',
         );
         log('📚 Loaded ${firestoreRecipes.length} recipes from Firestore');
+      } else {
+        // Si no hay recetas en Firestore, intentar cargar recetas generadas anteriormente
+        final repository = _ref.read(aiRecipeFirestoreRepositoryProvider);
+        final recipes = await repository.getUserRecipes();
+        
+        if (recipes.isNotEmpty) {
+          // Actualizar el estado del proveedor de Firestore
+          for (final recipe in recipes) {
+            await firestoreNotifier.saveRecipe(recipe);
+          }
+          
+          state = state.copyWith(
+            recipes: recipes,
+            hasGenerated: true,
+            lastGenerated: DateTime.now(),
+            generationType: 'firestore',
+          );
+          log('📚 Loaded ${recipes.length} recipes from Firestore repository directly');
+        }
       }
     } catch (e) {
       log('❌ Failed to load recipes from Firestore: $e');
