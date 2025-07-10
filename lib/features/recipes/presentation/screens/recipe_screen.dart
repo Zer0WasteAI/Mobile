@@ -182,10 +182,10 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF00BFA5).withOpacity(0.1),
+                            color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFF00BFA5).withOpacity(0.3),
+                              color: const Color(0xFF00BFA5).withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),

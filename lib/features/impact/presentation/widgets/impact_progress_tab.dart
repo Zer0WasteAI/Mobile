@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact.dart';
+import 'package:intl/intl.dart';
 
 /// Widget para la pestaña "Progreso" del panel de impacto ambiental
 class ImpactProgressTab extends ConsumerWidget {
@@ -14,14 +15,13 @@ class ImpactProgressTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeFilter = ref.watch(impactHistoryFilterProvider);
-    final calculationsAsync = switch (activeFilter) {
-      ImpactHistoryFilter.all => ref.watch(allImpactCalculationsProvider),
-      ImpactHistoryFilter.cooked => ref.watch(
-        impactCalculationsByStatusProvider(true),
-      ),
-      ImpactHistoryFilter.notCooked => ref.watch(
-        impactCalculationsByStatusProvider(false),
-      ),
+    final allRecipes = ref.watch(unifiedCompletedRecipesProvider);
+    
+    // Filtrar recetas según el filtro activo
+    final filteredRecipes = switch (activeFilter) {
+      ImpactHistoryFilter.all => allRecipes,
+      ImpactHistoryFilter.cooked => allRecipes.where((recipe) => recipe['isCooked'] == true).toList(),
+      ImpactHistoryFilter.notCooked => allRecipes.where((recipe) => recipe['isCooked'] == false).toList(),
     };
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -33,25 +33,9 @@ class ImpactProgressTab extends ConsumerWidget {
         _buildFilterButtons(context, ref),
         const SizedBox(height: 24),
         Expanded(
-          child: calculationsAsync.when(
-            data:
-                (calculations) =>
-                    calculations.calculations.isEmpty
-                        ? _buildEmptyState(context)
-                        : _buildCalculationsList(
-                          calculations.calculations,
-                          context,
-                          ref,
-                        ),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error:
-                (error, stack) => Center(
-                  child: Text(
-                    'Error al cargar los cálculos: $error',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-          ),
+          child: filteredRecipes.isEmpty
+              ? _buildEmptyState(context)
+              : _buildUnifiedRecipesList(filteredRecipes, context, ref),
         ),
       ],
     );
@@ -125,6 +109,21 @@ class ImpactProgressTab extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUnifiedRecipesList(
+    List<Map<String, dynamic>> recipes,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: recipes.length,
+      itemBuilder: (context, index) {
+        final recipe = recipes[index];
+        return _buildUnifiedRecipeCard(recipe, context, ref);
+      },
     );
   }
 
@@ -319,5 +318,153 @@ class ImpactProgressTab extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildUnifiedRecipeCard(
+    Map<String, dynamic> recipe,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode ? AppColors.darkSurface : Colors.white;
+    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+    final titleColor = isDarkMode ? Colors.white : AppColors.lightPrimary;
+
+    final dateTime = DateTime.parse(recipe['date'] as String);
+    final formattedDate = DateFormat('dd MMM yyyy, HH:mm', 'es_PE').format(dateTime);
+    final isFromAPI = recipe['isFromAPI'] as bool? ?? false;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: cardColor,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              recipe['title'] as String,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: titleColor,
+                              ),
+                            ),
+                          ),
+                          if (isFromAPI)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'API',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedDate,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: textColor.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildStatusChip(recipe['isCooked'] as bool, context),
+              ],
+            ),
+            const Divider(height: 24),
+            _buildUnifiedImpactGrid(recipe, context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnifiedImpactGrid(Map<String, dynamic> recipe, BuildContext context) {
+    final co2 = (recipe['co2Emissions'] as double? ?? 0.0);
+    final water = (recipe['waterUsage'] as double? ?? 0.0);
+    final sustainability = (recipe['sustainabilityScore'] as double? ?? 0.0);
+    final wastePrevention = (recipe['wastePreventionScore'] as double? ?? 0.0);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Sostenibilidad',
+                value: '${sustainability.toStringAsFixed(0)}/100',
+                icon: Icons.eco,
+                color: _getSustainabilityColor(sustainability),
+                context: context,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildImpactItem(
+                title: 'CO₂ Ahorrado',
+                value: '${co2.toStringAsFixed(1)} kg',
+                icon: Icons.cloud_off,
+                color: Colors.blue,
+                context: context,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Agua Ahorrada',
+                value: '${water.toStringAsFixed(0)} L',
+                icon: Icons.water_drop,
+                color: Colors.cyan,
+                context: context,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildImpactItem(
+                title: 'Desperdicio',
+                value: '${wastePrevention.toStringAsFixed(0)} pts',
+                icon: Icons.recycling,
+                color: Colors.green,
+                context: context,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Color _getSustainabilityColor(double score) {
+    if (score >= 80) return const Color(0xFF4CAF50);
+    if (score >= 60) return const Color(0xFF8BC34A);
+    if (score >= 40) return const Color(0xFFFF9800);
+    return const Color(0xFFE53935);
   }
 }

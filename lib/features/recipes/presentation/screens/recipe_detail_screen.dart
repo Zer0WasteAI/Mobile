@@ -738,7 +738,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                     // Actualizar los datos de impacto ambiental PRIMERO
                                     ref
                                         .read(impactDataProvider.notifier)
-                                        .updateImpactData(_environmentalImpact);
+                                        .updateImpactData(_environmentalImpact, recipeTitle: widget.recipe.name);
 
                                     // Mostrar diálogo de impacto ambiental en lugar de un simple snackbar
                                     await showDialog(
@@ -1348,7 +1348,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 // Asegurar que los datos de impacto estén actualizados
                 ref
                     .read(impactDataProvider.notifier)
-                    .updateImpactData(_environmentalImpact);
+                    .updateImpactData(_environmentalImpact, recipeTitle: widget.recipe.name);
 
                 // Usar Future.delayed para evitar problemas de navegación
                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -2071,7 +2071,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                 // Actualizar los datos de impacto ambiental
                                 ref
                                     .read(impactDataProvider.notifier)
-                                    .updateImpactData(_environmentalImpact);
+                                    .updateImpactData(_environmentalImpact, recipeTitle: widget.recipe.name);
                                 Navigator.pop(context);
                                 context.pushNamed('impact');
                               },

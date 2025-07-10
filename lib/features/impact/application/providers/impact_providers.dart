@@ -19,16 +19,26 @@ class ImpactMetricsNotifier extends StateNotifier<ImpactMetrics> {
 
   static ImpactMetrics _getInitialMetrics() {
     return ImpactMetrics(
-      foodSavedKg: 12.5,
-      co2AvoidedKg: 20.3,
-      waterSavedLiters: 1250.0,
+      foodSavedKg: 0.0, // Empezar con 0 para que sea más real
+      co2AvoidedKg: 0.0,
+      waterSavedLiters: 0.0,
       lastUpdated: DateTime.now(),
     );
   }
 
   /// Actualiza las métricas basado en el consumo de ingredientes
   void updateFromConsumption(ConsumptionTracking tracking) {
-    if (tracking.environmentalImpact == null) return;
+    if (tracking.environmentalImpact == null) {
+      // Si no hay impacto calculado, usar valores por defecto basados en la cantidad
+      final consumedKg = tracking.consumedPortions ?? 0.0;
+      state = state.copyWith(
+        foodSavedKg: state.foodSavedKg + consumedKg,
+        co2AvoidedKg: state.co2AvoidedKg + (consumedKg * 4.2), // 1kg alimento = 4.2kg CO2 aprox
+        waterSavedLiters: state.waterSavedLiters + (consumedKg * 1000), // 1kg alimento = 1000L agua aprox
+        lastUpdated: DateTime.now(),
+      );
+      return;
+    }
 
     final co2Saved =
         tracking.environmentalImpact!['co2_saved']?.toDouble() ?? 0.0;
@@ -129,7 +139,7 @@ final lastRecipeImpactProvider = StateProvider<Map<String, dynamic>>((ref) {
 
 // Proveedor para actualizar los datos de impacto desde la pantalla de recetas
 class ImpactNotifier extends StateNotifier<Map<String, dynamic>> {
-  ImpactNotifier()
+  ImpactNotifier(this._ref)
     : super({
         'co2Emissions': 0.0,
         'waterUsage': 0.0,
@@ -142,9 +152,31 @@ class ImpactNotifier extends StateNotifier<Map<String, dynamic>> {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'recipesCooked': 0,
         'totalScore': 0.0,
+        'completedRecipes': <Map<String, dynamic>>[], // Lista de recetas completadas
       });
 
-  void updateImpactData(Map<String, dynamic> recipeImpact) {
+  final Ref _ref;
+
+  void updateImpactData(Map<String, dynamic> recipeImpact, {String? recipeTitle}) {
+    // Crear registro de receta completada
+    final completedRecipe = {
+      'title': recipeTitle ?? 'Receta',
+      'date': DateTime.now().toIso8601String(),
+      'sustainabilityScore': recipeImpact['sustainabilityScore'] as double? ?? 0.0,
+      'co2Emissions': recipeImpact['co2Emissions'] as double? ?? 0.0,
+      'waterUsage': recipeImpact['waterUsage'] as double? ?? 0.0,
+      'wastePreventionScore': recipeImpact['wastePreventionScore'] as double? ?? 0.0,
+      'isCooked': true,
+    };
+
+    // Obtener lista actual de recetas completadas
+    final currentCompletedRecipes = List<Map<String, dynamic>>.from(
+      state['completedRecipes'] as List<Map<String, dynamic>>? ?? []
+    );
+    
+    // Añadir nueva receta
+    currentCompletedRecipes.add(completedRecipe);
+
     // Actualizar los datos de impacto acumulados
     state = {
       ...state,
@@ -172,16 +204,41 @@ class ImpactNotifier extends StateNotifier<Map<String, dynamic>> {
       'totalScore':
           (state['totalScore'] as double) +
           (recipeImpact['sustainabilityScore'] as double? ?? 0.0),
+      'completedRecipes': currentCompletedRecipes,
     };
 
     // Imprimir los datos para debugging
     print('Datos de impacto actualizados: $state');
+    print('Receta completada agregada: $completedRecipe');
+
+    // También intentar registrar en el sistema API si es posible
+    _tryRegisterApiImpact(recipeTitle ?? 'Receta', completedRecipe);
+  }
+
+  /// Intenta registrar el impacto en el sistema API (opcional)
+  Future<void> _tryRegisterApiImpact(String recipeTitle, Map<String, dynamic> recipeData) async {
+    try {
+      final impactService = _ref.read(impactCalculationServiceProvider);
+      // Intentar calcular y registrar el impacto usando el título de la receta
+      await impactService.calculateFromTitle(recipeTitle);
+      print('Impacto registrado en API para: $recipeTitle');
+    } catch (e) {
+      print('No se pudo registrar en API (normal si no hay conexión): $e');
+      // No hacer nada, el sistema local funciona independientemente
+    }
+  }
+
+  /// Obtiene las recetas completadas para mostrar en el progreso
+  List<Map<String, dynamic>> getCompletedRecipes() {
+    return List<Map<String, dynamic>>.from(
+      state['completedRecipes'] as List<Map<String, dynamic>>? ?? []
+    );
   }
 }
 
 final impactDataProvider =
     StateNotifierProvider<ImpactNotifier, Map<String, dynamic>>((ref) {
-      return ImpactNotifier();
+      return ImpactNotifier(ref);
     });
 
 /// Provider for calculating meal impact
@@ -239,3 +296,40 @@ class ImpactCalculationService {
     return _repository.updateCalculationStatus(recipeUid, isCooked);
   }
 }
+
+/// Provider unificado que combina recetas del sistema local y API
+final unifiedCompletedRecipesProvider = Provider<List<Map<String, dynamic>>>((ref) {
+  final localImpactData = ref.watch(impactDataProvider);
+  final apiCalculationsAsync = ref.watch(allImpactCalculationsProvider);
+  
+  // Obtener recetas locales
+  final localRecipes = List<Map<String, dynamic>>.from(
+    localImpactData['completedRecipes'] as List<Map<String, dynamic>>? ?? []
+  );
+  
+  // Convertir recetas API al formato local si están disponibles
+  final apiRecipes = apiCalculationsAsync.when(
+    data: (calculations) => calculations.calculations.map((calc) => {
+      'title': calc.recipeTitle,
+      'date': calc.savedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'sustainabilityScore': 85.0, // Score por defecto ya que API no lo proporciona
+      'co2Emissions': calc.carbonFootprint,
+      'waterUsage': calc.waterFootprint,
+      'wastePreventionScore': 0.0,
+      'isCooked': calc.isCooked,
+      'isFromAPI': true,
+    }).toList(),
+    loading: () => <Map<String, dynamic>>[],
+    error: (_, _) => <Map<String, dynamic>>[],
+  );
+  
+  // Combinar ambas listas y ordenar por fecha (más recientes primero)
+  final allRecipes = [...localRecipes, ...apiRecipes];
+  allRecipes.sort((a, b) {
+    final dateA = DateTime.parse(a['date'] as String);
+    final dateB = DateTime.parse(b['date'] as String);
+    return dateB.compareTo(dateA); // Más recientes primero
+  });
+  
+  return allRecipes;
+});
