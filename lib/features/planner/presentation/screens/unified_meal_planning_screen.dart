@@ -112,6 +112,11 @@ class _UnifiedMealPlanningScreenState
       elevation: 0,
       backgroundColor: colorScheme.primary,
       foregroundColor: colorScheme.onPrimary,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.pop(),
+        tooltip: 'Regresar',
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
@@ -373,9 +378,17 @@ class _UnifiedMealPlanningScreenState
     final weekStart = _getWeekStart(now);
 
     // Comparar las fechas normalizando solo año, mes y día
-    final focusedNormalized = DateTime(_focusedWeekStart.year, _focusedWeekStart.month, _focusedWeekStart.day);
-    final currentNormalized = DateTime(weekStart.year, weekStart.month, weekStart.day);
-    
+    final focusedNormalized = DateTime(
+      _focusedWeekStart.year,
+      _focusedWeekStart.month,
+      _focusedWeekStart.day,
+    );
+    final currentNormalized = DateTime(
+      weekStart.year,
+      weekStart.month,
+      weekStart.day,
+    );
+
     if (focusedNormalized.isAtSameMomentAs(currentNormalized)) {
       return 'Esta semana';
     } else if (_focusedWeekStart.isAfter(weekStart)) {
