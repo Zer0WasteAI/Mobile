@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
+import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
+import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_history_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
@@ -734,6 +736,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                       sustainabilityScore,
                                     );
 
+                                    // Actualizar los datos de impacto ambiental PRIMERO
+                                    ref
+                                        .read(impactDataProvider.notifier)
+                                        .updateImpactData(_environmentalImpact);
+
                                     // Mostrar diálogo de impacto ambiental en lugar de un simple snackbar
                                     await showDialog(
                                       context: context,
@@ -810,9 +817,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                               ),
                                               ElevatedButton.icon(
                                                 onPressed: () {
+                                                  // Primero cerrar el diálogo
                                                   Navigator.pop(dialogContext);
-                                                  // Mostrar panel de impacto completo
-                                                  _showFullImpactPanel(context);
+
+                                                  // Usar Future.delayed para dar tiempo a que se cierre el diálogo
+                                                  Future.delayed(
+                                                    const Duration(
+                                                      milliseconds: 300,
+                                                    ),
+                                                    () {
+                                                      if (context.mounted) {
+                                                        // Navegar a la pantalla de impacto usando GoRouter
+                                                        context.go('/impact');
+                                                      }
+                                                    },
+                                                  );
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor:
@@ -1329,7 +1348,20 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _showFullImpactPanel(context),
+              onPressed: () {
+                // Asegurar que los datos de impacto estén actualizados
+                ref
+                    .read(impactDataProvider.notifier)
+                    .updateImpactData(_environmentalImpact);
+
+                // Usar Future.delayed para evitar problemas de navegación
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (context.mounted) {
+                    // Navegar a la pantalla de impacto usando GoRouter
+                    context.go('/impact');
+                  }
+                });
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50).withAlpha(40),
                 foregroundColor: const Color(0xFF2E7D32),
@@ -2025,6 +2057,28 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               ),
                             ),
                             const Spacer(),
+                            TextButton.icon(
+                              icon: const Icon(
+                                Icons.fullscreen,
+                                color: Color(0xFF4CAF50),
+                              ),
+                              label: Text(
+                                'Ver completo',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF4CAF50),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              onPressed: () {
+                                // Actualizar los datos de impacto ambiental
+                                ref
+                                    .read(impactDataProvider.notifier)
+                                    .updateImpactData(_environmentalImpact);
+                                Navigator.pop(context);
+                                context.pushNamed('impact');
+                              },
+                            ),
                             IconButton(
                               icon: const Icon(Icons.close),
                               onPressed: () => Navigator.pop(context),
@@ -2106,12 +2160,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               ),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF8BC34A).withOpacity(0.1),
+                                color: const Color(
+                                  0xFF8BC34A,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: const Color(
                                     0xFF8BC34A,
-                                  ).withOpacity(0.3),
+                                  ).withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Column(
@@ -2154,20 +2210,23 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               ),
                             ),
 
-                            // Botón de compartir impacto
+                            // Botón para ver detalle de impacto
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        '¡Impacto ambiental compartido!',
-                                      ),
-                                      backgroundColor: Color(0xFF4CAF50),
-                                    ),
+                                  Navigator.pop(context); // Cerrar el panel
+
+                                  // Usar Future.delayed para evitar problemas de navegación
+                                  Future.delayed(
+                                    const Duration(milliseconds: 300),
+                                    () {
+                                      if (context.mounted) {
+                                        // Navegar a la pantalla de impacto usando GoRouter
+                                        context.go('/impact');
+                                      }
+                                    },
                                   );
-                                  Navigator.pop(context);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF4CAF50),
@@ -2178,8 +2237,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                icon: const Icon(Icons.share),
-                                label: const Text('Compartir mi Impacto'),
+                                icon: const Icon(Icons.analytics),
+                                label: const Text('Ver Detalle Completo'),
                               ),
                             ),
                           ],
@@ -2225,7 +2284,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),

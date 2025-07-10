@@ -149,9 +149,10 @@ class _RecipeRatingDialogState extends State<RecipeRatingDialog> {
                       _rating > 0
                           ? () {
                             widget.onSubmit(_rating, _commentController.text);
-                            Navigator.of(
+                            /*Navigator.of(
                               context,
-                            ).popUntil((route) => route.isFirst);
+                            ).popUntil((route) => route.isFirst);*/
+                            Navigator.pop(context);
                           }
                           : null,
                   style: ElevatedButton.styleFrom(

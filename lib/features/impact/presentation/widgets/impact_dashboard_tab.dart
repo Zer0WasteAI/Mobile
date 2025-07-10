@@ -2,251 +2,201 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
-import 'package:zer0_waste_ai/features/impact/domain/models/environmental_summary.dart';
+import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_card.dart';
+import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_chart.dart';
+import 'package:zer0_waste_ai/features/impact/presentation/widgets/impact_stats_card.dart';
 
-/// Widget para la pestaña "Mi Impacto" del panel de impacto ambiental
 class ImpactDashboardTab extends ConsumerWidget {
   const ImpactDashboardTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(impactSummaryProvider);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor =
-        isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    // Obtener datos de impacto acumulados
+    final impactData = ref.watch(impactDataProvider);
+    final recipesCooked = impactData['recipesCooked'] as int? ?? 0;
+    final lastRecipeScore = impactData['lastRecipeScore'] as double? ?? 0.0;
+    final totalScore = impactData['totalScore'] as double? ?? 0.0;
+    final avgScore = recipesCooked > 0 ? totalScore / recipesCooked : 0.0;
+    final co2Emissions = impactData['co2Emissions'] as double? ?? 0.0;
+    final waterUsage = impactData['waterUsage'] as double? ?? 0.0;
+    // ignore: unused_local_variable
+    final wastePreventionScore =
+        impactData['wastePreventionScore'] as double? ?? 0.0;
+
+    final timestamp =
+        impactData['timestamp'] as int? ??
+        DateTime.now().millisecondsSinceEpoch;
+    final lastUpdateDate = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Tarjeta de última actualización
+          if (recipesCooked > 0) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.update, color: Color(0xFF4CAF50)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Última actualización',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF4CAF50),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Fecha: ${dateFormatter.format(lastUpdateDate)}',
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Receta completada con puntuación: ${lastRecipeScore.toStringAsFixed(0)}/100',
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Resumen de impacto
           Text(
             'Resumen de Impacto',
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-            ),
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Tu contribución al medio ambiente',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 24),
-          summaryAsync.when(
-            data: (summary) => _buildMetricsGrid(summary, textColor),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error:
-                (error, stack) => Center(
-                  child: Text(
-                    'Error al cargar las métricas: $error',
-                    style: TextStyle(color: Colors.red),
-                  ),
+          const SizedBox(height: 16),
+
+          // Tarjetas de estadísticas
+          Row(
+            children: [
+              Expanded(
+                child: ImpactStatsCard(
+                  title: 'Recetas\nCocinadas',
+                  value: recipesCooked.toString(),
+                  icon: Icons.restaurant,
+                  color: const Color(0xFF4CAF50),
                 ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ImpactStatsCard(
+                  title: 'Puntuación\nPromedio',
+                  value: avgScore.toStringAsFixed(1),
+                  icon: Icons.eco,
+                  color: const Color(0xFF8BC34A),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          _buildTipsSection(context, textColor),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ImpactStatsCard(
+                  title: 'CO₂\nAhorrado',
+                  value: '${co2Emissions.toStringAsFixed(1)} kg',
+                  icon: Icons.cloud_outlined,
+                  color: const Color(0xFF2196F3),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ImpactStatsCard(
+                  title: 'Agua\nAhorrada',
+                  value: '${waterUsage.toStringAsFixed(0)} L',
+                  color: const Color(0xFF03A9F4),
+                  icon: Icons.water_drop_outlined,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Gráfico de impacto
+          if (recipesCooked > 0) ...[
+            const ImpactCard(
+              title: 'Tendencia de Sostenibilidad',
+              child: ImpactChart(),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Tarjeta de consejos
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF8BC34A).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF8BC34A).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.lightbulb, color: Color(0xFF8BC34A)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Consejos para mejorar',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF8BC34A),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildTipItem(
+                  '1. Usa ingredientes locales y de temporada para reducir la huella de carbono.',
+                ),
+                _buildTipItem(
+                  '2. Aprovecha al máximo los ingredientes de tu inventario para evitar desperdicios.',
+                ),
+                _buildTipItem(
+                  '3. Reduce el consumo de carne, especialmente de res, que tiene mayor impacto ambiental.',
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsGrid(EnvironmentalSummary summary, Color textColor) {
-    final currencyFormat = NumberFormat.currency(
-      locale: 'es_PE',
-      symbol: 'S/',
-      decimalDigits: 2,
-    );
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                title: 'Ahorro Económico',
-                value: currencyFormat.format(summary.totalEconomicCost),
-                icon: Icons.monetization_on,
-                color: Colors.green,
-                textColor: textColor,
-                tooltip:
-                    'Dinero ahorrado al evitar el desperdicio de alimentos',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                title: 'CO₂ Evitado',
-                value:
-                    '${summary.totalCarbonFootprint.toStringAsFixed(1)} ${summary.unitCarbon}',
-                icon: Icons.cloud_off,
-                color: Colors.blue,
-                textColor: textColor,
-                tooltip:
-                    'Emisiones de CO₂ evitadas al no desperdiciar alimentos',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                title: 'Agua Ahorrada',
-                value:
-                    '${summary.totalWaterFootprint.toStringAsFixed(0)} ${summary.unitWater}',
-                icon: Icons.water_drop,
-                color: Colors.cyan,
-                textColor: textColor,
-                tooltip:
-                    'Agua ahorrada en la producción de alimentos no desperdiciados',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                title: 'Energía Ahorrada',
-                value:
-                    '${summary.totalEnergyFootprint.toStringAsFixed(1)} ${summary.unitEnergy}',
-                icon: Icons.flash_on,
-                color: Colors.orange,
-                textColor: textColor,
-                tooltip:
-                    'Energía ahorrada en la producción y transporte de alimentos',
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required Color textColor,
-    required String tooltip,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: color, size: 24),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: textColor.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                value,
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipsSection(BuildContext context, Color textColor) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.tips_and_updates, color: Colors.amber),
-                const SizedBox(width: 8),
-                Text(
-                  'Tips para Maximizar tu Impacto',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildTipItem(
-              icon: Icons.calendar_today,
-              text: 'Planifica tus comidas semanalmente',
-              textColor: textColor,
-            ),
-            _buildTipItem(
-              icon: Icons.inventory_2,
-              text: 'Mantén tu inventario actualizado',
-              textColor: textColor,
-            ),
-            _buildTipItem(
-              icon: Icons.local_offer,
-              text: 'Aprovecha los alimentos próximos a vencer',
-              textColor: textColor,
-            ),
-            _buildTipItem(
-              icon: Icons.eco,
-              text: 'Prioriza ingredientes de temporada',
-              textColor: textColor,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipItem({
-    required IconData icon,
-    required String text,
-    required Color textColor,
-  }) {
+  Widget _buildTipItem(String tip) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: textColor.withValues(alpha: 0.6)),
-          const SizedBox(width: 12),
+          const SizedBox(width: 4),
           Expanded(
             child: Text(
-              text,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: textColor.withValues(alpha: 0.8),
-              ),
+              tip,
+              style: GoogleFonts.inter(fontSize: 14, height: 1.4),
             ),
           ),
         ],

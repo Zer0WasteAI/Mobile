@@ -109,8 +109,80 @@ final impactEquivalenceProvider = Provider<Map<String, String>>((ref) {
   };
 });
 
-/// Proveedor para el índice de la pestaña activa en el panel de impacto
+// Proveedor para controlar el índice de la pestaña activa en la pantalla de impacto
 final impactTabIndexProvider = StateProvider<int>((ref) => 0);
+
+// Proveedor para almacenar datos de impacto ambiental de la última receta cocinada
+final lastRecipeImpactProvider = StateProvider<Map<String, dynamic>>((ref) {
+  return {
+    'co2Emissions': 0.0,
+    'waterUsage': 0.0,
+    'sustainabilityScore': 0.0,
+    'inventoryUsage': 0.0,
+    'wastePreventionScore': 0.0,
+    'transportationImpact': 0.0,
+    'localIngredients': 0,
+    'needToBuy': 0,
+    'timestamp': DateTime.now().millisecondsSinceEpoch,
+  };
+});
+
+// Proveedor para actualizar los datos de impacto desde la pantalla de recetas
+class ImpactNotifier extends StateNotifier<Map<String, dynamic>> {
+  ImpactNotifier()
+    : super({
+        'co2Emissions': 0.0,
+        'waterUsage': 0.0,
+        'sustainabilityScore': 0.0,
+        'inventoryUsage': 0.0,
+        'wastePreventionScore': 0.0,
+        'transportationImpact': 0.0,
+        'localIngredients': 0,
+        'needToBuy': 0,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'recipesCooked': 0,
+        'totalScore': 0.0,
+      });
+
+  void updateImpactData(Map<String, dynamic> recipeImpact) {
+    // Actualizar los datos de impacto acumulados
+    state = {
+      ...state,
+      'co2Emissions':
+          (state['co2Emissions'] as double) +
+          (recipeImpact['co2Emissions'] as double? ?? 0.0),
+      'waterUsage':
+          (state['waterUsage'] as double) +
+          (recipeImpact['waterUsage'] as double? ?? 0.0),
+      'wastePreventionScore':
+          (state['wastePreventionScore'] as double) +
+          (recipeImpact['wastePreventionScore'] as double? ?? 0.0),
+      'transportationImpact':
+          (state['transportationImpact'] as double) +
+          (recipeImpact['transportationImpact'] as double? ?? 0.0),
+      'localIngredients':
+          (state['localIngredients'] as int) +
+          (recipeImpact['localIngredients'] as int? ?? 0),
+      'needToBuy':
+          (state['needToBuy'] as int) +
+          (recipeImpact['needToBuy'] as int? ?? 0),
+      'recipesCooked': (state['recipesCooked'] as int) + 1,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'lastRecipeScore': recipeImpact['sustainabilityScore'] as double? ?? 0.0,
+      'totalScore':
+          (state['totalScore'] as double) +
+          (recipeImpact['sustainabilityScore'] as double? ?? 0.0),
+    };
+
+    // Imprimir los datos para debugging
+    print('Datos de impacto actualizados: $state');
+  }
+}
+
+final impactDataProvider =
+    StateNotifierProvider<ImpactNotifier, Map<String, dynamic>>((ref) {
+      return ImpactNotifier();
+    });
 
 /// Provider for calculating meal impact
 final mealImpactProvider = FutureProvider.family<EnvironmentalImpact, String>((
