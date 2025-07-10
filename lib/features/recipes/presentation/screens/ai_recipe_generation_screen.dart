@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
-
+import 'package:zer0_waste_ai/features/recipes/presentation/widgets/favorite_button.dart';
 
 class AIRecipeGenerationScreen extends ConsumerStatefulWidget {
   const AIRecipeGenerationScreen({super.key});
@@ -46,6 +46,19 @@ class _AIRecipeGenerationScreenState
   Future<void> _smartGenerateFromInventory() async {
     final aiState = ref.read(aiRecipeProvider);
 
+    // First try to load recipes from Firestore
+    if (!aiState.isGenerating) {
+      log('📚 Loading recipes from Firestore');
+      await ref.read(aiRecipeProvider.notifier).loadRecipesFromFirestore();
+
+      // Check if we loaded recipes from Firestore
+      final updatedAiState = ref.read(aiRecipeProvider);
+      if (updatedAiState.recipes.isNotEmpty) {
+        log('✅ Using recipes loaded from Firestore');
+        return;
+      }
+    }
+
     // ✅ CASE 1: Already has recipes - don't regenerate
     if (aiState.recipes.isNotEmpty && !aiState.isGenerating) {
       log('📦 Using existing recipes, skipping auto-generation');
@@ -81,6 +94,7 @@ class _AIRecipeGenerationScreenState
   }
 
   // Guardar receta usando el nuevo endpoint
+  // ignore: unused_element
   Future<void> _saveRecipe(Recipe recipe) async {
     try {
       final success = await ref
@@ -678,20 +692,13 @@ class _AIRecipeGenerationScreenState
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _saveRecipe(recipe),
-                        icon: const Icon(Icons.bookmark_add, size: 16),
-                        label: Text(
-                          'Guardar',
-                          style: GoogleFonts.inter(fontSize: 12),
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade400),
                         ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.green.shade600,
-                          side: BorderSide(color: Colors.green.shade600),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                        child: CompactFavoriteButton(recipe: recipe),
                       ),
                     ),
                   ],

@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/firestore_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/enums/recipe_mode.dart';
 
 class RecipeScreen extends ConsumerStatefulWidget {
   final RecipeMode mode;
 
-  const RecipeScreen({
-    super.key,
-    this.mode = RecipeMode.explore,
-  });
+  const RecipeScreen({super.key, this.mode = RecipeMode.explore});
 
   static const String routeName = 'recipes';
   static const String routePath = '/recipes';
@@ -24,12 +21,30 @@ class RecipeScreen extends ConsumerStatefulWidget {
 class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'Todas';
-  final List<String> _categories = ['Todas', 'Desayuno', 'Almuerzo', 'Cena', 'Postres', 'Bebidas'];
-  
+  final List<String> _categories = [
+    'Todas',
+    'Desayuno',
+    'Almuerzo',
+    'Cena',
+    'Postres',
+    'Bebidas',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Load recipes from Firestore on initial load
+    Future.microtask(
+      () => ref.read(firestoreRecipesProvider.notifier).loadRecipes(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final aiRecipes = ref.watch(generatedRecipesProvider);
-    
+    // Get recipes from Firestore instead of AI provider
+    final firestoreRecipes = ref.watch(firestoreRecipesListProvider);
+    final isLoading = ref.watch(isLoadingFirestoreRecipesProvider);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -38,10 +53,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
         elevation: 0,
         title: Text(
           'Recetas',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
           IconButton(
@@ -52,14 +64,18 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh recipes
-          ref.invalidate(generatedRecipesProvider);
-          await Future.delayed(const Duration(milliseconds: 500));
+          // Refresh recipes from Firestore
+          ref.read(firestoreRecipesProvider.notifier).loadRecipes();
         },
         child: Column(
           children: [
             _buildSearchAndFilters(),
-            Expanded(child: _buildRecipesList(aiRecipes)),
+            Expanded(
+              child:
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildRecipesList(firestoreRecipes),
+            ),
           ],
         ),
       ),
@@ -69,11 +85,11 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
 
   Widget _buildRecipesList(List<Recipe> recipes) {
     final filteredRecipes = _filterRecipes(recipes);
-    
+
     if (recipes.isEmpty) {
       return _buildEmptyState();
     }
-    
+
     if (filteredRecipes.isEmpty) {
       return _buildNoResultsState();
     }
@@ -103,10 +119,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
             children: [
               Row(
                 children: [
-                  Text(
-                    recipe.emoji,
-                    style: const TextStyle(fontSize: 24),
-                  ),
+                  Text(recipe.emoji, style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -168,90 +181,96 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+        padding: const EdgeInsets.all(30),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  size: 60,
+                  color: Color(0xFF00BFA5),
+                ),
               ),
-              child: const Icon(
-                Icons.auto_awesome,
-                size: 60,
-                color: Color(0xFF00BFA5),
+              const SizedBox(height: 24),
+              Text(
+                '¡Hora de crear recetas increíbles!',
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '¡Hora de crear recetas increíbles!',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+              const SizedBox(height: 12),
+              Text(
+                'Usa nuestra IA para generar recetas personalizadas\nbasadas en tus ingredientes y preferencias',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Usa nuestra IA para generar recetas personalizadas\nbasadas en tus ingredientes y preferencias',
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                color: Colors.grey.shade600,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.pushNamed('AIRecipeGenerationScreen'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00BFA5),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          () => context.pushNamed('AIRecipeGenerationScreen'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BFA5),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
                       ),
-                      elevation: 2,
-                    ),
-                    icon: const Icon(Icons.auto_awesome, size: 20),
-                    label: Text(
-                      'Generar con IA',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                      icon: const Icon(Icons.auto_awesome, size: 20),
+                      label: Text(
+                        'Generar con IA',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _showQuickActionsMenu,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF00BFA5),
+                  side: const BorderSide(color: Color(0xFF00BFA5)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _showQuickActionsMenu,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF00BFA5),
-                side: const BorderSide(color: Color(0xFF00BFA5)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                icon: const Icon(Icons.explore, size: 18),
+                label: Text(
+                  'Ver más opciones',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
               ),
-              icon: const Icon(Icons.explore, size: 18),
-              label: Text(
-                'Ver más opciones',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildQuickTips(),
-          ],
+              const SizedBox(height: 24),
+              _buildQuickTips(),
+            ],
+          ),
         ),
       ),
     );
@@ -283,7 +302,9 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          _buildTip('• Especifica el tipo de comida (desayuno, almuerzo, cena)'),
+          _buildTip(
+            '• Especifica el tipo de comida (desayuno, almuerzo, cena)',
+          ),
           _buildTip('• Menciona ingredientes que tienes disponibles'),
           _buildTip('• Indica si tienes restricciones alimentarias'),
           _buildTip('• Especifica el tiempo de preparación deseado'),
@@ -297,10 +318,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         text,
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          color: Colors.blue.shade700,
-        ),
+        style: GoogleFonts.inter(fontSize: 12, color: Colors.blue.shade700),
       ),
     );
   }
@@ -331,7 +349,10 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -345,14 +366,18 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                 final category = _categories[index];
                 final isSelected = _selectedCategory == category;
                 return Padding(
-                  padding: EdgeInsets.only(right: index == _categories.length - 1 ? 0 : 8),
+                  padding: EdgeInsets.only(
+                    right: index == _categories.length - 1 ? 0 : 8,
+                  ),
                   child: FilterChip(
                     label: Text(
                       category,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? Colors.white : const Color(0xFF00BFA5),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF00BFA5),
                       ),
                     ),
                     selected: isSelected,
@@ -391,85 +416,92 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '✨ Generar Nuevas Recetas',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  const SizedBox(height: 16),
-                  _buildQuickActionTile(
-                    icon: Icons.auto_awesome,
-                    title: 'Receta con IA',
-                    subtitle: 'Crea una receta completamente nueva',
-                    color: const Color(0xFF00BFA5),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.pushNamed('AIRecipeGenerationScreen');
-                    },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '✨ Generar Nuevas Recetas',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildQuickActionTile(
+                        icon: Icons.auto_awesome,
+                        title: 'Receta con IA',
+                        subtitle: 'Crea una receta completamente nueva',
+                        color: const Color(0xFF00BFA5),
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.pushNamed('AIRecipeGenerationScreen');
+                        },
+                      ),
+                      _buildQuickActionTile(
+                        icon: Icons.inventory_2,
+                        title: 'Con mis ingredientes',
+                        subtitle: 'Usa lo que tienes en tu inventario',
+                        color: Colors.orange,
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.pushNamed(
+                            'AIRecipeGenerationScreen',
+                            queryParameters: {'mode': 'inventory'},
+                          );
+                        },
+                      ),
+                      _buildQuickActionTile(
+                        icon: Icons.shuffle,
+                        title: 'Receta sorpresa',
+                        subtitle: 'Deja que te sorprendamos',
+                        color: Colors.purple,
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.pushNamed(
+                            'AIRecipeGenerationScreen',
+                            queryParameters: {'mode': 'random'},
+                          );
+                        },
+                      ),
+                      _buildQuickActionTile(
+                        icon: Icons.favorite,
+                        title: 'Según mis gustos',
+                        subtitle: 'Basado en tus recetas favoritas',
+                        color: Colors.pink,
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.pushNamed(
+                            'AIRecipeGenerationScreen',
+                            queryParameters: {'mode': 'preferences'},
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  _buildQuickActionTile(
-                    icon: Icons.inventory_2,
-                    title: 'Con mis ingredientes',
-                    subtitle: 'Usa lo que tienes en tu inventario',
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.pushNamed('AIRecipeGenerationScreen', 
-                        queryParameters: {'mode': 'inventory'});
-                    },
-                  ),
-                  _buildQuickActionTile(
-                    icon: Icons.shuffle,
-                    title: 'Receta sorpresa',
-                    subtitle: 'Deja que te sorprendamos',
-                    color: Colors.purple,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.pushNamed('AIRecipeGenerationScreen', 
-                        queryParameters: {'mode': 'random'});
-                    },
-                  ),
-                  _buildQuickActionTile(
-                    icon: Icons.favorite,
-                    title: 'Según mis gustos',
-                    subtitle: 'Basado en tus recetas favoritas',
-                    color: Colors.pink,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.pushNamed('AIRecipeGenerationScreen', 
-                        queryParameters: {'mode': 'preferences'});
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -493,17 +525,11 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
       ),
       title: Text(
         title,
-        style: GoogleFonts.inter(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
+        style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
       ),
       subtitle: Text(
         subtitle,
-        style: GoogleFonts.inter(
-          fontSize: 13,
-          color: Colors.grey.shade600,
-        ),
+        style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -515,11 +541,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.search_off,
-            size: 80,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.search_off, size: 80, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
             'No se encontraron recetas',
@@ -532,10 +554,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
           const SizedBox(height: 8),
           Text(
             'Intenta con otros términos de búsqueda\no selecciona una categoría diferente',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -569,49 +588,58 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
 
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((recipe) {
-        return recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               recipe.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               recipe.ingredients.any((ingredient) => 
-                 ingredient.toLowerCase().contains(_searchQuery.toLowerCase()));
-      }).toList();
+      filtered =
+          filtered.where((recipe) {
+            return recipe.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                recipe.description.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                recipe.ingredients.any(
+                  (ingredient) => ingredient.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ),
+                );
+          }).toList();
     }
 
     // Filter by category
     if (_selectedCategory != 'Todas') {
-      filtered = filtered.where((recipe) {
-        // This is a simple categorization - you might want to add a category field to Recipe model
-        switch (_selectedCategory) {
-          case 'Desayuno':
-            return recipe.name.toLowerCase().contains('desayuno') ||
-                   recipe.name.toLowerCase().contains('breakfast') ||
-                   recipe.name.toLowerCase().contains('café') ||
-                   recipe.name.toLowerCase().contains('tostada') ||
-                   recipe.name.toLowerCase().contains('avena');
-          case 'Almuerzo':
-            return recipe.name.toLowerCase().contains('almuerzo') ||
-                   recipe.name.toLowerCase().contains('lunch') ||
-                   recipe.name.toLowerCase().contains('sopa') ||
-                   recipe.name.toLowerCase().contains('ensalada');
-          case 'Cena':
-            return recipe.name.toLowerCase().contains('cena') ||
-                   recipe.name.toLowerCase().contains('dinner') ||
-                   recipe.name.toLowerCase().contains('pasta') ||
-                   recipe.name.toLowerCase().contains('pollo');
-          case 'Postres':
-            return recipe.name.toLowerCase().contains('postre') ||
-                   recipe.name.toLowerCase().contains('dessert') ||
-                   recipe.name.toLowerCase().contains('torta') ||
-                   recipe.name.toLowerCase().contains('dulce');
-          case 'Bebidas':
-            return recipe.name.toLowerCase().contains('bebida') ||
-                   recipe.name.toLowerCase().contains('jugo') ||
-                   recipe.name.toLowerCase().contains('smoothie') ||
-                   recipe.name.toLowerCase().contains('batido');
-          default:
-            return true;
-        }
-      }).toList();
+      filtered =
+          filtered.where((recipe) {
+            // This is a simple categorization - you might want to add a category field to Recipe model
+            switch (_selectedCategory) {
+              case 'Desayuno':
+                return recipe.name.toLowerCase().contains('desayuno') ||
+                    recipe.name.toLowerCase().contains('breakfast') ||
+                    recipe.name.toLowerCase().contains('café') ||
+                    recipe.name.toLowerCase().contains('tostada') ||
+                    recipe.name.toLowerCase().contains('avena');
+              case 'Almuerzo':
+                return recipe.name.toLowerCase().contains('almuerzo') ||
+                    recipe.name.toLowerCase().contains('lunch') ||
+                    recipe.name.toLowerCase().contains('sopa') ||
+                    recipe.name.toLowerCase().contains('ensalada');
+              case 'Cena':
+                return recipe.name.toLowerCase().contains('cena') ||
+                    recipe.name.toLowerCase().contains('dinner') ||
+                    recipe.name.toLowerCase().contains('pasta') ||
+                    recipe.name.toLowerCase().contains('pollo');
+              case 'Postres':
+                return recipe.name.toLowerCase().contains('postre') ||
+                    recipe.name.toLowerCase().contains('dessert') ||
+                    recipe.name.toLowerCase().contains('torta') ||
+                    recipe.name.toLowerCase().contains('dulce');
+              case 'Bebidas':
+                return recipe.name.toLowerCase().contains('bebida') ||
+                    recipe.name.toLowerCase().contains('jugo') ||
+                    recipe.name.toLowerCase().contains('smoothie') ||
+                    recipe.name.toLowerCase().contains('batido');
+              default:
+                return true;
+            }
+          }).toList();
     }
 
     return filtered;

@@ -11,6 +11,7 @@ import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_plann
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_cooking_mode.dart';
 import 'package:zer0_waste_ai/features/recipes/presentation/widgets/recipe_rating_dialog.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/firestore_recipes_provider.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final Recipe recipe;
@@ -38,9 +39,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     };
   }
 
-  /// Generate cooking steps from recipe data (fallback when instructions not available)
+  /// Generate cooking steps from recipe data (fallback if instructions not available)
   List<String> _generateCookingSteps(Recipe recipe) {
-    // If recipe has real instructions, use those instead
+    // Use instructions if available
     if (recipe.instructions.isNotEmpty) {
       return recipe.instructions;
     }
@@ -148,19 +149,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     for (var ingredient in recipeIngredients) {
       final ingredientInfo = _parseIngredientSimple(ingredient);
       String ingredientName = (ingredientInfo['name'] ?? '').toLowerCase();
-      
+
       // Verificar si algún item del inventario contiene este ingrediente (y no está expirado)
       bool isAvailable = inventoryState.items.any((item) {
-        bool nameMatches = item.name.toLowerCase().contains(ingredientName) ||
+        bool nameMatches =
+            item.name.toLowerCase().contains(ingredientName) ||
             ingredientName.contains(item.name.toLowerCase());
-        bool notExpired = item.expirationDate == null || 
+        bool notExpired =
+            item.expirationDate == null ||
             item.expirationDate!.isAfter(DateTime.now());
         return nameMatches && notExpired;
       });
-      
+
       final cleanIngredientName = ingredientInfo['name'] ?? ingredient;
       availabilityMap[cleanIngredientName] = isAvailable;
-      
+
       if (isAvailable) {
         availableIngredients.add(cleanIngredientName);
       } else {
@@ -169,7 +172,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     }
 
     // Calculate environmental impact
-    final impact = _calculateEnvironmentalImpact(recipeIngredients, availableIngredients.length, missingIngredients.length);
+    final impact = _calculateEnvironmentalImpact(
+      recipeIngredients,
+      availableIngredients.length,
+      missingIngredients.length,
+    );
 
     setState(() {
       _ingredientAvailability = availabilityMap;
@@ -180,7 +187,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   // Calculate environmental impact based on recipe and ingredient availability
-  Map<String, dynamic> _calculateEnvironmentalImpact(List<String> ingredients, int availableCount, int missingCount) {
+  Map<String, dynamic> _calculateEnvironmentalImpact(
+    List<String> ingredients,
+    int availableCount,
+    int missingCount,
+  ) {
     double baseCO2 = 0.0;
     double baseWaterUsage = 0.0;
     double sustainabilityScore = 85.0; // Base score
@@ -188,35 +199,47 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     // Calculate base environmental cost per ingredient
     for (String ingredient in ingredients) {
       final ingredientLower = ingredient.toLowerCase();
-      
+
       // CO2 emissions (kg CO2 per serving)
-      if (ingredientLower.contains('carne') || ingredientLower.contains('beef') || ingredientLower.contains('res')) {
+      if (ingredientLower.contains('carne') ||
+          ingredientLower.contains('beef') ||
+          ingredientLower.contains('res')) {
         baseCO2 += 3.2;
         sustainabilityScore -= 8;
-      } else if (ingredientLower.contains('pollo') || ingredientLower.contains('chicken')) {
+      } else if (ingredientLower.contains('pollo') ||
+          ingredientLower.contains('chicken')) {
         baseCO2 += 1.8;
         sustainabilityScore -= 4;
-      } else if (ingredientLower.contains('pescado') || ingredientLower.contains('fish') || ingredientLower.contains('salmón')) {
+      } else if (ingredientLower.contains('pescado') ||
+          ingredientLower.contains('fish') ||
+          ingredientLower.contains('salmón')) {
         baseCO2 += 2.1;
         sustainabilityScore -= 3;
-      } else if (ingredientLower.contains('cerdo') || ingredientLower.contains('pork')) {
+      } else if (ingredientLower.contains('cerdo') ||
+          ingredientLower.contains('pork')) {
         baseCO2 += 2.9;
         sustainabilityScore -= 6;
-      } else if (ingredientLower.contains('queso') || ingredientLower.contains('cheese')) {
+      } else if (ingredientLower.contains('queso') ||
+          ingredientLower.contains('cheese')) {
         baseCO2 += 1.4;
         sustainabilityScore -= 2;
-      } else if (ingredientLower.contains('leche') || ingredientLower.contains('milk')) {
+      } else if (ingredientLower.contains('leche') ||
+          ingredientLower.contains('milk')) {
         baseCO2 += 0.9;
         sustainabilityScore -= 1;
-      } else if (ingredientLower.contains('arroz') || ingredientLower.contains('rice')) {
+      } else if (ingredientLower.contains('arroz') ||
+          ingredientLower.contains('rice')) {
         baseCO2 += 0.8;
-      } else if (ingredientLower.contains('papa') || ingredientLower.contains('potato')) {
+      } else if (ingredientLower.contains('papa') ||
+          ingredientLower.contains('potato')) {
         baseCO2 += 0.2;
         sustainabilityScore += 2;
-      } else if (ingredientLower.contains('tomate') || ingredientLower.contains('tomato')) {
+      } else if (ingredientLower.contains('tomate') ||
+          ingredientLower.contains('tomato')) {
         baseCO2 += 0.4;
         sustainabilityScore += 1;
-      } else if (ingredientLower.contains('cebolla') || ingredientLower.contains('onion')) {
+      } else if (ingredientLower.contains('cebolla') ||
+          ingredientLower.contains('onion')) {
         baseCO2 += 0.2;
         sustainabilityScore += 1;
       } else {
@@ -226,13 +249,17 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       }
 
       // Water usage (liters per serving)
-      if (ingredientLower.contains('carne') || ingredientLower.contains('beef')) {
+      if (ingredientLower.contains('carne') ||
+          ingredientLower.contains('beef')) {
         baseWaterUsage += 185;
-      } else if (ingredientLower.contains('pollo') || ingredientLower.contains('chicken')) {
+      } else if (ingredientLower.contains('pollo') ||
+          ingredientLower.contains('chicken')) {
         baseWaterUsage += 85;
-      } else if (ingredientLower.contains('arroz') || ingredientLower.contains('rice')) {
+      } else if (ingredientLower.contains('arroz') ||
+          ingredientLower.contains('rice')) {
         baseWaterUsage += 45;
-      } else if (ingredientLower.contains('queso') || ingredientLower.contains('cheese')) {
+      } else if (ingredientLower.contains('queso') ||
+          ingredientLower.contains('cheese')) {
         baseWaterUsage += 65;
       } else {
         baseWaterUsage += 15; // Default for vegetables
@@ -241,15 +268,18 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
     // Bonus for using inventory ingredients (reduces transportation and waste)
     double inventoryBonus = (availableCount / ingredients.length) * 100;
-    sustainabilityScore += inventoryBonus * 0.15; // 15% bonus for each available ingredient
-    
+    sustainabilityScore +=
+        inventoryBonus * 0.15; // 15% bonus for each available ingredient
+
     // Penalty for missing ingredients (need to buy, transportation, packaging)
-    double transportationCO2 = missingCount * 0.5; // Additional CO2 for shopping trips
+    double transportationCO2 =
+        missingCount * 0.5; // Additional CO2 for shopping trips
     baseCO2 += transportationCO2;
 
     // Food waste prevention bonus
-    double wastePreventionScore = availableCount * 5.0; // Points for using inventory items
-    
+    double wastePreventionScore =
+        availableCount * 5.0; // Points for using inventory items
+
     // Clamp sustainability score
     sustainabilityScore = sustainabilityScore.clamp(0.0, 100.0);
 
@@ -297,7 +327,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [FavoriteButton(recipe: widget.recipe)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _confirmDeleteRecipe(context),
+            tooltip: 'Eliminar receta',
+          ),
+          FavoriteButton(recipe: widget.recipe),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -375,11 +412,23 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             const SizedBox(height: 16),
 
             // Environmental Impact Section - CORE OF THE APP!
-            _buildEnvironmentalImpactSection(primaryColor, cardColor, textColor, secondaryTextColor, isDark),
+            _buildEnvironmentalImpactSection(
+              primaryColor,
+              cardColor,
+              textColor,
+              secondaryTextColor,
+              isDark,
+            ),
             const SizedBox(height: 16),
 
             // Ingredient Availability Section
-            _buildIngredientAvailabilitySection(primaryColor, cardColor, textColor, secondaryTextColor, isDark),
+            _buildIngredientAvailabilitySection(
+              primaryColor,
+              cardColor,
+              textColor,
+              secondaryTextColor,
+              isDark,
+            ),
             const SizedBox(height: 16),
 
             // Recipe history stats
@@ -488,7 +537,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               ),
             ),
 
-            // Instructions (only show if available)
+            // Recipe steps (previously called instructions)
             if (widget.recipe.instructions.isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(
@@ -498,7 +547,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Instrucciones',
+                      'Pasos',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -1032,15 +1081,23 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   /// Environmental Impact Section - CORE OF THE APP!
-  Widget _buildEnvironmentalImpactSection(Color primaryColor, Color cardColor, Color textColor, Color secondaryTextColor, bool isDark) {
+  Widget _buildEnvironmentalImpactSection(
+    Color primaryColor,
+    Color cardColor,
+    Color textColor,
+    Color secondaryTextColor,
+    bool isDark,
+  ) {
     if (_environmentalImpact.isEmpty) {
       return const SizedBox.shrink();
     }
 
     final co2 = _environmentalImpact['co2Emissions']?.toDouble() ?? 0.0;
     final water = _environmentalImpact['waterUsage']?.toDouble() ?? 0.0;
-    final sustainability = _environmentalImpact['sustainabilityScore']?.toDouble() ?? 0.0;
-    final wastePreventionScore = _environmentalImpact['wastePreventionScore']?.toDouble() ?? 0.0;
+    final sustainability =
+        _environmentalImpact['sustainabilityScore']?.toDouble() ?? 0.0;
+    final wastePreventionScore =
+        _environmentalImpact['wastePreventionScore']?.toDouble() ?? 0.0;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1103,7 +1160,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Environmental metrics grid
           Row(
             children: [
@@ -1145,14 +1202,15 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 child: _buildEnvironmentalMetric(
                   icon: Icons.inventory_2,
                   label: 'Inventario',
-                  value: '${_availableIngredients.length}/${widget.recipe.ingredients.length}',
+                  value:
+                      '${_availableIngredients.length}/${widget.recipe.ingredients.length}',
                   color: primaryColor,
                   subtitle: 'Disponible',
                 ),
               ),
             ],
           ),
-          
+
           if (_missingIngredients.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildEnvironmentalTip(),
@@ -1255,7 +1313,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF2196F3).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF2196F3).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF2196F3).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -1284,11 +1344,18 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   /// Ingredient Availability Section
-  Widget _buildIngredientAvailabilitySection(Color primaryColor, Color cardColor, Color textColor, Color secondaryTextColor, bool isDark) {
+  Widget _buildIngredientAvailabilitySection(
+    Color primaryColor,
+    Color cardColor,
+    Color textColor,
+    Color secondaryTextColor,
+    bool isDark,
+  ) {
     final totalIngredients = widget.recipe.ingredients.length;
     final availableCount = _availableIngredients.length;
     // final missingCount = _missingIngredients.length; // Unused for now
-    final availabilityPercentage = (availableCount / totalIngredients * 100).round();
+    final availabilityPercentage =
+        (availableCount / totalIngredients * 100).round();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1323,7 +1390,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: primaryColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -1425,35 +1495,39 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: ingredients.map((ingredient) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    available ? Icons.check_circle : Icons.shopping_cart,
-                    size: 14,
-                    color: color,
+          children:
+              ingredients.map((ingredient) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    ingredient,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: color,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
                   ),
-                ],
-              ),
-            );
-          }).toList(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        available ? Icons.check_circle : Icons.shopping_cart,
+                        size: 14,
+                        color: color,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        ingredient,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
         ),
       ],
     );
@@ -1484,85 +1558,155 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   void _showShoppingListDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.shopping_cart, color: Color(0xFFFF9800)),
-            const SizedBox(width: 8),
-            const Text('Lista de Compras'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ingredientes necesarios para: ${widget.recipe.name}',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.shopping_cart, color: Color(0xFFFF9800)),
+                const SizedBox(width: 8),
+                const Text('Lista de Compras'),
+              ],
             ),
-            const SizedBox(height: 16),
-            ...(_missingIngredients.map((ingredient) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.shopping_cart, size: 16, color: Color(0xFFFF9800)),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(ingredient)),
-                ],
-              ),
-            ))),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '🌱 Consejo Ecológico:',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF4CAF50),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Compra productos locales y de temporada para reducir tu huella de carbono.',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFF4CAF50),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              // Here you could integrate with a shopping app or save to notes
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Lista de compras guardada en Notas'),
-                  backgroundColor: Color(0xFF4CAF50),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ingredientes necesarios para: ${widget.recipe.name}',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF9800)),
-            icon: const Icon(Icons.save, size: 16),
-            label: const Text('Guardar Lista'),
+                const SizedBox(height: 16),
+                ...(_missingIngredients.map(
+                  (ingredient) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.shopping_cart,
+                          size: 16,
+                          color: Color(0xFFFF9800),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(ingredient)),
+                      ],
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '🌱 Consejo Ecológico:',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF4CAF50),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Compra productos locales y de temporada para reducir tu huella de carbono.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF4CAF50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Here you could integrate with a shopping app or save to notes
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Lista de compras guardada en Notas'),
+                      backgroundColor: Color(0xFF4CAF50),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF9800),
+                ),
+                icon: const Icon(Icons.save, size: 16),
+                label: const Text('Guardar Lista'),
+              ),
+            ],
           ),
-        ],
-      ),
+    );
+  }
+
+  // Add the confirmDeleteRecipe method
+  void _confirmDeleteRecipe(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              'Eliminar Receta',
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              '¿Estás seguro que deseas eliminar esta receta? Esta acción no se puede deshacer.',
+              style: GoogleFonts.inter(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancelar', style: GoogleFonts.inter()),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context); // Close dialog
+
+                  try {
+                    // Delete recipe from Firestore
+                    await ref
+                        .read(firestoreRecipesProvider.notifier)
+                        .deleteRecipe(widget.recipe.id);
+
+                    // Show confirmation
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Receta eliminada correctamente'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      // Navigate back to recipe list
+                      context.pop();
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al eliminar la receta: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: Text(
+                  'Eliminar',
+                  style: GoogleFonts.inter(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_backend_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
+import 'package:zer0_waste_ai/features/recipes/application/providers/firestore_recipes_provider.dart';
 
 /// AI Recipe Generation State
 class AIRecipeState {
@@ -51,20 +52,20 @@ class AIRecipeState {
       generationType: generationType ?? this.generationType,
     );
   }
-  
+
   // Cache intelligence methods
   bool get areRecipesFresh {
     if (lastGenerated == null) return false;
     return DateTime.now().difference(lastGenerated!).inHours < 1;
   }
-  
+
   bool get hasRecentRecipes {
     return recipes.isNotEmpty && areRecipesFresh;
   }
-  
+
   String get cacheStatusMessage {
     if (!hasRecentRecipes) return '';
-    
+
     switch (generationType) {
       case 'inventory':
         return 'Recetas guardadas del inventario';
@@ -81,18 +82,24 @@ class AIRecipeState {
 /// AI Recipe Generation Notifier
 class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
   final RecipeBackendNotifier _recipeBackend;
+  final Ref _ref;
 
-  AIRecipeNotifier(this._recipeBackend) : super(const AIRecipeState());
+  AIRecipeNotifier(this._recipeBackend, this._ref)
+    : super(const AIRecipeState());
 
   /// Generate recipes from current inventory using real AI backend
   /// 🚀 OPTIMIZED: Anti-spam protection + retry with exponential backoff
-  Future<void> generateRecipesFromInventory({bool forceRegenerate = false}) async {
+  Future<void> generateRecipesFromInventory({
+    bool forceRegenerate = false,
+  }) async {
     // ✅ CACHE: Check if we have fresh inventory recipes
-    if (!forceRegenerate && state.hasRecentRecipes && state.generationType == 'inventory') {
+    if (!forceRegenerate &&
+        state.hasRecentRecipes &&
+        state.generationType == 'inventory') {
       log('📦 Using cached inventory recipes, skipping API call');
       return;
     }
-    
+
     // ✅ ANTI-SPAM: Prevent multiple concurrent calls
     if (state.isGenerating) {
       log(
@@ -132,6 +139,9 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
           generationType: 'inventory',
         );
 
+        // Save recipes to Firestore
+        _saveRecipesToFirestore(recipes);
+
         log('✅ AI Recipe generation successful on attempt $attempt');
         return; // Success, exit retry loop
       } catch (e) {
@@ -166,11 +176,13 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
     bool forceRegenerate = false,
   }) async {
     // ✅ CACHE: Check if we have fresh custom recipes (basic check)
-    if (!forceRegenerate && state.hasRecentRecipes && state.generationType == 'custom') {
+    if (!forceRegenerate &&
+        state.hasRecentRecipes &&
+        state.generationType == 'custom') {
       log('🎨 Using cached custom recipes, skipping API call');
       return;
     }
-    
+
     state = state.copyWith(isGenerating: true, error: null);
 
     try {
@@ -199,12 +211,38 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
         lastGenerated: DateTime.now(),
         generationType: 'custom',
       );
+
+      // Save recipes to Firestore
+      _saveRecipesToFirestore(recipes);
     } catch (e) {
       state = state.copyWith(
         isGenerating: false,
         error: e.toString(),
         hasGenerated: true,
       );
+    }
+  }
+
+  /// Load recipes from Firestore
+  Future<void> loadRecipesFromFirestore() async {
+    try {
+      final firestoreNotifier = _ref.read(firestoreRecipesProvider.notifier);
+      await firestoreNotifier.loadRecipes();
+
+      // Update local state with recipes from Firestore
+      final firestoreRecipes = _ref.read(firestoreRecipesListProvider);
+      if (firestoreRecipes.isNotEmpty) {
+        state = state.copyWith(
+          recipes: firestoreRecipes,
+          hasGenerated: true,
+          lastGenerated: DateTime.now(),
+          generationType: 'firestore',
+        );
+        log('📚 Loaded ${firestoreRecipes.length} recipes from Firestore');
+      }
+    } catch (e) {
+      log('❌ Failed to load recipes from Firestore: $e');
+      // We don't update state here as this is just an additional retrieval step
     }
   }
 
@@ -241,7 +279,7 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
                 final name = ingredient['name']?.toString() ?? '';
                 final quantity = ingredient['quantity']?.toString() ?? '';
                 final unit = ingredient['type_unit']?.toString() ?? '';
-                
+
                 // Format as "quantity unit name" if we have all parts
                 if (name.isNotEmpty && quantity.isNotEmpty && unit.isNotEmpty) {
                   return '$quantity $unit $name';
@@ -257,15 +295,16 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
 
     // Parse steps from the API response (backend uses 'steps' not 'instructions')
     final stepsData = data['steps'] as List? ?? [];
-    final instructions = stepsData
-        .map((stepData) {
-          if (stepData is Map<String, dynamic>) {
-            return stepData['description']?.toString() ?? '';
-          }
-          return stepData.toString();
-        })
-        .where((instruction) => instruction.isNotEmpty)
-        .toList();
+    final instructions =
+        stepsData
+            .map((stepData) {
+              if (stepData is Map<String, dynamic>) {
+                return stepData['description']?.toString() ?? '';
+              }
+              return stepData.toString();
+            })
+            .where((instruction) => instruction.isNotEmpty)
+            .toList();
 
     return Recipe(
       id:
@@ -301,16 +340,29 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
             .toList();
 
     // Convert instructions to steps format with step_order
-    final stepsData = recipe.instructions.isNotEmpty 
-        ? recipe.instructions.asMap().entries.map((entry) => {
-            'step_order': entry.key + 1,
-            'description': entry.value,
-          }).toList()
-        : [
-            {'step_order': 1, 'description': 'Preparar todos los ingredientes'},
-            {'step_order': 2, 'description': 'Seguir las instrucciones de cocción'},
-            {'step_order': 3, 'description': 'Servir y disfrutar'},
-          ];
+    final stepsData =
+        recipe.instructions.isNotEmpty
+            ? recipe.instructions
+                .asMap()
+                .entries
+                .map(
+                  (entry) => {
+                    'step_order': entry.key + 1,
+                    'description': entry.value,
+                  },
+                )
+                .toList()
+            : [
+              {
+                'step_order': 1,
+                'description': 'Preparar todos los ingredientes',
+              },
+              {
+                'step_order': 2,
+                'description': 'Seguir las instrucciones de cocción',
+              },
+              {'step_order': 3, 'description': 'Servir y disfrutar'},
+            ];
 
     return {
       'title': recipe.name,
@@ -328,15 +380,15 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
   /// Parse duration string like "25 min" to integer minutes
   int? _parseDuration(String? duration) {
     if (duration == null || duration.isEmpty) return null;
-    
+
     // Extract numbers from duration string (e.g., "25 min" -> 25)
     final RegExp numberRegex = RegExp(r'(\d+)');
     final match = numberRegex.firstMatch(duration);
-    
+
     if (match != null) {
       return int.tryParse(match.group(1) ?? '');
     }
-    
+
     return null;
   }
 
@@ -374,13 +426,29 @@ class AIRecipeNotifier extends StateNotifier<AIRecipeState> {
       return '🍽️';
     }
   }
+
+  // Helper method to save recipes to Firestore
+  Future<void> _saveRecipesToFirestore(List<Recipe> recipes) async {
+    try {
+      final firestoreNotifier = _ref.read(firestoreRecipesProvider.notifier);
+
+      for (final recipe in recipes) {
+        await firestoreNotifier.saveRecipe(recipe);
+        log('📝 Recipe saved to Firestore: ${recipe.name}');
+      }
+    } catch (e) {
+      log('❌ Failed to save recipes to Firestore: $e');
+      // We don't update state here since the generation was successful
+      // This is just an additional persistence step
+    }
+  }
 }
 
 /// Provider for AI Recipe Generation
 final aiRecipeProvider = StateNotifierProvider<AIRecipeNotifier, AIRecipeState>(
   (ref) {
     final recipeBackend = ref.watch(recipeBackendProvider);
-    return AIRecipeNotifier(recipeBackend);
+    return AIRecipeNotifier(recipeBackend, ref);
   },
 );
 
