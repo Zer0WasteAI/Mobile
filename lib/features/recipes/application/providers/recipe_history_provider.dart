@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/core/services/api_service.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_history_models.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
@@ -17,23 +16,20 @@ final recipeHistoryProvider =
 /// Notifier for managing recipe history
 class RecipeHistoryNotifier extends StateNotifier<List<RecipeHistoryEntry>> {
   final Ref _ref;
-  final ApiService _apiService = ApiService.instance;
 
   RecipeHistoryNotifier(this._ref) : super([]) {
     _loadHistory();
   }
 
-  /// Load recipe history from backend
+  /// Load recipe history from local storage (backend endpoint doesn't exist)
   Future<void> _loadHistory() async {
     try {
-      final response = await _apiService.getRecipeHistory();
-      final List<dynamic> historyData = response['history'] ?? [];
-      state =
-          historyData
-              .map((entry) => RecipeHistoryEntry.fromJson(entry))
-              .toList();
+      // TODO: Implement local storage or Firestore-based history loading
+      // For now, start with empty history
+      state = [];
     } catch (e) {
       // Handle error
+      state = [];
     }
   }
 
@@ -87,12 +83,15 @@ class RecipeHistoryNotifier extends StateNotifier<List<RecipeHistoryEntry>> {
     await _saveHistoryEntry(entry);
   }
 
-  /// Save history entry to backend
+  /// Save history entry to local storage (backend endpoint doesn't exist)
   Future<void> _saveHistoryEntry(RecipeHistoryEntry entry) async {
     try {
-      await _apiService.saveRecipeHistory(entry.toJson());
+      // TODO: Implement local storage or Firestore-based history saving
+      // For now, just keep in memory
+      print('Recipe history entry saved locally: ${entry.recipeName}');
     } catch (e) {
       // Handle error
+      print('Error saving recipe history: $e');
     }
   }
 

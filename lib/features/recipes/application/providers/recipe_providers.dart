@@ -7,6 +7,8 @@ import 'package:zer0_waste_ai/features/recipes/domain/repositories/recipe_reposi
 import 'package:zer0_waste_ai/features/recipes/data/repositories/recipe_repository_impl.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/ai_recipes_provider.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/recipe_generation_providers.dart';
+import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart' as domain;
+import 'package:zer0_waste_ai/features/favorites/presentation/providers/favorite_recipe_providers.dart';
 
 enum RecipeMode { explore, smart }
 
@@ -14,6 +16,132 @@ final recipeControllerProviderFamily =
     StateNotifierProvider.family<RecipeController, RecipeState, RecipeMode>(
       (ref, mode) => RecipeController(mode, ref),
     );
+
+/// Provider for fetching detailed recipe information
+final recipeDetailsProvider = FutureProvider.family<domain.Recipe, String>((ref, recipeId) async {
+  // First check if the recipe is a favorite (from Firestore)
+  final favoritesAsync = ref.watch(userFavoritesProvider);
+  
+  return await favoritesAsync.when(
+    data: (favoriteRecipes) async {
+      // Look for the recipe in favorites first
+      final favoriteRecipe = favoriteRecipes.where((fav) => fav.id == recipeId).firstOrNull;
+      
+      if (favoriteRecipe != null) {
+        // Convert FavoriteRecipe to domain.Recipe
+        return domain.Recipe(
+          id: favoriteRecipe.id,
+          name: favoriteRecipe.title,
+          description: favoriteRecipe.description,
+          imageUrl: favoriteRecipe.imagePath,
+          emoji: '🍽️', // Default emoji for favorites
+          ingredients: favoriteRecipe.ingredients.map((ing) => 
+            '${ing.quantity} ${ing.unit} ${ing.name}'.trim()).toList(),
+          instructions: favoriteRecipe.instructions,
+          cookingTime: favoriteRecipe.cookTime + favoriteRecipe.prepTime,
+          difficulty: favoriteRecipe.difficulty,
+          servings: favoriteRecipe.servings,
+          nutrients: {}, // No nutrients data in FavoriteRecipe
+          tags: [], // No tags data in FavoriteRecipe
+        );
+      }
+      
+      // If not in favorites, try to get from backend API
+      final repository = RecipeRepositoryImpl();
+      
+      try {
+        // Try to get from all recipes
+        final allRecipesResponse = await repository.getAllRecipes();
+        final allRecipes = allRecipesResponse['recipes'] as List;
+        
+        // Find the recipe by ID
+        final recipeData = allRecipes.firstWhere(
+          (recipe) => recipe['id'] == recipeId,
+          orElse: () => null,
+        );
+        
+        if (recipeData != null) {
+          return domain.Recipe(
+            id: recipeData['id'] as String,
+            name: recipeData['name'] as String,
+            description: recipeData['description'] as String,
+            imageUrl: recipeData['imageUrl'] as String?,
+            emoji: recipeData['emoji'] as String? ?? '🍲',
+            ingredients: (recipeData['ingredients'] as List).cast<String>(),
+            instructions: (recipeData['instructions'] as List? ?? []).cast<String>(),
+            requiredIngredientsCount: recipeData['requiredIngredientsCount'] as int?,
+            availableIngredientsCount: recipeData['availableIngredientsCount'] as int?,
+            usesExpiringItems: recipeData['usesExpiringItems'] as bool? ?? false,
+            cookingTime: recipeData['cookingTime'] as int? ?? 30,
+            difficulty: recipeData['difficulty'] as String? ?? 'Medio',
+            dietType: recipeData['dietType'] as String? ?? 'Omnívora',
+            categories: (recipeData['categories'] as List? ?? ['General']).cast<String>(),
+            servings: recipeData['servings'] as int? ?? 2,
+            nutrients: (recipeData['nutrients'] as Map<String, dynamic>? ?? {}).cast<String, String>(),
+            tags: (recipeData['tags'] as List? ?? []).cast<String>(),
+          );
+        }
+        
+        // If still not found, return a default recipe with the provided ID
+        return domain.Recipe(
+          id: recipeId,
+          name: 'Receta no encontrada',
+          description: 'No se pudo encontrar la información de esta receta.',
+          ingredients: [],
+          instructions: [],
+          servings: 2,
+          nutrients: {
+            'calories': '0 kcal',
+            'protein': '0g',
+            'carbs': '0g',
+            'fats': '0g',
+          },
+          tags: [],
+        );
+      } catch (e) {
+        log('Error fetching recipe details from API: $e');
+        // Return default recipe on API error
+        return domain.Recipe(
+          id: recipeId,
+          name: 'Error al cargar receta',
+          description: 'No se pudo conectar con el servidor para obtener los detalles de la receta.',
+          ingredients: [],
+          instructions: [],
+          servings: 2,
+          nutrients: {},
+          tags: [],
+        );
+      }
+    },
+    loading: () async {
+      // Return loading state recipe
+      return domain.Recipe(
+        id: recipeId,
+        name: 'Cargando...',
+        description: 'Cargando información de la receta...',
+        ingredients: [],
+        instructions: [],
+        servings: 2,
+        nutrients: {},
+        tags: [],
+      );
+    },
+    error: (error, stack) async {
+      log('Error loading favorites for recipe details: $error');
+      // Return error state recipe
+      return domain.Recipe(
+        id: recipeId,
+        name: 'Error',
+        description: 'Error al cargar la información de la receta.',
+        ingredients: [],
+        instructions: [],
+        servings: 2,
+        nutrients: {},
+        tags: [],
+      );
+    },
+  );
+});
 
 /// Provider that combines all saved recipes from different sources
 final savedRecipesProvider = Provider<AsyncValue<List<Map<String, dynamic>>>>((

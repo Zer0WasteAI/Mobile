@@ -96,6 +96,34 @@ const String termsAndConditionsRouteName = TermsAndConditionsScreen.routeName;
 const String aboutAppRouteName = AboutAppScreen.routeName;
 const String supportRouteName = SupportScreen.routeName;
 
+/// Helper function to parse cooking time from string format
+int? _parseCookingTime(String? timeString) {
+  if (timeString == null) return null;
+  
+  // Extract numbers from string like "30 min" or "1 h 30 min"
+  final regex = RegExp(r'(\d+)');
+  final matches = regex.allMatches(timeString);
+  
+  if (matches.isEmpty) return null;
+  
+  int totalMinutes = 0;
+  final numbers = matches.map((m) => int.parse(m.group(1)!)).toList();
+  
+  if (timeString.contains('h')) {
+    // Handle hour format
+    if (numbers.length >= 2) {
+      totalMinutes = numbers[0] * 60 + numbers[1]; // hours + minutes
+    } else {
+      totalMinutes = numbers[0] * 60; // just hours
+    }
+  } else {
+    // Just minutes
+    totalMinutes = numbers.first;
+  }
+  
+  return totalMinutes;
+}
+
 /// App router configuration
 class AppRouter {
   /// GoRouter instance factory
@@ -420,17 +448,54 @@ class AppRouter {
           path: '/recipes/detail',
           name: 'recipeDetail',
           builder: (context, state) {
-            // Get the recipe from the extra parameter
-            final recipe = state.extra as Recipe?;
-            if (recipe == null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                GoRouter.of(context).go('/home');
-              });
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+            // Handle Recipe object from domain models
+            final extra = state.extra;
+            
+            if (extra is Recipe) {
+              // Direct domain Recipe object (from new provider)
+              return RecipeDetailScreen(recipe: extra);
+            } else if (extra is Map<String, dynamic>) {
+              // Legacy support: Convert Map to Recipe object
+              try {
+                final recipe = Recipe(
+                  id: extra['id'] as String? ?? '',
+                  name: extra['title'] as String? ?? extra['name'] as String? ?? 'Unknown Recipe',
+                  description: extra['description'] as String? ?? '',
+                  imageUrl: extra['imageUrl'] as String?,
+                  emoji: extra['emoji'] as String? ?? '🍽️',
+                  ingredients: (extra['ingredients'] as List?)?.cast<String>() ?? [],
+                  instructions: (extra['steps'] as List?)?.cast<String>() ?? 
+                               (extra['instructions'] as List?)?.cast<String>() ?? [],
+                  cookingTime: _parseCookingTime(extra['preparationTime'] as String?) ?? 30,
+                  difficulty: extra['difficulty'] as String? ?? 'Medio',
+                  servings: extra['servings'] as int? ?? 2,
+                  nutrients: (extra['nutrients'] as Map<String, dynamic>?)?.cast<String, String>() ?? {},
+                  tags: (extra['tags'] as List?)?.cast<String>() ?? [],
+                );
+                return RecipeDetailScreen(recipe: recipe);
+              } catch (e) {
+                log('Error converting Map to Recipe: $e');
+              }
             }
-            return RecipeDetailScreen(recipe: recipe);
+            
+            // Error case - redirect to home
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              GoRouter.of(context).go('/home');
+            });
+            return const Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text('Error al cargar la receta'),
+                    SizedBox(height: 8),
+                    Text('Redirigiendo...', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            );
           },
         ),
         // Route for My Recipes Screen

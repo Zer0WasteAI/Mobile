@@ -456,52 +456,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                         final mealType = params['mealType'];
 
                         if (dateStr != null && mealType != null) {
-                          // Convert recipe ingredients to MealIngredient format
-                          final mealIngredients =
-                              widget.recipe.ingredients
-                                  .map(
-                                    (ingredient) => MealIngredient(
-                                      name: ingredient,
-                                      quantity:
-                                          1, // Default quantity, should be adjusted based on servings
-                                      unit:
-                                          'unidad', // Default unit, should be adjusted based on recipe
-                                    ),
-                                  )
-                                  .toList();
-
-                          final meal = Meal(
-                            recipeTitle: widget.recipe.name,
-                            ingredientsNeeded: mealIngredients,
-                            prepTime: widget.recipe.cookingTime,
-                            calories:
-                                0, // This should come from the recipe model
-                          );
-
-                          final dailyMeals = DailyMeals(
-                            breakfast: mealType == 'breakfast' ? meal : null,
-                            lunch: mealType == 'lunch' ? meal : null,
-                            dinner: mealType == 'dinner' ? meal : null,
-                          );
-
-                          final notifier = ref.read(
-                            mealPlanningProvider.notifier,
-                          );
-                          final existingPlan = await ref.read(
-                            mealPlanByDateProvider(dateStr).future,
-                          );
-
-                          if (existingPlan != null) {
-                            // Update existing plan
-                            await notifier.updateMealPlan(dateStr, dailyMeals);
-                          } else {
-                            // Create new plan
-                            await notifier.saveMealPlan(dateStr, dailyMeals);
-                          }
-
-                          if (context.mounted) {
-                            context.pop();
-                          }
+                          // Direct add when parameters are available
+                          await _addRecipeToMealPlan(dateStr, mealType);
+                        } else {
+                          // Show date/meal type picker when parameters are missing
+                          await _showMealPlanDialog();
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -681,6 +640,234 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       };
     } else {
       return {'name': ingredient.toString(), 'quantity': '', 'unit': ''};
+    }
+  }
+
+  /// Show dialog to select date and meal type for adding recipe to meal plan
+  Future<void> _showMealPlanDialog() async {
+    DateTime selectedDate = DateTime.now();
+    String selectedMealType = 'lunch';
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Agregar al Plan de Comidas',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selecciona la fecha y tipo de comida:',
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Date picker
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: Text(
+                      '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                      style: GoogleFonts.inter(),
+                    ),
+                    subtitle: const Text('Fecha'),
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: dialogContext,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 30)),
+                      );
+                      if (picked != null && picked != selectedDate) {
+                        setState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Meal type selector
+                  Text(
+                    'Tipo de comida:',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Desayuno'),
+                        selected: selectedMealType == 'breakfast',
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              selectedMealType = 'breakfast';
+                            });
+                          }
+                        },
+                      ),
+                      ChoiceChip(
+                        label: const Text('Almuerzo'),
+                        selected: selectedMealType == 'lunch',
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              selectedMealType = 'lunch';
+                            });
+                          }
+                        },
+                      ),
+                      ChoiceChip(
+                        label: const Text('Cena'),
+                        selected: selectedMealType == 'dinner',
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              selectedMealType = 'dinner';
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop({
+                    'date': selectedDate,
+                    'mealType': selectedMealType,
+                  }),
+                  child: const Text('Agregar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      final date = result['date'] as DateTime;
+      final mealType = result['mealType'] as String;
+      final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      await _addRecipeToMealPlan(dateStr, mealType);
+    }
+  }
+
+
+  /// Add recipe to meal plan with specified date and meal type
+  Future<void> _addRecipeToMealPlan(String dateStr, String mealType) async {
+    try {
+      // Convert recipe ingredients to MealIngredient format
+      final mealIngredients = widget.recipe.ingredients
+          .map(
+            (ingredient) => MealIngredient(
+              name: ingredient,
+              quantity: 1, // Default quantity, should be adjusted based on servings
+              unit: 'unidad', // Default unit, should be adjusted based on recipe
+            ),
+          )
+          .toList();
+
+      final meal = Meal(
+        recipeTitle: widget.recipe.name,
+        ingredientsNeeded: mealIngredients,
+        prepTime: widget.recipe.cookingTime,
+        calories: 0, // This should come from the recipe model
+      );
+
+      final dailyMeals = DailyMeals(
+        breakfast: mealType == 'breakfast' ? meal : null,
+        lunch: mealType == 'lunch' ? meal : null,
+        dinner: mealType == 'dinner' ? meal : null,
+      );
+
+      final notifier = ref.read(mealPlanningProvider.notifier);
+      final existingPlan = await ref.read(mealPlanByDateProvider(dateStr).future);
+
+      if (existingPlan != null) {
+        // Update existing plan - merge with existing meals
+        final updatedMeals = DailyMeals(
+          breakfast: mealType == 'breakfast' ? meal : existingPlan.meals.breakfast,
+          lunch: mealType == 'lunch' ? meal : existingPlan.meals.lunch,
+          dinner: mealType == 'dinner' ? meal : existingPlan.meals.dinner,
+        );
+        await notifier.updateMealPlan(dateStr, updatedMeals);
+      } else {
+        // Create new plan
+        await notifier.saveMealPlan(dateStr, dailyMeals);
+      }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ ${widget.recipe.name} agregada al plan de ${_getMealTypeLabel(mealType)} del ${_formatDateString(dateStr)}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Ver Plan',
+              textColor: Colors.white,
+              onPressed: () {
+                context.push('/unified-planning?date=$dateStr');
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error al agregar al plan: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Get meal type label in Spanish
+  String _getMealTypeLabel(String mealType) {
+    switch (mealType) {
+      case 'breakfast':
+        return 'desayuno';
+      case 'lunch':
+        return 'almuerzo';
+      case 'dinner':
+        return 'cena';
+      default:
+        return mealType;
+    }
+  }
+
+  /// Format date string for display
+  String _formatDateString(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateStr;
     }
   }
 }

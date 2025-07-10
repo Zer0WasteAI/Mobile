@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/features/home/application/providers/home_providers.dart'; // Import provider
 import 'package:zer0_waste_ai/core/theme/app_colors.dart'; // Import AppColors
+import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_providers.dart';
 
 class RecipeSuggestions extends ConsumerWidget {
   const RecipeSuggestions({super.key});
@@ -63,7 +64,7 @@ class RecipeSuggestions extends ConsumerWidget {
                     padding: EdgeInsets.only(
                       right: index == recipes.length - 1 ? 0 : 12.0,
                     ),
-                    child: RecipeCard(recipe: recipe),
+                    child: RecipeCard(recipe: recipe, ref: ref),
                   );
                 },
               ),
@@ -127,8 +128,9 @@ class NoFavoritesCard extends StatelessWidget {
 
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
+  final WidgetRef ref;
 
-  const RecipeCard({super.key, required this.recipe});
+  const RecipeCard({super.key, required this.recipe, required this.ref});
 
   @override
   Widget build(BuildContext context) {
@@ -169,39 +171,22 @@ class RecipeCard extends StatelessWidget {
         color: cardBackgroundColor, // Set theme-aware card background
         child: InkWell(
           borderRadius: BorderRadius.circular(16.0),
-          onTap: () {
-            // Convertir el objeto Recipe a un Map para pasarlo a la pantalla de detalle
-            final recipeMap = {
-              'id': recipe.id,
-              'title': recipe.title,
-              'difficulty': recipe.difficulty,
-              'imageUrl': recipe.imageUrl,
-              'description':
-                  'Receta basada en los ingredientes disponibles en tu despensa.',
-              'preparationTime': '30 min',
-              'servings': 2,
-              'ingredients': [
-                'Ingredientes sugeridos basados en tu inventario',
-                '4 cucharadas de aceite de oliva',
-                'Sal y pimienta al gusto',
-              ],
-              'steps': [
-                'Preparar los ingredientes',
-                'Cocinar según instrucciones detalladas',
-                'Servir y disfrutar',
-              ],
-              'nutrients': {
-                'calories': '350 kcal',
-                'protein': '15g',
-                'carbs': '45g',
-                'fats': '12g',
-              },
-              'tags': ['Saludable', 'Rápido'],
-              'emoji': '🍽️',
-            };
-
-            // Navegar a la pantalla de detalle
-            context.push('/recipes/detail', extra: recipeMap);
+          onTap: () async {
+            try {
+              // Fetch detailed recipe data dynamically
+              final recipeDetails = await ref.read(recipeDetailsProvider(recipe.id).future);
+              
+              // Navigate directly with Recipe object
+              context.push('/recipes/detail', extra: recipeDetails);
+            } catch (e) {
+              // Handle error - show snackbar or navigate with fallback data
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error al cargar la receta: ${e.toString()}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

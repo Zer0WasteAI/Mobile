@@ -31,6 +31,15 @@ _Recipe _$RecipeFromJson(Map<String, dynamic> json) => _Recipe(
           ?.map((e) => e as String)
           .toList() ??
       const ['General'],
+  servings: (json['servings'] as num?)?.toInt() ?? 2,
+  nutrients:
+      (json['nutrients'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ) ??
+      const {},
+  tags:
+      (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$RecipeToJson(_Recipe instance) => <String, dynamic>{
@@ -48,4 +57,7 @@ Map<String, dynamic> _$RecipeToJson(_Recipe instance) => <String, dynamic>{
   'difficulty': instance.difficulty,
   'dietType': instance.dietType,
   'categories': instance.categories,
+  'servings': instance.servings,
+  'nutrients': instance.nutrients,
+  'tags': instance.tags,
 };

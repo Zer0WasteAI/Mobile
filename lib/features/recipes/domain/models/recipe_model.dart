@@ -20,6 +20,9 @@ abstract class Recipe with _$Recipe {
     @Default('Medio') String difficulty,
     @Default('Omnívora') String dietType,
     @Default(['General']) List<String> categories,
+    @Default(2) int servings,
+    @Default({}) Map<String, String> nutrients,
+    @Default([]) List<String> tags,
   }) = _Recipe;
 
   factory Recipe.fromJson(Map<String, dynamic> json) => _$RecipeFromJson(json);

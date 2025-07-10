@@ -2380,26 +2380,23 @@ class ApiService {
     }
   }
 
-  /// Save recipe history entry
+  // NOTE: Recipe history endpoints removed - not available in current API
+  // Use Firestore-based history tracking instead via recipe_history_provider
+  
+  /// Save recipe history entry (removed - endpoint doesn't exist)
+  /// Use Firestore for recipe history tracking instead
+  @Deprecated('Use Firestore-based recipe history tracking')
   Future<Map<String, dynamic>> saveRecipeHistory(
     Map<String, dynamic> historyData,
   ) async {
-    try {
-      final response = await _dio.post('/recipes/history', data: historyData);
-      return response.data;
-    } catch (e) {
-      throw _handleError(e);
-    }
+    throw Exception('Recipe history endpoint /recipes/history does not exist in API. Use Firestore instead.');
   }
 
-  /// Get recipe history
+  /// Get recipe history (removed - endpoint doesn't exist)
+  /// Use Firestore for recipe history tracking instead
+  @Deprecated('Use Firestore-based recipe history tracking')
   Future<Map<String, dynamic>> getRecipeHistory() async {
-    try {
-      final response = await _dio.get('/recipes/history');
-      return response.data;
-    } catch (e) {
-      throw _handleError(e);
-    }
+    throw Exception('Recipe history endpoint /recipes/history does not exist in API. Use Firestore instead.');
   }
 
   /// Helper method to handle API errors
