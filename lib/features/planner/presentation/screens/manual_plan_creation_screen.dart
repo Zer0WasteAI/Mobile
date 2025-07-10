@@ -36,7 +36,7 @@ class _ManualPlanCreationScreenState
         foregroundColor: colorScheme.onPrimary,
         elevation: 0,
         actions: [
-          if (_hasAnyMeal())
+          /*if (_hasAnyMeal())
             TextButton(
               onPressed: _isSaving ? null : _savePlan,
               child:
@@ -53,7 +53,7 @@ class _ManualPlanCreationScreenState
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-            ),
+            ),*/
         ],
       ),
       body: Column(
@@ -353,15 +353,15 @@ class _ManualPlanCreationScreenState
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
+              /*Expanded(
                 child: _buildSummaryItem(
                   Icons.local_fire_department,
                   '$totalCalories kcal',
                   'Calorías totales',
                   Colors.orange,
                 ),
-              ),
-              const SizedBox(width: 16),
+              ),*/
+              //const SizedBox(width: 16),
               Expanded(
                 child: _buildSummaryItem(
                   Icons.restaurant,

@@ -1,39 +1,51 @@
-// ignore_for_file: unused_element, unused_result
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart';
 
-/// Widget que muestra la planificación de comidas para el día actual
-/// y proporciona un acceso rápido al planificador semanal completo
-class DailyPlannerWidget extends ConsumerStatefulWidget {
-  const DailyPlannerWidget({super.key});
+/// Widget compacto que muestra el plan de comidas del día actual
+/// Usa exactamente los mismos providers que el planner unificado
+class HomeDailyPlannerWidget extends ConsumerStatefulWidget {
+  const HomeDailyPlannerWidget({super.key});
 
   @override
-  ConsumerState<DailyPlannerWidget> createState() => _DailyPlannerWidgetState();
+  ConsumerState<HomeDailyPlannerWidget> createState() => _HomeDailyPlannerWidgetState();
 }
 
-class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
+class _HomeDailyPlannerWidgetState extends ConsumerState<HomeDailyPlannerWidget> {
   bool _isExpanded = false;
+  bool _localeInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Forzar invalidación al inicializar para obtener datos frescos
+    _initializeLocale();
+    // Force refresh on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshTodayPlan();
     });
   }
 
+  void _initializeLocale() async {
+    if (!_localeInitialized) {
+      await initializeDateFormatting('es_ES', null);
+      if (mounted) {
+        setState(() {
+          _localeInitialized = true;
+        });
+      }
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh data whenever dependencies change (like coming back to home)
+    // Refresh when coming back to home
     _refreshTodayPlan();
   }
 
@@ -41,73 +53,69 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     final today = DateTime.now();
     final dateKey = DateFormat('yyyy-MM-dd').format(today);
     
-    print('[HOME_DAILY_PLANNER] Force refreshing plan for: $dateKey');
+    print('[HOME_UNIFIED_PLANNER] Force refreshing plan for: $dateKey');
     
-    // Use ref.refresh for immediate forced refresh
-    ref.refresh(mealPlanByDateProvider(dateKey));
-    ref.refresh(allMealPlansProvider);
+    // Use the same refresh strategy as unified planner
+    ref.invalidate(mealPlanByDateProvider(dateKey));
+    ref.invalidate(allMealPlansProvider);
     
-    // Also refresh the meal planning provider
-    try {
-      ref.refresh(mealPlanningProvider);
-    } catch (e) {
-      print('[HOME_DAILY_PLANNER] Could not refresh mealPlanningProvider: $e');
-    }
-    
-    print('[HOME_DAILY_PLANNER] Providers force refreshed');
+    print('[HOME_UNIFIED_PLANNER] Providers refreshed');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Note: Locale initialization should be done in initState, not build method
+    // Wait for locale initialization
+    if (!_localeInitialized) {
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircularProgressIndicator(strokeWidth: 2),
+              SizedBox(width: 16),
+              Text('Inicializando...'),
+            ],
+          ),
+        ),
+      );
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor =
-        isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     final textColor = isDark ? AppColors.darkMainText : AppColors.lightMainText;
-    final secondaryTextColor =
-        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final secondaryTextColor = isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
     final cardColor = isDark ? Colors.grey.shade900 : Colors.white;
 
-    // Obtener la fecha actual
     final today = DateTime.now();
     final dateKey = DateFormat('yyyy-MM-dd').format(today);
 
-    // Obtener el plan de comidas para hoy usando el mismo provider que el planner unificado
+    // Use the EXACT SAME provider as unified planner
     final mealPlanAsync = ref.watch(mealPlanByDateProvider(dateKey));
-    
-    // Force refresh to ensure data is current
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        // Force refresh the provider to get latest data
-        Future.microtask(() => ref.refresh(mealPlanByDateProvider(dateKey)));
-      }
-    });
 
     return RefreshIndicator(
       onRefresh: () async {
-        print('[HOME_DAILY_PLANNER] Manual refresh triggered');
+        print('[HOME_UNIFIED_PLANNER] Manual refresh triggered');
         _refreshTodayPlan();
-        // Wait a moment for the refresh to complete
-        await Future.delayed(const Duration(milliseconds: 800));
-        print('[HOME_DAILY_PLANNER] Manual refresh completed');
+        await Future.delayed(const Duration(milliseconds: 500));
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: mealPlanAsync.when(
-          data:
-              (todayMealPlan) => _buildContent(
-                context,
-                today,
-                todayMealPlan,
-                isDark,
-                primaryColor,
-                textColor,
-                secondaryTextColor,
-                cardColor,
-              ),
+          data: (todayMealPlan) => _buildContent(
+            context,
+            today,
+            todayMealPlan,
+            isDark,
+            primaryColor,
+            textColor,
+            secondaryTextColor,
+            cardColor,
+          ),
           loading: () => _buildLoadingCard(cardColor),
-          error: (error, _) => _buildErrorCard(cardColor, textColor),
+          error: (error, _) => _buildErrorCard(cardColor, textColor, error),
         ),
       ),
     );
@@ -123,26 +131,26 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     Color secondaryTextColor,
     Color cardColor,
   ) {
-    // Obtener las comidas planificadas para hoy
+    // Get meals using the same logic as unified planner
     final todayMeals = todayMealPlan?.meals.allMeals ?? [];
     
-    // Debug: Imprimir información sobre el plan actual
-    print('[HOME_CARD] ===== PLAN DE HOY =====');
-    print('[HOME_CARD] Date: ${DateFormat('yyyy-MM-dd').format(today)}');
-    print('[HOME_CARD] Plan UID: ${todayMealPlan?.uid}');
-    print('[HOME_CARD] Meals count: ${todayMeals.length}');
+    // Debug: Same format as unified planner
+    print('[HOME_UNIFIED_PLANNER] ===== PLAN DE HOY (UNIFIED) =====');
+    print('[HOME_UNIFIED_PLANNER] Date: ${DateFormat('yyyy-MM-dd').format(today)}');
+    print('[HOME_UNIFIED_PLANNER] Plan UID: ${todayMealPlan?.uid}');
+    print('[HOME_UNIFIED_PLANNER] Meals count: ${todayMeals.length}');
     if (todayMealPlan != null) {
-      print('[HOME_CARD] Plan date: ${todayMealPlan.date}');
-      print('[HOME_CARD] Total calories: ${todayMealPlan.totalCalories}');
-      print('[HOME_CARD] Breakfast: ${todayMealPlan.meals.breakfast?.recipeTitle}');
-      print('[HOME_CARD] Lunch: ${todayMealPlan.meals.lunch?.recipeTitle}');
-      print('[HOME_CARD] Dinner: ${todayMealPlan.meals.dinner?.recipeTitle}');
+      print('[HOME_UNIFIED_PLANNER] Plan date: ${todayMealPlan.date}');
+      print('[HOME_UNIFIED_PLANNER] Total calories: ${todayMealPlan.totalCalories}');
+      print('[HOME_UNIFIED_PLANNER] Breakfast: ${todayMealPlan.meals.breakfast?.recipeTitle}');
+      print('[HOME_UNIFIED_PLANNER] Lunch: ${todayMealPlan.meals.lunch?.recipeTitle}');
+      print('[HOME_UNIFIED_PLANNER] Dinner: ${todayMealPlan.meals.dinner?.recipeTitle}');
     } else {
-      print('[HOME_CARD] NO MEAL PLAN FOUND FOR TODAY');
+      print('[HOME_UNIFIED_PLANNER] NO MEAL PLAN FOUND FOR TODAY');
     }
-    print('[HOME_CARD] ========================');
+    print('[HOME_UNIFIED_PLANNER] ================================');
 
-    // Organizar las comidas por tipo usando el nuevo modelo
+    // Organize meals by type
     final mealsByType = <String, List<Meal>>{};
     for (final meal in todayMeals) {
       final mealType = _getMealTypeFromMeal(meal);
@@ -163,30 +171,26 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header - Siempre visible
+          // Header
           InkWell(
             onTap: () {
               if (todayMeals.isEmpty) {
-                // Si no hay comidas, ir directamente al planificador de comidas
-                context.pushNamed('mealPlanning');
+                // Go to unified planner
+                ref.read(selectedDateProvider.notifier).state = today;
+                context.pushNamed('unifiedPlanning');
               } else {
-                // Si hay comidas, expandir/colapsar el widget
+                // Expand/collapse
                 setState(() {
                   _isExpanded = !_isExpanded;
                 });
               }
             },
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  // Icono principal
+                  // Icon
                   Container(
                     width: 48,
                     height: 48,
@@ -202,7 +206,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                   ),
                   const SizedBox(width: 12),
 
-                  // Información principal
+                  // Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,9 +248,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                               onTap: _refreshTodayPlan,
                               child: Container(
                                 padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
                                 child: Icon(
                                   Icons.refresh,
                                   size: 16,
@@ -272,7 +273,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                     ),
                   ),
 
-                  // Iconos de comidas o botón de acción
+                  // Action button or expand icon
                   if (todayMeals.isEmpty)
                     Container(
                       decoration: BoxDecoration(
@@ -285,19 +286,12 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
                           ref.read(selectedDateProvider.notifier).state = today;
                           await context.pushNamed('unifiedPlanning');
-                          // When returning from unified planning, force refresh
+                          // Refresh when returning
                           if (mounted) {
                             _refreshTodayPlan();
                           }
@@ -348,7 +342,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
             ),
           ),
 
-          // Contenido expandible - Solo se muestra si hay comidas y está expandido
+          // Expanded content
           if (_isExpanded && todayMeals.isNotEmpty)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -356,8 +350,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
               child: Column(
                 children: [
                   const Divider(height: 1),
-
-                  // Lista de comidas por tipo
                   ...mealsByType.entries.map(
                     (entry) => _buildMealTypeSection(
                       context,
@@ -368,8 +360,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                       secondaryTextColor,
                     ),
                   ),
-
-                  // Botón para ir al planificador completo
+                  // Button to go to unified planner
                   Padding(
                     padding: const EdgeInsets.all(12),
                     child: Row(
@@ -377,11 +368,9 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () async {
-                              // Navegar y preseleccionar la fecha actual
-                              ref.read(selectedDateProvider.notifier).state =
-                                  today;
+                              ref.read(selectedDateProvider.notifier).state = today;
                               await context.pushNamed('unifiedPlanning');
-                              // When returning from unified planning, force refresh
+                              // Refresh when returning
                               if (mounted) {
                                 _refreshTodayPlan();
                               }
@@ -423,10 +412,8 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     );
   }
 
-  // Obtener el tipo de comida desde el objeto Meal
+  // Helper methods (same as original but streamlined)
   String _getMealTypeFromMeal(Meal meal) {
-    // Determinar el tipo basado en el título de la receta o algún campo
-    // Por ahora, usaremos una lógica simple basada en el título
     final title = meal.recipeTitle.toLowerCase();
     if (title.contains('desayuno') || title.contains('breakfast')) {
       return 'Desayuno';
@@ -435,31 +422,20 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     } else if (title.contains('cena') || title.contains('dinner')) {
       return 'Cena';
     } else {
-      return 'Comida'; // Tipo genérico
+      return 'Comida';
     }
   }
 
-  // Construir resumen de comidas como texto
   String _buildMealSummary(Map<String, List<Meal>> mealsByType) {
     final parts = <String>[];
-
     mealsByType.forEach((type, meals) {
-      parts.add(
-        '${meals.length} ${type.toLowerCase()}${meals.length > 1 ? 's' : ''}',
-      );
+      parts.add('${meals.length} ${type.toLowerCase()}${meals.length > 1 ? 's' : ''}');
     });
-
     return parts.join(', ');
   }
 
-  // Construir iconos de tipos de comida
-  Widget _buildMealTypeIcons(
-    BuildContext context,
-    Map<String, List<Meal>> mealsByType,
-  ) {
+  Widget _buildMealTypeIcons(BuildContext context, Map<String, List<Meal>> mealsByType) {
     final icons = <Widget>[];
-
-    // Mostrar máximo 3 tipos
     final displayTypes = mealsByType.keys.take(3).toList();
 
     for (final type in displayTypes) {
@@ -478,7 +454,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
       );
     }
 
-    // Indicador de más tipos si hay más de 3
     if (mealsByType.length > 3) {
       icons.add(
         Container(
@@ -505,7 +480,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     return Row(mainAxisSize: MainAxisSize.min, children: icons);
   }
 
-  // Obtener color para tipo de comida
   Color _getMealTypeColor(String type) {
     switch (type.toLowerCase()) {
       case 'desayuno':
@@ -519,7 +493,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     }
   }
 
-  // Obtener icono para tipo de comida
   IconData _getMealTypeIcon(String type) {
     switch (type.toLowerCase()) {
       case 'desayuno':
@@ -533,7 +506,6 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     }
   }
 
-  // Construir sección para un tipo de comida
   Widget _buildMealTypeSection(
     BuildContext context,
     String type,
@@ -546,15 +518,11 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     final icon = _getMealTypeIcon(type);
 
     return Container(
-      color:
-          isDark
-              ? Colors.grey.shade900.withValues(alpha: 0.5)
-              : Colors.grey.shade50,
+      color: isDark ? Colors.grey.shade900.withValues(alpha: 0.5) : Colors.grey.shade50,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado del tipo
           Row(
             children: [
               CircleAvatar(
@@ -574,10 +542,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
               if (meals.length > 1)
                 Container(
                   margin: const EdgeInsets.only(left: 6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 1,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -594,152 +559,55 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
             ],
           ),
           const SizedBox(height: 8),
-
-          // Lista de comidas de este tipo
-          ...meals.map(
-            (meal) => _buildMealItem(
-              context,
-              meal,
-              isDark,
-              textColor,
-              secondaryTextColor,
+          ...meals.map((meal) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.restaurant,
+                    size: 16,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _cleanRecipeTitle(meal.recipeTitle),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${meal.prepTime} min',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
+          )),
         ],
       ),
     );
   }
 
-  // Construir item individual de comida
-  Widget _buildMealItem(
-    BuildContext context,
-    Meal meal,
-    bool isDark,
-    Color textColor,
-    Color secondaryTextColor,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          // Icono de la comida
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.restaurant,
-              size: 16,
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Información de la comida
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _cleanRecipeTitle(meal.recipeTitle),
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${meal.prepTime} min',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: secondaryTextColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Botón de acción
-          /*IconButton(
-            icon: Icon(Icons.more_vert, size: 16, color: Colors.grey.shade500),
-            onPressed: () {
-              // Mostrar opciones para la comida
-              _showMealOptions(context, meal);
-            },
-          ),*/
-        ],
-      ),
-    );
-  }
-
-  // Mostrar opciones para una comida específica
-  void _showMealOptions(BuildContext context, Meal meal) {
-    showModalBottomSheet(
-      context: context,
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.visibility),
-                  title: const Text('Ver detalles'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navegar a detalles de la comida
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.edit),
-                  title: const Text('Editar'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.pushNamed('mealPlanning');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text(
-                    'Eliminar',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Eliminar comida
-                    _deleteMeal(meal);
-                  },
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  // Eliminar una comida
-  void _deleteMeal(Meal meal) {
-    // Aquí implementarías la lógica para eliminar la comida
-    // usando el provider correspondiente
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Comida "${_cleanRecipeTitle(meal.recipeTitle)}" eliminada',
-        ),
-        action: SnackBarAction(
-          label: 'Deshacer',
-          onPressed: () {
-            // Lógica para deshacer
-          },
-        ),
-      ),
-    );
-  }
-
-  // Función helper para limpiar títulos de recetas
   String _cleanRecipeTitle(String title) {
     return title.replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
   }
@@ -763,7 +631,7 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
     );
   }
 
-  Widget _buildErrorCard(Color cardColor, Color textColor) {
+  Widget _buildErrorCard(Color cardColor, Color textColor, Object error) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -776,26 +644,30 @@ class _DailyPlannerWidgetState extends ConsumerState<DailyPlannerWidget> {
             Icon(Icons.error_outline, color: Colors.red),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                'Error al cargar el plan',
-                style: GoogleFonts.inter(color: textColor),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Error al cargar el plan',
+                    style: GoogleFonts.inter(color: textColor),
+                  ),
+                  Text(
+                    error.toString(),
+                    style: GoogleFonts.inter(
+                      color: textColor.withValues(alpha: 0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            GestureDetector(
+              onTap: _refreshTodayPlan,
+              child: Icon(Icons.refresh, color: Colors.grey.shade500),
             ),
           ],
         ),
       ),
     );
-  }
-}
-
-// Extensión para capitalizar strings
-extension StringExtension on String {
-  String capitalize() {
-    return isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
-  }
-
-  // Limpiar nombres removiendo sufijos como (1), (2), etc.
-  String cleanName() {
-    return replaceAll(RegExp(r'\s*\(\d+\)(\s*\(\d+\))*\s*$'), '');
   }
 }

@@ -27,13 +27,43 @@ extension StringExtensionPlanner on String {
 
 // All providers and models are now imported from their proper locations
 
-class PlannerScreen extends ConsumerWidget {
+class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Inicializar los datos de localización para español
-    initializeDateFormatting('es_ES', null);
+  ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
+}
+
+class _PlannerScreenState extends ConsumerState<PlannerScreen> {
+  bool _localeInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocale();
+  }
+
+  void _initializeLocale() async {
+    if (!_localeInitialized) {
+      await initializeDateFormatting('es_ES', null);
+      if (mounted) {
+        setState(() {
+          _localeInitialized = true;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Wait for locale initialization
+    if (!_localeInitialized) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     // Verificar si hay una fecha seleccionada desde la home
     final selectedDate = ref.watch(selectedDateProvider);

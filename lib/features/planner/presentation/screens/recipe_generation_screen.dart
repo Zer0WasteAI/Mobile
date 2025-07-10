@@ -110,6 +110,7 @@ class _RecipeGenerationScreenState
         elevation: 0,
         actions: [
           // Toggle between favorites and generated recipes
+          /*
           IconButton(
             onPressed: () {
               setState(() {
@@ -120,6 +121,7 @@ class _RecipeGenerationScreenState
             tooltip:
                 _showFavorites ? 'Ver recetas generadas' : 'Ver mis favoritos',
           ),
+          */
           if (!_showFavorites)
             IconButton(
               onPressed:
@@ -548,37 +550,78 @@ class _RecipeGenerationScreenState
     TextTheme textTheme,
   ) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header with count
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           child: Row(
             children: [
               Icon(Icons.favorite, color: Colors.red, size: 20),
               const SizedBox(width: 8),
-              Text(
-                '${favorites.length} ${favorites.length == 1 ? 'favorito' : 'favoritos'} de ${widget.mealType.name.toLowerCase()}',
-                style: textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  '${favorites.length} ${favorites.length == 1 ? 'favorito' : 'favoritos'} de ${widget.mealType.name.toLowerCase()}',
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        // Favorites list
+        // Favorites horizontal scroll (like home screen)
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: favorites.length,
-            itemBuilder: (context, index) {
-              final favorite = favorites[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _buildFavoriteCard(favorite, colorScheme, textTheme),
-              );
-            },
-          ),
+          child:
+              favorites.length <= 2
+                  // If 2 or fewer favorites, show them in a row
+                  ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children:
+                          favorites.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final favorite = entry.value;
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  right: index == favorites.length - 1 ? 0 : 12,
+                                ),
+                                child: _buildFavoriteCard(
+                                  favorite,
+                                  colorScheme,
+                                  textTheme,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  )
+                  // If more than 2 favorites, show horizontal scroll
+                  : SizedBox(
+                    height: 220, // Fixed height like home screen
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: favorites.length,
+                      itemBuilder: (context, index) {
+                        final favorite = favorites[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: index == favorites.length - 1 ? 0 : 12.0,
+                          ),
+                          child: _buildFavoriteCard(
+                            favorite,
+                            colorScheme,
+                            textTheme,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
         ),
+        // Add some bottom padding
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -588,77 +631,150 @@ class _RecipeGenerationScreenState
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _addFavoriteRecipeToPlan(favorite),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+    // Get colors and styling similar to home screen cards
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardBackgroundColor =
+        isDark ? colorScheme.surface : Colors.white;
+    final Color primaryColor = colorScheme.primary;
+    final Color mainTextColor = colorScheme.onSurface;
+    final Color placeholderColor = Colors.grey.shade200;
+    final Color placeholderIconColor = Colors.grey.shade400;
+
+    // Determine badge color based on difficulty
+    final Color badgeColor =
+        favorite.difficulty == 'Fácil'
+            ? primaryColor.withValues(alpha: 0.2)
+            : Colors.orange.withValues(alpha: 0.2);
+    final Color badgeTextColor =
+        favorite.difficulty == 'Fácil' ? primaryColor : Colors.orange;
+
+    return SizedBox(
+      width: 160, // Fixed width for consistency with home screen
+      child: Card(
+        elevation: isDark ? 1 : 2,
+        shadowColor: Colors.black.withValues(alpha: 0.1),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        color: cardBackgroundColor,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.0),
+          onTap: () => _addFavoriteRecipeToPlan(favorite),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      favorite.title,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.favorite, color: Colors.red, size: 20),
-                ],
+              // Image section
+              AspectRatio(
+                aspectRatio: 16 / 10,
+                child:
+                    favorite.imagePath != null
+                        ? Image.network(
+                          favorite.imagePath!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            return progress == null
+                                ? child
+                                : Container(
+                                  color: placeholderColor,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                );
+                          },
+                          errorBuilder: (context, error, stack) {
+                            return Container(
+                              color: placeholderColor,
+                              child: Icon(
+                                Icons.restaurant_menu,
+                                color: placeholderIconColor,
+                                size: 40,
+                              ),
+                            );
+                          },
+                        )
+                        : Container(
+                          color: placeholderColor,
+                          child: Icon(
+                            Icons.restaurant_menu,
+                            color: placeholderIconColor,
+                            size: 40,
+                          ),
+                        ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                favorite.description,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+              // Content section
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title with favorite icon
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            favorite.title,
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: mainTextColor,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Icon(Icons.favorite, color: Colors.red, size: 16),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    // Difficulty badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        favorite.difficulty,
+                        style: textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: badgeTextColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Time and servings info
+                    Row(
+                      children: [
+                        Icon(Icons.schedule, size: 12, color: primaryColor),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${favorite.prepTime + favorite.cookTime} min',
+                          style: textTheme.bodySmall?.copyWith(
+                            fontSize: 10,
+                            color: mainTextColor.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.people, size: 12, color: primaryColor),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${favorite.servings}',
+                          style: textTheme.bodySmall?.copyWith(
+                            fontSize: 10,
+                            color: mainTextColor.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.schedule, size: 16, color: colorScheme.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${favorite.prepTime + favorite.cookTime} min',
-                    style: textTheme.bodySmall,
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.people, size: 16, color: colorScheme.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${favorite.servings} porciones',
-                    style: textTheme.bodySmall,
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      favorite.difficulty,
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

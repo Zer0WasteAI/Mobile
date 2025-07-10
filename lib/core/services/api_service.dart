@@ -2400,6 +2400,7 @@ class ApiService {
   }
 
   /// Helper method to handle API errors
+  // ignore: unused_element
   Exception _handleError(dynamic error) {
     if (error is DioException) {
       final response = error.response;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/favorites/presentation/providers/favorite_recipe_providers.dart';
+import 'package:zer0_waste_ai/features/favorites/utils/recipe_id_generator.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 
 /// INFO: Reusable favorite button widget
@@ -26,7 +27,9 @@ class FavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    // Use unified ID generator for consistency across the app
+    final recipeId = RecipeIdGenerator.fromTitle(recipe.name);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteActionState = ref.watch(favoriteActionProvider);
     final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
@@ -64,7 +67,7 @@ class FavoriteButton extends ConsumerWidget {
                   onToggle?.call();
 
                   await favoriteActionNotifier.toggleFavorite(
-                    recipe.id,
+                    recipeId,
                     recipe.name,
                     recipe.description,
                     recipe.ingredients,
@@ -138,7 +141,9 @@ class FloatingFavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    // Use unified ID generator for consistency across the app
+    final recipeId = RecipeIdGenerator.fromTitle(recipe.name);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteActionState = ref.watch(favoriteActionProvider);
     final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
@@ -153,7 +158,7 @@ class FloatingFavoriteButton extends ConsumerWidget {
                   onToggle?.call();
 
                   await favoriteActionNotifier.toggleFavorite(
-                    recipe.id,
+                    recipeId,
                     recipe.name,
                     recipe.description,
                     recipe.ingredients,
@@ -232,7 +237,9 @@ class CompactFavoriteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    // Use unified ID generator for consistency across the app
+    final recipeId = RecipeIdGenerator.fromTitle(recipe.name);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteActionState = ref.watch(favoriteActionProvider);
     final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
@@ -247,7 +254,7 @@ class CompactFavoriteButton extends ConsumerWidget {
                   onToggle?.call();
 
                   await favoriteActionNotifier.toggleFavorite(
-                    recipe.id,
+                    recipeId,
                     recipe.name,
                     recipe.description,
                     recipe.ingredients,
@@ -343,7 +350,9 @@ class FavoriteButtonWithCount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipe.id));
+    // Use unified ID generator for consistency across the app
+    final recipeId = RecipeIdGenerator.fromTitle(recipe.name);
+    final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteActionState = ref.watch(favoriteActionProvider);
     final favoriteActionNotifier = ref.read(favoriteActionProvider.notifier);
 
@@ -361,7 +370,7 @@ class FavoriteButtonWithCount extends ConsumerWidget {
                       onToggle?.call();
 
                       await favoriteActionNotifier.toggleFavorite(
-                        recipe.id,
+                        recipeId,
                         recipe.name,
                         recipe.description,
                         recipe.ingredients,

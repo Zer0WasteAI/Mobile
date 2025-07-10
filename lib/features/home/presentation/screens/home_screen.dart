@@ -9,9 +9,9 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/motivational_ca
 import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
-import 'package:zer0_waste_ai/features/home/presentation/widgets/daily_planner_widget.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/quick_actions_widget.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/home/presentation/widgets/home_daily_planner_widget.dart';
 
 /// The HomeScreen widget is the main entry point of the app.
 /// It displays a welcome message, a motivational card, inventory summary,
@@ -82,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: EdgeInsets.symmetric(
                   horizontal: HomeScreen._horizontalPadding,
                 ),
-                child: DailyPlannerWidget(),
+                child: HomeDailyPlannerWidget(),
               ),
               const SizedBox(height: HomeScreen._sectionSpacing),
 

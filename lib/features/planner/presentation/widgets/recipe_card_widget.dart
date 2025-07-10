@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/recipe_generation_providers.dart';
 import '../../../favorites/presentation/providers/favorite_recipe_providers.dart';
+import '../../../favorites/utils/recipe_id_generator.dart';
 import '../screens/recipe_detail_screen.dart';
 
 class RecipeCardWidget extends ConsumerWidget {
@@ -168,8 +169,12 @@ class RecipeCardWidget extends ConsumerWidget {
     ColorScheme colorScheme,
     WidgetRef ref,
   ) {
-    final recipeId =
-        '${recipe.title}_${recipe.generatedAt.millisecondsSinceEpoch}';
+    // Use unified ID generator for consistency across the app
+    final recipeId = RecipeIdGenerator.fromRecipeData(
+      title: recipe.title,
+      description: recipe.description,
+      ingredients: recipe.ingredients.map((ing) => ing.name).toList(),
+    );
     final isFavoriteAsync = ref.watch(isFavoriteProvider(recipeId));
     final favoriteAction = ref.watch(favoriteActionProvider.notifier);
     return Row(
