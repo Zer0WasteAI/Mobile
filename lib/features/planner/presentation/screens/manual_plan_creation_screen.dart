@@ -316,6 +316,7 @@ class _ManualPlanCreationScreenState
   }
 
   Widget _buildSummary(ColorScheme colorScheme, TextTheme textTheme) {
+    // ignore: unused_local_variable
     final totalCalories = _getTotalCalories();
     final mealCount = _getMealCount();
 

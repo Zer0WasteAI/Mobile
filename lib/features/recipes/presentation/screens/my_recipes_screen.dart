@@ -289,7 +289,7 @@ class _MyRecipesScreenState extends ConsumerState<MyRecipesScreen> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => context.pushNamed('ai-recipe-generation'),
+            onPressed: () => context.pushNamed('AIRecipeGenerationScreen'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00BFA5),
               foregroundColor: Colors.white,
