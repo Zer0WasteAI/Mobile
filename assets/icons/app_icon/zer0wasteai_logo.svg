@@ -1,0 +1,90 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- AI Circuit pattern -->
+    <pattern id="circuitPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/>
+      <line x1="10" y1="0" x2="10" y2="5" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+      <line x1="10" y1="15" x2="10" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+      <line x1="0" y1="10" x2="5" y2="10" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+      <line x1="15" y1="10" x2="20" y2="10" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+    </pattern>
+    
+    <!-- Inner glow -->
+    <filter id="innerGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Drop shadow -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- App icon rounded square background -->
+  <rect x="10" y="10" width="180" height="180" rx="45" ry="45" fill="url(#bgGradient)" filter="url(#dropShadow)"/>
+  
+  <!-- Subtle circuit pattern overlay -->
+  <rect x="10" y="10" width="180" height="180" rx="45" ry="45" fill="url(#circuitPattern)"/>
+  
+  <!-- Central food/leaf icon -->
+  <g transform="translate(100, 100)">
+    <!-- Leaf shape representing fresh food/sustainability -->
+    <path d="M -25 -15 Q -35 -25 -25 -35 Q -15 -45 5 -35 Q 25 -25 35 -10 Q 30 0 25 5 Q 15 15 0 20 Q -15 15 -25 5 Q -30 -5 -25 -15 Z" 
+          fill="rgba(255,255,255,0.9)" 
+          filter="url(#innerGlow)"/>
+    
+    <!-- Leaf vein details -->
+    <path d="M -10 -20 Q 0 -10 10 0 Q 15 10 0 15" 
+          stroke="rgba(34,197,94,0.6)" 
+          stroke-width="2" 
+          fill="none"/>
+    
+    <!-- AI brain/circuit element -->
+    <circle cx="15" cy="-20" r="8" fill="rgba(59,130,246,0.8)"/>
+    <circle cx="15" cy="-20" r="3" fill="white"/>
+    
+    <!-- AI connection lines -->
+    <line x1="7" y1="-20" x2="-5" y2="-15" stroke="rgba(59,130,246,0.6)" stroke-width="1.5"/>
+    <line x1="23" y1="-20" x2="30" y2="-10" stroke="rgba(59,130,246,0.6)" stroke-width="1.5"/>
+    
+    <!-- Zero waste symbol (recycling arrow) -->
+    <g transform="translate(-25, 20) scale(0.8)">
+      <path d="M 0 -10 L 8 -2 L 4 -2 Q 8 2 4 6 L 0 2 L -4 6 Q -8 2 -4 -2 L -8 -2 Z" 
+            fill="rgba(251,191,36,0.9)" 
+            transform="rotate(0)"/>
+      <path d="M 0 -10 L 8 -2 L 4 -2 Q 8 2 4 6 L 0 2 L -4 6 Q -8 2 -4 -2 L -8 -2 Z" 
+            fill="rgba(251,191,36,0.9)" 
+            transform="rotate(120)"/>
+      <path d="M 0 -10 L 8 -2 L 4 -2 Q 8 2 4 6 L 0 2 L -4 6 Q -8 2 -4 -2 L -8 -2 Z" 
+            fill="rgba(251,191,36,0.9)" 
+            transform="rotate(240)"/>
+    </g>
+  </g>
+  
+  <!-- Modern accent dots -->
+  <circle cx="45" cy="45" r="3" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="155" cy="45" r="2" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="155" cy="155" r="3" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="45" cy="155" r="2" fill="rgba(255,255,255,0.2)"/>
+  
+  <!-- Subtle highlight on top -->
+  <rect x="10" y="10" width="180" height="60" rx="45" ry="45" 
+        fill="url(#topHighlight)" opacity="0.3"/>
+  
+  <defs>
+    <linearGradient id="topHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>

@@ -5,6 +5,8 @@ part 'meal_plan_model.g.dart';
 
 enum MealType { breakfast, lunch, dinner, snack }
 
+enum MealStatus { planned, prepared, completed }
+
 @freezed
 abstract class MealPlan with _$MealPlan {
   const factory MealPlan({
@@ -28,6 +30,9 @@ abstract class PlannedMeal with _$PlannedMeal {
     String? notes,
     Map<String, String>? modifications,
     required MealType type,
+    @Default(MealStatus.planned) MealStatus status,
+    DateTime? preparedAt,
+    Map<String, dynamic>? impactData,
   }) = _PlannedMeal;
 
   factory PlannedMeal.fromJson(Map<String, dynamic> json) =>

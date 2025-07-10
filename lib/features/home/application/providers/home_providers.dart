@@ -96,18 +96,11 @@ final recipeSuggestionsProvider = FutureProvider<List<Recipe>>((ref) async {
 });
 
 final impactSummaryProvider = Provider<ImpactSummary>((ref) {
-  final calculationsAsync = ref.watch(allImpactCalculationsProvider);
-
-  return calculationsAsync.when(
-    data: (calculations) {
-      final cookedRecipes =
-          calculations.calculations.where((c) => c.isCooked).length;
-      return ImpactSummary(
-        cookedRecipes: cookedRecipes,
-        totalRecipes: calculations.count,
-      );
-    },
-    loading: () => ImpactSummary(cookedRecipes: 0, totalRecipes: 0),
-    error: (_, _) => ImpactSummary(cookedRecipes: 0, totalRecipes: 0),
+  final unifiedRecipes = ref.watch(unifiedCompletedRecipesProvider);
+  final cookedRecipes = unifiedRecipes.where((recipe) => recipe['isCooked'] == true).length;
+  
+  return ImpactSummary(
+    cookedRecipes: cookedRecipes,
+    totalRecipes: unifiedRecipes.length,
   );
 });

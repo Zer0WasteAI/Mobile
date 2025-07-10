@@ -1,10 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zer0_waste_ai/core/services/api_service.dart';
-import 'package:zer0_waste_ai/features/impact/data/repositories/impact_repository_impl.dart';
-import 'package:zer0_waste_ai/features/impact/domain/models/environmental_impact.dart';
-import 'package:zer0_waste_ai/features/impact/domain/models/environmental_summary.dart';
+import 'package:zer0_waste_ai/features/impact/application/providers/environmental_impact_firestore_provider.dart';
 import 'package:zer0_waste_ai/features/impact/domain/models/impact_metrics.dart';
-import 'package:zer0_waste_ai/features/impact/domain/repositories/impact_repository.dart';
 import 'package:zer0_waste_ai/features/inventory/domain/models/consumption_tracking.dart';
 
 enum ImpactHistoryFilter { all, cooked, notCooked }
@@ -211,19 +207,29 @@ class ImpactNotifier extends StateNotifier<Map<String, dynamic>> {
     print('Datos de impacto actualizados: $state');
     print('Receta completada agregada: $completedRecipe');
 
-    // También intentar registrar en el sistema API si es posible
-    _tryRegisterApiImpact(recipeTitle ?? 'Receta', completedRecipe);
+    // Guardar en Firestore para persistencia
+    _saveToFirestore(recipeTitle ?? 'Receta', completedRecipe);
   }
 
-  /// Intenta registrar el impacto en el sistema API (opcional)
-  Future<void> _tryRegisterApiImpact(String recipeTitle, Map<String, dynamic> recipeData) async {
+  /// Guarda el impacto en Firestore
+  Future<void> _saveToFirestore(String recipeTitle, Map<String, dynamic> recipeData) async {
     try {
-      final impactService = _ref.read(impactCalculationServiceProvider);
-      // Intentar calcular y registrar el impacto usando el título de la receta
-      await impactService.calculateFromTitle(recipeTitle);
-      print('Impacto registrado en API para: $recipeTitle');
+      final firestoreProvider = _ref.read(environmentalImpactFirestoreProvider.notifier);
+      await firestoreProvider.saveImpact(
+        recipeTitle: recipeTitle,
+        impactData: {
+          'co2Emissions': recipeData['co2Emissions'],
+          'waterUsage': recipeData['waterUsage'],
+          'sustainabilityScore': recipeData['sustainabilityScore'],
+          'wastePreventionScore': recipeData['wastePreventionScore'],
+          'transportationImpact': recipeData['transportationImpact'],
+          'localIngredients': recipeData['localIngredients'],
+          'needToBuy': recipeData['needToBuy'],
+        },
+      );
+      print('✅ Impacto guardado en Firestore: $recipeTitle');
     } catch (e) {
-      print('No se pudo registrar en API (normal si no hay conexión): $e');
+      print('⚠️ Error guardando en Firestore (continuando con local): $e');
       // No hacer nada, el sistema local funciona independientemente
     }
   }
@@ -241,90 +247,25 @@ final impactDataProvider =
       return ImpactNotifier(ref);
     });
 
-/// Provider for calculating meal impact
-final mealImpactProvider = FutureProvider.family<EnvironmentalImpact, String>((
-  ref,
-  recipeId,
-) {
-  final repository = ref.watch(impactRepositoryProvider);
-  return repository.calculateImpactFromUid(recipeId);
-});
-
-// --- API Based Providers ---
-
-final impactRepositoryProvider = Provider<ImpactRepository>((ref) {
-  return ImpactRepositoryImpl(ApiService.instance);
-});
-
-final impactSummaryProvider = FutureProvider<EnvironmentalSummary>((ref) {
-  final repository = ref.watch(impactRepositoryProvider);
-  return repository.getImpactSummary();
-});
-
-final allImpactCalculationsProvider = FutureProvider<EnvironmentalCalculations>(
-  (ref) {
-    final repository = ref.watch(impactRepositoryProvider);
-    return repository.getAllCalculations();
-  },
-);
-
-final impactCalculationsByStatusProvider =
-    FutureProvider.family<EnvironmentalCalculations, bool>((ref, isCooked) {
-      final repository = ref.watch(impactRepositoryProvider);
-      return repository.getCalculationsByStatus(isCooked);
-    });
-
-final impactCalculationServiceProvider = Provider((ref) {
-  final repository = ref.watch(impactRepositoryProvider);
-  return ImpactCalculationService(repository);
-});
-
-class ImpactCalculationService {
-  final ImpactRepository _repository;
-
-  ImpactCalculationService(this._repository);
-
-  Future<EnvironmentalImpact> calculateFromTitle(String title) {
-    return _repository.calculateImpactFromTitle(title);
-  }
-
-  Future<EnvironmentalImpact> calculateFromUid(String recipeUid) {
-    return _repository.calculateImpactFromUid(recipeUid);
-  }
-
-  Future<void> updateStatus(String recipeUid, bool isCooked) {
-    return _repository.updateCalculationStatus(recipeUid, isCooked);
-  }
-}
-
-/// Provider unificado que combina recetas del sistema local y API
+/// Provider unificado que combina recetas del sistema local y Firestore
 final unifiedCompletedRecipesProvider = Provider<List<Map<String, dynamic>>>((ref) {
   final localImpactData = ref.watch(impactDataProvider);
-  final apiCalculationsAsync = ref.watch(allImpactCalculationsProvider);
+  final firestoreImpactsAsync = ref.watch(environmentalImpactFirestoreProvider);
   
   // Obtener recetas locales
   final localRecipes = List<Map<String, dynamic>>.from(
     localImpactData['completedRecipes'] as List<Map<String, dynamic>>? ?? []
   );
   
-  // Convertir recetas API al formato local si están disponibles
-  final apiRecipes = apiCalculationsAsync.when(
-    data: (calculations) => calculations.calculations.map((calc) => {
-      'title': calc.recipeTitle,
-      'date': calc.savedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
-      'sustainabilityScore': 85.0, // Score por defecto ya que API no lo proporciona
-      'co2Emissions': calc.carbonFootprint,
-      'waterUsage': calc.waterFootprint,
-      'wastePreventionScore': 0.0,
-      'isCooked': calc.isCooked,
-      'isFromAPI': true,
-    }).toList(),
+  // Convertir recetas Firestore al formato local si están disponibles
+  final firestoreRecipes = firestoreImpactsAsync.when(
+    data: (impacts) => impacts.map((impact) => impact.toLocalFormat()).toList(),
     loading: () => <Map<String, dynamic>>[],
     error: (_, _) => <Map<String, dynamic>>[],
   );
   
   // Combinar ambas listas y ordenar por fecha (más recientes primero)
-  final allRecipes = [...localRecipes, ...apiRecipes];
+  final allRecipes = [...localRecipes, ...firestoreRecipes];
   allRecipes.sort((a, b) {
     final dateA = DateTime.parse(a['date'] as String);
     final dateB = DateTime.parse(b['date'] as String);

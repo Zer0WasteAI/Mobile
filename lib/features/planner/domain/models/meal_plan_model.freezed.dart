@@ -188,7 +188,7 @@ $NutritionalSummaryCopyWith<$Res> get nutritionalSummary {
 /// @nodoc
 mixin _$PlannedMeal {
 
- String get recipeId; int get servings; String? get notes; Map<String, String>? get modifications; MealType get type;
+ String get recipeId; int get servings; String? get notes; Map<String, String>? get modifications; MealType get type; MealStatus get status; DateTime? get preparedAt; Map<String, dynamic>? get impactData;
 /// Create a copy of PlannedMeal
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -201,16 +201,16 @@ $PlannedMealCopyWith<PlannedMeal> get copyWith => _$PlannedMealCopyWithImpl<Plan
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlannedMeal&&(identical(other.recipeId, recipeId) || other.recipeId == recipeId)&&(identical(other.servings, servings) || other.servings == servings)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.modifications, modifications)&&(identical(other.type, type) || other.type == type));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlannedMeal&&(identical(other.recipeId, recipeId) || other.recipeId == recipeId)&&(identical(other.servings, servings) || other.servings == servings)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.modifications, modifications)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.preparedAt, preparedAt) || other.preparedAt == preparedAt)&&const DeepCollectionEquality().equals(other.impactData, impactData));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,recipeId,servings,notes,const DeepCollectionEquality().hash(modifications),type);
+int get hashCode => Object.hash(runtimeType,recipeId,servings,notes,const DeepCollectionEquality().hash(modifications),type,status,preparedAt,const DeepCollectionEquality().hash(impactData));
 
 @override
 String toString() {
-  return 'PlannedMeal(recipeId: $recipeId, servings: $servings, notes: $notes, modifications: $modifications, type: $type)';
+  return 'PlannedMeal(recipeId: $recipeId, servings: $servings, notes: $notes, modifications: $modifications, type: $type, status: $status, preparedAt: $preparedAt, impactData: $impactData)';
 }
 
 
@@ -221,7 +221,7 @@ abstract mixin class $PlannedMealCopyWith<$Res>  {
   factory $PlannedMealCopyWith(PlannedMeal value, $Res Function(PlannedMeal) _then) = _$PlannedMealCopyWithImpl;
 @useResult
 $Res call({
- String recipeId, int servings, String? notes, Map<String, String>? modifications, MealType type
+ String recipeId, int servings, String? notes, Map<String, String>? modifications, MealType type, MealStatus status, DateTime? preparedAt, Map<String, dynamic>? impactData
 });
 
 
@@ -238,14 +238,17 @@ class _$PlannedMealCopyWithImpl<$Res>
 
 /// Create a copy of PlannedMeal
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? recipeId = null,Object? servings = null,Object? notes = freezed,Object? modifications = freezed,Object? type = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? recipeId = null,Object? servings = null,Object? notes = freezed,Object? modifications = freezed,Object? type = null,Object? status = null,Object? preparedAt = freezed,Object? impactData = freezed,}) {
   return _then(_self.copyWith(
 recipeId: null == recipeId ? _self.recipeId : recipeId // ignore: cast_nullable_to_non_nullable
 as String,servings: null == servings ? _self.servings : servings // ignore: cast_nullable_to_non_nullable
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,modifications: freezed == modifications ? _self.modifications : modifications // ignore: cast_nullable_to_non_nullable
 as Map<String, String>?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as MealType,
+as MealType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as MealStatus,preparedAt: freezed == preparedAt ? _self.preparedAt : preparedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,impactData: freezed == impactData ? _self.impactData : impactData // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 
@@ -256,7 +259,7 @@ as MealType,
 @JsonSerializable()
 
 class _PlannedMeal implements PlannedMeal {
-  const _PlannedMeal({required this.recipeId, required this.servings, this.notes, final  Map<String, String>? modifications, required this.type}): _modifications = modifications;
+  const _PlannedMeal({required this.recipeId, required this.servings, this.notes, final  Map<String, String>? modifications, required this.type, this.status = MealStatus.planned, this.preparedAt, final  Map<String, dynamic>? impactData}): _modifications = modifications,_impactData = impactData;
   factory _PlannedMeal.fromJson(Map<String, dynamic> json) => _$PlannedMealFromJson(json);
 
 @override final  String recipeId;
@@ -272,6 +275,17 @@ class _PlannedMeal implements PlannedMeal {
 }
 
 @override final  MealType type;
+@override@JsonKey() final  MealStatus status;
+@override final  DateTime? preparedAt;
+ final  Map<String, dynamic>? _impactData;
+@override Map<String, dynamic>? get impactData {
+  final value = _impactData;
+  if (value == null) return null;
+  if (_impactData is EqualUnmodifiableMapView) return _impactData;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
 
 /// Create a copy of PlannedMeal
 /// with the given fields replaced by the non-null parameter values.
@@ -286,16 +300,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlannedMeal&&(identical(other.recipeId, recipeId) || other.recipeId == recipeId)&&(identical(other.servings, servings) || other.servings == servings)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._modifications, _modifications)&&(identical(other.type, type) || other.type == type));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlannedMeal&&(identical(other.recipeId, recipeId) || other.recipeId == recipeId)&&(identical(other.servings, servings) || other.servings == servings)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._modifications, _modifications)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.preparedAt, preparedAt) || other.preparedAt == preparedAt)&&const DeepCollectionEquality().equals(other._impactData, _impactData));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,recipeId,servings,notes,const DeepCollectionEquality().hash(_modifications),type);
+int get hashCode => Object.hash(runtimeType,recipeId,servings,notes,const DeepCollectionEquality().hash(_modifications),type,status,preparedAt,const DeepCollectionEquality().hash(_impactData));
 
 @override
 String toString() {
-  return 'PlannedMeal(recipeId: $recipeId, servings: $servings, notes: $notes, modifications: $modifications, type: $type)';
+  return 'PlannedMeal(recipeId: $recipeId, servings: $servings, notes: $notes, modifications: $modifications, type: $type, status: $status, preparedAt: $preparedAt, impactData: $impactData)';
 }
 
 
@@ -306,7 +320,7 @@ abstract mixin class _$PlannedMealCopyWith<$Res> implements $PlannedMealCopyWith
   factory _$PlannedMealCopyWith(_PlannedMeal value, $Res Function(_PlannedMeal) _then) = __$PlannedMealCopyWithImpl;
 @override @useResult
 $Res call({
- String recipeId, int servings, String? notes, Map<String, String>? modifications, MealType type
+ String recipeId, int servings, String? notes, Map<String, String>? modifications, MealType type, MealStatus status, DateTime? preparedAt, Map<String, dynamic>? impactData
 });
 
 
@@ -323,14 +337,17 @@ class __$PlannedMealCopyWithImpl<$Res>
 
 /// Create a copy of PlannedMeal
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? recipeId = null,Object? servings = null,Object? notes = freezed,Object? modifications = freezed,Object? type = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? recipeId = null,Object? servings = null,Object? notes = freezed,Object? modifications = freezed,Object? type = null,Object? status = null,Object? preparedAt = freezed,Object? impactData = freezed,}) {
   return _then(_PlannedMeal(
 recipeId: null == recipeId ? _self.recipeId : recipeId // ignore: cast_nullable_to_non_nullable
 as String,servings: null == servings ? _self.servings : servings // ignore: cast_nullable_to_non_nullable
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,modifications: freezed == modifications ? _self._modifications : modifications // ignore: cast_nullable_to_non_nullable
 as Map<String, String>?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as MealType,
+as MealType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as MealStatus,preparedAt: freezed == preparedAt ? _self.preparedAt : preparedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,impactData: freezed == impactData ? _self._impactData : impactData // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 

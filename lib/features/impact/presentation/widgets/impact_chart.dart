@@ -87,9 +87,10 @@ class SustainabilityChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (recipes.isEmpty) return;
 
-    final paint = Paint()
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
+    // Paint for general use if needed in the future
+    // final paint = Paint()
+    //   ..strokeWidth = 3
+    //   ..style = PaintingStyle.stroke;
 
     final pointPaint = Paint()
       ..style = PaintingStyle.fill;

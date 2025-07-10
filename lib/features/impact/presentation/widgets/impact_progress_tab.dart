@@ -127,76 +127,78 @@ class ImpactProgressTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildCalculationsList(
-    List<EnvironmentalImpact> calculations,
-    BuildContext context,
-    WidgetRef ref,
-  ) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: calculations.length,
-      itemBuilder: (context, index) {
-        final item = calculations[index];
-        return _buildCalculationCard(item, context, ref);
-      },
-    );
-  }
+  // Legacy method - no longer used after API removal
+  // Widget _buildCalculationsList(
+  //   List<EnvironmentalImpact> calculations,
+  //   BuildContext context,
+  //   WidgetRef ref,
+  // ) {
+  //   return ListView.builder(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16),
+  //     itemCount: calculations.length,
+  //     itemBuilder: (context, index) {
+  //       final item = calculations[index];
+  //       return _buildCalculationCard(item, context, ref);
+  //     },
+  //   );
+  // }
 
-  Widget _buildCalculationCard(
-    EnvironmentalImpact item,
-    BuildContext context,
-    WidgetRef ref,
-  ) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDarkMode ? AppColors.darkSurface : Colors.white;
-    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
-    final titleColor = isDarkMode ? Colors.white : AppColors.lightPrimary;
+  // Legacy method - no longer used after API removal
+  // Widget _buildCalculationCard(
+  //   EnvironmentalImpact item,
+  //   BuildContext context,
+  //   WidgetRef ref,
+  // ) {
+  //   final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  //   final cardColor = isDarkMode ? AppColors.darkSurface : Colors.white;
+  //   final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+  //   final titleColor = isDarkMode ? Colors.white : AppColors.lightPrimary;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: cardColor,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.recipeTitle,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: titleColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.formattedDate,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: textColor.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _buildStatusChip(item.isCooked, context),
-              ],
-            ),
-            const Divider(height: 24),
-            _buildImpactGrid(item, context),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return Card(
+  //     margin: const EdgeInsets.only(bottom: 16),
+  //     elevation: 2,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //     color: cardColor,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Row(
+  //             children: [
+  //               Expanded(
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     Text(
+  //                       item.recipeTitle,
+  //                       style: GoogleFonts.inter(
+  //                         fontSize: 18,
+  //                         fontWeight: FontWeight.bold,
+  //                         color: titleColor,
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 4),
+  //                     Text(
+  //                       item.formattedDate,
+  //                       style: GoogleFonts.inter(
+  //                         fontSize: 12,
+  //                         color: textColor.withValues(alpha: 0.7),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               _buildStatusChip(item.isCooked, context),
+  //             ],
+  //           ),
+  //           const Divider(height: 24),
+  //           _buildImpactGrid(item, context),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildStatusChip(bool isCooked, BuildContext context) {
     return Chip(
@@ -218,6 +220,7 @@ class ImpactProgressTab extends ConsumerWidget {
     );
   }
 
+  // ignore: unused_element
   Widget _buildImpactGrid(EnvironmentalImpact item, BuildContext context) {
     return Column(
       children: [

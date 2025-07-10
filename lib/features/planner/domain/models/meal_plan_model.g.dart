@@ -36,6 +36,14 @@ _PlannedMeal _$PlannedMealFromJson(Map<String, dynamic> json) => _PlannedMeal(
     (k, e) => MapEntry(k, e as String),
   ),
   type: $enumDecode(_$MealTypeEnumMap, json['type']),
+  status:
+      $enumDecodeNullable(_$MealStatusEnumMap, json['status']) ??
+      MealStatus.planned,
+  preparedAt:
+      json['preparedAt'] == null
+          ? null
+          : DateTime.parse(json['preparedAt'] as String),
+  impactData: json['impactData'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$PlannedMealToJson(_PlannedMeal instance) =>
@@ -45,6 +53,9 @@ Map<String, dynamic> _$PlannedMealToJson(_PlannedMeal instance) =>
       'notes': instance.notes,
       'modifications': instance.modifications,
       'type': _$MealTypeEnumMap[instance.type]!,
+      'status': _$MealStatusEnumMap[instance.status]!,
+      'preparedAt': instance.preparedAt?.toIso8601String(),
+      'impactData': instance.impactData,
     };
 
 const _$MealTypeEnumMap = {
@@ -52,6 +63,12 @@ const _$MealTypeEnumMap = {
   MealType.lunch: 'lunch',
   MealType.dinner: 'dinner',
   MealType.snack: 'snack',
+};
+
+const _$MealStatusEnumMap = {
+  MealStatus.planned: 'planned',
+  MealStatus.prepared: 'prepared',
+  MealStatus.completed: 'completed',
 };
 
 _NutritionalSummary _$NutritionalSummaryFromJson(Map<String, dynamic> json) =>
