@@ -79,6 +79,22 @@ class AIRecipeFirestoreRepository {
                 data['id'] = doc.id;
 
                 try {
+                  // Asegurarse de que las categorías estén correctamente mapeadas como lista
+                  if (data.containsKey('categories')) {
+                    if (data['categories'] is List) {
+                      // Ya está en formato correcto
+                    } else if (data['categories'] is String) {
+                      // Convertir string a lista
+                      data['categories'] = [data['categories']];
+                    } else {
+                      // Valor por defecto si no es reconocible
+                      data['categories'] = ['General'];
+                    }
+                  } else {
+                    // Si no existe el campo, agregar valor por defecto
+                    data['categories'] = ['General'];
+                  }
+                  
                   return Recipe.fromJson(data);
                 } catch (e) {
                   print('❌ Error al convertir documento a Recipe: $e');

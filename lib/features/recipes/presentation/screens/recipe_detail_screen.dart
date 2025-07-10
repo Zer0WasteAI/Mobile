@@ -806,11 +806,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
+                                                  // Solo cerrar el diálogo, sin navegación adicional
                                                   Navigator.pop(dialogContext);
-                                                  // Navegar a la pantalla de recetas
-                                                  if (context.mounted) {
-                                                    context.go('/recipes');
-                                                  }
                                                 },
                                                 child: const Text('Cerrar'),
                                               ),

@@ -22,7 +22,6 @@ class RecipeScreen extends ConsumerStatefulWidget {
 class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'Todas';
-  // ignore: unused_field
   final List<String> _categories = [
     'Todas',
     'Desayuno',
@@ -30,6 +29,8 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
     'Cena',
     'Postres',
     'Bebidas',
+    'Saludable',
+    'Rápido',
   ];
 
   @override
@@ -168,6 +169,38 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                 ],
               ),
               const SizedBox(height: 12),
+              // Mostrar categorías
+              if (recipe.categories.isNotEmpty)
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children:
+                      recipe.categories.map((category) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00BFA5).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF00BFA5).withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            category,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF00BFA5),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Icon(Icons.timer, size: 16, color: Colors.grey.shade600),
@@ -443,7 +476,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
           ),
           const SizedBox(height: 12),
           // Category filters
-          /*SizedBox(
+          SizedBox(
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -479,7 +512,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                 );
               },
             ),
-          ),*/
+          ),
         ],
       ),
     );
@@ -672,58 +705,47 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   List<Recipe> _filterRecipes(List<Recipe> recipes) {
     var filtered = recipes;
 
-    // Filter by search query
+    // Filter by search query - SOLO buscar por título
     if (_searchQuery.isNotEmpty) {
       filtered =
           filtered.where((recipe) {
             return recipe.name.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                ) ||
-                recipe.description.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                ) ||
-                recipe.ingredients.any(
-                  (ingredient) => ingredient.toLowerCase().contains(
-                    _searchQuery.toLowerCase(),
-                  ),
-                );
+              _searchQuery.toLowerCase(),
+            );
           }).toList();
     }
 
-    // Filter by category
+    // Filter by category - Usar el campo categories del modelo
     if (_selectedCategory != 'Todas') {
       filtered =
           filtered.where((recipe) {
-            // This is a simple categorization - you might want to add a category field to Recipe model
-            switch (_selectedCategory) {
-              case 'Desayuno':
-                return recipe.name.toLowerCase().contains('desayuno') ||
-                    recipe.name.toLowerCase().contains('breakfast') ||
-                    recipe.name.toLowerCase().contains('café') ||
-                    recipe.name.toLowerCase().contains('tostada') ||
-                    recipe.name.toLowerCase().contains('avena');
-              case 'Almuerzo':
-                return recipe.name.toLowerCase().contains('almuerzo') ||
-                    recipe.name.toLowerCase().contains('lunch') ||
-                    recipe.name.toLowerCase().contains('sopa') ||
-                    recipe.name.toLowerCase().contains('ensalada');
-              case 'Cena':
-                return recipe.name.toLowerCase().contains('cena') ||
-                    recipe.name.toLowerCase().contains('dinner') ||
-                    recipe.name.toLowerCase().contains('pasta') ||
-                    recipe.name.toLowerCase().contains('pollo');
-              case 'Postres':
-                return recipe.name.toLowerCase().contains('postre') ||
-                    recipe.name.toLowerCase().contains('dessert') ||
-                    recipe.name.toLowerCase().contains('torta') ||
-                    recipe.name.toLowerCase().contains('dulce');
-              case 'Bebidas':
-                return recipe.name.toLowerCase().contains('bebida') ||
-                    recipe.name.toLowerCase().contains('jugo') ||
-                    recipe.name.toLowerCase().contains('smoothie') ||
-                    recipe.name.toLowerCase().contains('batido');
-              default:
-                return true;
+            // Verificar si la receta tiene la categoría seleccionada
+            if (recipe.categories.isNotEmpty) {
+              return recipe.categories.any(
+                (category) =>
+                    category.toLowerCase() == _selectedCategory.toLowerCase(),
+              );
+            } else {
+              // Fallback para recetas sin categorías
+              switch (_selectedCategory) {
+                case 'Desayuno':
+                  return recipe.name.toLowerCase().contains('desayuno') ||
+                      recipe.name.toLowerCase().contains('breakfast');
+                case 'Almuerzo':
+                  return recipe.name.toLowerCase().contains('almuerzo') ||
+                      recipe.name.toLowerCase().contains('lunch');
+                case 'Cena':
+                  return recipe.name.toLowerCase().contains('cena') ||
+                      recipe.name.toLowerCase().contains('dinner');
+                case 'Postres':
+                  return recipe.name.toLowerCase().contains('postre') ||
+                      recipe.name.toLowerCase().contains('dessert');
+                case 'Bebidas':
+                  return recipe.name.toLowerCase().contains('bebida') ||
+                      recipe.name.toLowerCase().contains('drink');
+                default:
+                  return true;
+              }
             }
           }).toList();
     }
