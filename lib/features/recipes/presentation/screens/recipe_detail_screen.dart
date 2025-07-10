@@ -117,6 +117,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   Map<String, bool> _ingredientAvailability = {};
+  Map<String, dynamic> _environmentalImpact = {};
+  List<String> _missingIngredients = [];
+  List<String> _availableIngredients = [];
 
   @override
   void initState() {
@@ -133,32 +136,133 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     _checkIngredientAvailability();
   }
 
-  // Verifica qué ingredientes están disponibles en el inventario
+  // Verifica qué ingredientes están disponibles en el inventario y calcula impacto ambiental
   void _checkIngredientAvailability() {
     final inventoryState = ref.read(inventoryRealProvider);
     final List<String> recipeIngredients = widget.recipe.ingredients;
 
-    final availableIngredients = <String>{};
+    final availableIngredients = <String>[];
+    final missingIngredients = <String>[];
+    final availabilityMap = <String, bool>{};
 
     for (var ingredient in recipeIngredients) {
       final ingredientInfo = _parseIngredientSimple(ingredient);
       String ingredientName = (ingredientInfo['name'] ?? '').toLowerCase();
-      // Verificar si algún item del inventario contiene este ingrediente
-      bool isAvailable = inventoryState.items.any(
-        (item) =>
-            item.name.toLowerCase().contains(ingredientName) ||
-            ingredientName.contains(item.name.toLowerCase()),
-      );
+      
+      // Verificar si algún item del inventario contiene este ingrediente (y no está expirado)
+      bool isAvailable = inventoryState.items.any((item) {
+        bool nameMatches = item.name.toLowerCase().contains(ingredientName) ||
+            ingredientName.contains(item.name.toLowerCase());
+        bool notExpired = item.expirationDate == null || 
+            item.expirationDate!.isAfter(DateTime.now());
+        return nameMatches && notExpired;
+      });
+      
+      final cleanIngredientName = ingredientInfo['name'] ?? ingredient;
+      availabilityMap[cleanIngredientName] = isAvailable;
+      
       if (isAvailable) {
-        availableIngredients.add(ingredientInfo['name'] ?? '');
+        availableIngredients.add(cleanIngredientName);
+      } else {
+        missingIngredients.add(cleanIngredientName);
       }
     }
 
+    // Calculate environmental impact
+    final impact = _calculateEnvironmentalImpact(recipeIngredients, availableIngredients.length, missingIngredients.length);
+
     setState(() {
-      _ingredientAvailability = {
-        for (var ingredient in availableIngredients) ingredient: true,
-      };
+      _ingredientAvailability = availabilityMap;
+      _missingIngredients = missingIngredients;
+      _availableIngredients = availableIngredients;
+      _environmentalImpact = impact;
     });
+  }
+
+  // Calculate environmental impact based on recipe and ingredient availability
+  Map<String, dynamic> _calculateEnvironmentalImpact(List<String> ingredients, int availableCount, int missingCount) {
+    double baseCO2 = 0.0;
+    double baseWaterUsage = 0.0;
+    double sustainabilityScore = 85.0; // Base score
+
+    // Calculate base environmental cost per ingredient
+    for (String ingredient in ingredients) {
+      final ingredientLower = ingredient.toLowerCase();
+      
+      // CO2 emissions (kg CO2 per serving)
+      if (ingredientLower.contains('carne') || ingredientLower.contains('beef') || ingredientLower.contains('res')) {
+        baseCO2 += 3.2;
+        sustainabilityScore -= 8;
+      } else if (ingredientLower.contains('pollo') || ingredientLower.contains('chicken')) {
+        baseCO2 += 1.8;
+        sustainabilityScore -= 4;
+      } else if (ingredientLower.contains('pescado') || ingredientLower.contains('fish') || ingredientLower.contains('salmón')) {
+        baseCO2 += 2.1;
+        sustainabilityScore -= 3;
+      } else if (ingredientLower.contains('cerdo') || ingredientLower.contains('pork')) {
+        baseCO2 += 2.9;
+        sustainabilityScore -= 6;
+      } else if (ingredientLower.contains('queso') || ingredientLower.contains('cheese')) {
+        baseCO2 += 1.4;
+        sustainabilityScore -= 2;
+      } else if (ingredientLower.contains('leche') || ingredientLower.contains('milk')) {
+        baseCO2 += 0.9;
+        sustainabilityScore -= 1;
+      } else if (ingredientLower.contains('arroz') || ingredientLower.contains('rice')) {
+        baseCO2 += 0.8;
+      } else if (ingredientLower.contains('papa') || ingredientLower.contains('potato')) {
+        baseCO2 += 0.2;
+        sustainabilityScore += 2;
+      } else if (ingredientLower.contains('tomate') || ingredientLower.contains('tomato')) {
+        baseCO2 += 0.4;
+        sustainabilityScore += 1;
+      } else if (ingredientLower.contains('cebolla') || ingredientLower.contains('onion')) {
+        baseCO2 += 0.2;
+        sustainabilityScore += 1;
+      } else {
+        // Default for vegetables and other ingredients
+        baseCO2 += 0.3;
+        sustainabilityScore += 0.5;
+      }
+
+      // Water usage (liters per serving)
+      if (ingredientLower.contains('carne') || ingredientLower.contains('beef')) {
+        baseWaterUsage += 185;
+      } else if (ingredientLower.contains('pollo') || ingredientLower.contains('chicken')) {
+        baseWaterUsage += 85;
+      } else if (ingredientLower.contains('arroz') || ingredientLower.contains('rice')) {
+        baseWaterUsage += 45;
+      } else if (ingredientLower.contains('queso') || ingredientLower.contains('cheese')) {
+        baseWaterUsage += 65;
+      } else {
+        baseWaterUsage += 15; // Default for vegetables
+      }
+    }
+
+    // Bonus for using inventory ingredients (reduces transportation and waste)
+    double inventoryBonus = (availableCount / ingredients.length) * 100;
+    sustainabilityScore += inventoryBonus * 0.15; // 15% bonus for each available ingredient
+    
+    // Penalty for missing ingredients (need to buy, transportation, packaging)
+    double transportationCO2 = missingCount * 0.5; // Additional CO2 for shopping trips
+    baseCO2 += transportationCO2;
+
+    // Food waste prevention bonus
+    double wastePreventionScore = availableCount * 5.0; // Points for using inventory items
+    
+    // Clamp sustainability score
+    sustainabilityScore = sustainabilityScore.clamp(0.0, 100.0);
+
+    return {
+      'co2Emissions': baseCO2,
+      'waterUsage': baseWaterUsage,
+      'sustainabilityScore': sustainabilityScore,
+      'inventoryUsage': inventoryBonus,
+      'wastePreventionScore': wastePreventionScore,
+      'transportationImpact': transportationCO2,
+      'localIngredients': availableCount,
+      'needToBuy': missingCount,
+    };
   }
 
   @override
@@ -268,6 +372,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+
+            // Environmental Impact Section - CORE OF THE APP!
+            _buildEnvironmentalImpactSection(primaryColor, cardColor, textColor, secondaryTextColor, isDark),
+            const SizedBox(height: 16),
+
+            // Ingredient Availability Section
+            _buildIngredientAvailabilitySection(primaryColor, cardColor, textColor, secondaryTextColor, isDark),
             const SizedBox(height: 16),
 
             // Recipe history stats
@@ -917,5 +1029,540 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     } catch (e) {
       return dateStr;
     }
+  }
+
+  /// Environmental Impact Section - CORE OF THE APP!
+  Widget _buildEnvironmentalImpactSection(Color primaryColor, Color cardColor, Color textColor, Color secondaryTextColor, bool isDark) {
+    if (_environmentalImpact.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final co2 = _environmentalImpact['co2Emissions']?.toDouble() ?? 0.0;
+    final water = _environmentalImpact['waterUsage']?.toDouble() ?? 0.0;
+    final sustainability = _environmentalImpact['sustainabilityScore']?.toDouble() ?? 0.0;
+    final wastePreventionScore = _environmentalImpact['wastePreventionScore']?.toDouble() ?? 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF2E7D32).withValues(alpha: 0.1),
+            const Color(0xFF4CAF50).withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.eco,
+                  color: Color(0xFF2E7D32),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '🌍 Impacto Ambiental',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2E7D32),
+                      ),
+                    ),
+                    Text(
+                      'Análisis del impacto de esta receta',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildSustainabilityBadge(sustainability),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Environmental metrics grid
+          Row(
+            children: [
+              Expanded(
+                child: _buildEnvironmentalMetric(
+                  icon: Icons.cloud,
+                  label: 'CO₂',
+                  value: '${co2.toStringAsFixed(1)} kg',
+                  color: _getCO2Color(co2),
+                  subtitle: 'Emisiones',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildEnvironmentalMetric(
+                  icon: Icons.water_drop,
+                  label: 'Agua',
+                  value: '${water.toStringAsFixed(0)} L',
+                  color: const Color(0xFF2196F3),
+                  subtitle: 'Uso de agua',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildEnvironmentalMetric(
+                  icon: Icons.recycling,
+                  label: 'Desperdicio',
+                  value: '${wastePreventionScore.toStringAsFixed(0)} pts',
+                  color: const Color(0xFF4CAF50),
+                  subtitle: 'Prevención',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildEnvironmentalMetric(
+                  icon: Icons.inventory_2,
+                  label: 'Inventario',
+                  value: '${_availableIngredients.length}/${widget.recipe.ingredients.length}',
+                  color: primaryColor,
+                  subtitle: 'Disponible',
+                ),
+              ),
+            ],
+          ),
+          
+          if (_missingIngredients.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildEnvironmentalTip(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSustainabilityBadge(double score) {
+    Color badgeColor;
+    String label;
+    IconData icon;
+
+    if (score >= 80) {
+      badgeColor = const Color(0xFF4CAF50);
+      label = 'Excelente';
+      icon = Icons.star;
+    } else if (score >= 60) {
+      badgeColor = const Color(0xFF8BC34A);
+      label = 'Bueno';
+      icon = Icons.thumb_up;
+    } else if (score >= 40) {
+      badgeColor = const Color(0xFFFF9800);
+      label = 'Regular';
+      icon = Icons.warning;
+    } else {
+      badgeColor = const Color(0xFFE53935);
+      label = 'Mejorable';
+      icon = Icons.error;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: badgeColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: badgeColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnvironmentalMetric({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              color: color.withValues(alpha: 0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnvironmentalTip() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF2196F3).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lightbulb, color: Color(0xFF2196F3), size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Comprando ${_missingIngredients.length} ingredientes aumentas +${(_missingIngredients.length * 0.5).toStringAsFixed(1)} kg CO₂',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: const Color(0xFF2196F3),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getCO2Color(double co2) {
+    if (co2 <= 1.0) return const Color(0xFF4CAF50); // Green - low impact
+    if (co2 <= 3.0) return const Color(0xFF8BC34A); // Light green
+    if (co2 <= 6.0) return const Color(0xFFFF9800); // Orange - medium impact
+    return const Color(0xFFE53935); // Red - high impact
+  }
+
+  /// Ingredient Availability Section
+  Widget _buildIngredientAvailabilitySection(Color primaryColor, Color cardColor, Color textColor, Color secondaryTextColor, bool isDark) {
+    final totalIngredients = widget.recipe.ingredients.length;
+    final availableCount = _availableIngredients.length;
+    // final missingCount = _missingIngredients.length; // Unused for now
+    final availabilityPercentage = (availableCount / totalIngredients * 100).round();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: cardColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.inventory_2, color: primaryColor, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Disponibilidad de Ingredientes',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    Text(
+                      'Comparando con tu inventario actual',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$availabilityPercentage% disponible',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Progress bar
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Progreso de ingredientes:',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                    ),
+                  ),
+                  Text(
+                    '$availableCount de $totalIngredients',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: availableCount / totalIngredients,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                minHeight: 8,
+              ),
+            ],
+          ),
+
+          if (_availableIngredients.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildIngredientsList(
+              title: '✅ Tienes en inventario (${_availableIngredients.length})',
+              ingredients: _availableIngredients,
+              color: const Color(0xFF4CAF50),
+              textColor: textColor,
+              available: true,
+            ),
+          ],
+
+          if (_missingIngredients.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildIngredientsList(
+              title: '🛒 Necesitas comprar (${_missingIngredients.length})',
+              ingredients: _missingIngredients,
+              color: const Color(0xFFFF9800),
+              textColor: textColor,
+              available: false,
+            ),
+            const SizedBox(height: 12),
+            _buildShoppingListButton(primaryColor),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientsList({
+    required String title,
+    required List<String> ingredients,
+    required Color color,
+    required Color textColor,
+    required bool available,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: ingredients.map((ingredient) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    available ? Icons.check_circle : Icons.shopping_cart,
+                    size: 14,
+                    color: color,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    ingredient,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShoppingListButton(Color primaryColor) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          _showShoppingListDialog();
+        },
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFFF9800),
+          side: const BorderSide(color: Color(0xFFFF9800)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        icon: const Icon(Icons.shopping_cart, size: 18),
+        label: Text(
+          'Generar Lista de Compras',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  void _showShoppingListDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.shopping_cart, color: Color(0xFFFF9800)),
+            const SizedBox(width: 8),
+            const Text('Lista de Compras'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ingredientes necesarios para: ${widget.recipe.name}',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            ...(_missingIngredients.map((ingredient) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.shopping_cart, size: 16, color: Color(0xFFFF9800)),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(ingredient)),
+                ],
+              ),
+            ))),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🌱 Consejo Ecológico:',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF4CAF50),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Compra productos locales y de temporada para reducir tu huella de carbono.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF4CAF50),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              // Here you could integrate with a shopping app or save to notes
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Lista de compras guardada en Notas'),
+                  backgroundColor: Color(0xFF4CAF50),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF9800)),
+            icon: const Icon(Icons.save, size: 16),
+            label: const Text('Guardar Lista'),
+          ),
+        ],
+      ),
+    );
   }
 }
