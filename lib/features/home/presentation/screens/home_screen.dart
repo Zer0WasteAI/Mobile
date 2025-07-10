@@ -8,8 +8,6 @@ import 'package:zer0_waste_ai/features/home/presentation/widgets/welcome_header.
 import 'package:zer0_waste_ai/features/home/presentation/widgets/motivational_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/inventory_summary_card.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/recipe_suggestions.dart';
-import 'package:zer0_waste_ai/features/home/presentation/widgets/impact_summary_card.dart';
-import 'package:zer0_waste_ai/features/home/presentation/widgets/quick_actions_widget.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/home/presentation/widgets/home_daily_planner_widget.dart';
 
@@ -105,13 +103,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Quick Actions Widget - Acciones rápidas
-              const Padding(
+              /*const Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: HomeScreen._horizontalPadding,
                 ),
                 child: QuickActionsWidget(),
               ),
-              const SizedBox(height: HomeScreen._sectionSpacing),
+              const SizedBox(height: HomeScreen._sectionSpacing),*/
 
               // Recipe Suggestions
               const Padding(
@@ -123,12 +121,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: HomeScreen._sectionSpacing),
 
               // Impact Summary Card
-              const Padding(
+              /*const Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: HomeScreen._horizontalPadding,
                 ),
                 child: ImpactSummaryCard(),
-              ),
+              ),*/
               const SizedBox(height: 24), // Bottom spacing
             ],
           ),

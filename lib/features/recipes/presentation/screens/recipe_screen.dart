@@ -22,6 +22,7 @@ class RecipeScreen extends ConsumerStatefulWidget {
 class _RecipeScreenState extends ConsumerState<RecipeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'Todas';
+  // ignore: unused_field
   final List<String> _categories = [
     'Todas',
     'Desayuno',
@@ -442,7 +443,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
           ),
           const SizedBox(height: 12),
           // Category filters
-          SizedBox(
+          /*SizedBox(
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -478,7 +479,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
                 );
               },
             ),
-          ),
+          ),*/
         ],
       ),
     );

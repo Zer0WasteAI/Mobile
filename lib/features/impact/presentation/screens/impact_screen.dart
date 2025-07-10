@@ -58,7 +58,15 @@ class _ImpactScreenState extends ConsumerState<ImpactScreen>
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            try {
+              // Intentar regresar a la pantalla anterior
+              context.pop();
+            } catch (e) {
+              // Si no hay pantalla anterior, ir a la pantalla de inicio
+              context.go('/home');
+            }
+          },
         ),
         title: Text(
           'Panel de Impacto',

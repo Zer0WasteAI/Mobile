@@ -78,7 +78,6 @@ class QuickActionsWidget extends ConsumerWidget {
             ),
 
             const SizedBox(height: 12),
-
           ],
         ),
       ),

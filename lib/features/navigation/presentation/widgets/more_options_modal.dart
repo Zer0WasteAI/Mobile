@@ -110,30 +110,12 @@ class MoreOptionsModal extends ConsumerWidget {
                 ref,
                 icon: FontAwesomeIcons.calendarWeek,
                 iconColor: primaryColor,
-                title: 'Planificación Semanal',
-                subtitle: 'Organiza tus comidas de la semana',
-                onTap: () {
-                  onClose();
-                  // Navegación a la planificación semanal (ruta a definir)
-                  ref.read(currentNavigationProvider.notifier).state =
-                      '/planner';
-                  context.push('/planner');
-                },
-              ),
-
-              const Divider(height: 24),
-
-              _buildOptionItem(
-                context,
-                ref,
-                icon: FontAwesomeIcons.utensils,
-                iconColor: Colors.green,
                 title: 'Planificación de Comidas',
-                subtitle: 'Planifica tus comidas diarias con IA',
+                subtitle: 'Organiza tus comidas con asistencia de IA',
                 onTap: () {
                   onClose();
-                  // Navegación a la planificación de comidas
-                  context.push('/meal-planning');
+                  // Navegación a la planificación unificada
+                  context.push('/unified-planning');
                 },
               ),
 

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zer0_waste_ai/core/theme/app_colors.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
-import 'package:zer0_waste_ai/features/impact/presentation/screens/impact_screen.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/application/providers/recipe_history_provider.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
@@ -2011,6 +2010,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   /// Muestra un panel completo con información detallada sobre el impacto ambiental
+  // ignore: unused_element
   void _showFullImpactPanel(BuildContext context) {
     showModalBottomSheet(
       context: context,
