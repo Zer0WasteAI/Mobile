@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_model.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart' as models;
 import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
+import 'package:zer0_waste_ai/features/planner/application/services/meal_notification_service.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 
@@ -34,6 +35,9 @@ class MealPreparationService {
       
       // 4. Registrar el impacto en el sistema de tracking
       await _registerImpactTracking(recipe.name, impactData);
+      
+      // 5. Enviar notificación de comida preparada
+      await _notifyMealPrepared(recipe.name, impactData);
       
       print('✅ Comida marcada como preparada: ${recipe.name}');
       
@@ -247,6 +251,20 @@ class MealPreparationService {
   Future<void> _registerImpactTracking(String recipeTitle, Map<String, dynamic> impactData) async {
     final impactNotifier = _ref.read(impactDataProvider.notifier);
     impactNotifier.updateImpactData(impactData, recipeTitle: recipeTitle);
+  }
+  
+  /// Envía notificación de comida preparada
+  Future<void> _notifyMealPrepared(String mealName, Map<String, dynamic> impactData) async {
+    try {
+      final mealNotificationService = _ref.read(mealNotificationServiceProvider);
+      await mealNotificationService.notifyMealPrepared(
+        mealName: mealName,
+        impactData: impactData,
+      );
+    } catch (e) {
+      print('⚠️ Error enviando notificación de comida preparada: $e');
+      // No fallar la operación principal por un error de notificación
+    }
   }
 }
 

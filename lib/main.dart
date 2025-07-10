@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:zer0_waste_ai/core/theme/theme.dart';
+import 'package:zer0_waste_ai/core/application/providers/app_notification_provider.dart';
 import 'package:zer0_waste_ai/features/auth/application/services/user_preferences_service.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:zer0_waste_ai/features/inventory/application/providers/inventory_provider.dart';
@@ -21,6 +22,10 @@ void main() async {
 
   // Initialize dependencies
   final container = await DependencyInjection.init();
+  
+  // Initialize notification system
+  final notificationManager = container.read(appNotificationManagerProvider);
+  await notificationManager.initialize();
 
   // Configurar callback global para invalidar providers después de actualizaciones de Firestore
   // AuthRepositoryImpl.setProviderRefreshCallback(() {
