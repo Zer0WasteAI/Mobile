@@ -178,6 +178,7 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
       floatingActionButton:
           _foodDetail != null && !_foodDetail!.isExpired
               ? FloatingActionButton.extended(
+                heroTag: "food_detail_fab",
                 onPressed: _isMarkingConsumed ? null : _markAsConsumed,
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,

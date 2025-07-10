@@ -102,6 +102,7 @@ class _ManualPlanCreationScreenState
       floatingActionButton:
           _hasAnyMeal()
               ? FloatingActionButton.extended(
+                heroTag: "manual_plan_creation_fab",
                 onPressed: _isSaving ? null : _savePlan,
                 icon:
                     _isSaving

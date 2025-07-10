@@ -446,6 +446,7 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "recipe_library_fab",
         onPressed: () {
           // Si estamos en modo selección, volver sin seleccionar
           if (widget.selectionMode) {

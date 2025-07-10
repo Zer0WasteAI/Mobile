@@ -355,6 +355,7 @@ class _UnifiedMealPlanningScreenState
     return ScaleTransition(
       scale: _fabAnimationController,
       child: FloatingActionButton.extended(
+        heroTag: "unified_meal_planning_fab",
         onPressed: _handleFABAction,
         icon: Icon(_getFABIcon()),
         label: Text(_getFABLabel()),

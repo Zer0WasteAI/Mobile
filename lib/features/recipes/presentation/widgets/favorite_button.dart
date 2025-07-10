@@ -152,6 +152,7 @@ class FloatingFavoriteButton extends ConsumerWidget {
         final isLoading = favoriteActionState.isLoading;
 
         return FloatingActionButton(
+          heroTag: "favorite_fab",
           onPressed: isLoading
               ? null
               : () async {
@@ -202,6 +203,7 @@ class FloatingFavoriteButton extends ConsumerWidget {
         );
       },
       loading: () => FloatingActionButton(
+        heroTag: "favorite_fab_loading",
         onPressed: null,
         backgroundColor: Colors.grey.shade300,
         foregroundColor: Colors.white,
@@ -215,6 +217,7 @@ class FloatingFavoriteButton extends ConsumerWidget {
         ),
       ),
       error: (_, _) => FloatingActionButton(
+        heroTag: "favorite_fab_error",
         onPressed: null,
         backgroundColor: Colors.grey.shade300,
         foregroundColor: Colors.white,

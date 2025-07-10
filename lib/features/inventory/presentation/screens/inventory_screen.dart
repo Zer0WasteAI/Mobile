@@ -869,7 +869,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        heroTag: null,
+        heroTag: "inventory_fab",
         onPressed:
             () => context.pushNamed(InventoryScreen.addInventoryItemRouteName),
         backgroundColor: fabBackgroundColor,

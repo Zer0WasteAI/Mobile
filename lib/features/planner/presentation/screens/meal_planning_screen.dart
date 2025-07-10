@@ -759,6 +759,7 @@ class _MealPlanningScreenState extends ConsumerState<MealPlanningScreen> {
     final hasPlan = state.hasDateMealPlan(dateString);
 
     return FloatingActionButton.extended(
+      heroTag: "meal_planning_fab",
       onPressed: () {
         if (hasPlan) {
           final mealPlan = state.getMealPlanForDate(dateString);

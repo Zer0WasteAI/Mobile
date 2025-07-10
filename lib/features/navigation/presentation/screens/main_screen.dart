@@ -63,6 +63,7 @@ class MainScreen extends ConsumerWidget {
           isMoreMenuOpen
               ? null // No mostrar el FAB cuando el menú "Más" está abierto
               : FloatingActionButton(
+                heroTag: "main_fab",
                 shape: const CircleBorder(),
                 backgroundColor: fabBackgroundColor,
                 onPressed: () {

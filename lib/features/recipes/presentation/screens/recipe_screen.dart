@@ -520,6 +520,7 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
 
   Widget _buildFloatingActionButton() {
     return FloatingActionButton.extended(
+      heroTag: "recipe_screen_fab",
       onPressed: _showQuickActionsMenu,
       backgroundColor: const Color(0xFF00BFA5),
       foregroundColor: Colors.white,

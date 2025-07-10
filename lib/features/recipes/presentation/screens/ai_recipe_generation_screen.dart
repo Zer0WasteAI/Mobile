@@ -162,6 +162,7 @@ class _AIRecipeGenerationScreenState
       floatingActionButton:
           aiRecipeState.recipes.isNotEmpty && !aiRecipeState.isGenerating
               ? FloatingActionButton.extended(
+                heroTag: "ai_recipe_generation_fab",
                 onPressed: () {
                   // Clear state and force regeneration
                   ref.read(aiRecipeProvider.notifier).clearState();
