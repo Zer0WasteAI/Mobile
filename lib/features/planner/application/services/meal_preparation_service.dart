@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_model.dart';
+import 'package:zer0_waste_ai/features/planner/domain/models/meal_plan_models.dart' as models;
+import 'package:zer0_waste_ai/features/planner/presentation/providers/meal_planning_providers.dart';
 import 'package:zer0_waste_ai/features/recipes/domain/models/recipe_model.dart';
 import 'package:zer0_waste_ai/features/impact/application/providers/impact_providers.dart';
 
@@ -173,9 +175,72 @@ class MealPreparationService {
   
   /// Actualiza el plan de comidas con la comida preparada
   Future<void> _updateMealPlan(String mealPlanId, String mealKey, PlannedMeal updatedMeal) async {
-    // TODO: Implementar actualización del plan de comidas en el provider/repository
-    // Por ahora solo log
-    print('📝 Actualizando plan de comidas: $mealPlanId - $mealKey');
+    try {
+      print('📝 Actualizando plan de comidas: $mealPlanId - $mealKey');
+      
+      // Obtener la fecha del mealPlanId (asumiendo formato YYYY-MM-DD)
+      final date = mealPlanId;
+      
+      // Obtener el plan de comidas actual
+      final currentMealPlanAsync = await _ref.read(mealPlanByDateProvider(date).future);
+      
+      if (currentMealPlanAsync == null) {
+        print('⚠️ No se encontró plan de comidas para la fecha: $date');
+        return;
+      }
+      
+      // Convertir el plan actual a DailyMeals para poder modificarlo
+      final currentMeals = currentMealPlanAsync.meals;
+      
+      // Crear una nueva comida con los datos actualizados usando el modelo correcto
+      final updatedMealData = models.Meal(
+        recipeTitle: 'Receta de ${updatedMeal.type.name}',
+        ingredientsNeeded: [], // Lista vacía por defecto
+        prepTime: 30, // Valor por defecto
+        calories: 400, // Valor por defecto
+        instructions: [],
+      );
+      
+      // Actualizar la comida específica según el tipo
+      models.DailyMeals updatedDailyMeals;
+      switch (updatedMeal.type) {
+        case MealType.breakfast:
+          updatedDailyMeals = models.DailyMeals(
+            breakfast: updatedMealData,
+            lunch: currentMeals.lunch,
+            dinner: currentMeals.dinner,
+          );
+          break;
+        case MealType.lunch:
+          updatedDailyMeals = models.DailyMeals(
+            breakfast: currentMeals.breakfast,
+            lunch: updatedMealData,
+            dinner: currentMeals.dinner,
+          );
+          break;
+        case MealType.dinner:
+          updatedDailyMeals = models.DailyMeals(
+            breakfast: currentMeals.breakfast,
+            lunch: currentMeals.lunch,
+            dinner: updatedMealData,
+          );
+          break;
+        case MealType.snack:
+          // Los snacks no están soportados en el modelo actual DailyMeals
+          print('⚠️ Snacks no están soportados en el modelo actual');
+          return;
+      }
+      
+      // Actualizar el plan de comidas usando el provider
+      final mealPlanningNotifier = _ref.read(mealPlanningProvider.notifier);
+      await mealPlanningNotifier.updateMealPlan(date, updatedDailyMeals);
+      
+      print('✅ Plan de comidas actualizado exitosamente');
+      
+    } catch (e) {
+      print('❌ Error actualizando plan de comidas: $e');
+      rethrow;
+    }
   }
   
   /// Registra el impacto en el sistema de tracking

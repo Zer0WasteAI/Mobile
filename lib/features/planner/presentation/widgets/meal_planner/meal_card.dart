@@ -36,7 +36,7 @@ class MealCard extends ConsumerWidget {
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: _getStatusColor(plannedMeal.status).withOpacity(0.1),
+                      color: _getStatusColor(plannedMeal.status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -108,9 +108,9 @@ class MealCard extends ConsumerWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      backgroundColor: _getStatusColor(status).withOpacity(0.1),
+      backgroundColor: _getStatusColor(status).withValues(alpha: 0.1),
       side: BorderSide(
-        color: _getStatusColor(status).withOpacity(0.3),
+        color: _getStatusColor(status).withValues(alpha: 0.3),
       ),
     );
   }
@@ -124,9 +124,9 @@ class MealCard extends ConsumerWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
