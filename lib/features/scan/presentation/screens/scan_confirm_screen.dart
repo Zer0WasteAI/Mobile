@@ -162,7 +162,6 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
             foodState.foods.map((food) {
               return {
                 'name': food.name,
-                'image_path': food.imagePath ?? '',
                 'quantity': food.servingQuantity,
                 'expiration_date':
                     food.expirationDate ??
@@ -214,7 +213,6 @@ class _ScanConfirmScreenState extends ConsumerState<ScanConfirmScreen> {
               result.ingredients.map((ingredient) {
                 return {
                   'name': ingredient.name,
-                  'image_path': ingredient.imagePath ?? '',
                   'quantity': ingredient.quantity,
                   'expiration_date':
                       ingredient.expirationDate ??

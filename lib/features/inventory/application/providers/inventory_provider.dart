@@ -1389,7 +1389,7 @@ class InventoryRealNotifier extends StateNotifier<InventoryState> {
       'type_unit': item.unitType,
       'storage_type': _convertStorageTypeToAPI(item.storageType),
       'tips': item.tips ?? _getTipsForItem(item.name),
-      'image_path': '', // Will be handled separately by image upload
+      // image_path is not required by API endpoints - removed
     };
   }
 

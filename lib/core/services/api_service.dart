@@ -893,14 +893,25 @@ class ApiService {
     }
   }
 
-  /// INFO: Add single item to inventory (general items)
-  /// USAGE: Add individual item from recognition results to inventory
-  /// ENDPOINT: POST /api/inventory (for general items)
+  /// INFO: Add single item to inventory (manual form)
+  /// USAGE: Add individual item from manual form to inventory
+  /// ENDPOINT: POST /api/inventory/add_item (for manual items)
   Future<Map<String, dynamic>> addInventoryItem(
     Map<String, dynamic> item,
   ) async {
     try {
-      final response = await _dio.post(_inventoryItems, data: item);
+      // Format expected by /api/inventory/add_item endpoint
+      final requestData = {
+        'name': item['name'],
+        'quantity': item['quantity'],
+        'unit': item['type_unit'],  // API expects 'unit' not 'type_unit'
+        'storage_type': item['storage_type'],
+        'category': 'ingredient',  // Required field
+        // expiration data is handled differently - may need adjustment
+        if (item['expiration_time'] != null) 'expiration_days': item['expiration_time'],
+        if (item['tips'] != null) 'tips': item['tips'],
+      };
+      final response = await _dio.post(_inventoryAddItem, data: requestData);
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Add inventory item error: ${e.toString()}');

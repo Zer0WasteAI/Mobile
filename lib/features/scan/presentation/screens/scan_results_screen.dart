@@ -65,7 +65,7 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
     _successAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
     );
-    
+
     // Initialize provider listeners after first build
     Future(() => _initializeProviderListeners());
   }
@@ -1124,20 +1124,45 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen>
             );
           }).toList();
 
-      // Add to backend one by one to avoid type casting issues
-      for (final item in itemsToAddInventory) {
-        final itemData = {
-          'name': item.name,
-          'quantity': item.quantity,
-          'type_unit': item.unitType,
-          'storage_type': item.storageType.name,
-          'expiration_date': item.expirationDate?.toIso8601String(),
-          'tips': item.tips,
-        };
+      // Add to backend using the correct endpoint based on item type
+      if (widget.itemType == ScanItemType.food) {
+        // Use foods endpoint for recognized foods
+        final foodsData =
+            itemsToAddInventory
+                .map(
+                  (item) => {
+                    'name': item.name,
+                    'quantity': item.quantity,
+                    'type_unit': item.unitType,
+                    'storage_type': item.storageType.name,
+                    'expiration_date': item.expirationDate?.toIso8601String(),
+                    'tips': item.tips,
+                  },
+                )
+                .toList();
 
         await ref
             .read(inventoryRealProvider.notifier)
-            .addSingleItemToInventory(itemData);
+            .addFoodsFromRecognition(foodsData);
+      } else {
+        // Use ingredients endpoint for recognized ingredients
+        final ingredientsData =
+            itemsToAddInventory
+                .map(
+                  (item) => {
+                    'name': item.name,
+                    'quantity': item.quantity,
+                    'type_unit': item.unitType,
+                    'storage_type': item.storageType.name,
+                    'expiration_date': item.expirationDate?.toIso8601String(),
+                    'tips': item.tips,
+                  },
+                )
+                .toList();
+
+        await ref
+            .read(inventoryRealProvider.notifier)
+            .addIngredientsFromRecognition(ingredientsData);
       }
       // Show success state
       setState(() {

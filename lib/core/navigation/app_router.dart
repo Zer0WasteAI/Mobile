@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zer0_waste_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zer0_waste_ai/features/onboarding/domain/usecases/set_onboarding_seen_usecase.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/login_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/register_screen.dart';
 import 'package:zer0_waste_ai/features/auth/presentation/screens/forgot_password_screen.dart';
@@ -62,6 +64,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 // Define route names (add one for smart recipes)
 const String splashRouteName = 'splash';
 const String onboardingRouteName = 'onboarding';
+const String preferencesOnboardingRouteName = 'preferences-onboarding';
 const String loginRouteName = 'login';
 const String registerRouteName = 'register';
 const String forgotPasswordRouteName = 'forgot-password';
@@ -133,16 +136,62 @@ class AppRouter {
 
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: '/home', // Go directly to home instead of splash
+      initialLocation: '/splash',
       debugLogDiagnostics: true,
       // Add the observer here
       observers: [heroController],
       redirect: (context, state) {
-        // Simplified redirect logic - just redirect root to home
-        if (state.matchedLocation == '/') {
-          return '/home';
+        // Get current auth state and onboarding seen state
+        final authState = ref.read(authStateProvider);
+        final onboardingSeen = ref.read(onboardingSeenProvider);
+        
+        // If we're going to splash, let it handle the navigation
+        if (state.matchedLocation == '/splash') {
+          return null;
         }
-        return null; // No other redirects
+        
+        // If we're at root, redirect to splash
+        if (state.matchedLocation == '/') {
+          return '/splash';
+        }
+        
+        // Check if initial onboarding has been seen
+        if (!onboardingSeen) {
+          // If not seen and not already on onboarding, redirect to initial onboarding
+          if (state.matchedLocation.startsWith('/onboarding')) {
+            return null; // Allow access to initial onboarding
+          }
+          return '/onboarding';
+        }
+        
+        // Handle auth state routing (after initial onboarding)
+        return authState.when(
+          data: (user) {
+            // If user is not authenticated, redirect to login (unless already going to auth screens)
+            if (user == null) {
+              if (state.matchedLocation.startsWith('/login') || 
+                  state.matchedLocation.startsWith('/register') ||
+                  state.matchedLocation.startsWith('/forgot-password')) {
+                return null; // Allow access to auth screens
+              }
+              return '/login';
+            }
+            
+            // User is authenticated, check if they've completed initial preferences
+            if (!user.initialPreferencesCompleted) {
+              if (state.matchedLocation.startsWith('/preferences-onboarding')) {
+                return null; // Allow access to preferences onboarding
+              }
+              return '/preferences-onboarding';
+            }
+            
+            // User is authenticated and has completed preferences
+            // Allow access to all screens
+            return null;
+          },
+          loading: () => null, // Let splash handle loading state
+          error: (e, st) => '/login', // On error, redirect to login
+        );
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
@@ -155,6 +204,11 @@ class AppRouter {
           path: '/onboarding',
           name: onboardingRouteName,
           builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(
+          path: '/preferences-onboarding',
+          name: preferencesOnboardingRouteName,
+          builder: (context, state) => AllergySelectorScreen(fromProfile: false),
         ),
         GoRoute(
           path: '/login',
